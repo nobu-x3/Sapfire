@@ -9,9 +9,11 @@ Game::Game()
 {
     mWindow = nullptr;
     mIsRunning = true;
-    mBallPos = { 500, 500 };
+    mBallPos = { 500, 540 };
+    mPaddlePos = {thickness/2.f, 540 };
     mTicksCount = 0;
     mPaddleDir = 0;
+    mBallVel = { -200.f, 235.f };
 }
 
 bool Game::Initialize()
@@ -100,11 +102,29 @@ void Game::UpdateGame()
     if(mPaddleDir != 0)
     {
         mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
-        if(mPaddlePos.y < paddleH/2.f)
+        if(mPaddlePos.y < paddleH/2.f - thickness/2.f)
             mPaddlePos.y = paddleH/2.f;
-        else if(mPaddlePos.y > 1080 - paddleH/2.f)
-            mPaddlePos.y = 1080 - paddleH/2.f;
+        else if(mPaddlePos.y > 1080 - paddleH/2.f - thickness/2.f)
+            mPaddlePos.y = 1080 - paddleH/2.f - thickness/2.f;
     }
+
+    mBallPos.x += mBallVel.x * deltaTime;
+    mBallPos.y += mBallVel.y * deltaTime;
+
+    if((mBallPos.y <= thickness && mBallVel.y < 0.0f) || (mBallPos.y >= 1080 - thickness && mBallVel.y > 0))
+    {
+        mBallVel.y *= -1;
+    }
+    if(/*(mBallPos.x <= thickness && mBallVel.y < 0.0f) || */(mBallPos.x >= 1920 - thickness && mBallVel.x > 0))
+        mBallVel.x *= -1;
+
+    auto diff = std::abs(mBallPos.y - mPaddlePos.y);
+    if(diff <= paddleH /2.f && mBallPos.x <= mPaddlePos.x + thickness/2.f && mBallPos.x > 0 && mBallVel.x < 0)
+    {
+        mBallVel.x *= -1;
+    }
+    else if(mBallPos.x < 0)
+        mIsRunning = false;
 }
 
 void Game::GenerateOutput()
@@ -112,9 +132,21 @@ void Game::GenerateOutput()
     SDL_SetRenderDrawColor(mRenderer, 0, 0, 255, 255); // set color
     SDL_RenderClear(mRenderer); // clear
     SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
-    
-    SDL_Rect wall{static_cast<int>(mPaddlePos.x + thickness / 2), static_cast<int>(mPaddlePos.y - paddleH/2.f), thickness, paddleH};
+
+    // SDL_Rect leftWall { 0, 0, thickness, 1080};
+    // SDL_RenderFillRect(mRenderer, &leftWall);
+
+    SDL_Rect wall { 1920-thickness, 0, thickness, 1080};
     SDL_RenderFillRect(mRenderer, &wall);
+
+    wall = { 0, 0, 1920, thickness };
+    SDL_RenderFillRect(mRenderer, &wall);
+
+    wall = { 0, 1080 - thickness, 1920, thickness};
+    SDL_RenderFillRect(mRenderer, &wall);
+    
+    SDL_Rect paddle{static_cast<int>(mPaddlePos.x), static_cast<int>(mPaddlePos.y - paddleH/2.f), thickness, paddleH};
+    SDL_RenderFillRect(mRenderer, &paddle);
     SDL_Rect ball
     {
         static_cast<int>(mBallPos.x - thickness / 2), static_cast<int>(mBallPos.y - thickness / 2), thickness, thickness

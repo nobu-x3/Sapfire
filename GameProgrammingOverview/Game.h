@@ -24,9 +24,12 @@ private:
     SDL_Renderer* mRenderer;
 
     Vector2 mPaddlePos;
+    int mPaddleDir;
+    
     Vector2 mBallPos;
+    Vector2 mBallVel;
+    
     int mTicksCount;
     bool mIsRunning;
-    int mPaddleDir;
     
 };
