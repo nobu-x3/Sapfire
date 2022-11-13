@@ -1,19 +1,19 @@
 ﻿#pragma once
+#include "Structs.h"
+#include "Actor.h"
 class SDL_Window;
 class SDL_Renderer;
-struct Vector2
-{
-    float x;
-    float y;
-};
 class Game
 {
 public:
     Game();
+    ~Game();
 
     bool Initialize();
     void Update();
     void Shutdown();
+
+	void AddActor(Actor* actor);
 
 private:
     void ProcessInput();
@@ -23,13 +23,12 @@ private:
     SDL_Window* mWindow;
     SDL_Renderer* mRenderer;
 
-    Vector2 mPaddlePos;
-    int mPaddleDir;
-    
-    Vector2 mBallPos;
-    Vector2 mBallVel;
-    
     int mTicksCount;
     bool mIsRunning;
-    
+
+	std::vector<Actor*> mActors;
+	std::vector<Actor*> mPendingActors;
+
+	bool mUpdatingActors;
+
 };
