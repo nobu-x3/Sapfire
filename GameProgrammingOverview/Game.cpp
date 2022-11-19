@@ -1,6 +1,9 @@
-﻿#include <SDL.h>
-#include "Game.h"
+﻿#include "Game.h"
+#include <SDL.h>
 
+#include "SDL2/SDL_image.h"
+#include <SDL_error.h>
+#include <SDL_log.h>
 #include <iostream>
 
 const int thickness = 15;
@@ -43,6 +46,10 @@ bool Game::Initialize()
 	{
 		SDL_Log("Unable to initialize renderer: %s", SDL_GetError());
 		return false;
+	}
+	if(IMG_Init(IMG_INIT_PNG) == 0)
+	{
+		SDL_Log("Unable to initalize SDL_Image: %s", SDL_GetError());
 	}
 	return true;
 }
