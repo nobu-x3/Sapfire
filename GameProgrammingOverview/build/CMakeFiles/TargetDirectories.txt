@@ -1,3 +1,0 @@
-/home/nobu/workspace/Pong/GameProgrammingOverview/build/CMakeFiles/Pong.dir
-/home/nobu/workspace/Pong/GameProgrammingOverview/build/CMakeFiles/edit_cache.dir
-/home/nobu/workspace/Pong/GameProgrammingOverview/build/CMakeFiles/rebuild_cache.dir
