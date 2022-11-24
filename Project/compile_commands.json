@@ -1,47 +1,47 @@
 [
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/GameProgrammingOverview.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/GameProgrammingOverview.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/GameProgrammingOverview.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/GameProgrammingOverview.cpp.o -c /home/nobu/workspace/Pong/Project/GameProgrammingOverview.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/GameProgrammingOverview.cpp"
 },
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Game.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/Game.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/Game.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Game.cpp.o -c /home/nobu/workspace/Pong/Project/Game.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/Game.cpp"
 },
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Actor.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/Actor.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/Actor.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Actor.cpp.o -c /home/nobu/workspace/Pong/Project/Actor.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/Actor.cpp"
 },
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Component.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/Component.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/Component.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Component.cpp.o -c /home/nobu/workspace/Pong/Project/Component.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/Component.cpp"
 },
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/SpriteComponent.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/SpriteComponent.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/SpriteComponent.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/SpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/SpriteComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/SpriteComponent.cpp"
 },
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/AnimSpriteComponent.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/AnimSpriteComponent.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/AnimSpriteComponent.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/AnimSpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/AnimSpriteComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/AnimSpriteComponent.cpp"
 },
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/BGSpriteComponent.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/BGSpriteComponent.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/BGSpriteComponent.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/BGSpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/BGSpriteComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/BGSpriteComponent.cpp"
 },
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Ship.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/Ship.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/Ship.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Ship.cpp.o -c /home/nobu/workspace/Pong/Project/Ship.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/Ship.cpp"
 },
 {
-  "directory": "/home/nobu/workspace/Pong/GameProgrammingOverview/build",
-  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Math.cpp.o -c /home/nobu/workspace/Pong/GameProgrammingOverview/Math.cpp",
-  "file": "/home/nobu/workspace/Pong/GameProgrammingOverview/Math.cpp"
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Math.cpp.o -c /home/nobu/workspace/Pong/Project/Math.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/Math.cpp"
 }
 ]

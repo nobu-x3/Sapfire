@@ -12,5 +12,6 @@ class Ship : public Actor
 
       private:
 	float mRightSpeed;
+	class AnimSpriteComponent *mAnimComponent;
 	float mDownSpeed;
 };
