@@ -11,7 +11,7 @@ class SpriteComponent : public Component
 
 	  inline int GetDrawOrder() const { return mDrawOrder; }
 	  inline int GetTextureWidth() const { return mTexWidth; }
-	  inline int GetTextureHeight() const { return mTextHeight; }
+	  inline int GetTextureHeight() const { return mTexHeight; }
 
 	protected:
 	  // Texture to draw
@@ -20,5 +20,5 @@ class SpriteComponent : public Component
 	  int mDrawOrder;
 	  // width and height
 	  int mTexWidth;
-	  int mTextHeight;
+	  int mTexHeight;
 };

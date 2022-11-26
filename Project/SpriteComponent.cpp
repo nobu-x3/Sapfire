@@ -7,7 +7,7 @@
 #include <SDL_render.h>
 
 SpriteComponent::SpriteComponent(Actor *owner, int drawOrder)
-    : Component(owner), mTexture(nullptr), mDrawOrder(drawOrder), mTexWidth(0), mTextHeight(0)
+    : Component(owner), mTexture(nullptr), mDrawOrder(drawOrder), mTexWidth(0), mTexHeight(0)
 {
 	owner->GetGame()->AddSprite(this);
 }
@@ -20,14 +20,14 @@ SpriteComponent::~SpriteComponent()
 void SpriteComponent::SetTexture(SDL_Texture *texture)
 {
 	mTexture = texture;
-	SDL_QueryTexture(texture, nullptr, nullptr, &mTexWidth, &mTextHeight);
+	SDL_QueryTexture(texture, nullptr, nullptr, &mTexWidth, &mTexHeight);
 }
 
 void SpriteComponent::Draw(SDL_Renderer *renderer)
 {
 	SDL_Rect rect;
 	rect.w = static_cast<int>(mTexWidth * mOwner->GetScale());
-	rect.h = static_cast<int>(mTextHeight * mOwner->GetScale());
+	rect.h = static_cast<int>(mTexHeight * mOwner->GetScale());
 	rect.x = static_cast<int>(mOwner->GetPosition().x - rect.w / 2.f);
 	rect.y = static_cast<int>(mOwner->GetPosition().y - rect.h / 2.f);
 
