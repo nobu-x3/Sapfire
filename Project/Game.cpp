@@ -37,13 +37,13 @@ void Game::LoadData()
     Actor* testAct = new Actor(this);
     TileMapComponent *comp1 = new TileMapComponent(testAct, 200);
     comp1->SetTexture(LoadTexture("../Assets/Tiles.png"));
-    comp1->ReadCSV("../Assets/MapLayer1.csv");
-    TileMapComponent *comp2 = new TileMapComponent(testAct, 201);
-    comp2->SetTexture(LoadTexture("../Assets/Tiles.png"));
-    comp2->ReadCSV("../Assets/MapLayer2.csv");
-    TileMapComponent *comp3 = new TileMapComponent(testAct, 202);
-    comp3->SetTexture(LoadTexture("../Assets/Tiles.png"));
-    comp3->ReadCSV("../Assets/MapLayer3.csv");
+    comp1->ReadCSV("../Assets/MapTileLayer1.csv");
+    /* TileMapComponent *comp2 = new TileMapComponent(testAct, 201); */
+    /* comp2->SetTexture(LoadTexture("../Assets/Tiles.png")); */
+    /* comp2->ReadCSV("../Assets/MapLayer2.csv"); */
+    /* TileMapComponent *comp3 = new TileMapComponent(testAct, 202); */
+    /* comp3->SetTexture(LoadTexture("../Assets/Tiles.png")); */
+    /* comp3->ReadCSV("../Assets/MapLayer3.csv"); */
     testAct->SetPosition(Vector2(512.0f, 384.0f));
     // Create player's ship
     mShip = new Ship(this);
