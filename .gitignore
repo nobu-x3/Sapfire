@@ -6,3 +6,5 @@ riderModule.iml
 Project/build
 Project/cmake
 Project/.cache
+Project/.ccls-cache
+Project/.vimspector.json
