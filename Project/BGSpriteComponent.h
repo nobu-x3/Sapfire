@@ -1,6 +1,6 @@
 #pragma once
+#include "Math.h"
 #include "SpriteComponent.h"
-#include "Structs.h"
 #include <vector>
 class BGSpriteComponent : public SpriteComponent
 {

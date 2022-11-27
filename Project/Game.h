@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Actor.h"
-#include "Structs.h"
 #include <SDL_render.h>
 #include <string>
 #include <unordered_map>

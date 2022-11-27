@@ -5,7 +5,6 @@
 #include "SDL2/SDL_image.h"
 #include "Ship.h"
 #include "SpriteComponent.h"
-#include "Structs.h"
 #include <SDL_error.h>
 #include <SDL_log.h>
 #include <SDL_render.h>

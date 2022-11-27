@@ -1,5 +1,5 @@
 #pragma once
-#include "Structs.h"
+#include "Math.h"
 #include <vector>
 class Game;
 class Actor
