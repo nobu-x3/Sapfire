@@ -4,69 +4,47 @@
 #include "internal/csv_row.hpp"
 #include <SDL_log.h>
 #include <SDL_render.h>
+#include <string>
 
-/*TileMapComponent::~TileMapComponent()
+void TileMapComponent::ReadCSV(std::string path, int height, int width)
 {
-    while(!mTiles.empty())
-    {
-	delete mTiles.back();
-    }
-}*/
-
-void TileMapComponent::ReadCSV(std::string path)
-{
-	csv::CSVReader reader1(path);
-	int tempHeight = 0;
-	for (csv::CSVRow row : reader1)
-	{
-		int tempWidth = 0;
-		for (csv::CSVField &field : row)
-		{
-			tempWidth++;
-		}
-		mWidth = tempWidth;
-		tempHeight++;
-    }
-    mHeight = tempHeight;
-	float tileWidth = mTexWidth / mWidth;
-	float tileHeight = mTexHeight / mHeight;
-
-	SDL_Log("TW: %f", tileWidth);
-	tempHeight = 0;
+	mHeight = mTexHeight / height;
+	mWidth = mTexWidth / width;
 	csv::CSVReader reader(path); // lmao this library does not reset iterators or smth
+	int destOffsetY = 0;
 	for (csv::CSVRow &row : reader)
 	{
-
-		int tempWidth = 0;
+		int destOffsetX = 0;
 		for (csv::CSVField &field : row)
 		{
 			int index = std::stoi(field.get());
+
+			int temp = 0;
+			int offsetY = index / mWidth;
+			int offsetX = index - (offsetY * mWidth);
+
+			SDL_Rect srcRect;
+			srcRect.x = offsetX * width;
+			srcRect.y = offsetY * height;
+			srcRect.w = width;
+			srcRect.h = height;
+
+			SDL_Rect destRect;
+			destRect.x = destOffsetX * width * mOwner->GetScale();
+			destRect.y = destOffsetY * height * mOwner->GetScale();
+			destRect.h = mOwner->GetScale() * height;
+			destRect.w = mOwner->GetScale() * width;
+
 			Tile tile;
-			SDL_Rect destrect;
-			destrect.h = tileHeight * mOwner->GetScale();
-			destrect.w = tileWidth * mOwner->GetScale();
-			destrect.x = static_cast<int>((tempWidth * tileWidth + tileWidth / 2.f) * mOwner->GetScale());
-			destrect.y =
-			    static_cast<int>((tempHeight * tileHeight + tileHeight / 2.f) * mOwner->GetScale());
-			SDL_Log("DEST::height - %d, width - %d, x - %d, y - %d", destrect.h, destrect.w, destrect.x,
-				destrect.y);
-			if (index >= 0)
-			{
-				int y = index / mWidth;
-				int x = index - y * mWidth;
-				SDL_Log("SRC::index %s: y - %d, x - %d", field.get().c_str(), y, x);
-				SDL_Rect srcrect;
-				srcrect.y = static_cast<int>(y * tileHeight + tileHeight / 2.f);
-				srcrect.x = static_cast<int>(x * tileWidth + tileWidth / 2.f);
-				srcrect.w = static_cast<int>(tileWidth);
-				srcrect.h = static_cast<int>(tileHeight);
-				tile.srcrect = srcrect;
-			}
-		tile.destrect = destrect;
-		mTiles.emplace_back(tile);
-		tempWidth++;
+			tile.destrect = destRect;
+			tile.srcrect = srcRect;
+			mTiles.emplace_back(tile);
+
+			destOffsetX++;
+			SDL_Log("srcX - %d, srcY - %d, destX - %d, destY - %d", srcRect.x, srcRect.y, destRect.x,
+				destRect.y);
 		}
-		tempHeight++;
+		destOffsetY++;
 	}
 }
 

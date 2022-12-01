@@ -14,7 +14,7 @@ class TileMapComponent : public SpriteComponent
 		{
 		}
 		~TileMapComponent() = default;
-		void ReadCSV(std::string path);
+		void ReadCSV(std::string path, int height, int width);
 
 		virtual void Draw(class SDL_Renderer *renderer) override;
 

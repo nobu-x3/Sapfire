@@ -33,38 +33,35 @@ Game::~Game()
 
 void Game::LoadData()
 {
-    Actor* testAct = new Actor(this);
-    TileMapComponent *comp1 = new TileMapComponent(testAct, 200);
-    comp1->SetTexture(LoadTexture("../Assets/Tiles.png"));
-    comp1->ReadCSV("../Assets/MapTileLayer1.csv");
-    /* TileMapComponent *comp2 = new TileMapComponent(testAct, 201); */
-    /* comp2->SetTexture(LoadTexture("../Assets/Tiles.png")); */
-    /* comp2->ReadCSV("../Assets/MapLayer2.csv"); */
-    /* TileMapComponent *comp3 = new TileMapComponent(testAct, 202); */
-    /* comp3->SetTexture(LoadTexture("../Assets/Tiles.png")); */
-    /* comp3->ReadCSV("../Assets/MapLayer3.csv"); */
-    testAct->SetPosition(Vector2(512.0f, 384.0f));
-    // Create player's ship
-    mShip = new Ship(this);
-    mShip->SetPosition(Vector2(100.0f, 384.0f));
-    mShip->SetScale(1.5f);
+	Actor *testAct = new Actor(this);
+	TileMapComponent *comp1 = new TileMapComponent(testAct, 200);
+	comp1->SetTexture(LoadTexture("../Assets/Tiles.png"));
+	comp1->ReadCSV("../Assets/MapTileLayer1.csv", 32, 32);
+	TileMapComponent *comp2 = new TileMapComponent(testAct, 201);
+	comp2->SetTexture(LoadTexture("../Assets/Tiles.png"));
+	comp2->ReadCSV("../Assets/MapTileLayer2.csv", 32, 32);
+	testAct->SetPosition(Vector2(512.0f, 384.0f));
+	// Create player's ship
+	mShip = new Ship(this);
+	mShip->SetPosition(Vector2(100.0f, 384.0f));
+	mShip->SetScale(1.5f);
 
-    // Create actor for the background (this doesn't need a subclass)
-    Actor *temp = new Actor(this);
-    temp->SetPosition(Vector2(512.0f, 384.0f));
-    // Create the "far back" background
-    BGSpriteComponent *bg = new BGSpriteComponent(temp);
-    bg->SetScreenSize(Vector2(1024.0f, 768.0f));
-    std::vector<SDL_Texture *> bgtexs = {LoadTexture("../Assets/Farback01.png"),
-					 LoadTexture("../Assets/Farback02.png")};
-    bg->SetBGTextures(bgtexs);
-    bg->SetScrollSpeed(-100.0f);
-    // Create the closer background
-    bg = new BGSpriteComponent(temp, 50);
-    bg->SetScreenSize(Vector2(1024.0f, 768.0f));
-    bgtexs = {LoadTexture("../Assets/Stars.png"), LoadTexture("../Assets/Stars.png")};
-    bg->SetBGTextures(bgtexs);
-    bg->SetScrollSpeed(-200.0f);
+	// Create actor for the background (this doesn't need a subclass)
+	Actor *temp = new Actor(this);
+	temp->SetPosition(Vector2(512.0f, 384.0f));
+	// Create the "far back" background
+	BGSpriteComponent *bg = new BGSpriteComponent(temp);
+	bg->SetScreenSize(Vector2(1024.0f, 768.0f));
+	std::vector<SDL_Texture *> bgtexs = {LoadTexture("../Assets/Farback01.png"),
+					     LoadTexture("../Assets/Farback02.png")};
+	bg->SetBGTextures(bgtexs);
+	bg->SetScrollSpeed(-100.0f);
+	// Create the closer background
+	bg = new BGSpriteComponent(temp, 50);
+	bg->SetScreenSize(Vector2(1024.0f, 768.0f));
+	bgtexs = {LoadTexture("../Assets/Stars.png"), LoadTexture("../Assets/Stars.png")};
+	bg->SetBGTextures(bgtexs);
+	bg->SetScrollSpeed(-200.0f);
 }
 
 void Game::UnloadData()
