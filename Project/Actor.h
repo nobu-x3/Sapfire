@@ -27,8 +27,10 @@ class Actor
     inline Vector2 GetPosition() const { return mPosition; }
     inline void SetPosition(Vector2 pos) { mPosition = pos; }
     inline float GetRotation() const { return mRotation; }
+    inline void SetRotation(float rotation) { mRotation = rotation; }
     inline void SetScale(float scale) { mScale = scale; }
     inline float GetScale() const { return mScale; }
+    inline Vector2 GetForwardVector() const { return Vector2(Math::Cos(mRotation), -Math::Sin(mRotation)); }
 
   private:
     State mState;
