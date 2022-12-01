@@ -1,6 +1,7 @@
 ﻿#include "Game.h"
 #include <SDL.h>
 
+#include "Asteroid.h"
 #include "BGSpriteComponent.h"
 #include "SDL2/SDL_image.h"
 #include "Ship.h"
@@ -12,7 +13,6 @@
 #include <SDL_timer.h>
 #include <algorithm>
 #include <iostream>
-#include "TileMapComponent.h"
 const int thickness = 15;
 const int paddleH = 150;
 
@@ -33,14 +33,10 @@ Game::~Game()
 
 void Game::LoadData()
 {
-	Actor *testAct = new Actor(this);
-	TileMapComponent *comp1 = new TileMapComponent(testAct, 200);
-	comp1->SetTexture(LoadTexture("../Assets/Tiles.png"));
-	comp1->ReadCSV("../Assets/MapTileLayer1.csv", 32, 32);
-	TileMapComponent *comp2 = new TileMapComponent(testAct, 201);
-	comp2->SetTexture(LoadTexture("../Assets/Tiles.png"));
-	comp2->ReadCSV("../Assets/MapTileLayer2.csv", 32, 32);
-	testAct->SetPosition(Vector2(512.0f, 384.0f));
+	for (int i = 0; i < 20; ++i)
+	{
+		new Asteroid(this); // this leaks memory i assume
+	}
 	// Create player's ship
 	mShip = new Ship(this);
 	mShip->SetPosition(Vector2(100.0f, 384.0f));

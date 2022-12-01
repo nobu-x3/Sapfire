@@ -41,13 +41,28 @@
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/MovementComponent.cpp.o -c /home/nobu/workspace/Pong/Project/MovementComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/MovementComponent.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Pong/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Ship.cpp.o -c /home/nobu/workspace/Pong/Project/Ship.cpp",
   "file": "/home/nobu/workspace/Pong/Project/Ship.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Asteroid.cpp.o -c /home/nobu/workspace/Pong/Project/Asteroid.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/Asteroid.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Pong/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Math.cpp.o -c /home/nobu/workspace/Pong/Project/Math.cpp",
   "file": "/home/nobu/workspace/Pong/Project/Math.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Random.cpp.o -c /home/nobu/workspace/Pong/Project/Random.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/Random.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build/libs/csv-parser/include/internal",
