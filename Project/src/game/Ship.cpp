@@ -1,11 +1,12 @@
 #include "Ship.h"
 #include "engine/AnimSpriteComponent.h"
 #include "engine/Game.h"
+#include "engine/InputComponent.h"
 #include "engine/SpriteComponent.h"
 #include <SDL_scancode.h>
 #include <vector>
 
-Ship::Ship(Game *game) : Actor(game), mRightSpeed(0.0f), mDownSpeed(0.0f)
+Ship::Ship(Game *game) : Actor(game)
 {
 	// Create an animated sprite component
 	mAnimComponent = new AnimSpriteComponent(this);
@@ -28,57 +29,14 @@ Ship::Ship(Game *game) : Actor(game), mRightSpeed(0.0f), mDownSpeed(0.0f)
 
 	mAnimComponent->AddAnim(data);
 	mAnimComponent->AddAnim(data1);
-}
 
-void Ship::UpdateActor(float deltaTime)
-{
-	Actor::UpdateActor(deltaTime);
-	// Update position based on speeds and delta time
-	Vector2 pos = GetPosition();
-	pos.x += mRightSpeed * deltaTime;
-	pos.y += mDownSpeed * deltaTime;
-	// Restrict position to left half of screen
-	if (pos.x < 25.0f)
-	{
-		pos.x = 25.0f;
-	}
-	else if (pos.x > 500.0f)
-	{
-		pos.x = 500.0f;
-	}
-	if (pos.y < 25.0f)
-	{
-		pos.y = 25.0f;
-	}
-	else if (pos.y > 743.0f)
-	{
-		pos.y = 743.0f;
-	}
-	SetPosition(pos);
+	mInputComponent = new InputComponent(this);
+	mInputComponent->SetMaxAngularSpeed(5.0f);
+	mInputComponent->SetMaxForwardSpeed(210.0f);
 }
 
 void Ship::ActorInput(const uint8_t *state)
 {
-	mRightSpeed = 0.0f;
-	mDownSpeed = 0.0f;
-	// right/left
-	if (state[SDL_SCANCODE_D])
-	{
-		mRightSpeed += 250.0f;
-	}
-	if (state[SDL_SCANCODE_A])
-	{
-		mRightSpeed -= 250.0f;
-	}
-	// up/down
-	if (state[SDL_SCANCODE_S])
-	{
-		mDownSpeed += 300.0f;
-	}
-	if (state[SDL_SCANCODE_W])
-	{
-		mDownSpeed -= 300.0f;
-	}
 	if (state[SDL_SCANCODE_SPACE])
 	{
 		mAnimComponent->PlayAnimation("anim_character");
