@@ -57,7 +57,7 @@ void Ship::UpdateActor(float deltaTime)
 	SetPosition(pos);
 }
 
-void Ship::ProcessKeyboard(const uint8_t *state)
+void Ship::ActorInput(const uint8_t *state)
 {
 	mRightSpeed = 0.0f;
 	mDownSpeed = 0.0f;

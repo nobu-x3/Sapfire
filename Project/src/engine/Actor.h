@@ -1,5 +1,6 @@
 #pragma once
 #include "Math.h"
+#include <cstdint>
 #include <vector>
 class Game;
 class Actor
@@ -21,6 +22,8 @@ class Actor
 
     void AddComponent (class Component *component);
     void RemoveComponent (class Component *component);
+    void ProcessInput(const uint8_t *keyState);
+    virtual void ActorInput(const uint8_t *keyState);
     inline State GetState() const { return mState; }
     inline void SetState(State state) { mState = state; }
     inline Game *GetGame() const { return mGame; }
