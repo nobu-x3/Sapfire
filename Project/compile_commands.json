@@ -1,68 +1,68 @@
 [
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/GameProgrammingOverview.cpp.o -c /home/nobu/workspace/Pong/Project/GameProgrammingOverview.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/GameProgrammingOverview.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/Actor.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/Actor.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/Actor.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Game.cpp.o -c /home/nobu/workspace/Pong/Project/Game.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/Game.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/AnimSpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/AnimSpriteComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/AnimSpriteComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Actor.cpp.o -c /home/nobu/workspace/Pong/Project/Actor.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/Actor.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/BGSpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/BGSpriteComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/BGSpriteComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Component.cpp.o -c /home/nobu/workspace/Pong/Project/Component.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/Component.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/Component.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/Component.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/Component.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/SpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/SpriteComponent.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/SpriteComponent.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/Game.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/Game.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/Game.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/AnimSpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/AnimSpriteComponent.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/AnimSpriteComponent.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/GameProgrammingOverview.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/GameProgrammingOverview.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/GameProgrammingOverview.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/BGSpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/BGSpriteComponent.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/BGSpriteComponent.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/Math.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/Math.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/Math.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/TileMapComponent.cpp.o -c /home/nobu/workspace/Pong/Project/TileMapComponent.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/TileMapComponent.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/MovementComponent.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/MovementComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/MovementComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/MovementComponent.cpp.o -c /home/nobu/workspace/Pong/Project/MovementComponent.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/MovementComponent.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/Random.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/Random.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/Random.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Ship.cpp.o -c /home/nobu/workspace/Pong/Project/Ship.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/Ship.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/SpriteComponent.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/SpriteComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/SpriteComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Asteroid.cpp.o -c /home/nobu/workspace/Pong/Project/Asteroid.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/Asteroid.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/TileMapComponent.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/TileMapComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/TileMapComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Math.cpp.o -c /home/nobu/workspace/Pong/Project/Math.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/Math.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/game/Asteroid.cpp.o -c /home/nobu/workspace/Pong/Project/src/game/Asteroid.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/game/Asteroid.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/Random.cpp.o -c /home/nobu/workspace/Pong/Project/Random.cpp",
-  "file": "/home/nobu/workspace/Pong/Project/Random.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/game/Ship.cpp.o -c /home/nobu/workspace/Pong/Project/src/game/Ship.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/game/Ship.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build/libs/csv-parser/include/internal",

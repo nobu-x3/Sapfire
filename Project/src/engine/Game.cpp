@@ -1,11 +1,11 @@
 ﻿#include "Game.h"
 #include <SDL.h>
 
-#include "Asteroid.h"
 #include "BGSpriteComponent.h"
 #include "SDL2/SDL_image.h"
-#include "Ship.h"
 #include "SpriteComponent.h"
+#include "game/Asteroid.h"
+#include "game/Ship.h"
 #include <SDL_error.h>
 #include <SDL_log.h>
 #include <SDL_render.h>

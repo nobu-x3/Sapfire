@@ -1,7 +1,7 @@
 #include "Ship.h"
-#include "AnimSpriteComponent.h"
-#include "Game.h"
-#include "SpriteComponent.h"
+#include "engine/AnimSpriteComponent.h"
+#include "engine/Game.h"
+#include "engine/SpriteComponent.h"
 #include <SDL_scancode.h>
 #include <vector>
 

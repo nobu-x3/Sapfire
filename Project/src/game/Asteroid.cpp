@@ -1,8 +1,8 @@
 #include "Asteroid.h"
-#include "Game.h"
-#include "MovementComponent.h"
-#include "Random.h"
-#include "SpriteComponent.h"
+#include "engine/Game.h"
+#include "engine/MovementComponent.h"
+#include "engine/Random.h"
+#include "engine/SpriteComponent.h"
 
 Asteroid::Asteroid(Game *game) : Actor(game)
 {
