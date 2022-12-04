@@ -14,7 +14,6 @@ void InputComponent::ProcessInput(const uint8_t *keyState)
 	float forwardSpeed = 0.0f;
 	if (keyState[mForwardKey])
 	{
-		SDL_Log("Forward key pressed!");
 		forwardSpeed += mMaxForwardSpeed;
 	}
 	if (keyState[mBackwardKey])
@@ -28,5 +27,4 @@ void InputComponent::ProcessInput(const uint8_t *keyState)
 		angularSpeed -= mMaxAngularSpeed;
 	SetAngularSpeed(angularSpeed);
 
-	SDL_Log("Forward = %f, angular = %f", forwardSpeed, angularSpeed);
 }

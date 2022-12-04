@@ -14,7 +14,7 @@ class Actor
     };
 
     Actor(Game *mGame);
-    virtual ~Actor () = default;
+    virtual ~Actor();
 
     void Update (float deltaTime); // To be called from Game
     void UpdateComponents (float deltaTime);

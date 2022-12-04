@@ -1,4 +1,5 @@
 #include "Ship.h"
+#include "Laser.h"
 #include "engine/AnimSpriteComponent.h"
 #include "engine/Game.h"
 #include "engine/InputComponent.h"
@@ -33,12 +34,25 @@ Ship::Ship(Game *game) : Actor(game)
 	mInputComponent = new InputComponent(this);
 	mInputComponent->SetMaxAngularSpeed(5.0f);
 	mInputComponent->SetMaxForwardSpeed(210.0f);
+
+	mLaserCooldown = 0.5f;
 }
 
 void Ship::ActorInput(const uint8_t *state)
 {
-	if (state[SDL_SCANCODE_SPACE])
+	if (state[SDL_SCANCODE_SPACE] && mLaserCooldown <= 0.0f)
 	{
-		mAnimComponent->PlayAnimation("anim_character");
+		/* mAnimComponent->PlayAnimation("anim_character"); */
+		Laser *laser = new Laser(GetGame()); // NOTE doesnt leak memory but is inefficient cuz doesnt clean
+						     // itself unless hit asteroid
+		laser->SetPosition(GetPosition());
+		laser->SetRotation(GetRotation());
+		mLaserCooldown = 0.5f;
 	}
+}
+
+void Ship::UpdateActor(float deltaTime)
+{
+	if (mLaserCooldown > 0)
+		mLaserCooldown -= deltaTime;
 }

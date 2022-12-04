@@ -1,11 +1,10 @@
 ﻿#include "Game.h"
-#include <SDL.h>
-
 #include "BGSpriteComponent.h"
 #include "SDL2/SDL_image.h"
 #include "SpriteComponent.h"
 #include "game/Asteroid.h"
 #include "game/Ship.h"
+#include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_log.h>
 #include <SDL_render.h>
@@ -35,7 +34,7 @@ void Game::LoadData()
 {
 	for (int i = 0; i < 20; ++i)
 	{
-		new Asteroid(this); // this leaks memory i assume
+		AddAsteroid(new Asteroid(this));
 	}
 	// Create player's ship
 	mShip = new Ship(this);
@@ -175,6 +174,13 @@ void Game::AddActor(Actor* actor)
 		mActors.emplace_back(actor);
 }
 
+void Game::RemoveActor(Actor *actor)
+{
+	auto iter = std::find(mActors.begin(), mActors.end(), actor);
+	if (iter != mActors.end())
+		mActors.erase(iter);
+}
+
 void Game::AddSprite(SpriteComponent *sprite)
 {
 	// Find insertion point in sorted vector
@@ -192,7 +198,8 @@ void Game::AddSprite(SpriteComponent *sprite)
 void Game::RemoveSprite(SpriteComponent *sprite)
 {
 	auto iter = std::find(mSprites.begin(), mSprites.end(), sprite);
-	mSprites.erase(iter);
+	if (iter != mSprites.end())
+		mSprites.erase(iter);
 }
 
 void Game::ProcessInput()
@@ -274,4 +281,16 @@ void Game::GenerateOutput()
 	}
 
 	SDL_RenderPresent(mRenderer); // swap buffers
+}
+
+void Game::AddAsteroid(Asteroid *ast)
+{
+	mAsteroids.emplace_back(ast);
+}
+
+void Game::RemoveAsteroid(Asteroid *ast)
+{
+	auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), ast);
+	if (iter != mAsteroids.end())
+		mAsteroids.erase(iter);
 }

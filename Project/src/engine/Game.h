@@ -17,9 +17,13 @@ public:
     void Shutdown();
 
 	void AddActor(Actor* actor);
+	void RemoveActor(Actor *actor);
 	void AddSprite(SpriteComponent *sprite);
 	void RemoveSprite(SpriteComponent *sprite);
 	SDL_Texture *LoadTexture(const char *fileName);
+	void AddAsteroid(class Asteroid *ast);
+	void RemoveAsteroid(class Asteroid *ast);
+	inline std::vector<class Asteroid *> GetAsteroids() const { return mAsteroids; }
 
       private:
 	void ProcessInput();
@@ -42,4 +46,5 @@ public:
 	bool mUpdatingActors;
 
 	class Ship *mShip;
+	std::vector<class Asteroid *> mAsteroids;
 };

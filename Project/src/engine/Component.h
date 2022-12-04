@@ -10,6 +10,7 @@ public:
   virtual void Update(float deltaTime) {}
   inline int GetUpdateOrder() const { return mUpdateOrder; }
   inline virtual void ProcessInput(const uint8_t *keyState) {}
+  inline Actor *GetOwner() const { return mOwner; }
 
 protected:
   Actor *mOwner;

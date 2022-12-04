@@ -7,6 +7,15 @@ Actor::Actor(Game *game) : mGame(game), mPosition(Vector2(0, 0)), mRotation(0), 
 {
 	game->AddActor(this);
 }
+
+Actor::~Actor()
+{
+	mGame->RemoveActor(this);
+	while (!mComponents.empty())
+	{
+		delete mComponents.back();
+	}
+}
 void Actor::Update(float deltaTime)
 {
 	UpdateComponents(deltaTime);

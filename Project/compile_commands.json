@@ -16,6 +16,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/CircleColliderComponent.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/CircleColliderComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/CircleColliderComponent.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Pong/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/Component.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/Component.cpp",
   "file": "/home/nobu/workspace/Pong/Project/src/engine/Component.cpp"
 },
@@ -28,6 +33,11 @@
   "directory": "/home/nobu/workspace/Pong/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/GameProgrammingOverview.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/GameProgrammingOverview.cpp",
   "file": "/home/nobu/workspace/Pong/Project/src/engine/GameProgrammingOverview.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/engine/InputComponent.cpp.o -c /home/nobu/workspace/Pong/Project/src/engine/InputComponent.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/engine/InputComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
@@ -58,6 +68,11 @@
   "directory": "/home/nobu/workspace/Pong/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/game/Asteroid.cpp.o -c /home/nobu/workspace/Pong/Project/src/game/Asteroid.cpp",
   "file": "/home/nobu/workspace/Pong/Project/src/game/Asteroid.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Pong/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Pong/Project/libs/csv-parser/include -I/home/nobu/workspace/Pong/Project/src -isystem /usr/local/include/SDL2  -o CMakeFiles/Pong.dir/src/game/Laser.cpp.o -c /home/nobu/workspace/Pong/Project/src/game/Laser.cpp",
+  "file": "/home/nobu/workspace/Pong/Project/src/game/Laser.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Pong/Project/build",
