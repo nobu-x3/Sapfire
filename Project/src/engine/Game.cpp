@@ -20,6 +20,8 @@ Game::Game()
 	mWindow = nullptr;
 	mIsRunning = true;
 	mTicksCount = 0;
+	mShipRespawnCooldown = 3.0f;
+	mShipDead = false;
 }
 
 Game::~Game()
@@ -268,6 +270,13 @@ void Game::UpdateGame()
 	{
 		delete actor;
 	}
+
+	if (mShipDead)
+	{
+		mShipRespawnCooldown -= deltaTime;
+		if (mShipRespawnCooldown <= 0.0f)
+			RespawnShip();
+	}
 }
 
 void Game::GenerateOutput()
@@ -293,4 +302,19 @@ void Game::RemoveAsteroid(Asteroid *ast)
 	auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), ast);
 	if (iter != mAsteroids.end())
 		mAsteroids.erase(iter);
+}
+
+void Game::NotifyShipDeath()
+{
+	mShipRespawnCooldown = 3.0f;
+	mShipDead = true;
+}
+
+void Game::RespawnShip()
+{
+	mShipDead = false;
+	mShipRespawnCooldown = 3.0f;
+	mShip = new Ship(this);
+	mShip->SetPosition(Vector2(512.0f, 384.0f));
+	mShip->SetScale(1.5f);
 }

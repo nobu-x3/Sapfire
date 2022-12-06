@@ -11,5 +11,6 @@ class Ship : public Actor
       private:
 	class AnimSpriteComponent *mAnimComponent;
 	class InputComponent *mInputComponent;
+	class CircleColliderComponent *mCollisionComponent;
 	float mLaserCooldown;
 };

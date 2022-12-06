@@ -23,6 +23,7 @@ public:
 	SDL_Texture *LoadTexture(const char *fileName);
 	void AddAsteroid(class Asteroid *ast);
 	void RemoveAsteroid(class Asteroid *ast);
+	void NotifyShipDeath();
 	inline std::vector<class Asteroid *> GetAsteroids() const { return mAsteroids; }
 
       private:
@@ -31,6 +32,7 @@ public:
 	void GenerateOutput();
 	void LoadData();
 	void UnloadData();
+	void RespawnShip();
 
 	SDL_Window *mWindow;
 	SDL_Renderer *mRenderer;
@@ -44,6 +46,8 @@ public:
 	std::vector<Actor*> mPendingActors;
 
 	bool mUpdatingActors;
+	float mShipRespawnCooldown;
+	bool mShipDead;
 
 	class Ship *mShip;
 	std::vector<class Asteroid *> mAsteroids;

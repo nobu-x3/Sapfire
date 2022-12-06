@@ -1,6 +1,8 @@
 #include "Ship.h"
+#include "Asteroid.h"
 #include "Laser.h"
 #include "engine/AnimSpriteComponent.h"
+#include "engine/CircleColliderComponent.h"
 #include "engine/Game.h"
 #include "engine/InputComponent.h"
 #include "engine/SpriteComponent.h"
@@ -36,6 +38,9 @@ Ship::Ship(Game *game) : Actor(game)
 	mInputComponent->SetMaxForwardSpeed(210.0f);
 
 	mLaserCooldown = 0.5f;
+
+	mCollisionComponent = new CircleColliderComponent(this);
+	mCollisionComponent->SetRadius(48.f);
 }
 
 void Ship::ActorInput(const uint8_t *state)
@@ -43,8 +48,8 @@ void Ship::ActorInput(const uint8_t *state)
 	if (state[SDL_SCANCODE_SPACE] && mLaserCooldown <= 0.0f)
 	{
 		/* mAnimComponent->PlayAnimation("anim_character"); */
-		Laser *laser = new Laser(GetGame()); // NOTE doesnt leak memory but is inefficient cuz doesnt clean
-						     // itself unless hit asteroid
+		Laser *laser = new Laser(GetGame()); // NOTE doesnt leak memory but is inefficient cuz heap allocations,
+						     // use object pooling instead itself unless hit asteroid
 		laser->SetPosition(GetPosition());
 		laser->SetRotation(GetRotation());
 		mLaserCooldown = 0.5f;
@@ -55,4 +60,14 @@ void Ship::UpdateActor(float deltaTime)
 {
 	if (mLaserCooldown > 0)
 		mLaserCooldown -= deltaTime;
+
+	for (auto roid : GetGame()->GetAsteroids())
+	{
+		if (CircleColliderComponent::Intersect(*mCollisionComponent, *(roid->GetCollider())))
+		{
+			roid->SetState(State::EPendingRemoval);
+			SetState(State::EPendingRemoval);
+			GetGame()->NotifyShipDeath();
+		}
+	}
 }
