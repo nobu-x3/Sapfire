@@ -33,7 +33,7 @@ Ship::Ship(Game *game) : Actor(game)
 	mAnimComponent->AddAnim(data);
 	mAnimComponent->AddAnim(data1);
 
-	mInputComponent = new InputComponent(this);
+	mInputComponent = new InputComponent(this, 1.0f);
 	mInputComponent->SetMaxAngularSpeed(5.0f);
 	mInputComponent->SetMaxForwardSpeed(210.0f);
 
@@ -52,6 +52,7 @@ void Ship::ActorInput(const uint8_t *state)
 						     // use object pooling instead itself unless hit asteroid
 		laser->SetPosition(GetPosition());
 		laser->SetRotation(GetRotation());
+		laser->Shoot(GetForwardVector() * 2000.f);
 		mLaserCooldown = 0.5f;
 	}
 }

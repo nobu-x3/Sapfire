@@ -148,11 +148,23 @@ struct Vector2
 			return Vector2(vec.x * scalar, vec.y * scalar);
 		}
 
+		inline friend Vector2 operator/(const Vector2 &vec, float scalar)
+		{
+			return Vector2(vec.x / scalar, vec.y / scalar);
+		}
+
 		// Scalar *=
 		inline Vector2 &operator*=(float scalar)
 		{
 			x *= scalar;
 			y *= scalar;
+			return *this;
+		}
+
+		inline Vector2 &operator/=(float scalar)
+		{
+			x /= scalar;
+			y /= scalar;
 			return *this;
 		}
 

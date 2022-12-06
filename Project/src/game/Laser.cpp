@@ -9,8 +9,8 @@ Laser::Laser(Game *game) : Actor(game)
 {
 	mCollider = new CircleColliderComponent(this);
 	mCollider->SetRadius(30.f);
-	mMovementComponent = new MovementComponent(this);
-	mMovementComponent->SetForwardSpeed(850.0f);
+	mMovementComponent = new MovementComponent(this, 1.f);
+	/* mMovementComponent->SetForwardSpeed(850.0f); */
 	mSpriteComponent = new SpriteComponent(this);
 	mSpriteComponent->SetTexture(game->LoadTexture("../Assets/Laser.png"));
 	mRemovalTimer = 1.0f;
@@ -33,4 +33,9 @@ void Laser::UpdateActor(float deltaTime)
 			break;
 		}
 	}
+}
+
+void Laser::Shoot(Vector2 force)
+{
+	mMovementComponent->AddForce(force);
 }

@@ -7,6 +7,7 @@ class Laser : public Actor
 	void UpdateActor(float deltaTime) override;
 	inline class CircleColliderComponent *GetCollider() const { return mCollider; }
 	inline void SetRemovalTimer(float time) { mRemovalTimer = time; }
+	void Shoot(Vector2 force);
 
       private:
 	class CircleColliderComponent *mCollider;

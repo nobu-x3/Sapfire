@@ -4,7 +4,7 @@
 class InputComponent : public MovementComponent
 {
       public:
-	InputComponent(class Actor *owner, int updateOrder = 10);
+	InputComponent(class Actor *owner, float mass, int updateOrder = 10);
 
 	void ProcessInput(const uint8_t *keyState) override;
 
