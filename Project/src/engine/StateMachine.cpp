@@ -4,7 +4,9 @@
 #include <SDL_log.h>
 #include <cstring>
 
-using namespace Patterns;
+StateMachine::StateMachine(Actor *actor) : Component(actor), mCurrentState(nullptr)
+{
+}
 
 void StateMachine::RegisterState(State *state)
 {
@@ -34,7 +36,8 @@ void StateMachine::ChangeState(const std::string &name)
 		return;
 	}
 
-	mCurrentState->OnExit();
+	if (mCurrentState)
+		mCurrentState->OnExit();
 	mCurrentState = iter->second;
 	mCurrentState->OnEnter();
 }

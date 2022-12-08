@@ -21,10 +21,6 @@ public:
 	void AddSprite(SpriteComponent *sprite);
 	void RemoveSprite(SpriteComponent *sprite);
 	SDL_Texture *LoadTexture(const char *fileName);
-	void AddAsteroid(class Asteroid *ast);
-	void RemoveAsteroid(class Asteroid *ast);
-	void NotifyShipDeath();
-	inline std::vector<class Asteroid *> GetAsteroids() const { return mAsteroids; }
 
       private:
 	void ProcessInput();
@@ -45,10 +41,7 @@ public:
 	std::vector<SpriteComponent *> mSprites; // this list is sorted
 	std::vector<Actor*> mPendingActors;
 
-	bool mUpdatingActors;
-	float mShipRespawnCooldown;
-	bool mShipDead;
+	class AIActor *mAiActor;
 
-	class Ship *mShip;
-	std::vector<class Asteroid *> mAsteroids;
+	bool mUpdatingActors;
 };

@@ -1,13 +1,7 @@
 #include "State.h"
 #include "SDL2/SDL_log.h"
-using namespace Patterns;
+#include "StateMachine.h"
 
-void State::OnEnter()
+State::State(StateMachine *sm) : mOwner(sm)
 {
-	SDL_Log("STATEMACHINE::Entered State %s", GetName());
-}
-
-void State::OnExit()
-{
-	SDL_Log("STATEMACHINE::Exited State %s", GetName());
 }

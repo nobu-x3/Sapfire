@@ -2,8 +2,7 @@
 #include "BGSpriteComponent.h"
 #include "SDL2/SDL_image.h"
 #include "SpriteComponent.h"
-#include "game/Asteroid.h"
-#include "game/Ship.h"
+#include "game/AIActor.h"
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_log.h>
@@ -20,8 +19,6 @@ Game::Game()
 	mWindow = nullptr;
 	mIsRunning = true;
 	mTicksCount = 0;
-	mShipRespawnCooldown = 3.0f;
-	mShipDead = false;
 }
 
 Game::~Game()
@@ -34,27 +31,20 @@ Game::~Game()
 
 void Game::LoadData()
 {
-	for (int i = 0; i < 20; ++i)
-	{
-		AddAsteroid(new Asteroid(this));
-	}
-	// Create player's ship
-	mShip = new Ship(this);
-	mShip->SetPosition(Vector2(100.0f, 384.0f));
-	mShip->SetScale(1.5f);
-
+	mAiActor = new AIActor(this);
+	mAiActor->SetPosition(Vector2(512.f, 384.f));
 	// Create actor for the background (this doesn't need a subclass)
-	Actor *temp = new Actor(this);
-	temp->SetPosition(Vector2(512.0f, 384.0f));
+	Actor *bgActor = new Actor(this);
+	bgActor->SetPosition(Vector2(512.0f, 384.0f));
 	// Create the "far back" background
-	BGSpriteComponent *bg = new BGSpriteComponent(temp);
+	BGSpriteComponent *bg = new BGSpriteComponent(bgActor);
 	bg->SetScreenSize(Vector2(1024.0f, 768.0f));
 	std::vector<SDL_Texture *> bgtexs = {LoadTexture("../Assets/Farback01.png"),
 					     LoadTexture("../Assets/Farback02.png")};
 	bg->SetBGTextures(bgtexs);
 	bg->SetScrollSpeed(-100.0f);
 	// Create the closer background
-	bg = new BGSpriteComponent(temp, 50);
+	bg = new BGSpriteComponent(bgActor, 50);
 	bg->SetScreenSize(Vector2(1024.0f, 768.0f));
 	bgtexs = {LoadTexture("../Assets/Stars.png"), LoadTexture("../Assets/Stars.png")};
 	bg->SetBGTextures(bgtexs);
@@ -270,13 +260,6 @@ void Game::UpdateGame()
 	{
 		delete actor;
 	}
-
-	if (mShipDead)
-	{
-		mShipRespawnCooldown -= deltaTime;
-		if (mShipRespawnCooldown <= 0.0f)
-			RespawnShip();
-	}
 }
 
 void Game::GenerateOutput()
@@ -290,31 +273,4 @@ void Game::GenerateOutput()
 	}
 
 	SDL_RenderPresent(mRenderer); // swap buffers
-}
-
-void Game::AddAsteroid(Asteroid *ast)
-{
-	mAsteroids.emplace_back(ast);
-}
-
-void Game::RemoveAsteroid(Asteroid *ast)
-{
-	auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), ast);
-	if (iter != mAsteroids.end())
-		mAsteroids.erase(iter);
-}
-
-void Game::NotifyShipDeath()
-{
-	mShipRespawnCooldown = 3.0f;
-	mShipDead = true;
-}
-
-void Game::RespawnShip()
-{
-	mShipDead = false;
-	mShipRespawnCooldown = 3.0f;
-	mShip = new Ship(this);
-	mShip->SetPosition(Vector2(512.0f, 384.0f));
-	mShip->SetScale(1.5f);
 }
