@@ -1,8 +1,14 @@
 #include "AIActor.h"
-#include "IdleState.h"
 #include "engine/AnimSpriteComponent.h"
 #include "engine/Game.h"
+#include "engine/InputComponent.h"
 #include "engine/StateMachine.h"
+#include "game/IdleState.h"
+#include "game/MoveState.h"
+#include <SDL_keycode.h>
+#include <SDL_scancode.h>
+#include <cstdint>
+
 AIActor::AIActor(Game *game) : Actor(game)
 {
 	mStateMachine = new StateMachine(this);
@@ -24,15 +30,17 @@ AIActor::AIActor(Game *game) : Actor(game)
 	    game->LoadTexture("../Assets/Character15.png")};
 
 	AnimData idleData("idle", idleAnim, true);
-	AnimData walkingData("walk", walkingAnim, true);
+	AnimData walkingData("move", walkingAnim, true);
 	AnimData jumpData("jump", jumpAnim, false);
 
 	mAnimSpriteComponent->AddAnim(idleData);
 	mAnimSpriteComponent->AddAnim(walkingData);
 	mAnimSpriteComponent->AddAnim(jumpData);
 
-	IdleState *idleState = new IdleState(mStateMachine, mAnimSpriteComponent); // this might leak memory
-	mStateMachine->RegisterState(idleState);
+	mInputComponent = new InputComponent(this, 10);
+
+	IdleState *idleState = new IdleState("idle", mStateMachine, mAnimSpriteComponent); // this might leak memory
+	MoveState *moveState = new MoveState("move", mStateMachine, mAnimSpriteComponent, mInputComponent);
 
 	mStateMachine->ChangeState("idle");
 }

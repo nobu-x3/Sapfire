@@ -85,6 +85,11 @@
   "file": "/home/nobu/workspace/Engine/Project/src/game/IdleState.cpp"
 },
 {
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/game/MoveState.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/MoveState.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/game/MoveState.cpp"
+},
+{
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
   "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -O2 -g -DNDEBUG -std=gnu++17 -o CMakeFiles/csv.dir/basic_csv_parser.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/basic_csv_parser.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/basic_csv_parser.cpp"

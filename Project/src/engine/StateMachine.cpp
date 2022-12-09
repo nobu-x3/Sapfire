@@ -27,7 +27,7 @@ void StateMachine::Update(float deltaTime)
 	}
 }
 
-void StateMachine::ChangeState(const std::string &name)
+void StateMachine::ChangeState(const std::string &name, bool force)
 {
 	auto iter = mStateMap.find(name);
 	if (iter == mStateMap.end())
@@ -36,6 +36,8 @@ void StateMachine::ChangeState(const std::string &name)
 		return;
 	}
 
+	if (mCurrentState == iter->second && !force)
+		return;
 	if (mCurrentState)
 		mCurrentState->OnExit();
 	mCurrentState = iter->second;
@@ -44,5 +46,5 @@ void StateMachine::ChangeState(const std::string &name)
 
 void StateMachine::ProcessInput(const uint8_t *keyState)
 {
-	Component::ProcessInput(keyState);
+	mCurrentState->ProcessInput(keyState);
 }

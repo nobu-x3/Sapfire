@@ -44,4 +44,5 @@ class AnimSpriteComponent : public SpriteComponent
 	int mOriginAnimIndex;
 	float mCurrentFrame;
 	float mAnimFps;
+	int direction;
 };

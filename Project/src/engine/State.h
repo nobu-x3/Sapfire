@@ -1,12 +1,18 @@
+#pragma once
+#include <cstdint>
+
 class State
 {
 	public:
-	State(class StateMachine *owner);
-	virtual void Update(float deltaTime) = 0;
-	virtual void OnEnter() = 0;
-	virtual void OnExit() = 0;
-	virtual const char *GetName() const = 0;
+	State(const char *name, class StateMachine *owner, class AnimSpriteComponent *animSpriteComp);
+	inline virtual void Update(float deltaTime) {}
+	inline virtual void ProcessInput(const uint8_t *keyState) {}
+	virtual void OnEnter();
+	virtual void OnExit();
+	inline const char *GetName() const { return mName; }
 
 	protected:
 	class StateMachine *mOwner;
+	class AnimSpriteComponent *mAnimSpriteComponent;
+	const char *mName;
 };

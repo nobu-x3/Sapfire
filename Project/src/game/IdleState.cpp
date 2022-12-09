@@ -1,19 +1,11 @@
 #include "IdleState.h"
-#include "engine/AnimSpriteComponent.h"
 #include "engine/StateMachine.h"
-IdleState::IdleState(StateMachine *sm, AnimSpriteComponent *sc) : State(sm), mAnimSpriteComp(sc)
-{
-}
+#include <SDL_scancode.h>
 
-void IdleState::OnEnter()
+void IdleState::ProcessInput(const uint8_t *keyState)
 {
-	mAnimSpriteComp->PlayAnimation(GetName());
-}
-
-void IdleState::Update(float deltaTime)
-{
-}
-
-void IdleState::OnExit()
-{
+	if (keyState[SDL_SCANCODE_A] || keyState[SDL_SCANCODE_D])
+	{
+		mOwner->ChangeState("move");
+	}
 }

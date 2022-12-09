@@ -4,13 +4,9 @@
 class IdleState : public State
 {
 	public:
-	IdleState(class StateMachine *sm, class AnimSpriteComponent *animComp);
-	void OnEnter() override;
-	void Update(float deltaTime) override;
-	void OnExit() override;
-
-	inline const char *GetName() const override { return "idle"; }
-
-	private:
-	class AnimSpriteComponent *mAnimSpriteComp;
+	IdleState(const char *name, class StateMachine *owner, class AnimSpriteComponent *animSpriteComp)
+	    : State(name, owner, animSpriteComp)
+	{
+	}
+	void ProcessInput(const uint8_t *keyState) override;
 };
