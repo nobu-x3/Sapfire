@@ -29,6 +29,7 @@ public:
 	void LoadData();
 	void UnloadData();
 	void RespawnShip();
+	void CreateSpriteVerts();
 
 	SDL_Window *mWindow;
 	/* SDL_Renderer *mRenderer; */
@@ -41,6 +42,8 @@ public:
 	std::vector<Actor*> mActors;
 	std::vector<SpriteComponent *> mSprites; // this list is sorted
 	std::vector<Actor*> mPendingActors;
+
+	class VertexArray *mSpriteVerts;
 
 	class AIActor *mAiActor;
 
