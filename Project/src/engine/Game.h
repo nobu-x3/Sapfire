@@ -31,7 +31,8 @@ public:
 	void RespawnShip();
 
 	SDL_Window *mWindow;
-	SDL_Renderer *mRenderer;
+	/* SDL_Renderer *mRenderer; */
+	SDL_GLContext mContext;
 
 	int mTicksCount;
 	bool mIsRunning;
