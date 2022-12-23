@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Actor.h"
 #include <SDL_render.h>
+#include <memory>
 #include <string>
 #include <unordered_map>
 class SDL_Window;
@@ -30,6 +31,7 @@ public:
 	void UnloadData();
 	void RespawnShip();
 	void CreateSpriteVerts();
+	bool LoadShaders();
 
 	SDL_Window *mWindow;
 	/* SDL_Renderer *mRenderer; */
@@ -43,7 +45,8 @@ public:
 	std::vector<SpriteComponent *> mSprites; // this list is sorted
 	std::vector<Actor*> mPendingActors;
 
-	class VertexArray *mSpriteVerts;
+	std::unique_ptr<class VertexArray> mSpriteVerts;
+	std::unique_ptr<class Shader> mSpriteShader;
 
 	class AIActor *mAiActor;
 

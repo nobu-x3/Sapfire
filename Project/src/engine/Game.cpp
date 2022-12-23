@@ -2,6 +2,7 @@
 #include "BGSpriteComponent.h"
 #include "GL/glew.h"
 #include "SDL2/SDL_image.h"
+#include "Shader.h"
 #include "SpriteComponent.h"
 #include "VertexArray.h"
 #include "game/AIActor.h"
@@ -52,6 +53,19 @@ void Game::LoadData()
 	bgtexs = {LoadTexture("../Assets/Stars.png"), LoadTexture("../Assets/Stars.png")};
 	bg->SetBGTextures(bgtexs);
 	bg->SetScrollSpeed(-200.0f);
+
+	Actor *testActor = new Actor(this);
+	SpriteComponent *spriteComp = new SpriteComponent(testActor);
+}
+
+bool Game::LoadShaders()
+{
+	mSpriteShader = std::make_unique<Shader>();
+	if (!mSpriteShader->Load("../Shaders/Basic.vert", "../Shaders/Basic.frag"))
+	{
+		return false;
+	}
+	return true;
 }
 
 void Game::CreateSpriteVerts()
@@ -65,7 +79,7 @@ void Game::CreateSpriteVerts()
 
 	unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
-	mSpriteVerts = new VertexArray(vertices, 4, indices, 6);
+	mSpriteVerts = std::make_unique<VertexArray>(vertices, 4, indices, 6);
 }
 void Game::UnloadData()
 {
@@ -93,6 +107,7 @@ bool Game::Initialize()
 		return false;
 	}
 
+	// Set profile to core
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 	// Set version
@@ -128,8 +143,7 @@ bool Game::Initialize()
 		return false;
 	}
 	glGetError(); // to clean benign error code
-
-	// Set profile to core
+	LoadShaders();
 
 	/* mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); */
 	/* if (!mRenderer) */
@@ -320,6 +334,11 @@ void Game::GenerateOutput()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	// TODO: draw scene
-	mSpriteVerts->SetActivate();
+	mSpriteShader->SetActive();
+	mSpriteVerts->SetActive();
+	for (auto sprite : mSprites)
+	{
+		sprite->Draw(*mSpriteShader);
+	}
 	SDL_GL_SwapWindow(mWindow);
 }

@@ -38,15 +38,15 @@ void BGSpriteComponent::Update(float deltaTime)
 	}
 }
 
-void BGSpriteComponent::Draw(SDL_Renderer *renderer)
-{
-	for (auto &bg : mBGTextures)
-	{
-		SDL_Rect rect;
-		rect.w = static_cast<int>(mScreenSize.x);
-		rect.h = static_cast<int>(mScreenSize.y);
-		rect.x = static_cast<int>(mOwner->GetPosition().x - rect.w / 2.f + bg.mOffset.x);
-		rect.y = static_cast<int>(mOwner->GetPosition().y - rect.h / 2.f + bg.mOffset.y);
-		SDL_RenderCopy(renderer, bg.mTexture, nullptr, &rect);
-	}
-}
+/* void BGSpriteComponent::Draw(SDL_Renderer *renderer) */
+/* { */
+/* 	for (auto &bg : mBGTextures) */
+/* 	{ */
+/* 		SDL_Rect rect; */
+/* 		rect.w = static_cast<int>(mScreenSize.x); */
+/* 		rect.h = static_cast<int>(mScreenSize.y); */
+/* 		rect.x = static_cast<int>(mOwner->GetPosition().x - rect.w / 2.f + bg.mOffset.x); */
+/* 		rect.y = static_cast<int>(mOwner->GetPosition().y - rect.h / 2.f + bg.mOffset.y); */
+/* 		SDL_RenderCopy(renderer, bg.mTexture, nullptr, &rect); */
+/* 	} */
+/* } */

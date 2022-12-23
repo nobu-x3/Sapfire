@@ -56,6 +56,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/engine/Shader.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Shader.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/Shader.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/engine/SpriteComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/SpriteComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/SpriteComponent.cpp"
 },
@@ -73,6 +78,11 @@
   "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/engine/TileMapComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/engine/VertexArray.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",

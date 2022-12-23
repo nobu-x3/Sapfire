@@ -6,7 +6,7 @@ class VertexArray
 	VertexArray(const float *verts, unsigned int numVerts, const unsigned int *indices, unsigned int numIndices);
 	~VertexArray();
 
-	void SetActivate();
+	void SetActive();
 	inline unsigned int GetNumIndices() const { return mNumIndices; }
 	inline unsigned int GetNumVerts() const { return mNumVerts; }
 

@@ -8,7 +8,7 @@ class BGSpriteComponent : public SpriteComponent
 	BGSpriteComponent(class Actor *owner, int drawOrder = 10);
 	~BGSpriteComponent() = default;
 	void Update(float deltaTime) override;
-	void Draw(SDL_Renderer *renderer) override;
+	/* void Draw(SDL_Renderer *renderer) override; */
 	void SetBGTextures(const std::vector<SDL_Texture *> &bgTextures);
 	inline Vector2 GetScreenSize() const { return mScreenSize; }
 	inline void SetScreenSize(Vector2 size) { mScreenSize = size; }
