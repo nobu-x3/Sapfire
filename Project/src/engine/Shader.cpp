@@ -37,6 +37,31 @@ void Shader::SetActive()
 	glUseProgram(mShaderProgram);
 }
 
+void Shader::SetMatrixUniform(const char *name, const Matrix4 &matrix)
+{
+
+	// Find the uniform by this name
+	GLuint loc = glGetUniformLocation(mShaderProgram, name);
+	// Send the matrix data to the uniform
+	glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr());
+	/* // TODO: implement via uniform buffer objects (UBOs) */
+	/* auto iter = mNameIdMap.find(name); */
+	/* if (iter != mNameIdMap.end()) */
+	/* { */
+	/* 	glUniformMatrix4fv(iter->second,	  // Uniform ID */
+	/* 			   1,			  // Number of matrices */
+	/* 			   GL_TRUE,		  // TRUE if row vectors */
+	/* 			   matrix.GetAsFloatPtr() // Pointer to matrix data */
+	/* 	); */
+	/* } */
+	/* else */
+	/* { */
+	/* 	GLuint loc = glGetUniformLocation(mShaderProgram, name); */
+	/* 	mNameIdMap.emplace(name, loc); */
+	/* 	glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr()); */
+	/* } */
+}
+
 bool Shader::CompileShader(const std::string &filePath, GLenum shaderType, GLuint &outShader)
 {
 	std::ifstream shaderFile(filePath);

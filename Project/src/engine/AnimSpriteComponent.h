@@ -1,18 +1,19 @@
 #pragma once
 
 #include "SpriteComponent.h"
+#include "engine/Texture.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
 struct AnimData
 {
 	std::string AnimName;
-	std::vector<SDL_Texture *> AnimTextures;
+	std::vector<Texture *> AnimTextures;
 	bool Looping;
 
 	AnimData() : AnimName(""), Looping(false) {}
 
-	AnimData(std::string name, std::vector<SDL_Texture *> texts, bool looping)
+	AnimData(std::string name, std::vector<Texture *> texts, bool looping)
 	    : AnimName(name), AnimTextures(texts), Looping(looping)
 	{
 	}

@@ -21,9 +21,9 @@ public:
 	void RemoveActor(Actor *actor);
 	void AddSprite(SpriteComponent *sprite);
 	void RemoveSprite(SpriteComponent *sprite);
-	SDL_Texture *LoadTexture(const char *fileName);
+	class Texture *LoadTexture(const char *fileName);
 
-      private:
+	private:
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
@@ -40,7 +40,7 @@ public:
 	int mTicksCount;
 	bool mIsRunning;
 	// Map of textures loaded
-	std::unordered_map<std::string, SDL_Texture *> mTextures;
+	std::unordered_map<std::string, class Texture *> mTextures;
 	std::vector<Actor*> mActors;
 	std::vector<SpriteComponent *> mSprites; // this list is sorted
 	std::vector<Actor*> mPendingActors;

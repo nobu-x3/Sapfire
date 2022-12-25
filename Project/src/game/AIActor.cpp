@@ -3,6 +3,7 @@
 #include "engine/Game.h"
 #include "engine/InputComponent.h"
 #include "engine/StateMachine.h"
+#include "engine/Texture.h"
 #include "game/IdleState.h"
 #include "game/MoveState.h"
 #include <SDL_keycode.h>
@@ -13,8 +14,8 @@ AIActor::AIActor(Game *game) : Actor(game)
 {
 	mStateMachine = new StateMachine(this);
 	mAnimSpriteComponent = new AnimSpriteComponent(this);
-	std::vector<SDL_Texture *> idleAnim = {game->LoadTexture("../Assets/Character05.png")};
-	std::vector<SDL_Texture *> walkingAnim = {
+	std::vector<Texture *> idleAnim = {game->LoadTexture("../Assets/Character05.png")};
+	std::vector<Texture *> walkingAnim = {
 	    game->LoadTexture("../Assets/Character01.png"), game->LoadTexture("../Assets/Character02.png"),
 	    game->LoadTexture("../Assets/Character03.png"), game->LoadTexture("../Assets/Character04.png"),
 	    game->LoadTexture("../Assets/Character05.png"), game->LoadTexture("../Assets/Character06.png"),
@@ -22,7 +23,7 @@ AIActor::AIActor(Game *game) : Actor(game)
 	    game->LoadTexture("../Assets/Character09.png"),
 	};
 
-	std::vector<SDL_Texture *> jumpAnim = {
+	std::vector<Texture *> jumpAnim = {
 	    game->LoadTexture("../Assets/Character07.png"), game->LoadTexture("../Assets/Character08.png"),
 	    game->LoadTexture("../Assets/Character09.png"), game->LoadTexture("../Assets/Character10.png"),
 	    game->LoadTexture("../Assets/Character11.png"), game->LoadTexture("../Assets/Character12.png"),

@@ -1,6 +1,8 @@
 #pragma once
 #include "GL/glew.h"
+#include "engine/Math.h"
 #include <string>
+#include <unordered_map>
 
 class Shader
 {
@@ -10,6 +12,8 @@ class Shader
 	// tries to load v/f shaders with speicifed names
 	bool Load(const std::string &vertName, const std::string &fragName);
 	void Unload();
+
+	void SetMatrixUniform(const char *name, const Matrix4 &matrix);
 	// sets the active shader to this
 	void SetActive();
 
@@ -23,4 +27,5 @@ class Shader
 	GLuint mVertexShader;
 	GLuint mFragShader;
 	GLuint mShaderProgram;
+	std::unordered_map<const char *, GLuint> mNameIdMap;
 };

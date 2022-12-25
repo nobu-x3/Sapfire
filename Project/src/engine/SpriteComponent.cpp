@@ -4,9 +4,9 @@
 #include "GL/glew.h"
 #include "Game.h"
 #include "Math.h"
-#include "SDL2/SDL_image.h"
 #include "Shader.h"
-#include <SDL_render.h>
+#include "Texture.h"
+#include <SDL_log.h>
 
 SpriteComponent::SpriteComponent(Actor *owner, int drawOrder)
     : Component(owner), mTexture(nullptr), mDrawOrder(drawOrder), mTexWidth(0), mTexHeight(0)
@@ -14,18 +14,30 @@ SpriteComponent::SpriteComponent(Actor *owner, int drawOrder)
 	owner->GetGame()->AddSprite(this);
 }
 
+void SpriteComponent::SetTexture(Texture *texture)
+{
+	mTexture = texture;
+	mTexWidth = texture->GetWidth();
+	mTexHeight = texture->GetHeight();
+}
+
 SpriteComponent::~SpriteComponent()
 {
 	mOwner->GetGame()->RemoveSprite(this);
 }
 
-void SpriteComponent::SetTexture(SDL_Texture *texture)
-{
-	mTexture = texture;
-	SDL_QueryTexture(texture, nullptr, nullptr, &mTexWidth, &mTexHeight);
-}
-
 void SpriteComponent::Draw(Shader &shader)
 {
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+	if (mTexture)
+	{
+		// scale quad by width & height of texture
+		Matrix4 scaleMat = Matrix4::CreateScale(static_cast<float>(mTexWidth), static_cast<float>(mTexHeight),
+							1.0f); // TODO: optimize
+		Matrix4 world = scaleMat * mOwner->GetWorldTransform();
+		shader.SetMatrixUniform("uWorldTransform", world);
+		SDL_Log("DRAW:: %f, %f, %f", world.GetTranslation().x, world.GetTranslation().y,
+			world.GetTranslation().z);
+		mTexture->SetActive();
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+	}
 }

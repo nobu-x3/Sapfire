@@ -4,6 +4,7 @@
 #include "SDL2/SDL_image.h"
 #include "Shader.h"
 #include "SpriteComponent.h"
+#include "Texture.h"
 #include "VertexArray.h"
 #include "game/AIActor.h"
 #include <SDL.h>
@@ -15,8 +16,6 @@
 #include <SDL_video.h>
 #include <algorithm>
 #include <iostream>
-const int thickness = 15;
-const int paddleH = 150;
 
 Game::Game()
 {
@@ -35,36 +34,27 @@ Game::~Game()
 
 void Game::LoadData()
 {
-	mAiActor = new AIActor(this);
-	mAiActor->SetPosition(Vector2(512.f, 384.f));
-	// Create actor for the background (this doesn't need a subclass)
-	Actor *bgActor = new Actor(this);
-	bgActor->SetPosition(Vector2(512.0f, 384.0f));
-	// Create the "far back" background
-	BGSpriteComponent *bg = new BGSpriteComponent(bgActor);
-	bg->SetScreenSize(Vector2(1024.0f, 768.0f));
-	std::vector<SDL_Texture *> bgtexs = {LoadTexture("../Assets/Farback01.png"),
-					     LoadTexture("../Assets/Farback02.png")};
-	bg->SetBGTextures(bgtexs);
-	bg->SetScrollSpeed(-100.0f);
-	// Create the closer background
-	bg = new BGSpriteComponent(bgActor, 50);
-	bg->SetScreenSize(Vector2(1024.0f, 768.0f));
-	bgtexs = {LoadTexture("../Assets/Stars.png"), LoadTexture("../Assets/Stars.png")};
-	bg->SetBGTextures(bgtexs);
-	bg->SetScrollSpeed(-200.0f);
+	/* std::vector<SDL_Texture *> bgtexs = {LoadTexture("../Assets/Farback01.png"), */
+	/* 				     LoadTexture("../Assets/Farback02.png")}; */
 
 	Actor *testActor = new Actor(this);
 	SpriteComponent *spriteComp = new SpriteComponent(testActor);
+	auto texture = LoadTexture("../Assets/Asteroid.png");
+	spriteComp->SetTexture(texture);
+	testActor->SetPosition(Vector2(512.f, 384.f));
+	SDL_Log("%d x %d, scale - %f, pos = %f %f", spriteComp->GetTextureWidth(), spriteComp->GetTextureHeight(),
+		testActor->GetScale(), testActor->GetPosition().x, testActor->GetPosition().y);
 }
 
 bool Game::LoadShaders()
 {
 	mSpriteShader = std::make_unique<Shader>();
-	if (!mSpriteShader->Load("../Shaders/Basic.vert", "../Shaders/Basic.frag"))
+	if (!mSpriteShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag"))
 	{
 		return false;
 	}
+	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
+	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
 	return true;
 }
 
@@ -93,7 +83,8 @@ void Game::UnloadData()
 	// Destroy textures
 	for (auto i : mTextures)
 	{
-		SDL_DestroyTexture(i.second);
+		i.second->Unload();
+		delete i.second;
 	}
 	mTextures.clear();
 }
@@ -143,62 +134,39 @@ bool Game::Initialize()
 		return false;
 	}
 	glGetError(); // to clean benign error code
-	LoadShaders();
-
-	/* mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); */
-	/* if (!mRenderer) */
-	/* { */
-	/* 	SDL_Log("Unable to initialize renderer: %s", SDL_GetError()); */
-	/* 	return false; */
-	/* } */
-	if(IMG_Init(IMG_INIT_PNG) == 0)
+	if (!LoadShaders())
 	{
-		SDL_Log("Unable to initalize SDL_Image: %s", SDL_GetError());
+		SDL_Log("Failed to load shaders.");
+		return false;
 	}
 
-	/*	SDL_Texture *texture = LoadTexture("../Assets/Character01.png");
-		Actor *testActor = new Actor(this);
-		testActor->SetPosition(Vector2(512.f, 384.f));
-		SpriteComponent *testSpriteComp = new SpriteComponent(testActor, 1);
-		testSpriteComp->SetTexture(texture);
-
-		testActor->AddComponent(testSpriteComp);*/ // THIS LEAKS MEMORY
 	CreateSpriteVerts();
 	LoadData();
 	mTicksCount = SDL_GetTicks();
 	return true;
 }
 
-SDL_Texture *Game::LoadTexture(const char *fileName)
+Texture *Game::LoadTexture(const char *fileName)
 {
-	SDL_Texture *tex = nullptr;
-	/* // Is the texture already in the map? */
-	/* auto iter = mTextures.find(fileName); */
-	/* if (iter != mTextures.end()) */
-	/* { */
-	/* 	tex = iter->second; */
-	/* } */
-	/* else */
-	/* { */
-	/* 	// Load from file */
-	/* 	SDL_Surface *surf = IMG_Load(fileName); */
-	/* 	if (!surf) */
-	/* 	{ */
-	/* 		SDL_Log("Failed to load texture file %s", fileName); */
-	/* 		return nullptr; */
-	/* 	} */
-
-	/* 	// Create texture from surface */
-	/* 	tex = SDL_CreateTextureFromSurface(mRenderer, surf); */
-	/* 	SDL_FreeSurface(surf); */
-	/* 	if (!tex) */
-	/* 	{ */
-	/* 		SDL_Log("Failed to convert surface to texture for %s", fileName); */
-	/* 		return nullptr; */
-	/* 	} */
-
-	/* 	mTextures.emplace(fileName, tex); */
-	/* } */
+	Texture *tex = nullptr;
+	// Is the texture already in the map?
+	auto iter = mTextures.find(fileName);
+	if (iter != mTextures.end())
+	{
+		tex = iter->second;
+	}
+	else
+	{
+		// Load from file
+		tex = new Texture();
+		if (tex->Load(fileName))
+			mTextures.emplace(fileName, tex);
+		else
+		{
+			delete tex;
+			tex = nullptr;
+		}
+	}
 	return tex;
 }
 
@@ -215,10 +183,9 @@ void Game::Update()
 void Game::Shutdown()
 {
 	UnloadData();
-	IMG_Quit();
+	mSpriteShader->Unload();
 	SDL_GL_DeleteContext(mContext);
 	SDL_DestroyWindow(mWindow);
-	/* SDL_DestroyRenderer(mRenderer); */
 	SDL_Quit();
 }
 void Game::AddActor(Actor* actor)
@@ -308,6 +275,7 @@ void Game::UpdateGame()
 
 	for(auto pending : mPendingActors)
 	{
+		pending->ComputeWorldTransform();
 		mActors.emplace_back(pending);
 	}
 	mPendingActors.clear();
@@ -327,8 +295,8 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
-	// set color to gray
-	glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
+	// set color to black
+	glClearColor(0.f, 0.f, 0.f, 1.0f);
 
 	// clear color buffer
 	glClear(GL_COLOR_BUFFER_BIT);

@@ -1,5 +1,6 @@
 #include "BGSpriteComponent.h"
 #include "SpriteComponent.h"
+#include "engine/Texture.h"
 #include <SDL_rect.h>
 #include <SDL_render.h>
 
@@ -8,7 +9,7 @@ BGSpriteComponent::BGSpriteComponent(Actor *owner, int drawOrder)
 {
 }
 
-void BGSpriteComponent::SetBGTextures(const std::vector<SDL_Texture *> &bgTextures)
+void BGSpriteComponent::SetBGTextures(const std::vector<Texture *> &bgTextures)
 {
 	int count = 0;
 	for (auto tex : bgTextures)
