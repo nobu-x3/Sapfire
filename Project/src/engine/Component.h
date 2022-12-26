@@ -12,8 +12,9 @@ public:
   inline int GetUpdateOrder() const { return mUpdateOrder; }
   inline virtual void ProcessInput(const uint8_t *keyState) {}
   inline Actor *GetOwner() const { return mOwner; }
+  inline virtual void OnWorldTransformUpdated() {}
 
-protected:
+  protected:
   Actor *mOwner;
   int mUpdateOrder;
 

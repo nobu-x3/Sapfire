@@ -1,3 +1,4 @@
+#pragma once
 #include "engine/Actor.h"
 
 class Asteroid : public Actor

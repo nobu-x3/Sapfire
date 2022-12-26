@@ -12,8 +12,9 @@ class Texture
 	inline int GetHeight() const { return mHeight; }
 
 	private:
-	// OpenGL id of the Texture
+	// OpenGL id
 	unsigned int mTextureID;
+
 	int mWidth;
 	int mHeight;
 };

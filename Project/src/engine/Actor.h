@@ -29,25 +29,27 @@ class Actor
   inline ActorState GetState() const { return mState; }
   inline void SetState(ActorState state) { mState = state; }
   inline Game *GetGame() const { return mGame; }
-  inline Vector2 GetPosition() const { return mPosition; }
+  inline const Vector2 &GetPosition() const { return mPosition; }
   inline void SetPosition(Vector2 pos)
   {
 	  mPosition = pos;
-	  mShouldRecalcWorldTransform = true;
+	  mRecalculateWorldTransform = true;
   }
   inline float GetRotation() const { return mRotation; }
   inline void SetRotation(float rotation)
   {
 	  mRotation = rotation;
-	  mShouldRecalcWorldTransform = true;
+	  mRecalculateWorldTransform = true;
   }
   inline void SetScale(float scale)
   {
 	  mScale = scale;
-	  mShouldRecalcWorldTransform = true;
+	  mRecalculateWorldTransform = true;
   }
   inline float GetScale() const { return mScale; }
-  inline Vector2 GetForwardVector() const { return Vector2(Math::Cos(mRotation), -Math::Sin(mRotation)); }
+  inline Vector2 GetForwardVector() const { return Vector2(Math::Cos(mRotation), Math::Sin(mRotation)); }
+  void CalculateWorldTransform();
+  inline const Matrix4 &GetWorldTransform() const { return mWorldTransform; }
 
   private:
   ActorState mState;
@@ -56,6 +58,7 @@ class Actor
   float mRotation;
   std::vector<class Component *> mComponents;
   Matrix4 mWorldTransform;
-  bool mShouldRecalcWorldTransform;
   Game *mGame;
+  bool mRecalculateWorldTransform;
+
 };

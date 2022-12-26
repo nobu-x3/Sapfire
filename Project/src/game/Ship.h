@@ -9,7 +9,7 @@ class Ship : public Actor
 	void UpdateActor(float deltaTime) override;
 
 	private:
-	class AnimSpriteComponent *mAnimComponent;
+	class SpriteComponent *mSpriteComp;
 	class InputComponent *mInputComponent;
 	class CircleColliderComponent *mCollisionComponent;
 	float mLaserCooldown;

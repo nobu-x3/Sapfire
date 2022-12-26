@@ -1,3 +1,4 @@
+#pragma once
 #include "SpriteComponent.h"
 #include <SDL_rect.h>
 #include <string>

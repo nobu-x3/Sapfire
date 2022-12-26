@@ -6,8 +6,8 @@
 #include "SpriteComponent.h"
 #include "Texture.h"
 #include "VertexArray.h"
+#include "engine/Texture.h"
 #include "game/Asteroid.h"
-#include "game/Laser.h"
 #include "game/Ship.h"
 #include <SDL.h>
 #include <SDL_error.h>
@@ -38,33 +38,28 @@ Game::~Game()
 
 void Game::LoadData()
 {
-	/* Actor *testActor = new Actor(this); */
-	/* SpriteComponent *spriteComp = new SpriteComponent(testActor); */
-	/* auto texture = LoadTexture("../Assets/Asteroid.png"); */
-	/* spriteComp->SetTexture(texture); */
-	/* testActor->SetPosition(Vector2(512.f, 384.f)); */
-	/* SDL_Log("%d x %d, scale - %f, pos = %f %f", spriteComp->GetTextureWidth(), spriteComp->GetTextureHeight(), */
-	/* 	testActor->GetScale(), testActor->GetPosition().x, testActor->GetPosition().y); */
-	for (int i = 0; i < 20; ++i)
-	{
-		AddAsteroid(new Asteroid(this));
-	}
 	// Create player's ship
 	mShip = new Ship(this);
-	mShip->SetPosition(Vector2(100.0f, 384.0f));
-	mShip->SetScale(1.5f);
+	mShip->SetRotation(Math::PiOver2);
+
+	// Create asteroids
+	const int numAsteroids = 20;
+	for (int i = 0; i < numAsteroids; i++)
+	{
+		new Asteroid(this);
+	}
 }
 
 bool Game::LoadShaders()
 {
-	/* mSpriteShader = std::make_unique<Shader>(); */
 	mSpriteShader = new Shader();
 	if (!mSpriteShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag"))
 	{
 		return false;
 	}
+	mSpriteShader->SetActive();
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
-	mSpriteShader->SetMatrixUniform("uViewProjection", viewProj);
+	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
 	return true;
 }
 
@@ -79,7 +74,6 @@ void Game::CreateSpriteVerts()
 
 	unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
-	/* mSpriteVerts = std::make_unique<VertexArray>(vertices, 4, indices, 6); */
 	mSpriteVerts = new VertexArray(vertices, 4, indices, 6);
 }
 void Game::UnloadData()
@@ -97,6 +91,7 @@ void Game::UnloadData()
 		i.second->Unload();
 		delete i.second;
 	}
+	delete mSpriteVerts;
 	mTextures.clear();
 }
 
@@ -147,6 +142,18 @@ bool Game::Initialize()
 	glGetError(); // to clean benign error code
 	if (!LoadShaders())
 	{
+		SDL_Log("Failed to load shaders, exiting");
+		return false;
+	}
+
+	/* mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); */
+	/* if (!mRenderer) */
+	/* { */
+	/* 	SDL_Log("Unable to initialize renderer: %s", SDL_GetError()); */
+	/* 	return false; */
+	/* } */
+	if(IMG_Init(IMG_INIT_PNG) == 0)
+	{
 		SDL_Log("Failed to load shaders.");
 		return false;
 	}
@@ -160,7 +167,6 @@ bool Game::Initialize()
 Texture *Game::LoadTexture(const char *fileName)
 {
 	Texture *tex = nullptr;
-	// Is the texture already in the map?
 	auto iter = mTextures.find(fileName);
 	if (iter != mTextures.end())
 	{
@@ -168,10 +174,11 @@ Texture *Game::LoadTexture(const char *fileName)
 	}
 	else
 	{
-		// Load from file
 		tex = new Texture();
 		if (tex->Load(fileName))
+		{
 			mTextures.emplace(fileName, tex);
+		}
 		else
 		{
 			delete tex;
@@ -286,7 +293,7 @@ void Game::UpdateGame()
 
 	for(auto pending : mPendingActors)
 	{
-		pending->ComputeWorldTransform();
+		pending->CalculateWorldTransform();
 		mActors.emplace_back(pending);
 	}
 	mPendingActors.clear();
@@ -319,7 +326,6 @@ void Game::RemoveAsteroid(Asteroid *ast)
 	if (iter != mAsteroids.end())
 		mAsteroids.erase(iter);
 }
-
 void Game::NotifyShipDeath()
 {
 	mShipRespawnCooldown = 3.0f;
@@ -333,6 +339,11 @@ void Game::RespawnShip()
 	mShip = new Ship(this);
 	mShip->SetPosition(Vector2(512.0f, 384.0f));
 	mShip->SetScale(1.5f);
+}
+
+std::vector<Asteroid *> Game::GetAsteroids() const
+{
+	return mAsteroids;
 }
 void Game::GenerateOutput()
 {

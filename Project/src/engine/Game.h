@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Actor.h"
+#include "game/Asteroid.h"
 #include <SDL_render.h>
 #include <memory>
 #include <string>
@@ -25,7 +26,7 @@ public:
 	void AddAsteroid(class Asteroid *ast);
 	void RemoveAsteroid(class Asteroid *ast);
 	void NotifyShipDeath();
-	inline std::vector<class Asteroid *> GetAsteroids() const { return mAsteroids; }
+	std::vector<class Asteroid *> GetAsteroids() const;
 
 	private:
 	void ProcessInput();
@@ -49,15 +50,14 @@ public:
 	std::vector<SpriteComponent *> mSprites; // this list is sorted
 	std::vector<Actor*> mPendingActors;
 
-	/* std::unique_ptr<class VertexArray> mSpriteVerts; */
-	/* std::unique_ptr<class Shader> mSpriteShader; */
 	class VertexArray *mSpriteVerts;
 	class Shader *mSpriteShader;
+
+	bool mUpdatingActors;
 
 	float mShipRespawnCooldown;
 	bool mShipDead;
 
 	class Ship *mShip;
 	std::vector<class Asteroid *> mAsteroids;
-	bool mUpdatingActors;
 };
