@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Actor.h"
+#include "game/Asteroid.h"
 #include <SDL_render.h>
 #include <memory>
 #include <string>
@@ -21,9 +22,13 @@ public:
 	void RemoveActor(Actor *actor);
 	void AddSprite(SpriteComponent *sprite);
 	void RemoveSprite(SpriteComponent *sprite);
-	SDL_Texture *LoadTexture(const char *fileName);
+	class Texture *LoadTexture(const char *fileName);
+	void AddAsteroid(class Asteroid *ast);
+	void RemoveAsteroid(class Asteroid *ast);
+	void NotifyShipDeath();
+	std::vector<class Asteroid *> GetAsteroids() const;
 
-      private:
+	private:
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
@@ -40,15 +45,21 @@ public:
 	int mTicksCount;
 	bool mIsRunning;
 	// Map of textures loaded
-	std::unordered_map<std::string, SDL_Texture *> mTextures;
+	std::unordered_map<std::string, class Texture *> mTextures;
 	std::vector<Actor*> mActors;
 	std::vector<SpriteComponent *> mSprites; // this list is sorted
 	std::vector<Actor*> mPendingActors;
 
-	std::unique_ptr<class VertexArray> mSpriteVerts;
-	std::unique_ptr<class Shader> mSpriteShader;
+	class VertexArray *mSpriteVerts;
+	class Shader *mSpriteShader;
+
+	bool mUpdatingActors;
 
 	class AIActor *mAiActor;
 
-	bool mUpdatingActors;
+	float mShipRespawnCooldown;
+	bool mShipDead;
+
+	class Ship *mShip;
+	std::vector<class Asteroid *> mAsteroids;
 };

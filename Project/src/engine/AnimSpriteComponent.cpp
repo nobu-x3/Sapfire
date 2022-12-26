@@ -27,27 +27,27 @@ void AnimSpriteComponent::Update(float deltaTime)
 
 void AnimSpriteComponent::PlayAnimation(int index, float deltaTime)
 {
-	if (mAnimDatas[index].AnimTextures.size() > 0)
-	{
-		auto animData = mAnimDatas[index];
+	/* if (mAnimDatas[index].AnimTextures.size() > 0) */
+	/* { */
+	/* 	auto animData = mAnimDatas[index]; */
 
-		mCurrentFrame += mAnimFps * deltaTime;
+	/* 	mCurrentFrame += mAnimFps * deltaTime; */
 
-		// loop
-		if (animData.Looping)
-		{
+	/* 	// loop */
+	/* 	if (animData.Looping) */
+	/* 	{ */
 
-			while (mCurrentFrame >= animData.AnimTextures.size())
-				mCurrentFrame -= animData.AnimTextures.size();
-		}
-		else
-		{
-			if (mCurrentFrame >= animData.AnimTextures.size())
-				PlayAnimation(mOriginAnimIndex);
-		}
+	/* 		while (mCurrentFrame >= animData.AnimTextures.size()) */
+	/* 			mCurrentFrame -= animData.AnimTextures.size(); */
+	/* 	} */
+	/* 	else */
+	/* 	{ */
+	/* 		if (mCurrentFrame >= animData.AnimTextures.size()) */
+	/* 			PlayAnimation(mOriginAnimIndex); */
+	/* 	} */
 
-		SetTexture(animData.AnimTextures[static_cast<int>(mCurrentFrame)]);
-	}
+	/* 	SetTexture(animData.AnimTextures[static_cast<int>(mCurrentFrame)]); */
+	/* } */
 }
 
 void AnimSpriteComponent::PlayAnimation(int index)

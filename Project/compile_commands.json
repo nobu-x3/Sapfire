@@ -76,6 +76,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/engine/Texture.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Texture.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/Texture.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/engine/TileMapComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp"
 },
@@ -86,18 +91,18 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/game/AIActor.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/AIActor.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/game/AIActor.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/game/Asteroid.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Asteroid.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/game/Asteroid.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/game/IdleState.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/IdleState.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/game/IdleState.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/game/Laser.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Laser.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/game/Laser.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/game/MoveState.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/MoveState.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/game/MoveState.cpp"
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Pong.dir/src/game/Ship.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Ship.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/game/Ship.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
