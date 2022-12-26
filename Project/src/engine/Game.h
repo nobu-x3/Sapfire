@@ -57,6 +57,7 @@ public:
 
 	float mShipRespawnCooldown;
 	bool mShipDead;
+	float timer;
 
 	class Ship *mShip;
 	std::vector<class Asteroid *> mAsteroids;

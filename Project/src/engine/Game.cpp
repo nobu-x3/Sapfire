@@ -6,6 +6,7 @@
 #include "SpriteComponent.h"
 #include "Texture.h"
 #include "VertexArray.h"
+#include "engine/Math.h"
 #include "engine/Texture.h"
 #include "game/Asteroid.h"
 #include "game/Ship.h"
@@ -26,6 +27,7 @@ Game::Game()
 	mTicksCount = 0;
 	mShipRespawnCooldown = 3.0f;
 	mShipDead = false;
+	timer = 0;
 }
 
 Game::~Game()
@@ -278,6 +280,7 @@ void Game::UpdateGame()
 	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.f;
 	mTicksCount = SDL_GetTicks();
 
+	timer += deltaTime;
 	// clamp delta time to avoid big simulation jumps during debugging
 	if (deltaTime > 0.05f)
 	{
@@ -348,7 +351,9 @@ std::vector<Asteroid *> Game::GetAsteroids() const
 void Game::GenerateOutput()
 {
 	// set color to grey
-	glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
+	/* glClearColor(0.86f, 0.86f, 0.86f, 1.0f); */
+	// smoothly transition black to white
+	glClearColor(Math::Sin(timer), Math::Sin(timer), Math::Sin(timer), 1.0f);
 
 	// clear color buffer
 	glClear(GL_COLOR_BUFFER_BIT);
