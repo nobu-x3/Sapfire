@@ -347,12 +347,14 @@ std::vector<Asteroid *> Game::GetAsteroids() const
 }
 void Game::GenerateOutput()
 {
-	// set color to black
-	glClearColor(0.f, 0.f, 0.f, 1.0f);
+	// set color to grey
+	glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
 
 	// clear color buffer
 	glClear(GL_COLOR_BUFFER_BIT);
-
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA,	     // srcFactor is srcAlpha
+		    GL_ONE_MINUS_SRC_ALPHA); // destFact is 1 - srcAlpha
 	// TODO: draw scene
 	mSpriteShader->SetActive();
 	mSpriteVerts->SetActive();
