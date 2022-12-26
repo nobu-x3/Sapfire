@@ -52,7 +52,7 @@ void Game::LoadData()
 bool Game::LoadShaders()
 {
 	mSpriteShader = new Shader();
-	if (!mSpriteShader->Load("../Shaders/Transform.vert", "../Shaders/Basic.frag"))
+	if (!mSpriteShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag"))
 	{
 		return false;
 	}
