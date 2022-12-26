@@ -96,13 +96,28 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/game/Asteroid.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Asteroid.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/game/Asteroid.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/game/IdleState.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/IdleState.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/game/IdleState.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/game/Laser.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Laser.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/game/Laser.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/game/MoveState.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/MoveState.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/game/MoveState.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/game/Ship.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Ship.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/game/Ship.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",

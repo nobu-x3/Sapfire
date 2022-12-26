@@ -6,7 +6,9 @@
 #include "SpriteComponent.h"
 #include "Texture.h"
 #include "VertexArray.h"
-#include "game/AIActor.h"
+#include "game/Asteroid.h"
+#include "game/Laser.h"
+#include "game/Ship.h"
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_log.h>
@@ -22,6 +24,8 @@ Game::Game()
 	mWindow = nullptr;
 	mIsRunning = true;
 	mTicksCount = 0;
+	mShipRespawnCooldown = 3.0f;
+	mShipDead = false;
 }
 
 Game::~Game()
@@ -34,27 +38,33 @@ Game::~Game()
 
 void Game::LoadData()
 {
-	/* std::vector<SDL_Texture *> bgtexs = {LoadTexture("../Assets/Farback01.png"), */
-	/* 				     LoadTexture("../Assets/Farback02.png")}; */
-
-	Actor *testActor = new Actor(this);
-	SpriteComponent *spriteComp = new SpriteComponent(testActor);
-	auto texture = LoadTexture("../Assets/Asteroid.png");
-	spriteComp->SetTexture(texture);
-	testActor->SetPosition(Vector2(512.f, 384.f));
-	SDL_Log("%d x %d, scale - %f, pos = %f %f", spriteComp->GetTextureWidth(), spriteComp->GetTextureHeight(),
-		testActor->GetScale(), testActor->GetPosition().x, testActor->GetPosition().y);
+	/* Actor *testActor = new Actor(this); */
+	/* SpriteComponent *spriteComp = new SpriteComponent(testActor); */
+	/* auto texture = LoadTexture("../Assets/Asteroid.png"); */
+	/* spriteComp->SetTexture(texture); */
+	/* testActor->SetPosition(Vector2(512.f, 384.f)); */
+	/* SDL_Log("%d x %d, scale - %f, pos = %f %f", spriteComp->GetTextureWidth(), spriteComp->GetTextureHeight(), */
+	/* 	testActor->GetScale(), testActor->GetPosition().x, testActor->GetPosition().y); */
+	for (int i = 0; i < 20; ++i)
+	{
+		AddAsteroid(new Asteroid(this));
+	}
+	// Create player's ship
+	mShip = new Ship(this);
+	mShip->SetPosition(Vector2(100.0f, 384.0f));
+	mShip->SetScale(1.5f);
 }
 
 bool Game::LoadShaders()
 {
-	mSpriteShader = std::make_unique<Shader>();
+	/* mSpriteShader = std::make_unique<Shader>(); */
+	mSpriteShader = new Shader();
 	if (!mSpriteShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag"))
 	{
 		return false;
 	}
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
-	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
+	mSpriteShader->SetMatrixUniform("uViewProjection", viewProj);
 	return true;
 }
 
@@ -69,7 +79,8 @@ void Game::CreateSpriteVerts()
 
 	unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
-	mSpriteVerts = std::make_unique<VertexArray>(vertices, 4, indices, 6);
+	/* mSpriteVerts = std::make_unique<VertexArray>(vertices, 4, indices, 6); */
+	mSpriteVerts = new VertexArray(vertices, 4, indices, 6);
 }
 void Game::UnloadData()
 {
@@ -291,8 +302,38 @@ void Game::UpdateGame()
 	{
 		delete actor;
 	}
+	if (mShipDead)
+	{
+		mShipRespawnCooldown -= deltaTime;
+		if (mShipRespawnCooldown <= 0.0f)
+			RespawnShip();
+	}
+}
+void Game::AddAsteroid(Asteroid *ast)
+{
+	mAsteroids.emplace_back(ast);
+}
+void Game::RemoveAsteroid(Asteroid *ast)
+{
+	auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), ast);
+	if (iter != mAsteroids.end())
+		mAsteroids.erase(iter);
 }
 
+void Game::NotifyShipDeath()
+{
+	mShipRespawnCooldown = 3.0f;
+	mShipDead = true;
+}
+
+void Game::RespawnShip()
+{
+	mShipDead = false;
+	mShipRespawnCooldown = 3.0f;
+	mShip = new Ship(this);
+	mShip->SetPosition(Vector2(512.0f, 384.0f));
+	mShip->SetScale(1.5f);
+}
 void Game::GenerateOutput()
 {
 	// set color to black
@@ -306,7 +347,7 @@ void Game::GenerateOutput()
 	mSpriteVerts->SetActive();
 	for (auto sprite : mSprites)
 	{
-		sprite->Draw(*mSpriteShader);
+		sprite->Draw(mSpriteShader);
 	}
 	SDL_GL_SwapWindow(mWindow);
 }

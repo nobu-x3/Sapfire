@@ -6,7 +6,7 @@ class SpriteComponent : public Component
 	  SpriteComponent(class Actor *owner, int drawOrder = 100);
 	  ~SpriteComponent();
 	  void SetTexture(class Texture *texture);
-	  virtual void Draw(class Shader &shader);
+	  virtual void Draw(class Shader *shader);
 
 	  inline int GetDrawOrder() const { return mDrawOrder; }
 	  inline int GetTextureWidth() const { return mTexWidth; }

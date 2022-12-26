@@ -26,7 +26,7 @@ SpriteComponent::~SpriteComponent()
 	mOwner->GetGame()->RemoveSprite(this);
 }
 
-void SpriteComponent::Draw(Shader &shader)
+void SpriteComponent::Draw(Shader *shader)
 {
 	if (mTexture)
 	{
@@ -34,9 +34,9 @@ void SpriteComponent::Draw(Shader &shader)
 		Matrix4 scaleMat = Matrix4::CreateScale(static_cast<float>(mTexWidth), static_cast<float>(mTexHeight),
 							1.0f); // TODO: optimize
 		Matrix4 world = scaleMat * mOwner->GetWorldTransform();
-		shader.SetMatrixUniform("uWorldTransform", world);
-		SDL_Log("DRAW:: %f, %f, %f", world.GetTranslation().x, world.GetTranslation().y,
-			world.GetTranslation().z);
+		shader->SetMatrixUniform("uWorldTransform", world);
+		/* SDL_Log("DRAW:: %f, %f, %f", world.GetTranslation().x, world.GetTranslation().y, */
+		/* 	world.GetTranslation().z); */
 		mTexture->SetActive();
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 	}
