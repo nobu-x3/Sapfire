@@ -1,6 +1,7 @@
 #include "Asteroid.h"
 #include "engine/CircleColliderComponent.h"
 #include "engine/Game.h"
+#include "engine/Math.h"
 #include "engine/MovementComponent.h"
 #include "engine/Random.h"
 #include "engine/SpriteComponent.h"
@@ -8,7 +9,7 @@ Asteroid::Asteroid(Game *game) : Actor(game)
 {
 	Vector2 randPos = Random::GetVector(Vector2::Zero, Vector2(1024.f, 768.f));
 	SetPosition(randPos);
-	SetRotation(Random::GetFloatRange(0.f, Math::TwoPi));
+	SetRotation(Quaternion(Vector3::UnitZ, Random::GetFloatRange(0.f, Math::TwoPi)));
 	SpriteComponent *sc = new SpriteComponent(this);
 	sc->SetTexture(game->LoadTexture("../Assets/Asteroid.png"));
 	mMovementComp = new MovementComponent(this, 1.f);

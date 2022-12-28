@@ -19,15 +19,11 @@ void MovementComponent::Update(float deltaTime)
 
 	if (!Math::NearZero(mAngularSpeed))
 	{
-		float rot = mOwner->GetRotation();
-		rot += mAngularSpeed * deltaTime;
+		Quaternion rot = mOwner->GetRotation();
+		float angle = mAngularSpeed * deltaTime;
+		// for now rotate around up axis
+		Quaternion inc(Vector3::UnitZ, angle);
+		rot = Quaternion::Concatenate(rot, inc);
 		mOwner->SetRotation(rot);
 	}
-
-	/* if (!Math::NearZero(mForwardSpeed)) */
-	/* { */
-	/* 	Vector2 pos = mOwner->GetPosition(); */
-	/* 	pos += mOwner->GetForwardVector() * mForwardSpeed * deltaTime; */
-	/* 	mOwner->SetPosition(pos); */
-	/* } */
 }

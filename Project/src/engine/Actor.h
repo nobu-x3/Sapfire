@@ -35,8 +35,8 @@ class Actor
 	  mPosition = pos;
 	  mRecalculateWorldTransform = true;
   }
-  inline float GetRotation() const { return mRotation; }
-  inline void SetRotation(float rotation)
+  inline Quaternion GetRotation() const { return mRotation; }
+  inline void SetRotation(Quaternion rotation)
   {
 	  mRotation = rotation;
 	  mRecalculateWorldTransform = true;
@@ -47,7 +47,7 @@ class Actor
 	  mRecalculateWorldTransform = true;
   }
   inline float GetScale() const { return mScale; }
-  inline Vector2 GetForwardVector() const { return Vector2(Math::Cos(mRotation), Math::Sin(mRotation)); }
+  Vector3 GetForwardVector() const;
   void CalculateWorldTransform();
   inline const Matrix4 &GetWorldTransform() const { return mWorldTransform; }
 
@@ -55,7 +55,7 @@ class Actor
   ActorState mState;
   Vector2 mPosition;
   float mScale;
-  float mRotation;
+  Quaternion mRotation;
   std::vector<class Component *> mComponents;
   Matrix4 mWorldTransform;
   Game *mGame;

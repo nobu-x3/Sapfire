@@ -42,7 +42,6 @@ void Game::LoadData()
 {
 	// Create player's ship
 	mShip = new Ship(this);
-	mShip->SetRotation(Math::PiOver2);
 
 	// Create asteroids
 	const int numAsteroids = 20;
