@@ -4,6 +4,7 @@
 #include "engine/CircleColliderComponent.h"
 #include "engine/Game.h"
 #include "engine/InputComponent.h"
+#include "engine/Renderer.h"
 #include "engine/SpriteComponent.h"
 #include <SDL_scancode.h>
 #include <vector>
@@ -12,7 +13,7 @@ Ship::Ship(Game *game) : Actor(game)
 {
 	// Create an animated sprite component
 	mSpriteComp = new SpriteComponent(this);
-	mSpriteComp->SetTexture(game->LoadTexture("../Assets/Ship.png"));
+	mSpriteComp->SetTexture(game->GetRenderer()->LoadTexture("../Assets/Ship.png"));
 	mInputComponent = new InputComponent(this, 1.0f);
 	mInputComponent->SetMaxAngularSpeed(5.0f);
 	mInputComponent->SetMaxForwardSpeed(210.0f);

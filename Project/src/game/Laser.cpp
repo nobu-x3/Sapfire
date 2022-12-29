@@ -4,6 +4,7 @@
 #include "engine/CircleColliderComponent.h"
 #include "engine/Game.h"
 #include "engine/MovementComponent.h"
+#include "engine/Renderer.h"
 #include "engine/SpriteComponent.h"
 Laser::Laser(Game *game) : Actor(game)
 {
@@ -12,7 +13,7 @@ Laser::Laser(Game *game) : Actor(game)
 	mMovementComponent = new MovementComponent(this, 1.f);
 	/* mMovementComponent->SetForwardSpeed(850.0f); */
 	mSpriteComponent = new SpriteComponent(this);
-	mSpriteComponent->SetTexture(game->LoadTexture("../Assets/Laser.png"));
+	mSpriteComponent->SetTexture(game->GetRenderer()->LoadTexture("../Assets/Laser.png"));
 	mRemovalTimer = 1.0f;
 }
 

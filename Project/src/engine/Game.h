@@ -20,13 +20,11 @@ public:
 
 	void AddActor(Actor* actor);
 	void RemoveActor(Actor *actor);
-	void AddSprite(SpriteComponent *sprite);
-	void RemoveSprite(SpriteComponent *sprite);
-	class Texture *LoadTexture(const char *fileName);
 	void AddAsteroid(class Asteroid *ast);
 	void RemoveAsteroid(class Asteroid *ast);
 	void NotifyShipDeath();
 	std::vector<class Asteroid *> GetAsteroids() const;
+	inline class Renderer *GetRenderer() { return mRenderer; }
 
 	private:
 	void ProcessInput();
@@ -35,23 +33,14 @@ public:
 	void LoadData();
 	void UnloadData();
 	void RespawnShip();
-	void CreateSpriteVerts();
-	bool LoadShaders();
 
-	SDL_Window *mWindow;
-	/* SDL_Renderer *mRenderer; */
-	SDL_GLContext mContext;
 
 	int mTicksCount;
 	bool mIsRunning;
 	// Map of textures loaded
-	std::unordered_map<std::string, class Texture *> mTextures;
 	std::vector<Actor*> mActors;
-	std::vector<SpriteComponent *> mSprites; // this list is sorted
 	std::vector<Actor*> mPendingActors;
 
-	class VertexArray *mSpriteVerts;
-	class Shader *mSpriteShader;
 
 	bool mUpdatingActors;
 
@@ -60,5 +49,6 @@ public:
 	float timer;
 
 	class Ship *mShip;
+	class Renderer *mRenderer;
 	std::vector<class Asteroid *> mAsteroids;
 };

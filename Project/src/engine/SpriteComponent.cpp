@@ -5,6 +5,7 @@
 #include "Game.h"
 #include "Math.h"
 #include "Shader.h"
+#include "engine/Renderer.h"
 #include "engine/Texture.h"
 #include <SDL_render.h>
 
@@ -17,12 +18,12 @@
 SpriteComponent::SpriteComponent(Actor *owner, int drawOrder)
     : Component(owner), mTexture(nullptr), mDrawOrder(drawOrder), mTexWidth(0), mTexHeight(0)
 {
-	mOwner->GetGame()->AddSprite(this);
+	mOwner->GetGame()->GetRenderer()->AddSprite(this);
 }
 
 SpriteComponent::~SpriteComponent()
 {
-	mOwner->GetGame()->RemoveSprite(this);
+	mOwner->GetGame()->GetRenderer()->RemoveSprite(this);
 }
 
 void SpriteComponent::Draw(Shader *shader)
