@@ -46,11 +46,11 @@ bool Renderer::Initialize(float width, float height)
 
 	// OpenGL context
 	mContext = SDL_GL_CreateContext(mWindow);
-	Mesh *mesh = new Mesh();
-	if (mesh->Load("../Assets/Cube.sfmesh", this))
-	{
-		SDL_Log("Mesh loaded");
-	}
+	/* Mesh *mesh = new Mesh(); */
+	/* if (mesh->Load("../Assets/Cube.sfmesh", this)) */
+	/* { */
+	/* 	SDL_Log("Mesh loaded"); */
+	/* } */
 	// GLEW
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
