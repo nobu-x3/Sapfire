@@ -1,7 +1,6 @@
 ﻿#include "Game.h"
 #include "BGSpriteComponent.h"
 #include "GL/glew.h"
-#include "SDL2/SDL_image.h"
 #include "Shader.h"
 #include "SpriteComponent.h"
 #include "Texture.h"
@@ -144,18 +143,6 @@ bool Game::Initialize()
 	if (!LoadShaders())
 	{
 		SDL_Log("Failed to load shaders, exiting");
-		return false;
-	}
-
-	/* mRenderer = SDL_CreateRenderer(mWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC); */
-	/* if (!mRenderer) */
-	/* { */
-	/* 	SDL_Log("Unable to initialize renderer: %s", SDL_GetError()); */
-	/* 	return false; */
-	/* } */
-	if(IMG_Init(IMG_INIT_PNG) == 0)
-	{
-		SDL_Log("Failed to load shaders.");
 		return false;
 	}
 
