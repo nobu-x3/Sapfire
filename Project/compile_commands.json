@@ -46,6 +46,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/Mesh.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Mesh.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/Mesh.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/MovementComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/MovementComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/MovementComponent.cpp"
 },
@@ -53,6 +58,11 @@
   "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/Random.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Random.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Random.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/Renderer.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Renderer.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/Renderer.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
