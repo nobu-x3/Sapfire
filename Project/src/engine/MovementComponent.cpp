@@ -9,7 +9,7 @@ MovementComponent::MovementComponent(Actor *owner, float mass, int updateOrder)
 
 void MovementComponent::Update(float deltaTime)
 {
-	auto acceleration = mNetForce / mMass;
+	auto acceleration = mNetForce * (1 / mMass);
 
 	// Semi-implicit Euler Integration
 	mVelocity += acceleration * deltaTime;

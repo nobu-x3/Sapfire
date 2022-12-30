@@ -44,6 +44,7 @@ public:
 
 	bool mUpdatingActors;
 
+	// Game specific code
 	float mShipRespawnCooldown;
 	bool mShipDead;
 	float timer;
@@ -51,4 +52,5 @@ public:
 	class Ship *mShip;
 	class Renderer *mRenderer;
 	std::vector<class Asteroid *> mAsteroids;
+	class CameraActor *mCameraActor;
 };

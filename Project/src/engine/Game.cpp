@@ -1,5 +1,6 @@
 ﻿#include "Game.h"
 #include "BGSpriteComponent.h"
+#include "CameraActor.h"
 #include "GL/glew.h"
 #include "Mesh.h"
 #include "Shader.h"
@@ -41,16 +42,6 @@ Game::~Game()
 
 void Game::LoadData()
 {
-	// Create player's ship
-	mShip = new Ship(this);
-
-	// Create asteroids
-	const int numAsteroids = 20;
-	for (int i = 0; i < numAsteroids; i++)
-	{
-		new Asteroid(this);
-	}
-
 	Actor *a = new Actor(this);
 	a->SetPosition(Vector3(200.0f, 75.0f, 0.0f));
 	a->SetScale(100.0f);
@@ -59,6 +50,17 @@ void Game::LoadData()
 	a->SetRotation(q);
 	MeshComponent *mc = new MeshComponent(a);
 	mc->SetMesh(mRenderer->LoadMesh("../Assets/Cube.sfmesh"));
+	/* mCameraActor = new CameraActor(this); */
+
+	/* SDL_Log("%f %f %f", mCameraActor->GetPosition().x, mCameraActor->GetPosition().y, */
+	/* 	mCameraActor->GetPosition().z); */
+
+	// Setup lights
+	mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
+	DirectionalLight &dir = mRenderer->GetDirectionalLight();
+	dir.mDirection = Vector3(0.0f, -0.707f, -0.707f);
+	dir.mDiffuseColor = Vector3(0.f, 1.f, 0.f);
+	dir.mSpecColor = Vector3(0.5f, 1.f, 0.5f);
 }
 
 void Game::UnloadData()
@@ -73,14 +75,13 @@ void Game::UnloadData()
 
 bool Game::Initialize()
 {
-	mRenderer = new Renderer();
+	mRenderer = new Renderer(this);
 	mRenderer->Initialize(1024, 768);
 
 	LoadData();
 	mTicksCount = SDL_GetTicks();
 	return true;
 }
-
 
 void Game::Update()
 {
@@ -98,7 +99,7 @@ void Game::Shutdown()
 	mRenderer->Shutdown();
 	delete mRenderer;
 }
-void Game::AddActor(Actor* actor)
+void Game::AddActor(Actor *actor)
 {
 	if (mUpdatingActors)
 		mPendingActors.emplace_back(actor);
@@ -112,7 +113,6 @@ void Game::RemoveActor(Actor *actor)
 	if (iter != mActors.end())
 		mActors.erase(iter);
 }
-
 
 void Game::ProcessInput()
 {
@@ -144,7 +144,8 @@ void Game::ProcessInput()
 
 void Game::UpdateGame()
 {
-	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16)); // limits to 60 fps
+	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
+		; // limits to 60 fps
 
 	// calc delta time
 	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.f;
@@ -158,27 +159,27 @@ void Game::UpdateGame()
 	}
 
 	mUpdatingActors = true;
-	for(auto actor : mActors)
+	for (auto actor : mActors)
 	{
 		actor->Update(deltaTime);
 	}
 	mUpdatingActors = false;
 
-	for(auto pending : mPendingActors)
+	for (auto pending : mPendingActors)
 	{
 		pending->CalculateWorldTransform();
 		mActors.emplace_back(pending);
 	}
 	mPendingActors.clear();
 
-	std::vector<Actor*> actorsPendingRemoval;
-	for(auto actor : mActors)
+	std::vector<Actor *> actorsPendingRemoval;
+	for (auto actor : mActors)
 	{
 		if (actor->GetState() == Actor::EPendingRemoval)
 			actorsPendingRemoval.emplace_back(actor);
 	}
 
-	for(auto actor : actorsPendingRemoval)
+	for (auto actor : actorsPendingRemoval)
 	{
 		delete actor;
 	}

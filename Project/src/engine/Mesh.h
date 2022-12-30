@@ -13,11 +13,13 @@ class Mesh
 	class Texture *GetTexture(int index) const;
 	inline const std::string &GetShaderName() const { return mShaderName; }
 	inline float GetRadius() const { return mRadius; }
+	inline float GetSpecPower() const { return mSpecPower; }
 
 	private:
 	std::vector<class Texture *> mTextures;
 	class VertexArray *mVertexArray;
 	std::string mShaderName;
+	float mSpecPower;
 	// object space bounding sphere radius
 	float mRadius;
 };

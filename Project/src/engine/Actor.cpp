@@ -4,7 +4,7 @@
 #include <algorithm>
 
 Actor::Actor(Game *game)
-    : mGame(game), mPosition(Vector2(0, 0)), mRotation(Quaternion::Identity), mScale(1), mState(EActive)
+    : mGame(game), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScale(1), mState(EActive)
 {
 	game->AddActor(this);
 }
@@ -68,7 +68,7 @@ void Actor::CalculateWorldTransform()
 		mRecalculateWorldTransform = false;
 		mWorldTransform = Matrix4::CreateScale(mScale);
 		mWorldTransform *= Matrix4::CreateFromQuaternion(mRotation);
-		mWorldTransform *= Matrix4::CreateTranslation(Vector3(mPosition.x, mPosition.y, 0.0f));
+		mWorldTransform *= Matrix4::CreateTranslation(mPosition);
 		for (auto comp : mComponents)
 		{
 			comp->OnWorldTransformUpdated();
@@ -83,20 +83,4 @@ Vector3 Actor::GetForwardVector() const
 
 void Actor::ActorInput(const uint8_t *keyState)
 {
-}
-
-void Actor::ComputeWorldTransform()
-{
-	if (mRecalculateWorldTransform)
-	{
-		mRecalculateWorldTransform = false;
-		mWorldTransform = Matrix4::CreateScale(mScale);
-		mWorldTransform *= Matrix4::CreateFromQuaternion(mRotation);
-		mWorldTransform *= Matrix4::CreateTranslation(Vector3(mPosition.x, mPosition.y, 0.0f));
-
-		for (auto comp : mComponents)
-		{
-			comp->OnUpdateWorldTransform();
-		}
-	}
 }

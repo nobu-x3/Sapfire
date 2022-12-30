@@ -29,8 +29,8 @@ class Actor
   inline ActorState GetState() const { return mState; }
   inline void SetState(ActorState state) { mState = state; }
   inline Game *GetGame() const { return mGame; }
-  inline const Vector2 &GetPosition() const { return mPosition; }
-  inline void SetPosition(Vector2 pos)
+  inline const Vector3 &GetPosition() const { return mPosition; }
+  inline void SetPosition(Vector3 pos)
   {
 	  mPosition = pos;
 	  mRecalculateWorldTransform = true;
@@ -53,7 +53,7 @@ class Actor
 
   private:
   ActorState mState;
-  Vector2 mPosition;
+  Vector3 mPosition;
   float mScale;
   Quaternion mRotation;
   std::vector<class Component *> mComponents;

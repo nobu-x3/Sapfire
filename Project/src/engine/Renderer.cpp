@@ -10,6 +10,9 @@
 #include <SDL2/SDL.h>
 #include <algorithm>
 
+Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr), mMeshShader(nullptr)
+{
+}
 bool Renderer::Initialize(float width, float height)
 {
 	int sdlResult = SDL_Init(SDL_INIT_VIDEO);
@@ -32,6 +35,7 @@ bool Renderer::Initialize(float width, float height)
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
 	// Enable double buffering
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -48,11 +52,6 @@ bool Renderer::Initialize(float width, float height)
 
 	// OpenGL context
 	mContext = SDL_GL_CreateContext(mWindow);
-	/* Mesh *mesh = new Mesh(); */
-	/* if (mesh->Load("../Assets/Cube.sfmesh", this)) */
-	/* { */
-	/* 	SDL_Log("Mesh loaded"); */
-	/* } */
 
 	// GLEW
 	glewExperimental = GL_TRUE;
@@ -74,7 +73,11 @@ bool Renderer::Initialize(float width, float height)
 
 void Renderer::Shutdown()
 {
+	delete mSpriteVerts;
 	mSpriteShader->Unload();
+	delete mSpriteShader;
+	mMeshShader->Unload();
+	delete mMeshShader;
 	SDL_GL_DeleteContext(mContext);
 	SDL_DestroyWindow(mWindow);
 	SDL_Quit();
@@ -83,7 +86,7 @@ void Renderer::Shutdown()
 void Renderer::Draw()
 {
 	// set color to grey
-	glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
+	glClearColor(0.83f, 0.83f, 0.83f, 1.0f);
 
 	// clear color and depth buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -94,6 +97,7 @@ void Renderer::Draw()
 
 	mMeshShader->SetActive();
 	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
+	SetLightUniforms(mMeshShader);
 	for (auto mesh : mMeshComponents)
 	{
 		mesh->Draw(mMeshShader);
@@ -102,8 +106,8 @@ void Renderer::Draw()
 	// Sprite components
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA,	     // srcFactor is srcAlpha
-		    GL_ONE_MINUS_SRC_ALPHA); // destFact is 1 - srcAlpha
+	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 	// TODO: draw scene
 	mSpriteShader->SetActive();
 	mSpriteVerts->SetActive();
@@ -192,17 +196,23 @@ Mesh *Renderer::LoadMesh(const char *fileName)
 	}
 	return m;
 }
+
 void Renderer::UnloadData()
 {
-	// Destroy textures
 	for (auto i : mTextures)
 	{
 		i.second->Unload();
 		delete i.second;
 	}
-	delete mSpriteVerts;
 	mTextures.clear();
+	for (auto mesh : mMeshes)
+	{
+		mesh.second->Unload();
+		delete mesh.second;
+	}
+	mMeshes.clear();
 }
+
 bool Renderer::LoadShaders()
 {
 	// 2D stuff
@@ -217,7 +227,7 @@ bool Renderer::LoadShaders()
 
 	// 3D stuff
 	mMeshShader = new Shader();
-	if (!mMeshShader->Load("../Shaders/BasicMesh.vert", "../Shaders/BasicMesh.frag"))
+	if (!mMeshShader->Load("../Shaders/Lit.vert", "../Shaders/Lit.frag"))
 	{
 		return false;
 	}
@@ -232,6 +242,16 @@ bool Renderer::LoadShaders()
 	return true;
 }
 
+void Renderer::SetLightUniforms(Shader *shader)
+{
+	Matrix4 invertedView = mView;
+	invertedView.Invert();
+	shader->SetVectorUniform("uCameraPos", invertedView.GetTranslation());
+	shader->SetVectorUniform("uAmbientLight", mAmbientLight);
+	shader->SetVectorUniform("uDirLight.mDirection", mDirectionalLight.mDirection);
+	shader->SetVectorUniform("uDirLight.mDiffuseColor", mDirectionalLight.mDiffuseColor);
+	shader->SetVectorUniform("uDirLight.mSpecColor", mDirectionalLight.mSpecColor);
+}
 void Renderer::CreateSpriteVerts()
 {
 	float vertices[] = {

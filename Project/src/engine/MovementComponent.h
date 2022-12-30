@@ -1,5 +1,6 @@
 #pragma once
 #include "Component.h"
+#include "engine/Math.h"
 class MovementComponent : public Component
 {
       public:
@@ -19,17 +20,17 @@ class MovementComponent : public Component
 	/* inline void SetForwardSpeed(float forwardSpeed) { mForwardSpeed = forwardSpeed; } */
 	inline void SetAngularSpeed(float angularSpeed) { mAngularSpeed = angularSpeed; }
 	inline void SetMass(float mass) { mMass = mass; }
-	inline void SetNetForce(Vector2 force) { mNetForce = force; }
-	inline void AddForce(Vector2 force) { mNetForce += force; }
+	inline void SetNetForce(Vector3 force) { mNetForce = force; }
+	inline void AddForce(Vector3 force) { mNetForce += force; }
 
-      private:
+	private:
 	// controls rotation (radians/sec)
 	float mAngularSpeed;
 	// controls forwardSpeed (units/sec)
-	/* float mForwardSpeed; */
+	float mForwardSpeed;
 
 	float mMass;
 
-	Vector2 mNetForce;
-	Vector2 mVelocity;
+	Vector3 mNetForce;
+	Vector3 mVelocity;
 };

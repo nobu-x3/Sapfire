@@ -5,10 +5,19 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+struct DirectionalLight
+{
+	Vector3 mDirection;
+	Vector3 mDiffuseColor;
+	Vector3 mSpecColor;
+};
+
 class Renderer
 {
 	public:
 	Renderer() = default;
+	Renderer(class Game *game);
 	~Renderer() = default;
 	bool Initialize(float width, float height);
 	void Shutdown();
@@ -18,14 +27,18 @@ class Renderer
 	void RemoveSprite(class SpriteComponent *sprite);
 	void AddMeshComponent(class MeshComponent *mesh);
 	void RemoveMeshComponent(class MeshComponent *mesh);
+	inline void SetViewMatrix(const Matrix4 &view) { mView = view; }
 	class Texture *LoadTexture(const char *fileName);
 	class Mesh *LoadMesh(const char *fileName);
 	inline float GetScreenWidth() const { return mScreenWidth; }
 	inline float GetScreenHeight() const { return mScreenHeight; }
+	inline void SetAmbientLight(const Vector3 &light) { mAmbientLight = light; }
+	inline DirectionalLight &GetDirectionalLight() { return mDirectionalLight; }
 
 	private:
 	void CreateSpriteVerts();
 	bool LoadShaders();
+	void SetLightUniforms(class Shader *shader);
 
 	std::unordered_map<std::string, class Texture *> mTextures;
 	std::unordered_map<std::string, class Mesh *> mMeshes;
@@ -46,4 +59,7 @@ class Renderer
 	// Width/height of screen
 	float mScreenWidth;
 	float mScreenHeight;
+
+	Vector3 mAmbientLight;
+	DirectionalLight mDirectionalLight;
 };
