@@ -51,6 +51,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/MeshComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/MeshComponent.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/MeshComponent.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/MovementComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/MovementComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/MovementComponent.cpp"
 },

@@ -101,7 +101,6 @@ bool Mesh::Load(const std::string &fileName, Renderer *renderer)
 	// Create vertex array
 	mVertexArray = new VertexArray(vertices.data(), static_cast<unsigned>(vertices.size()) / vertSize,
 				       indices.data(), static_cast<unsigned>(indices.size()));
-	SDL_Log("Hi");
 	return true;
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Math.h"
 #include <SDL2/SDL.h>
 #include <string>
 #include <unordered_map>
@@ -15,7 +16,10 @@ class Renderer
 	void Draw();
 	void AddSprite(class SpriteComponent *sprite);
 	void RemoveSprite(class SpriteComponent *sprite);
+	void AddMeshComponent(class MeshComponent *mesh);
+	void RemoveMeshComponent(class MeshComponent *mesh);
 	class Texture *LoadTexture(const char *fileName);
+	class Mesh *LoadMesh(const char *fileName);
 	inline float GetScreenWidth() const { return mScreenWidth; }
 	inline float GetScreenHeight() const { return mScreenHeight; }
 
@@ -24,15 +28,22 @@ class Renderer
 	bool LoadShaders();
 
 	std::unordered_map<std::string, class Texture *> mTextures;
-	std::vector<SpriteComponent *> mSprites; // this list is sorted
+	std::unordered_map<std::string, class Mesh *> mMeshes;
+	std::vector<class SpriteComponent *> mSprites; // this list is sorted
+	std::vector<class MeshComponent *> mMeshComponents;
 
 	class VertexArray *mSpriteVerts;
 	class Shader *mSpriteShader;
+	class Shader *mMeshShader;
 
 	class SDL_Window *mWindow;
 	SDL_GLContext mContext;
 	class Game *mGame;
 
+	// View/projection for 3D shaders
+	Matrix4 mView;
+	Matrix4 mProjection;
+	// Width/height of screen
 	float mScreenWidth;
 	float mScreenHeight;
 };

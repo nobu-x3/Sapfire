@@ -7,6 +7,7 @@
 #include "Texture.h"
 #include "VertexArray.h"
 #include "engine/Math.h"
+#include "engine/MeshComponent.h"
 #include "engine/Renderer.h"
 #include "engine/Texture.h"
 #include "game/Asteroid.h"
@@ -49,6 +50,15 @@ void Game::LoadData()
 	{
 		new Asteroid(this);
 	}
+
+	Actor *a = new Actor(this);
+	a->SetPosition(Vector3(200.0f, 75.0f, 0.0f));
+	a->SetScale(100.0f);
+	Quaternion q(Vector3::UnitY, -Math::PiOver2);
+	q = Quaternion::Concatenate(q, Quaternion(Vector3::UnitZ, Math::Pi + Math::Pi / 4.0f));
+	a->SetRotation(q);
+	MeshComponent *mc = new MeshComponent(a);
+	mc->SetMesh(mRenderer->LoadMesh("../Assets/Cube.sfmesh"));
 }
 
 void Game::UnloadData()

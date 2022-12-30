@@ -1,5 +1,7 @@
 #include "Renderer.h"
+#include "engine/Math.h"
 #include "engine/Mesh.h"
+#include "engine/MeshComponent.h"
 #include "engine/Shader.h"
 #include "engine/SpriteComponent.h"
 #include "engine/Texture.h"
@@ -51,6 +53,7 @@ bool Renderer::Initialize(float width, float height)
 	/* { */
 	/* 	SDL_Log("Mesh loaded"); */
 	/* } */
+
 	// GLEW
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK)
@@ -79,12 +82,25 @@ void Renderer::Shutdown()
 
 void Renderer::Draw()
 {
-
 	// set color to grey
 	glClearColor(0.86f, 0.86f, 0.86f, 1.0f);
 
-	// clear color buffer
-	glClear(GL_COLOR_BUFFER_BIT);
+	// clear color and depth buffers
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Mesh components
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
+	mMeshShader->SetActive();
+	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
+	for (auto mesh : mMeshComponents)
+	{
+		mesh->Draw(mMeshShader);
+	}
+
+	// Sprite components
+	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA,	     // srcFactor is srcAlpha
 		    GL_ONE_MINUS_SRC_ALPHA); // destFact is 1 - srcAlpha
@@ -118,6 +134,17 @@ void Renderer::RemoveSprite(SpriteComponent *sprite)
 	if (iter != mSprites.end())
 		mSprites.erase(iter);
 }
+
+void Renderer::AddMeshComponent(MeshComponent *mesh)
+{
+	mMeshComponents.emplace_back(mesh);
+}
+
+void Renderer::RemoveMeshComponent(MeshComponent *mesh)
+{
+	auto iter = std::find(mMeshComponents.begin(), mMeshComponents.end(), mesh);
+	mMeshComponents.erase(iter);
+}
 Texture *Renderer::LoadTexture(const char *fileName)
 {
 	Texture *tex = nullptr;
@@ -141,6 +168,30 @@ Texture *Renderer::LoadTexture(const char *fileName)
 	}
 	return tex;
 }
+
+Mesh *Renderer::LoadMesh(const char *fileName)
+{
+	Mesh *m = nullptr;
+	auto iter = mMeshes.find(fileName);
+	if (iter != mMeshes.end())
+	{
+		m = iter->second;
+	}
+	else
+	{
+		m = new Mesh();
+		if (m->Load(fileName, this))
+		{
+			mMeshes.emplace(fileName, m);
+		}
+		else
+		{
+			delete m;
+			m = nullptr;
+		}
+	}
+	return m;
+}
 void Renderer::UnloadData()
 {
 	// Destroy textures
@@ -154,6 +205,7 @@ void Renderer::UnloadData()
 }
 bool Renderer::LoadShaders()
 {
+	// 2D stuff
 	mSpriteShader = new Shader();
 	if (!mSpriteShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag"))
 	{
@@ -162,6 +214,21 @@ bool Renderer::LoadShaders()
 	mSpriteShader->SetActive();
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
 	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
+
+	// 3D stuff
+	mMeshShader = new Shader();
+	if (!mMeshShader->Load("../Shaders/BasicMesh.vert", "../Shaders/BasicMesh.frag"))
+	{
+		return false;
+	}
+
+	mMeshShader->SetActive();
+	mView = Matrix4::CreateLookAt(Vector3::Zero,  // Camera pos
+				      Vector3::UnitX, // Target pos
+				      Vector3::UnitZ  // Up
+	);
+	mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(75.f), mScreenWidth, mScreenHeight, 25.0f, 10000.f);
+	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
 	return true;
 }
 
