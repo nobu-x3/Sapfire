@@ -20,28 +20,7 @@ uniform sampler2D uTexture;
 
 void main()
 {
-	// Surface normal
-	vec3 N = normalize(fragNormal);
-	// Vector from surface to light
-	vec3 L = normalize(-uDirLight.mDirection);
-	// Vector from surface to camera
-	vec3 V = normalize(uCameraPos - fragWorldPos);
-	// Reflection of -L about N
-	vec3 R = normalize(reflect(-L, N));
-
-	// Compute phong reflection
-	vec3 Phong = uAmbientLight;
-	float NdotL = dot(N, L);
-	if (NdotL > 0)
-	{
-		vec3 Diffuse = uDirLight.mDiffuseColor * NdotL;
-		vec3 Specular = uDirLight.mSpecColor * pow(max(0.0, dot(R, V)), uSpecPower);
-		Phong += Diffuse + Specular;
-	}
-
-	// Final color is texture color times phong light (alpha = 1)
-    outColor = texture(uTexture, fragTexCoord) * vec4(Phong, 1.0f);
-    /* vec3 n = normalize(fragNormal);
+    vec3 n = normalize(fragNormal);
      vec3 l = normalize(-uDirLight.mDirection);
      vec3 v = normalize(uCameraPos - fragWorldPos);
      vec3 r = normalize(reflect(-l, n));
@@ -54,5 +33,5 @@ void main()
          vec3 specular = uDirLight.mSpecColor * pow(max(0.0, dot(r, v)), uSpecPower);
          phong += diffuse + specular;
      }
-     outColor = texture(uTexture, fragTexCoord) * vec4(phong, 1.0);*/
+     outColor = texture(uTexture, fragTexCoord) * vec4(clamp(phong, 0.0, 1.0), 1.0);
 }

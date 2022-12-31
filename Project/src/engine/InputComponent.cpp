@@ -11,7 +11,7 @@ InputComponent::InputComponent(Actor *owner, float mass, int updateOrder)
 
 void InputComponent::ProcessInput(const uint8_t *keyState)
 {
-	SetNetForce(Vector2::Zero);
+	SetNetForce(Vector3::Zero);
 	if (keyState[mForwardKey])
 	{
 		AddForce(mOwner->GetForwardVector() * mMaxForwardSpeed);

@@ -3,7 +3,7 @@
 #include "Math.h"
 #include "engine/Component.h"
 MovementComponent::MovementComponent(Actor *owner, float mass, int updateOrder)
-    : Component(owner, updateOrder), mMass(mass), mNetForce(Vector2::Zero), mVelocity(Vector2::Zero), mAngularSpeed(0)
+    : Component(owner, updateOrder), mMass(mass), mNetForce(Vector3::Zero), mVelocity(Vector3::Zero), mAngularSpeed(0)
 {
 }
 

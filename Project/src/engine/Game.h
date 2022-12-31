@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Actor.h"
-#include "game/Asteroid.h"
 #include <SDL_render.h>
 #include <memory>
 #include <string>
@@ -20,10 +19,6 @@ public:
 
 	void AddActor(Actor* actor);
 	void RemoveActor(Actor *actor);
-	void AddAsteroid(class Asteroid *ast);
-	void RemoveAsteroid(class Asteroid *ast);
-	void NotifyShipDeath();
-	std::vector<class Asteroid *> GetAsteroids() const;
 	inline class Renderer *GetRenderer() { return mRenderer; }
 
 	private:
@@ -44,13 +39,7 @@ public:
 
 	bool mUpdatingActors;
 
-	// Game specific code
-	float mShipRespawnCooldown;
-	bool mShipDead;
-	float timer;
-
-	class Ship *mShip;
 	class Renderer *mRenderer;
-	std::vector<class Asteroid *> mAsteroids;
+	// Game specific code
 	class CameraActor *mCameraActor;
 };

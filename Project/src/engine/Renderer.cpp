@@ -9,6 +9,7 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <algorithm>
+#include <iostream>
 
 Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr), mMeshShader(nullptr)
 {
@@ -97,6 +98,15 @@ void Renderer::Draw()
 
 	mMeshShader->SetActive();
 	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
+	/* for (int i = 0; i < 4; ++i) */
+	/* { */
+	/* 	for (int j = 0; j < 4; ++j) */
+	/* 	{ */
+	/* 		std::cout << mView.mat[i][j]; */
+	/* 	} */
+	/* 	std::cout << std::endl; */
+	/* } */
+	/* std::cout << "------------" << std::endl; */
 	SetLightUniforms(mMeshShader);
 	for (auto mesh : mMeshComponents)
 	{
@@ -237,7 +247,7 @@ bool Renderer::LoadShaders()
 				      Vector3::UnitX, // Target pos
 				      Vector3::UnitZ  // Up
 	);
-	mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(75.f), mScreenWidth, mScreenHeight, 25.0f, 10000.f);
+	mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(70.f), mScreenWidth, mScreenHeight, 25.0f, 10000.f);
 	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
 	return true;
 }

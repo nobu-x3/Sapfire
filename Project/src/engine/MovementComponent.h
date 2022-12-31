@@ -4,10 +4,10 @@
 class MovementComponent : public Component
 {
       public:
-	MovementComponent(class Actor *owner, int updateOrder = 10)
-	    : Component(owner, updateOrder), mAngularSpeed(0), mNetForce(Vector2::Zero), mMass(0),
-	      mVelocity(Vector2::Zero)
-	{
+      MovementComponent(class Actor *owner, int updateOrder = 10)
+	  : Component(owner, updateOrder), mAngularSpeed(0), mNetForce(Vector3::Zero), mMass(0),
+	    mVelocity(Vector3::Zero)
+      {
 	}
 
 	MovementComponent(class Actor *owner, float mass, int updateOrder = 10);
@@ -16,7 +16,7 @@ class MovementComponent : public Component
 	/* inline float GetForwardSpeed() const { return mForwardSpeed; } */
 	inline float GetAngularSpeed() const { return mAngularSpeed; }
 	inline float GetMass() const { return mMass; }
-	inline Vector2 GetNetForce() const { return mNetForce; }
+	inline Vector3 GetNetForce() const { return mNetForce; }
 	/* inline void SetForwardSpeed(float forwardSpeed) { mForwardSpeed = forwardSpeed; } */
 	inline void SetAngularSpeed(float angularSpeed) { mAngularSpeed = angularSpeed; }
 	inline void SetMass(float mass) { mMass = mass; }

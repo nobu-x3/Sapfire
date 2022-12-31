@@ -1,10 +1,12 @@
 #include "Actor.h"
 #include "Component.h"
 #include "Game.h"
+#include <SDL_log.h>
 #include <algorithm>
 
 Actor::Actor(Game *game)
-    : mGame(game), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScale(1), mState(EActive)
+    : mGame(game), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScale(1), mState(EActive),
+      mRecalculateWorldTransform(true)
 {
 	game->AddActor(this);
 }
@@ -74,11 +76,6 @@ void Actor::CalculateWorldTransform()
 			comp->OnWorldTransformUpdated();
 		}
 	}
-}
-
-Vector3 Actor::GetForwardVector() const
-{
-	return Vector3::Transform(Vector3::UnitX, mRotation);
 }
 
 void Actor::ActorInput(const uint8_t *keyState)

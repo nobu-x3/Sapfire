@@ -3,6 +3,7 @@
 #include "CameraActor.h"
 #include "GL/glew.h"
 #include "Mesh.h"
+#include "PlaneActor.h"
 #include "Shader.h"
 #include "SpriteComponent.h"
 #include "Texture.h"
@@ -11,8 +12,6 @@
 #include "engine/MeshComponent.h"
 #include "engine/Renderer.h"
 #include "engine/Texture.h"
-#include "game/Asteroid.h"
-#include "game/Ship.h"
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_log.h>
@@ -27,9 +26,6 @@ Game::Game()
 {
 	mIsRunning = true;
 	mTicksCount = 0;
-	mShipRespawnCooldown = 3.0f;
-	mShipDead = false;
-	timer = 0;
 }
 
 Game::~Game()
@@ -50,17 +46,55 @@ void Game::LoadData()
 	a->SetRotation(q);
 	MeshComponent *mc = new MeshComponent(a);
 	mc->SetMesh(mRenderer->LoadMesh("../Assets/Cube.sfmesh"));
-	/* mCameraActor = new CameraActor(this); */
 
-	/* SDL_Log("%f %f %f", mCameraActor->GetPosition().x, mCameraActor->GetPosition().y, */
-	/* 	mCameraActor->GetPosition().z); */
+	const float start = -1250.0f;
+	const float size = 250.0f;
+	for (int i = 0; i < 10; i++)
+	{
+		for (int j = 0; j < 10; j++)
+		{
+			a = new PlaneActor(this);
+			a->SetPosition(Vector3(start + i * size, start + j * size, -100.0f));
+		}
+	}
 
+	// Left/right walls
+	q = Quaternion(Vector3::UnitX, Math::PiOver2);
+	for (int i = 0; i < 10; i++)
+	{
+		a = new PlaneActor(this);
+		a->SetPosition(Vector3(start + i * size, start - size, 0.0f));
+		a->SetRotation(q);
+
+		a = new PlaneActor(this);
+		a->SetPosition(Vector3(start + i * size, -start + size, 0.0f));
+		a->SetRotation(q);
+	}
+
+	q = Quaternion::Concatenate(q, Quaternion(Vector3::UnitZ, Math::PiOver2));
+	// Forward/back walls
+	for (int i = 0; i < 10; i++)
+	{
+		a = new PlaneActor(this);
+		a->SetPosition(Vector3(start - size, start + i * size, 0.0f));
+		a->SetRotation(q);
+
+		a = new PlaneActor(this);
+		a->SetPosition(Vector3(-start + size, start + i * size, 0.0f));
+		a->SetRotation(q);
+	}
 	// Setup lights
 	mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
 	DirectionalLight &dir = mRenderer->GetDirectionalLight();
 	dir.mDirection = Vector3(0.0f, -0.707f, -0.707f);
 	dir.mDiffuseColor = Vector3(0.f, 1.f, 0.f);
 	dir.mSpecColor = Vector3(0.5f, 1.f, 0.5f);
+
+	mCameraActor = new CameraActor(this);
+	mCameraActor->SetPosition(Vector3(10.f, 10.f, 0.f));
+
+	/* SDL_Log("%f %f %f", mCameraActor->GetPosition().x, mCameraActor->GetPosition().y, */
+	/* 	mCameraActor->GetPosition().z); */
 }
 
 void Game::UnloadData()
@@ -151,7 +185,6 @@ void Game::UpdateGame()
 	float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.f;
 	mTicksCount = SDL_GetTicks();
 
-	timer += deltaTime;
 	// clamp delta time to avoid big simulation jumps during debugging
 	if (deltaTime > 0.05f)
 	{
@@ -183,42 +216,8 @@ void Game::UpdateGame()
 	{
 		delete actor;
 	}
-	if (mShipDead)
-	{
-		mShipRespawnCooldown -= deltaTime;
-		if (mShipRespawnCooldown <= 0.0f)
-			RespawnShip();
-	}
-}
-void Game::AddAsteroid(Asteroid *ast)
-{
-	mAsteroids.emplace_back(ast);
-}
-void Game::RemoveAsteroid(Asteroid *ast)
-{
-	auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), ast);
-	if (iter != mAsteroids.end())
-		mAsteroids.erase(iter);
-}
-void Game::NotifyShipDeath()
-{
-	mShipRespawnCooldown = 3.0f;
-	mShipDead = true;
 }
 
-void Game::RespawnShip()
-{
-	mShipDead = false;
-	mShipRespawnCooldown = 3.0f;
-	mShip = new Ship(this);
-	mShip->SetPosition(Vector2(512.0f, 384.0f));
-	mShip->SetScale(1.5f);
-}
-
-std::vector<Asteroid *> Game::GetAsteroids() const
-{
-	return mAsteroids;
-}
 void Game::GenerateOutput()
 {
 	mRenderer->Draw();

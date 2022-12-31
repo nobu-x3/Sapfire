@@ -2,7 +2,6 @@
 #include "Math.h"
 #include <cstdint>
 #include <vector>
-class Game;
 class Actor
 {
   public:
@@ -13,7 +12,7 @@ class Actor
 	  EPendingRemoval
   };
 
-  Actor(Game *mGame);
+  Actor(class Game *mGame);
   virtual ~Actor();
 
   void Update(float deltaTime); // To be called from Game
@@ -25,7 +24,6 @@ class Actor
   void ProcessInput(const uint8_t *keyState);
   void ComputeWorldTransform();
   virtual void ActorInput(const uint8_t *keyState);
-  inline Matrix4 GetWorldTransform() { return mWorldTransform; }
   inline ActorState GetState() const { return mState; }
   inline void SetState(ActorState state) { mState = state; }
   inline Game *GetGame() const { return mGame; }
@@ -47,7 +45,7 @@ class Actor
 	  mRecalculateWorldTransform = true;
   }
   inline float GetScale() const { return mScale; }
-  Vector3 GetForwardVector() const;
+  inline Vector3 GetForwardVector() const { return Vector3::Transform(Vector3::UnitX, mRotation); }
   void CalculateWorldTransform();
   inline const Matrix4 &GetWorldTransform() const { return mWorldTransform; }
 
@@ -58,7 +56,7 @@ class Actor
   Quaternion mRotation;
   std::vector<class Component *> mComponents;
   Matrix4 mWorldTransform;
-  Game *mGame;
+  class Game *mGame;
   bool mRecalculateWorldTransform;
 
 };

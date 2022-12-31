@@ -66,6 +66,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/PlaneActor.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/PlaneActor.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/PlaneActor.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/Random.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Random.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Random.cpp"
 },
@@ -108,21 +113,6 @@
   "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/engine/VertexArray.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp"
-},
-{
-  "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/game/Asteroid.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Asteroid.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/game/Asteroid.cpp"
-},
-{
-  "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/game/Laser.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Laser.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/game/Laser.cpp"
-},
-{
-  "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2 -O2 -g -DNDEBUG -o CMakeFiles/Engine.dir/src/game/Ship.cpp.o -c /home/nobu/workspace/Engine/Project/src/game/Ship.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/game/Ship.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
