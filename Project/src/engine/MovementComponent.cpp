@@ -9,13 +9,6 @@ MovementComponent::MovementComponent(Actor *owner, float mass, int updateOrder)
 
 void MovementComponent::Update(float deltaTime)
 {
-	auto acceleration = mNetForce * (1 / mMass);
-
-	// Semi-implicit Euler Integration
-	mVelocity += acceleration * deltaTime;
-	auto position = mOwner->GetPosition();
-	position += mVelocity * deltaTime;
-	mOwner->SetPosition(position);
 
 	if (!Math::NearZero(mAngularSpeed))
 	{
@@ -25,5 +18,22 @@ void MovementComponent::Update(float deltaTime)
 		Quaternion inc(Vector3::UnitZ, angle);
 		rot = Quaternion::Concatenate(rot, inc);
 		mOwner->SetRotation(rot);
+	}
+
+	if (mUseNewtonian)
+	{
+
+		auto acceleration = mNetForce * (1 / mMass);
+		// Semi-implicit Euler Integration
+		mVelocity += acceleration * deltaTime;
+		auto position = mOwner->GetPosition();
+		position += mVelocity * deltaTime;
+		mOwner->SetPosition(position);
+	}
+	else if (!Math::NearZero(mForwardSpeed))
+	{
+		Vector3 pos = mOwner->GetPosition();
+		pos += mOwner->GetForwardVector() * mForwardSpeed * deltaTime;
+		mOwner->SetPosition(pos);
 	}
 }

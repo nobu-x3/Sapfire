@@ -11,27 +11,28 @@ CameraActor::CameraActor(Game *game) : Actor(game)
 
 void CameraActor::ActorInput(const uint8_t *keys)
 {
-	/* mMoveComp->SetNetForce(Vector3::Zero); */
-	/* float angularSpeed = 0.0f; */
-	/* // wasd movement */
-	/* if (keys[SDL_SCANCODE_W]) */
-	/* { */
-	/* 	mMoveComp->AddForce(GetForwardVector() * 300.f); */
-	/* } */
-	/* if (keys[SDL_SCANCODE_S]) */
-	/* { */
-	/* 	mMoveComp->AddForce(GetForwardVector() * -300.f); */
-	/* } */
-	/* if (keys[SDL_SCANCODE_A]) */
-	/* { */
-	/* 	angularSpeed -= Math::TwoPi; */
-	/* } */
-	/* if (keys[SDL_SCANCODE_D]) */
-	/* { */
-	/* 	angularSpeed += Math::TwoPi; */
-	/* } */
+	float angularSpeed = 0.0f;
+	float forwardSpeed = 0.0f;
+	// wasd movement
+	if (keys[SDL_SCANCODE_W])
+	{
+		forwardSpeed += 300.0f;
+	}
+	if (keys[SDL_SCANCODE_S])
+	{
+		forwardSpeed -= 300.0f;
+	}
+	if (keys[SDL_SCANCODE_A])
+	{
+		angularSpeed -= Math::TwoPi;
+	}
+	if (keys[SDL_SCANCODE_D])
+	{
+		angularSpeed += Math::TwoPi;
+	}
 
-	/* mMoveComp->SetAngularSpeed(angularSpeed); */
+	mMoveComp->SetForwardSpeed(forwardSpeed);
+	mMoveComp->SetAngularSpeed(angularSpeed);
 }
 
 void CameraActor::UpdateActor(float deltaTime)
@@ -42,6 +43,5 @@ void CameraActor::UpdateActor(float deltaTime)
 	Vector3 up = Vector3::UnitZ;
 
 	Matrix4 view = Matrix4::CreateLookAt(cameraPos, target, up);
-	SDL_Log("X: %f", GetRotation().w);
-	/* GetGame()->GetRenderer()->SetViewMatrix(view); */
+	GetGame()->GetRenderer()->SetViewMatrix(view);
 }
