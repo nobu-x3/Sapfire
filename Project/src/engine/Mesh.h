@@ -11,7 +11,7 @@ class Mesh
 	void Unload();
 	class VertexArray *GetVertexArray() const { return mVertexArray; }
 	class Texture *GetTexture(int index) const;
-	inline const std::string &GetShaderName() const { return mShaderName; }
+	inline std::string GetShaderName() const { return mShaderName; }
 	inline float GetRadius() const { return mRadius; }
 	inline float GetSpecPower() const { return mSpecPower; }
 

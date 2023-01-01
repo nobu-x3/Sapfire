@@ -27,6 +27,7 @@ bool Mesh::Load(const std::string &fileName, Renderer *renderer)
 	}
 
 	mShaderName = data["shader"].get<std::string>();
+	SDL_Log("%s", GetShaderName().c_str());
 	mSpecPower = data["specularPower"].get<float>();
 	// Load textures
 	auto textures = data["textures"];

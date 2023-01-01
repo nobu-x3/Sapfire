@@ -98,15 +98,6 @@ void Renderer::Draw()
 
 	mMeshShader->SetActive();
 	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
-	/* for (int i = 0; i < 4; ++i) */
-	/* { */
-	/* 	for (int j = 0; j < 4; ++j) */
-	/* 	{ */
-	/* 		std::cout << mView.mat[i][j]; */
-	/* 	} */
-	/* 	std::cout << std::endl; */
-	/* } */
-	/* std::cout << "------------" << std::endl; */
 	SetLightUniforms(mMeshShader);
 	for (auto mesh : mMeshComponents)
 	{
@@ -152,6 +143,8 @@ void Renderer::RemoveSprite(SpriteComponent *sprite)
 void Renderer::AddMeshComponent(MeshComponent *mesh)
 {
 	mMeshComponents.emplace_back(mesh);
+	auto test = mesh->GetMesh();
+	SDL_Log("%s", mesh->GetMesh()->GetShaderName().c_str());
 }
 
 void Renderer::RemoveMeshComponent(MeshComponent *mesh)
