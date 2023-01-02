@@ -1,7 +1,8 @@
+
 {
 	"version":1,
 	"vertexformat":"PosNormTex",
-	"shader":"../Shaders/BasicMesh",
+	"shader":"../Shaders/Lit",
 	"textures":[
 		"../Assets/Cube.png"
 	],

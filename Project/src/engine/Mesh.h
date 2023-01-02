@@ -17,6 +17,7 @@ class Mesh
 
 	private:
 	std::vector<class Texture *> mTextures;
+	class Shader *mShader;
 	class VertexArray *mVertexArray;
 	std::string mShaderName;
 	float mSpecPower;

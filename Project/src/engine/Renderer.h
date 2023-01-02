@@ -28,8 +28,11 @@ class Renderer
 	void AddMeshComponent(class MeshComponent *mesh);
 	void RemoveMeshComponent(class MeshComponent *mesh);
 	inline void SetViewMatrix(const Matrix4 &view) { mView = view; }
-	class Texture *LoadTexture(const char *fileName);
-	class Mesh *LoadMesh(const char *fileName);
+	class Texture *GetTexture(const char *fileName);
+	class Mesh *GetMesh(const char *fileName);
+	class Shader *GetShader(const std::string &fileName);
+	void LoadShader(class Shader *sh);
+	void LinkShaderToMeshComp(const std::string &fileName, class MeshComponent *meshComp);
 	inline float GetScreenWidth() const { return mScreenWidth; }
 	inline float GetScreenHeight() const { return mScreenHeight; }
 	inline void SetAmbientLight(const Vector3 &light) { mAmbientLight = light; }
@@ -42,12 +45,14 @@ class Renderer
 
 	std::unordered_map<std::string, class Texture *> mTextures;
 	std::unordered_map<std::string, class Mesh *> mMeshes;
+	std::unordered_map<std::string, class Shader *> mShaders;
+	std::unordered_map<class Shader *, std::vector<class MeshComponent *>> mShaderMeshCompMap;
 	std::vector<class SpriteComponent *> mSprites; // this list is sorted
 	std::vector<class MeshComponent *> mMeshComponents;
+	std::vector<class Shader *> mMeshShaders;
 
 	class VertexArray *mSpriteVerts;
 	class Shader *mSpriteShader;
-	class Shader *mMeshShader;
 
 	class SDL_Window *mWindow;
 	SDL_GLContext mContext;

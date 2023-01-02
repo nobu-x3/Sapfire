@@ -7,7 +7,7 @@ class MeshComponent : public Component
 	MeshComponent(class Actor *owner);
 	~MeshComponent();
 	virtual void Draw(class Shader *shader);
-	inline virtual void SetMesh(class Mesh *mesh) { mMesh = mesh; }
+	virtual void SetMesh(class Mesh *mesh);
 	inline void SetTextureIndex(size_t index) { mTextureIndex = index; }
 
 	private:

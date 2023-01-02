@@ -29,5 +29,4 @@ class Shader
 	GLuint mVertexShader;
 	GLuint mFragShader;
 	GLuint mShaderProgram;
-	std::unordered_map<const char *, GLuint> mNameIdMap;
 };

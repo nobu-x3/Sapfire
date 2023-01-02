@@ -27,6 +27,7 @@ bool Mesh::Load(const std::string &fileName, Renderer *renderer)
 	}
 
 	mShaderName = data["shader"].get<std::string>();
+	renderer->GetShader(mShaderName);
 	mSpecPower = data["specularPower"].get<float>();
 	// Load textures
 	auto textures = data["textures"];
@@ -38,13 +39,13 @@ bool Mesh::Load(const std::string &fileName, Renderer *renderer)
 	for (int i = 0; i < textures.size(); ++i)
 	{
 		std::string texName = textures[i].get<std::string>();
-		Texture *t = renderer->LoadTexture(texName.c_str());
+		Texture *t = renderer->GetTexture(texName.c_str());
 		if (t == nullptr)
 		{
-			t = renderer->LoadTexture(texName.c_str());
+			t = renderer->GetTexture(texName.c_str());
 			if (t == nullptr)
 			{
-				t = renderer->LoadTexture("../Assets/Default.png");
+				t = renderer->GetTexture("../Assets/Default.png");
 				if (t == nullptr)
 				{
 					SDL_Log("No default mesh texture.");

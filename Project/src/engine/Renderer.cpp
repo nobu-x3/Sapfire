@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <iostream>
 
-Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr), mMeshShader(nullptr)
+Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr)
 {
 }
 bool Renderer::Initialize(float width, float height)
@@ -77,8 +77,13 @@ void Renderer::Shutdown()
 	delete mSpriteVerts;
 	mSpriteShader->Unload();
 	delete mSpriteShader;
-	mMeshShader->Unload();
-	delete mMeshShader;
+	for (auto pair : mShaderMeshCompMap)
+	{
+		pair.first->Unload();
+		delete pair.first;
+		pair.second.clear();
+	}
+	mShaderMeshCompMap.clear();
 	SDL_GL_DeleteContext(mContext);
 	SDL_DestroyWindow(mWindow);
 	SDL_Quit();
@@ -95,22 +100,16 @@ void Renderer::Draw()
 	// Mesh components
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
-
-	mMeshShader->SetActive();
-	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
-	/* for (int i = 0; i < 4; ++i) */
-	/* { */
-	/* 	for (int j = 0; j < 4; ++j) */
-	/* 	{ */
-	/* 		std::cout << mView.mat[i][j]; */
-	/* 	} */
-	/* 	std::cout << std::endl; */
-	/* } */
-	/* std::cout << "------------" << std::endl; */
-	SetLightUniforms(mMeshShader);
-	for (auto mesh : mMeshComponents)
+	auto viewProj = mView * mProjection;
+	for (auto pair : mShaderMeshCompMap)
 	{
-		mesh->Draw(mMeshShader);
+		pair.first->SetActive();
+		pair.first->SetMatrixUniform("uViewProj", mView * mProjection);
+		SetLightUniforms(pair.first);
+		for (auto meshComp : pair.second)
+		{
+			meshComp->Draw(pair.first);
+		}
 	}
 
 	// Sprite components
@@ -159,7 +158,7 @@ void Renderer::RemoveMeshComponent(MeshComponent *mesh)
 	auto iter = std::find(mMeshComponents.begin(), mMeshComponents.end(), mesh);
 	mMeshComponents.erase(iter);
 }
-Texture *Renderer::LoadTexture(const char *fileName)
+Texture *Renderer::GetTexture(const char *fileName)
 {
 	Texture *tex = nullptr;
 	auto iter = mTextures.find(fileName);
@@ -183,7 +182,7 @@ Texture *Renderer::LoadTexture(const char *fileName)
 	return tex;
 }
 
-Mesh *Renderer::LoadMesh(const char *fileName)
+Mesh *Renderer::GetMesh(const char *fileName)
 {
 	Mesh *m = nullptr;
 	auto iter = mMeshes.find(fileName);
@@ -207,6 +206,51 @@ Mesh *Renderer::LoadMesh(const char *fileName)
 	return m;
 }
 
+void Renderer::LinkShaderToMeshComp(const std::string &fileName, MeshComponent *meshComp)
+{
+	Shader *shader = GetShader(fileName);
+	if (shader == nullptr)
+	{
+		return;
+	}
+	auto iter = mShaderMeshCompMap.find(shader);
+	if (iter != mShaderMeshCompMap.end())
+	{
+		iter->second.emplace_back(meshComp);
+	}
+	else
+	{
+		std::vector<MeshComponent *> vec;
+		vec.emplace_back(meshComp);
+		mShaderMeshCompMap.emplace(shader, vec);
+	}
+}
+Shader *Renderer::GetShader(const std::string &fileName)
+{
+	Shader *sh = nullptr;
+	auto iter = mShaders.find(fileName);
+	if (iter != mShaders.end())
+	{
+		sh = iter->second;
+	}
+	else
+	{
+		sh = new Shader();
+		if (sh->Load(fileName + ".vert", fileName + ".frag"))
+		{
+			mShaders.emplace(fileName, sh);
+			LoadShader(sh);
+		}
+		else
+		{
+			SDL_Log("Could not find shader %s.", fileName.c_str());
+			delete sh;
+			sh = nullptr;
+		}
+	}
+	return sh;
+}
+
 void Renderer::UnloadData()
 {
 	for (auto i : mTextures)
@@ -223,6 +267,17 @@ void Renderer::UnloadData()
 	mMeshes.clear();
 }
 
+void Renderer::LoadShader(Shader *sh)
+{
+	sh->SetActive();
+	mView = Matrix4::CreateLookAt(Vector3::Zero,  // Camera pos
+				      Vector3::UnitX, // Target pos
+				      Vector3::UnitZ  // Up
+	);
+	mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(70.f), mScreenWidth, mScreenHeight, 25.0f, 10000.f);
+	sh->SetMatrixUniform("uViewProj", mView * mProjection);
+}
+
 bool Renderer::LoadShaders()
 {
 	// 2D stuff
@@ -235,20 +290,6 @@ bool Renderer::LoadShaders()
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
 	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
 
-	// 3D stuff
-	mMeshShader = new Shader();
-	if (!mMeshShader->Load("../Shaders/Lit.vert", "../Shaders/Lit.frag"))
-	{
-		return false;
-	}
-
-	mMeshShader->SetActive();
-	mView = Matrix4::CreateLookAt(Vector3::Zero,  // Camera pos
-				      Vector3::UnitX, // Target pos
-				      Vector3::UnitZ  // Up
-	);
-	mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(70.f), mScreenWidth, mScreenHeight, 25.0f, 10000.f);
-	mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
 	return true;
 }
 
