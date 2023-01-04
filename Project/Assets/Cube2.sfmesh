@@ -4,9 +4,9 @@
 	"vertexformat":"PosNormTex",
 	"shader":"../Shaders/Lit",
 	"textures":[
-		"../Assets/Cube.png"
+		"../Assets/Plane.png"
 	],
-	"specularPower":10.0,
+	"specularPower":80.0,
 	"vertices":[
 		[-0.5,-0.5,-0.5,0,0,-1,0,0],
 		[0.5,-0.5,-0.5,0,0,-1,1,0],

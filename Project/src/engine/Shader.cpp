@@ -44,21 +44,22 @@ void Shader::SetActive()
 	glUseProgram(mShaderProgram);
 }
 
-void Shader::SetMatrixUniform(const char *name, const Matrix4 &matrix)
+void Shader::SetMatrixUniform(const std::string &name, const Matrix4 &matrix)
 {
 	// Find the uniform by this name
-	GLuint loc = glGetUniformLocation(mShaderProgram, name);
+	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 	// Send the matrix data to the uniform
-	glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr());
+	glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsConstFloatPtr());
 }
-void Shader::SetVectorUniform(const char *name, const Vector3 &vec)
+
+void Shader::SetVectorUniform(const std::string &name, const Vector3 &vec)
 {
-	GLuint loc = glGetUniformLocation(mShaderProgram, name);
-	glUniform3fv(loc, 1, vec.GetAsFloatPtr());
+	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
+	glUniform3fv(loc, 1, vec.GetAsConstFloatPtr());
 }
-void Shader::SetFloatUniform(const char *name, float val)
+void Shader::SetFloatUniform(const std::string &name, float val)
 {
-	GLuint loc = glGetUniformLocation(mShaderProgram, name);
+	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 	glUniform1f(loc, val);
 }
 

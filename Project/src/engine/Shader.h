@@ -15,9 +15,9 @@ class Shader
 
 	// sets the active shader to this
 	void SetActive();
-	void SetMatrixUniform(const char *name, const Matrix4 &matrix);
-	void SetVectorUniform(const char *name, const Vector3 &vec);
-	void SetFloatUniform(const char *name, float val);
+	void SetMatrixUniform(const std::string &name, const Matrix4 &matrix);
+	void SetVectorUniform(const std::string &name, const Vector3 &vec);
+	void SetFloatUniform(const std::string &name, float val);
 
 	private:
 	// tries to compile specified shader

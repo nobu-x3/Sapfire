@@ -2,6 +2,7 @@
 
 #include "Math.h"
 #include <SDL2/SDL.h>
+#include <array>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -11,6 +12,15 @@ struct DirectionalLight
 	Vector3 mDirection;
 	Vector3 mDiffuseColor;
 	Vector3 mSpecColor;
+};
+
+struct PointLight
+{
+	Vector3 mPosition;
+	Vector3 mDiffuseColor;
+	Vector3 mSpecColor;
+	float mIntensity;
+	float mRadius;
 };
 
 class Renderer
@@ -37,6 +47,7 @@ class Renderer
 	inline float GetScreenHeight() const { return mScreenHeight; }
 	inline void SetAmbientLight(const Vector3 &light) { mAmbientLight = light; }
 	inline DirectionalLight &GetDirectionalLight() { return mDirectionalLight; }
+	inline std::array<PointLight, 4> &GetPointLights() { return mPointLights; }
 
 	private:
 	void CreateSpriteVerts();
@@ -67,4 +78,5 @@ class Renderer
 
 	Vector3 mAmbientLight;
 	DirectionalLight mDirectionalLight;
+	std::array<PointLight, 4> mPointLights;
 };

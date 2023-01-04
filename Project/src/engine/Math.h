@@ -246,7 +246,7 @@ struct Vector3
 		inline explicit Vector3(float inX, float inY, float inZ) : x(inX), y(inY), z(inZ) {}
 
 		// Cast to a const float pointer
-		inline const float *GetAsFloatPtr() const { return reinterpret_cast<const float *>(&x); }
+		inline const float *GetAsConstFloatPtr() const { return reinterpret_cast<const float *>(&x); }
 
 		// Set all three components in one line
 		inline void Set(float inX, float inY, float inZ)
@@ -492,7 +492,7 @@ struct Matrix4
 		inline explicit Matrix4(float inMat[4][4]) { memcpy(mat, inMat, 16 * sizeof(float)); }
 
 		// Cast to a const float pointer
-		inline const float *GetAsFloatPtr() const { return reinterpret_cast<const float *>(&mat[0][0]); }
+		inline const float *GetAsConstFloatPtr() const { return reinterpret_cast<const float *>(&mat[0][0]); }
 
 		// Matrix multiplication (a * b)
 		inline friend Matrix4 operator*(const Matrix4 &a, const Matrix4 &b)

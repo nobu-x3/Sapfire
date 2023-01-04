@@ -14,6 +14,7 @@
 Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr)
 {
 }
+
 bool Renderer::Initialize(float width, float height)
 {
 	int sdlResult = SDL_Init(SDL_INIT_VIDEO);
@@ -302,6 +303,18 @@ void Renderer::SetLightUniforms(Shader *shader)
 	shader->SetVectorUniform("uDirLight.mDirection", mDirectionalLight.mDirection);
 	shader->SetVectorUniform("uDirLight.mDiffuseColor", mDirectionalLight.mDiffuseColor);
 	shader->SetVectorUniform("uDirLight.mSpecColor", mDirectionalLight.mSpecColor);
+	for (int i = 0; i < mPointLights.size(); ++i)
+	{
+		shader->SetVectorUniform("uPointLights[" + std::to_string(i) + "].mPosition",
+					 mPointLights[i].mPosition);
+		shader->SetVectorUniform("uPointLights[" + std::to_string(i) + "].mDiffuseColor",
+					 mPointLights[i].mDiffuseColor);
+		shader->SetVectorUniform("uPointLights[" + std::to_string(i) + "].mSpecColor",
+					 mPointLights[i].mSpecColor);
+		shader->SetFloatUniform("uPointLights[" + std::to_string(i) + "].mRadius", mPointLights[i].mRadius);
+		shader->SetFloatUniform("uPointLights[" + std::to_string(i) + "].mIntensity",
+					mPointLights[i].mIntensity);
+	}
 }
 void Renderer::CreateSpriteVerts()
 {

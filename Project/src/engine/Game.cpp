@@ -44,11 +44,11 @@ void Game::LoadData()
 	Quaternion q(Vector3::UnitY, -Math::PiOver2);
 	q = Quaternion::Concatenate(q, Quaternion(Vector3::UnitZ, Math::Pi + Math::Pi / 4.f));
 	cube1->SetRotation(q);
-	MeshComponent *mc = new MeshComponent(cube1);
-	mc->SetMesh(mRenderer->GetMesh("../Assets/Cube.sfmesh"));
+	/* MeshComponent *mc = new MeshComponent(cube1); */
+	/* mc->SetMesh(mRenderer->GetMesh("../Assets/Cube.sfmesh")); */
 
 	Actor *cube2 = new Actor(this);
-	cube2->SetPosition(cube1->GetPosition() + Vector3(0.f, 400.f, 0.f));
+	cube2->SetPosition(cube1->GetPosition() + Vector3(0.f, 400.f, 100.f));
 	cube2->SetScale(100.f);
 	cube2->SetRotation(q);
 	MeshComponent *mc2 = new MeshComponent(cube2);
@@ -91,11 +91,18 @@ void Game::LoadData()
 		cube1->SetRotation(q);
 	}
 	// Setup lights
-	mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
-	DirectionalLight &dir = mRenderer->GetDirectionalLight();
-	dir.mDirection = Vector3(0.f, -0.707f, -0.707f);
-	dir.mDiffuseColor = Vector3(0.f, 1.f, 0.f);
-	dir.mSpecColor = Vector3(0.5f, 1.f, 0.5f);
+	mRenderer->SetAmbientLight(Vector3(0.1f, 0.1f, 0.1f));
+	/* DirectionalLight &dir = mRenderer->GetDirectionalLight(); */
+	/* dir.mDirection = Vector3(0.f, -0.707f, -0.707f); */
+	/* dir.mDiffuseColor = Vector3(1.f, 1.f, 1.f); */
+	/* dir.mSpecColor = Vector3(0.5f, 1.f, 0.5f); */
+
+	std::array<PointLight, 4> &pointLights = mRenderer->GetPointLights();
+	pointLights[0].mPosition = Vector3(0.f, 200.f, 0.f);
+	pointLights[0].mDiffuseColor = Vector3(1.f, 1.f, 1.f);
+	pointLights[0].mSpecColor = Vector3(1.f, 0.f, 0.f);
+	pointLights[0].mIntensity = 400.f;
+	pointLights[0].mRadius = 600.f;
 
 	mCameraActor = new CameraActor(this);
 	mCameraActor->SetPosition(Vector3(10.f, 10.f, 0.f));
@@ -183,6 +190,8 @@ void Game::ProcessInput()
 	mUpdatingActors = false;
 }
 
+static float sun = 0.f;
+
 void Game::UpdateGame()
 {
 	while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16))
@@ -223,6 +232,9 @@ void Game::UpdateGame()
 	{
 		delete actor;
 	}
+	/* DirectionalLight &dirLig = mRenderer->GetDirectionalLight(); */
+	/* dirLig.mDirection = Vector3(0.f, Math::Cos(sun), Math::Sin(sun)); */
+	sun += deltaTime;
 }
 
 void Game::GenerateOutput()
