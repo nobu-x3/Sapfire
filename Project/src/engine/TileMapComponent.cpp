@@ -48,17 +48,17 @@ void TileMapComponent::ReadCSV(std::string path, int height, int width)
 	}
 }
 
-void TileMapComponent::Draw(SDL_Renderer *renderer)
-{
-	SDL_Rect rect;
-	rect.w = static_cast<int>(mTexWidth);
-	rect.h = static_cast<int>(mTexHeight);
-	rect.x = static_cast<int>(mOwner->GetPosition().x - rect.w / 2.f);
-	rect.y = static_cast<int>(mOwner->GetPosition().y - rect.h / 2.f);
+/* void TileMapComponent::Draw(SDL_Renderer *renderer) */
+/* { */
+/* 	SDL_Rect rect; */
+/* 	rect.w = static_cast<int>(mTexWidth); */
+/* 	rect.h = static_cast<int>(mTexHeight); */
+/* 	rect.x = static_cast<int>(mOwner->GetPosition().x - rect.w / 2.f); */
+/* 	rect.y = static_cast<int>(mOwner->GetPosition().y - rect.h / 2.f); */
 
-	for (auto &tile : mTiles)
-	{
-		SDL_RenderCopyEx(renderer, mTexture, &tile.srcrect, &tile.destrect,
-				 -Math::ToDegrees(mOwner->GetRotation()), nullptr, SDL_FLIP_NONE);
-	}
-}
+/* 	for (auto &tile : mTiles) */
+/* 	{ */
+/* 		SDL_RenderCopyEx(renderer, mTexture, &tile.srcrect, &tile.destrect, */
+/* 				 -Math::ToDegrees(mOwner->GetRotation()), nullptr, SDL_FLIP_NONE); */
+/* 	} */
+/* } */

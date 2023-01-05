@@ -26,6 +26,9 @@ const Matrix4 Matrix4::Identity(m4Ident);
 
 const Quaternion Quaternion::Identity(0.0f, 0.0f, 0.0f, 1.0f);
 
+Vector2::Vector2(Vector3 const &vec) : x(vec.x), y(vec.y)
+{
+}
 Vector2 Vector2::Transform(const Vector2 &vec, const Matrix3 &mat, float w /*= 1.0f*/)
 {
 	Vector2 retVal;

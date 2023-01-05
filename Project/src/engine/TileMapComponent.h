@@ -1,3 +1,4 @@
+#pragma once
 #include "SpriteComponent.h"
 #include <SDL_rect.h>
 #include <string>
@@ -16,9 +17,9 @@ class TileMapComponent : public SpriteComponent
 		~TileMapComponent() = default;
 		void ReadCSV(std::string path, int height, int width);
 
-		virtual void Draw(class SDL_Renderer *renderer) override;
+		/* virtual void Draw(class SDL_Renderer *renderer) override; */
 
-	private:
+		private:
 		std::vector<Tile> mTiles;
 		int mWidth, mHeight;
 };

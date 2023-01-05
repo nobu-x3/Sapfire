@@ -1,5 +1,6 @@
 #include "BGSpriteComponent.h"
 #include "SpriteComponent.h"
+#include "engine/Texture.h"
 #include <SDL_rect.h>
 #include <SDL_render.h>
 
@@ -8,7 +9,7 @@ BGSpriteComponent::BGSpriteComponent(Actor *owner, int drawOrder)
 {
 }
 
-void BGSpriteComponent::SetBGTextures(const std::vector<SDL_Texture *> &bgTextures)
+void BGSpriteComponent::SetBGTextures(const std::vector<Texture *> &bgTextures)
 {
 	int count = 0;
 	for (auto tex : bgTextures)
@@ -38,15 +39,15 @@ void BGSpriteComponent::Update(float deltaTime)
 	}
 }
 
-void BGSpriteComponent::Draw(SDL_Renderer *renderer)
-{
-	for (auto &bg : mBGTextures)
-	{
-		SDL_Rect rect;
-		rect.w = static_cast<int>(mScreenSize.x);
-		rect.h = static_cast<int>(mScreenSize.y);
-		rect.x = static_cast<int>(mOwner->GetPosition().x - rect.w / 2.f + bg.mOffset.x);
-		rect.y = static_cast<int>(mOwner->GetPosition().y - rect.h / 2.f + bg.mOffset.y);
-		SDL_RenderCopy(renderer, bg.mTexture, nullptr, &rect);
-	}
-}
+/* void BGSpriteComponent::Draw(SDL_Renderer *renderer) */
+/* { */
+/* 	for (auto &bg : mBGTextures) */
+/* 	{ */
+/* 		SDL_Rect rect; */
+/* 		rect.w = static_cast<int>(mScreenSize.x); */
+/* 		rect.h = static_cast<int>(mScreenSize.y); */
+/* 		rect.x = static_cast<int>(mOwner->GetPosition().x - rect.w / 2.f + bg.mOffset.x); */
+/* 		rect.y = static_cast<int>(mOwner->GetPosition().y - rect.h / 2.f + bg.mOffset.y); */
+/* 		SDL_RenderCopy(renderer, bg.mTexture, nullptr, &rect); */
+/* 	} */
+/* } */

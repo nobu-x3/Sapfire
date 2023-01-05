@@ -1,9 +1,12 @@
 #include "Actor.h"
 #include "Component.h"
 #include "Game.h"
+#include <SDL_log.h>
 #include <algorithm>
 
-Actor::Actor(Game *game) : mGame(game), mPosition(Vector2(0, 0)), mRotation(0), mScale(1), mState(EActive)
+Actor::Actor(Game *game)
+    : mGame(game), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScale(1), mState(EActive),
+      mRecalculateWorldTransform(true)
 {
 	game->AddActor(this);
 }
@@ -18,8 +21,13 @@ Actor::~Actor()
 }
 void Actor::Update(float deltaTime)
 {
-	UpdateComponents(deltaTime);
-	UpdateActor(deltaTime);
+	if (mState == ActorState::EActive)
+	{
+		CalculateWorldTransform();
+		UpdateComponents(deltaTime);
+		UpdateActor(deltaTime);
+		CalculateWorldTransform(); // TODO: might be overkill
+	}
 }
 
 void Actor::UpdateComponents(float deltaTime)
@@ -52,6 +60,21 @@ void Actor::ProcessInput(const uint8_t *keyState)
 			comp->ProcessInput(keyState);
 		}
 		ActorInput(keyState);
+	}
+}
+
+void Actor::CalculateWorldTransform()
+{
+	if (mRecalculateWorldTransform)
+	{
+		mRecalculateWorldTransform = false;
+		mWorldTransform = Matrix4::CreateScale(mScale);
+		mWorldTransform *= Matrix4::CreateFromQuaternion(mRotation);
+		mWorldTransform *= Matrix4::CreateTranslation(mPosition);
+		for (auto comp : mComponents)
+		{
+			comp->OnWorldTransformUpdated();
+		}
 	}
 }
 

@@ -99,6 +99,7 @@ namespace Math
 
 } // namespace Math
 
+
 struct Vector2
 {
 		float x;
@@ -109,6 +110,7 @@ struct Vector2
 			y = _y;
 		}
 
+		Vector2(struct Vector3 const &vec);
 		Vector2() : x(0.f), y(0.f) {}
 		// Set both components in one line
 		void Set(float inX, float inY)
@@ -222,7 +224,7 @@ struct Vector2
 		}
 
 		// Transform vector by matrix
-		inline static Vector2 Transform(const Vector2 &vec, const class Matrix3 &mat, float w = 1.0f);
+		static Vector2 Transform(const Vector2 &vec, const class Matrix3 &mat, float w = 1.0f);
 
 		static const Vector2 Zero;
 		static const Vector2 UnitX;
@@ -239,11 +241,12 @@ struct Vector3
 		float z;
 
 		Vector3() : x(0.0f), y(0.0f), z(0.0f) {}
+		Vector3(Vector2 vec) : x(vec.x), y(vec.y), z(0.0f) {}
 
 		inline explicit Vector3(float inX, float inY, float inZ) : x(inX), y(inY), z(inZ) {}
 
 		// Cast to a const float pointer
-		inline const float *GetAsFloatPtr() const { return reinterpret_cast<const float *>(&x); }
+		inline const float *GetAsConstFloatPtr() const { return reinterpret_cast<const float *>(&x); }
 
 		// Set all three components in one line
 		inline void Set(float inX, float inY, float inZ)
@@ -361,13 +364,12 @@ struct Vector3
 			return v - 2.0f * Vector3::Dot(v, n) * n;
 		}
 
-		inline static Vector3 Transform(const Vector3 &vec, const class Matrix4 &mat, float w = 1.0f);
+		static Vector3 Transform(const Vector3 &vec, const class Matrix4 &mat, float w = 1.0f);
 		// This will transform the vector and renormalize the w component
-		inline static Vector3 TransformWithPerspDiv(const Vector3 &vec, const class Matrix4 &mat,
-							    float w = 1.0f);
+		static Vector3 TransformWithPerspDiv(const Vector3 &vec, const class Matrix4 &mat, float w = 1.0f);
 
 		// Transform a Vector3 by a quaternion
-		inline static Vector3 Transform(const Vector3 &v, const class Quaternion &q);
+		static Vector3 Transform(const Vector3 &v, const class Quaternion &q);
 
 		static const Vector3 Zero;
 		static const Vector3 UnitX;
@@ -490,7 +492,7 @@ struct Matrix4
 		inline explicit Matrix4(float inMat[4][4]) { memcpy(mat, inMat, 16 * sizeof(float)); }
 
 		// Cast to a const float pointer
-		inline const float *GetAsFloatPtr() const { return reinterpret_cast<const float *>(&mat[0][0]); }
+		inline const float *GetAsConstFloatPtr() const { return reinterpret_cast<const float *>(&mat[0][0]); }
 
 		// Matrix multiplication (a * b)
 		inline friend Matrix4 operator*(const Matrix4 &a, const Matrix4 &b)
