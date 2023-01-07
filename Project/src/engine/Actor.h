@@ -1,6 +1,7 @@
 #pragma once
 #include "Math.h"
 #include <cstdint>
+#include <memory>
 #include <vector>
 class Actor
 {
@@ -54,7 +55,7 @@ class Actor
   Vector3 mPosition;
   float mScale;
   Quaternion mRotation;
-  std::vector<class Component *> mComponents;
+  std::vector<std::unique_ptr<class Component>> mComponents;
   Matrix4 mWorldTransform;
   class Game *mGame;
   bool mRecalculateWorldTransform;

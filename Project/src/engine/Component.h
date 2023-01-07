@@ -12,9 +12,10 @@ public:
   inline virtual void ProcessInput(const uint8_t *keyState) {}
   inline Actor *GetOwner() const { return mOwner; }
   inline virtual void OnWorldTransformUpdated() {}
+  inline unsigned int GetGUID() const { return mGUID; }
 
   protected:
   Actor *mOwner;
   int mUpdateOrder;
-
+  unsigned int mGUID;
 };

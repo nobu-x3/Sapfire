@@ -22,6 +22,7 @@ void MeshComponent::SetMesh(Mesh *mesh)
 	mMesh = mesh;
 	mOwner->GetGame()->GetRenderer()->LinkShaderToMeshComp(mesh->GetShaderName(), this);
 }
+
 void MeshComponent::Draw(Shader *shader)
 {
 	if (mMesh)

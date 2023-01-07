@@ -14,10 +14,6 @@ Actor::Actor(Game *game)
 Actor::~Actor()
 {
 	mGame->RemoveActor(this);
-	while (!mComponents.empty())
-	{
-		delete mComponents.back();
-	}
 }
 void Actor::Update(float deltaTime)
 {
@@ -38,13 +34,17 @@ void Actor::UpdateComponents(float deltaTime)
 
 void Actor::AddComponent(Component* component)
 {
-	mComponents.emplace_back(component);
-	std::sort(mComponents.begin(), mComponents.end(), [](Component* a, Component* b) { return a->GetUpdateOrder() < b->GetUpdateOrder(); });
+	mComponents.emplace_back(std::make_unique<Component>(std::move(*component)));
+	std::sort(mComponents.begin(), mComponents.end(),
+		  [](std::unique_ptr<Component> &a, std::unique_ptr<Component> &b) {
+			  return a->GetUpdateOrder() < b->GetUpdateOrder();
+		  });
 }
 
 void Actor::RemoveComponent(Component* component)
 {
-	auto iter = std::find(mComponents.begin(), mComponents.end(), component);
+	auto iter = std::find_if(mComponents.begin(), mComponents.end(),
+				 [&](std::unique_ptr<Component> &p) { return p->GetGUID() == component->GetGUID(); });
 	if (iter != mComponents.end())
 	{
 		mComponents.erase(iter);
@@ -55,7 +55,7 @@ void Actor::ProcessInput(const uint8_t *keyState)
 {
 	if (mState == EActive)
 	{
-		for (auto comp : mComponents)
+		for (auto &comp : mComponents)
 		{
 			comp->ProcessInput(keyState);
 		}
@@ -71,7 +71,7 @@ void Actor::CalculateWorldTransform()
 		mWorldTransform = Matrix4::CreateScale(mScale);
 		mWorldTransform *= Matrix4::CreateFromQuaternion(mRotation);
 		mWorldTransform *= Matrix4::CreateTranslation(mPosition);
-		for (auto comp : mComponents)
+		for (auto &comp : mComponents)
 		{
 			comp->OnWorldTransformUpdated();
 		}
