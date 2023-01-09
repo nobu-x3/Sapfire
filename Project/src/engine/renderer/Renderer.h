@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Math.h"
+#include "engine/Math.h"
 #include <SDL2/SDL.h>
 #include <array>
 #include <string>
