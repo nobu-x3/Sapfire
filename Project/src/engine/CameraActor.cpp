@@ -1,8 +1,8 @@
 #include "CameraActor.h"
 #include "Game.h"
 #include "MovementComponent.h"
-#include "Renderer.h"
 #include "SDL2/SDL_scancode.h"
+#include "engine/renderer/Renderer.h"
 
 CameraActor::CameraActor(Game *game) : Actor(game)
 {

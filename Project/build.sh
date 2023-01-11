@@ -5,7 +5,7 @@ if [[ ! -d FILE ]]; then
 fi
 
 cd build
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake -H. -BDebug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=YES
 cmake ..
 cmake --build .
 cd ..

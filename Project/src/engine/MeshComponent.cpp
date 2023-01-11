@@ -2,10 +2,10 @@
 #include "Actor.h"
 #include "Game.h"
 #include "Mesh.h"
-#include "Renderer.h"
 #include "Shader.h"
 #include "Texture.h"
 #include "VertexArray.h"
+#include "engine/renderer/Renderer.h"
 
 MeshComponent::MeshComponent(Actor *owner) : Component(owner), mMesh(nullptr), mTextureIndex(0)
 {

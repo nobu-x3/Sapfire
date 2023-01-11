@@ -5,8 +5,8 @@
 #include "Game.h"
 #include "Math.h"
 #include "Shader.h"
-#include "engine/Renderer.h"
 #include "engine/Texture.h"
+#include "engine/renderer/Renderer.h"
 #include <SDL_render.h>
 
 #include "Actor.h"

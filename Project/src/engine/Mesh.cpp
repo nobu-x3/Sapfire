@@ -1,7 +1,7 @@
 #include "Mesh.h"
 #include "Math.h"
-#include "Renderer.h"
 #include "VertexArray.h"
+#include "engine/renderer/Renderer.h"
 #include "nlohmann/json.hpp"
 #include <SDL2/SDL_log.h>
 #include <fstream>
