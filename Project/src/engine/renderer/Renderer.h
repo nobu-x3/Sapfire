@@ -64,7 +64,7 @@ private:
   class VertexArray *mSpriteVerts;
   class Shader *mSpriteShader;
 
-  class SDL_Window *mWindow;
+  class Window *mWindow;
   class RenderingContext *mRenderingContext;
   SDL_GLContext mContext;
   class Game *mGame;

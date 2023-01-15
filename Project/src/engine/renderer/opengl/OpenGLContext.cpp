@@ -38,4 +38,24 @@ void OpenGLContext::Init() {
   glGetError(); // to clean benign error code
 }
 
-void OpenGLContext::SwapBuffers() { SDL_GL_SwapWindow(mWindowHandle); }
+void OpenGLContext::OnEnd() {
+  // Sprite components
+  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+}
+
+void OpenGLContext::OnBegin() {
+  // set color to grey
+  glClearColor(0.83f, 0.83f, 0.83f, 1.0f);
+
+  // clear color and depth buffers
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // Mesh components
+  glEnable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
+}
+
+void OpenGLContext::SwapWindow() { SDL_GL_SwapWindow(mWindowHandle); }

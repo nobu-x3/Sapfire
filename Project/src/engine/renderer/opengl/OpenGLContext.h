@@ -7,7 +7,9 @@ public:
   OpenGLContext(class SDL_Window *window);
   virtual ~OpenGLContext() {}
   virtual void Init() override;
-  virtual void SwapBuffers() override;
+  virtual void OnBegin() override;
+  virtual void OnEnd() override;
+  virtual void SwapWindow() override;
 
 private:
   class SDL_Window *mWindowHandle;
