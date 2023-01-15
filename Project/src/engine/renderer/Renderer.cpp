@@ -7,8 +7,6 @@
 #include "engine/Texture.h"
 #include "engine/VertexArray.h"
 #include "engine/renderer/opengl/OpenGLContext.h"
-#include "engine/window/SDL/SDL_Window_Context.h"
-#include "engine/window/Window.h"
 #include <SDL2/SDL.h>
 #include <algorithm>
 #include <iostream>
@@ -16,9 +14,21 @@
 Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr) {}
 
 bool Renderer::Initialize(float width, float height) {
-  WindowProperties props("Engine", 1024, 512);
-
-  mWindow = Window::Create(props);
+  int sdlResult = SDL_Init(SDL_INIT_VIDEO);
+  mScreenWidth = width;
+  mScreenHeight = height;
+  if (sdlResult != 0) {
+    SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+    return false;
+  }
+  mWindow = SDL_CreateWindow("Rocket", 100, 100, static_cast<int>(width),
+                             static_cast<int>(height), SDL_WINDOW_OPENGL);
+  if (!mWindow) {
+    SDL_Log("Unable to initialize window: %s", SDL_GetError());
+    return false;
+  }
+  mRenderingContext = new OpenGLContext(mWindow);
+  mRenderingContext->Init();
 
   if (!LoadShaders()) {
     SDL_Log("Failed to load shaders, exiting");
@@ -40,13 +50,21 @@ void Renderer::Shutdown() {
   }
   mShaderMeshCompMap.clear();
   // SDL_GL_DeleteContext(mContext);
-  // delete mRenderingContext;
-  // SDL_DestroyWindow(mWindow->GetNativeWindow());
+  delete mRenderingContext;
+  SDL_DestroyWindow(mWindow);
   SDL_Quit();
 }
 
 void Renderer::Draw() {
-  mWindow->OnBegin();
+  // set color to grey
+  glClearColor(0.83f, 0.83f, 0.83f, 1.0f);
+
+  // clear color and depth buffers
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // Mesh components
+  glEnable(GL_DEPTH_TEST);
+  glDisable(GL_BLEND);
   auto viewProj = mView * mProjection;
   for (auto pair : mShaderMeshCompMap) {
     pair.first->SetActive();
@@ -56,13 +74,19 @@ void Renderer::Draw() {
       meshComp->Draw(pair.first);
     }
   }
-  mWindow->OnEnd();
+
+  // Sprite components
+  glDisable(GL_DEPTH_TEST);
+  glEnable(GL_BLEND);
+  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+  // TODO: draw scene
   mSpriteShader->SetActive();
   mSpriteVerts->SetActive();
   for (auto sprite : mSprites) {
     sprite->Draw(mSpriteShader);
   }
-  mWindow->OnSubmit();
+  SDL_GL_SwapWindow(mWindow);
 }
 
 void Renderer::AddSprite(SpriteComponent *sprite) {
