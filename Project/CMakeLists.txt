@@ -16,7 +16,7 @@ find_package(OpenGL REQUIRED)
 # 	message("Package not found")
 # endif()
 
-file(GLOB ENGINE_HEADERS "src/engine/*.h" "src/engine/renderer/*.h" "src/engine/renderer/*/*.h")
+file(GLOB ENGINE_HEADERS "src/engine/*.h" "src/engine/renderer/*.h" "src/engine/renderer/*/*.h" "src/engine/events/*.h")
 file(GLOB ENGINE_SOURCES "src/engine/*.cpp" "src/engine/renderer/*.cpp" "src/engine/renderer/*/*.cpp")
 file(GLOB GAME_HEADERS "src/game/*.h")
 file(GLOB GAME_SOURCES "src/game/*.cpp")
