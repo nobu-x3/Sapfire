@@ -1,187 +1,187 @@
 [
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -x c++-header -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/cmake_pch.hxx.gch -c /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.cxx",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -fpch-instantiate-templates -Xclang -emit-pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -x c++-header -o CMakeFiles/Engine.dir/cmake_pch.hxx.pch -c /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.cxx",
   "file": "/home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.cxx"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Actor.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Actor.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Actor.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Actor.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Actor.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/AnimSpriteComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/AnimSpriteComponent.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/AnimSpriteComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/AnimSpriteComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/AnimSpriteComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/BGSpriteComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/BGSpriteComponent.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/BGSpriteComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/BGSpriteComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/BGSpriteComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/CameraActor.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/CameraActor.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/CameraActor.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/CameraActor.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/CameraActor.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/CircleColliderComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/CircleColliderComponent.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/CircleColliderComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/CircleColliderComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/CircleColliderComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Component.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Component.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Component.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Component.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Component.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Game.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Game.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Game.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Game.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Game.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/GameProgrammingOverview.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/GameProgrammingOverview.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/GameProgrammingOverview.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/GameProgrammingOverview.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/GameProgrammingOverview.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/InputComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/InputComponent.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/InputComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/InputComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/InputComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Math.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Math.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Math.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Math.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Math.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Mesh.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Mesh.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Mesh.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Mesh.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Mesh.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/MeshComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/MeshComponent.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/MeshComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/MeshComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/MeshComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/MovementComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/MovementComponent.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/MovementComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/MovementComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/MovementComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/PlaneActor.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/PlaneActor.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/PlaneActor.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/PlaneActor.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/PlaneActor.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Random.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Random.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Random.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Random.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Random.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Shader.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Shader.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Shader.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Shader.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Shader.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/SpriteComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/SpriteComponent.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/SpriteComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/SpriteComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/SpriteComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/State.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/State.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/State.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/State.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/State.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/StateMachine.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/StateMachine.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/StateMachine.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/StateMachine.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/StateMachine.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Texture.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Texture.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Texture.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Texture.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Texture.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/TileMapComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/TileMapComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/VertexArray.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/VertexArray.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/engpch.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/engpch.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/engpch.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/engpch.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/engpch.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/Renderer.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/Renderer.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/Renderer.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/Renderer.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/Renderer.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/c++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -include /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLContext.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLContext.cpp",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLContext.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLContext.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLContext.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/basic_csv_parser.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/basic_csv_parser.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/basic_csv_parser.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/basic_csv_parser.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/basic_csv_parser.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/col_names.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/col_names.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/col_names.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/col_names.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/col_names.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_format.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_format.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_format.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_format.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_format.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_reader.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_reader.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_reader.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_reader.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_reader.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_reader_iterator.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_reader_iterator.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_reader_iterator.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_reader_iterator.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_reader_iterator.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_row.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_row.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_row.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_row.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_row.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_row_json.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_row_json.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_row_json.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_row_json.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_row_json.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_stat.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_stat.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_stat.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_stat.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_stat.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_utility.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_utility.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv.dir/csv_utility.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_utility.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/include/internal/csv_utility.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/programs",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv_info.dir/csv_info.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/programs/csv_info.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv_info.dir/csv_info.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/programs/csv_info.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/programs/csv_info.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/programs",
-  "command": "/usr/bin/c++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv_stats.dir/csv_stats.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/programs/csv_stats.cpp",
+  "command": "/usr/bin/clang++ -DCMAKE_CXX_STANDARD=17 -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include  -Wno-unknown-pragmas -std=gnu++17 -o CMakeFiles/csv_stats.dir/csv_stats.cpp.o -c /home/nobu/workspace/Engine/Project/libs/csv-parser/programs/csv_stats.cpp",
   "file": "/home/nobu/workspace/Engine/Project/libs/csv-parser/programs/csv_stats.cpp"
 }
 ]
