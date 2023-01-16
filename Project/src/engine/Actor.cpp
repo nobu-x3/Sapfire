@@ -2,7 +2,6 @@
 #include "Component.h"
 #include "Game.h"
 #include <SDL_log.h>
-#include <algorithm>
 
 Actor::Actor(Game *game)
     : mGame(game), mPosition(Vector3::Zero), mRotation(Quaternion::Identity), mScale(1), mState(EActive),
@@ -32,17 +31,18 @@ void Actor::Update(float deltaTime)
 
 void Actor::UpdateComponents(float deltaTime)
 {
-	for (auto& component : mComponents)
+	for (auto &component : mComponents)
 		component->Update(deltaTime);
 }
 
-void Actor::AddComponent(Component* component)
+void Actor::AddComponent(Component *component)
 {
 	mComponents.emplace_back(component);
-	std::sort(mComponents.begin(), mComponents.end(), [](Component* a, Component* b) { return a->GetUpdateOrder() < b->GetUpdateOrder(); });
+	std::sort(mComponents.begin(), mComponents.end(),
+		  [](Component *a, Component *b) { return a->GetUpdateOrder() < b->GetUpdateOrder(); });
 }
 
-void Actor::RemoveComponent(Component* component)
+void Actor::RemoveComponent(Component *component)
 {
 	auto iter = std::find(mComponents.begin(), mComponents.end(), component);
 	if (iter != mComponents.end())

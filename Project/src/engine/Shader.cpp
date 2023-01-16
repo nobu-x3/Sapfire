@@ -2,8 +2,6 @@
 #include "GL/glew.h"
 #include "SDL.h"
 #include <SDL_log.h>
-#include <fstream>
-#include <sstream>
 
 bool Shader::Load(const std::string &vertName, const std::string &fragName)
 {

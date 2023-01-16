@@ -1,23 +1,20 @@
 ﻿#pragma once
 #include "Actor.h"
 #include <SDL_render.h>
-#include <memory>
-#include <string>
-#include <unordered_map>
 class SDL_Window;
 class SDL_Renderer;
 class SpriteComponent;
 class Game
 {
-public:
-    Game();
-    ~Game();
+	public:
+	Game();
+	~Game();
 
-    bool Initialize();
-    void Update();
-    void Shutdown();
+	bool Initialize();
+	void Update();
+	void Shutdown();
 
-	void AddActor(Actor* actor);
+	void AddActor(Actor *actor);
 	void RemoveActor(Actor *actor);
 	inline class Renderer *GetRenderer() { return mRenderer; }
 
@@ -29,13 +26,11 @@ public:
 	void UnloadData();
 	void RespawnShip();
 
-
 	int mTicksCount;
 	bool mIsRunning;
 	// Map of textures loaded
-	std::vector<Actor*> mActors;
-	std::vector<Actor*> mPendingActors;
-
+	std::vector<Actor *> mActors;
+	std::vector<Actor *> mPendingActors;
 
 	bool mUpdatingActors;
 

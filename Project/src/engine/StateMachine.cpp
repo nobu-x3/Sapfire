@@ -2,7 +2,6 @@
 #include "Actor.h"
 #include "State.h"
 #include <SDL_log.h>
-#include <cstring>
 
 StateMachine::StateMachine(Actor *actor) : Component(actor), mCurrentState(nullptr)
 {

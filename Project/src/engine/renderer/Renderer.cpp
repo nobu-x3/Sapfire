@@ -9,8 +9,6 @@
 #include "engine/events/WindowEvent.h"
 #include "engine/renderer/opengl/OpenGLContext.h"
 #include <SDL2/SDL.h>
-#include <algorithm>
-#include <iostream>
 
 Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr)
 {

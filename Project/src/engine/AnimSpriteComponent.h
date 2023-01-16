@@ -2,9 +2,6 @@
 
 #include "SpriteComponent.h"
 #include "engine/Texture.h"
-#include <string>
-#include <unordered_map>
-#include <vector>
 struct AnimData
 {
 	std::string AnimName;
@@ -20,7 +17,7 @@ struct AnimData
 };
 class AnimSpriteComponent : public SpriteComponent
 {
-      public:
+	public:
 	AnimSpriteComponent(class Actor *owner, int drawOrder = 100);
 	~AnimSpriteComponent() = default;
 
@@ -36,7 +33,7 @@ class AnimSpriteComponent : public SpriteComponent
 		mNameIndexMap.emplace(animationData.AnimName, mAnimDatas.size() - 1);
 	}
 
-      private:
+	private:
 	void PlayAnimation(int index, float deltaTime);
 
 	std::vector<AnimData> mAnimDatas;

@@ -19,8 +19,6 @@
 #include <SDL_surface.h>
 #include <SDL_timer.h>
 #include <SDL_video.h>
-#include <algorithm>
-#include <iostream>
 
 Game::Game()
 {

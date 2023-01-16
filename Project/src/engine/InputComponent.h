@@ -1,10 +1,8 @@
 #pragma once
 #include "MovementComponent.h"
-#include <cstdint>
-
 class InputComponent : public MovementComponent
 {
-      public:
+	public:
 	InputComponent(class Actor *owner, float mass, int updateOrder = 10);
 
 	void ProcessInput(const uint8_t *keyState) override;
@@ -23,7 +21,7 @@ class InputComponent : public MovementComponent
 	inline uint8_t GetCounterClockwiseKey() { return mCounterClockwiseKey; }
 	inline void SetCounterClockwiseKey(uint8_t key) { mCounterClockwiseKey = key; }
 
-      private:
+	private:
 	float mMaxForwardSpeed;
 	float mMaxAngularSpeed;
 

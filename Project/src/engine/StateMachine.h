@@ -1,7 +1,5 @@
 #pragma once
 #include "Component.h"
-#include <string>
-#include <unordered_map>
 
 class StateMachine : public Component
 {

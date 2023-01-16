@@ -1,11 +1,9 @@
 #pragma once
-#include "Math.h"
 #include "SpriteComponent.h"
 #include "engine/Texture.h"
-#include <vector>
 class BGSpriteComponent : public SpriteComponent
 {
-      public:
+	public:
 	BGSpriteComponent(class Actor *owner, int drawOrder = 10);
 	~BGSpriteComponent() = default;
 	void Update(float deltaTime) override;
@@ -16,7 +14,7 @@ class BGSpriteComponent : public SpriteComponent
 	inline float GetScrollSpeed() const { return mScrollSpeed; }
 	inline void SetScrollSpeed(float speed) { mScrollSpeed = speed; }
 
-      private:
+	private:
 	struct BGTexture
 	{
 		Texture *mTexture;

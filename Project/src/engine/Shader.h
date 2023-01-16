@@ -1,8 +1,6 @@
 #pragma once
 #include "GL/glew.h"
 #include "engine/Math.h"
-#include <string>
-#include <unordered_map>
 
 class Shader
 {

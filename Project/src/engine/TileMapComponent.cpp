@@ -1,10 +1,8 @@
 #include "TileMapComponent.h"
-#include "Math.h"
 #include "csv.hpp"
 #include "internal/csv_row.hpp"
 #include <SDL_log.h>
 #include <SDL_render.h>
-#include <string>
 
 void TileMapComponent::ReadCSV(std::string path, int height, int width)
 {
