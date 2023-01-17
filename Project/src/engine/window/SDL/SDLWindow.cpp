@@ -49,7 +49,6 @@ void SDLWindow::OnUpdate()
 		switch (event.type)
 		{
 		case SDL_QUIT: {
-
 			WindowCloseEvent e;
 			mData.EventCallbackFunction(e);
 			break;
