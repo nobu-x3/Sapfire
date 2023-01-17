@@ -101,6 +101,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Test.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Test.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/Test.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Texture.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Texture.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Texture.cpp"
 },
@@ -128,6 +133,11 @@
   "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLContext.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLContext.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLContext.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++  -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/window/SDL/SDLWindow.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/window/SDL/SDLWindow.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/window/SDL/SDLWindow.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",

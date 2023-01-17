@@ -41,15 +41,6 @@ bool Renderer::Initialize(float width, float height)
 	}
 
 	CreateSpriteVerts();
-	WindowResizeEvent e(1280, 720);
-	if (e.IsInCategory(EventCategoryApplication))
-	{
-		SDL_Log("%s", e.GetName());
-	}
-	if (e.IsInCategory(EventCategoryInput))
-	{
-		SDL_Log("%s", e.GetName());
-	}
 	return true;
 }
 
