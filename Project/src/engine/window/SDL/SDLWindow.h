@@ -6,11 +6,21 @@ class SDLWindow : public Window
 	SDLWindow(const WindowProperties &props);
 	virtual ~SDLWindow();
 	virtual void OnUpdate() override;
-	inline virtual unsigned int GetWidth() const override { return mProperties.Width; }
-	inline virtual unsigned int GetHeight() const override { return mProperties.Height; }
+	inline virtual unsigned int GetWidth() const override { return mData.Width; }
+	inline virtual unsigned int GetHeight() const override { return mData.Height; }
+	virtual void SetEventCallback(const EventCallback &event) override;
+
+	private:
+	void PollEvents();
 
 	private:
 	class SDL_Window *mWindow;
 
-	WindowProperties mProperties;
+	struct WindowData
+	{
+		std::string Title;
+		unsigned int Width, Height;
+		EventCallback EventCallbackFunction;
+	};
+	WindowData mData;
 };

@@ -4,6 +4,7 @@
 int main(int argc, char *argv[])
 {
 	TestApp testApp;
+	testApp.Tick();
 	// while (true)
 	// 	;
 	// Game game;

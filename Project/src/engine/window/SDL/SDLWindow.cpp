@@ -1,5 +1,9 @@
+#include "engine/events/KeyEvent.h"
+#include "engine/events/MouseEvent.h"
+#include "engine/events/WindowEvent.h"
+
 #include "SDLWindow.h"
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
 
 Window *Window::Create(const WindowProperties &props)
 {
@@ -8,7 +12,9 @@ Window *Window::Create(const WindowProperties &props)
 
 SDLWindow::SDLWindow(const WindowProperties &props)
 {
-	mProperties = props;
+	mData.Title = props.Title;
+	mData.Width = props.Width;
+	mData.Height = props.Height;
 	int sdlResult = SDL_Init(SDL_INIT_VIDEO);
 	if (sdlResult != 0)
 	{
@@ -24,6 +30,11 @@ SDLWindow::SDLWindow(const WindowProperties &props)
 	}
 }
 
+void SDLWindow::SetEventCallback(const EventCallback &event)
+{
+	mData.EventCallbackFunction = event;
+}
+
 SDLWindow::~SDLWindow()
 {
 	SDL_DestroyWindow(mWindow);
@@ -31,5 +42,56 @@ SDLWindow::~SDLWindow()
 }
 void SDLWindow::OnUpdate()
 {
+	SDL_Event event;
+	// returns true if there are events in the q
+	while (SDL_PollEvent(&event))
+	{
+		switch (event.type)
+		{
+		case SDL_QUIT: {
+
+			WindowCloseEvent e;
+			mData.EventCallbackFunction(e);
+			break;
+		}
+		case SDL_WINDOWEVENT_RESIZED: {
+			WindowResizeEvent e(event.window.data1,
+					    event.window.data2); // i hope this works, cant resize windows with my setup
+			mData.EventCallbackFunction(e);
+			break;
+		}
+		case SDL_MOUSEMOTION: {
+			MouseMovedEvent e(event.motion.x, event.motion.y);
+			mData.EventCallbackFunction(e);
+			break;
+		}
+		case SDL_MOUSEBUTTONDOWN: {
+			MouseButtonPressedEvent e(event.button.button);
+			mData.EventCallbackFunction(e);
+			break;
+		}
+		case SDL_MOUSEBUTTONUP: {
+			MouseButtonReleasedEvent e(event.button.button);
+			mData.EventCallbackFunction(e);
+			break;
+		}
+		case SDL_MOUSEWHEEL: {
+			MouseScrolledEvent e(event.wheel.x, event.wheel.y);
+			mData.EventCallbackFunction(e);
+			break;
+		}
+		case SDL_KEYDOWN: {
+			KeyPressedEvent e(event.key.keysym.sym, event.key.repeat);
+			mData.EventCallbackFunction(e);
+			break;
+		}
+		case SDL_KEYUP: {
+			KeyReleasedEvent e(event.key.keysym.sym);
+			mData.EventCallbackFunction(e);
+			break;
+		}
+		}
+	}
+
 	SDL_GL_SwapWindow(mWindow);
 }

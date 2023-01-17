@@ -18,10 +18,11 @@ struct WindowProperties
 class Window
 {
 	public:
+	using EventCallback = std::function<void(Event &)>;
 	virtual ~Window() {}
 	virtual void OnUpdate() = 0;
 	virtual unsigned int GetWidth() const = 0;
 	virtual unsigned int GetHeight() const = 0;
-
+	virtual void SetEventCallback(const EventCallback &event) = 0;
 	static Window *Create(const WindowProperties &properties = WindowProperties());
 };
