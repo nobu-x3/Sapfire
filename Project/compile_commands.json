@@ -51,6 +51,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/LayerStack.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/LayerStack.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/LayerStack.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Log.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Log.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/Log.cpp"
 },

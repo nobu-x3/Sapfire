@@ -1,5 +1,6 @@
 #pragma once
-
+#include "engine/Core.h"
+#include "engine/LayerStack.h"
 class TestApp
 {
 	public:
@@ -14,6 +15,8 @@ class TestApp
 	bool OnWindowClose(class WindowCloseEvent &e);
 
 	private:
-	std::unique_ptr<class Window> mWindow;
+	Scope<class Window> mWindow;
+	LayerStack mLayerStack;
+
 	bool mRunning;
 };
