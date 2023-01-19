@@ -1,6 +1,7 @@
 #include "engine/Test.h"
 #include "engine/Log.h"
 #include "engine/events/WindowEvent.h"
+#include "engine/window/SDL/SDLWindow.h"
 #include "engine/window/Window.h"
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 TestApp::TestApp()
@@ -20,7 +21,12 @@ void TestApp::OnEvent(Event &event)
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(TestApp::OnWindowClose));
 
-	ENGINE_TRACE(event.ToString());
+	for (auto it = mLayerStack.end(); it != mLayerStack.begin();)
+	{
+		(*--it)->OnEvent(event);
+		if (event.Handled)
+			break;
+	}
 }
 
 void TestApp::Tick()
@@ -28,8 +34,6 @@ void TestApp::Tick()
 	while (mRunning)
 	{
 		mWindow->OnUpdate();
-		auto it = mLayerStack.begin();
-		ENGINE_WARN((**it).GetName());
 	}
 }
 

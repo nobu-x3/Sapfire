@@ -15,6 +15,7 @@ class SDLWindow : public Window
 
 	private:
 	class SDL_Window *mWindow;
+	class RenderingContext *mRenderer;
 
 	struct WindowData
 	{

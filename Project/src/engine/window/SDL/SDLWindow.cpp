@@ -1,8 +1,9 @@
+#include "SDLWindow.h"
+#include "engine/Log.h"
 #include "engine/events/KeyEvent.h"
 #include "engine/events/MouseEvent.h"
 #include "engine/events/WindowEvent.h"
-
-#include "SDLWindow.h"
+#include "engine/renderer/opengl/OpenGLContext.h"
 #include <SDL2/SDL.h>
 
 Window *Window::Create(const WindowProperties &props)
@@ -18,16 +19,20 @@ SDLWindow::SDLWindow(const WindowProperties &props)
 	int sdlResult = SDL_Init(SDL_INIT_VIDEO);
 	if (sdlResult != 0)
 	{
-		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+		ENGINE_ERROR("Unable to initialize SDL: {0}", SDL_GetError());
 		return;
 	}
 	mWindow = SDL_CreateWindow(props.Title.c_str(), 100, 100, static_cast<int>(props.Width),
 				   static_cast<int>(props.Height), SDL_WINDOW_OPENGL);
+
 	if (!mWindow)
 	{
-		SDL_Log("Unable to initialize window: %s", SDL_GetError());
+		ENGINE_ERROR("Unable to initialize window: {0}", SDL_GetError());
 		return;
 	}
+
+	mRenderer = new OpenGLContext(mWindow);
+	mRenderer->Init();
 }
 
 void SDLWindow::SetEventCallback(const EventCallback &event)
@@ -37,6 +42,7 @@ void SDLWindow::SetEventCallback(const EventCallback &event)
 
 SDLWindow::~SDLWindow()
 {
+	mRenderer->Shutdown();
 	SDL_DestroyWindow(mWindow);
 	SDL_Quit();
 }
@@ -92,5 +98,5 @@ void SDLWindow::OnUpdate()
 		}
 	}
 
-	SDL_GL_SwapWindow(mWindow);
+	mRenderer->SwapBuffers();
 }
