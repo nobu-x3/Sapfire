@@ -25,9 +25,7 @@ bool OpenGLShader::Load(const std::string &vertName, const std::string &fragName
 	// Verify that the program linked successfully
 	if (!IsValidProgram())
 	{
-		glDeleteProgram(mShaderProgram);
-		glDeleteShader(mFragShader);
-		glDeleteShader(mVertexShader);
+		Unload();
 		return false;
 	}
 	glDetachShader(mShaderProgram, mVertexShader);
@@ -87,9 +85,7 @@ bool OpenGLShader::CompileShader(const std::string &fileName, GLenum shaderType,
 		if (!IsCompiled(outShader))
 		{
 			ENGINE_ERROR("Failed to compile shader: {0}", fileName);
-			glDeleteProgram(mShaderProgram);
-			glDeleteShader(mFragShader);
-			glDeleteShader(mVertexShader);
+			Unload();
 			return false;
 		}
 	}
