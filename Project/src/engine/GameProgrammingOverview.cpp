@@ -7,10 +7,10 @@ int main(int argc, char *argv[])
 	testApp.Tick();
 	// while (true)
 	// 	;
-	// Game game;
-	// bool success = game.Initialize();
-	// if (success)
-	// 	game.Update();
-	// game.Shutdown();
+	/* Game game; */
+	/* bool success = game.Initialize(); */
+	/* if (success) */
+	/* 	game.Update(); */
+	/* game.Shutdown(); */
 	return 0;
 }

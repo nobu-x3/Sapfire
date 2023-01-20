@@ -4,14 +4,13 @@
 #include "GL/glew.h"
 #include "Game.h"
 #include "Math.h"
-#include "Shader.h"
 #include "engine/Texture.h"
 #include "engine/renderer/Renderer.h"
+#include "engine/shader/OpenGLShader.h"
 #include <SDL_render.h>
 
 #include "Actor.h"
 #include "Game.h"
-#include "Shader.h"
 #include "SpriteComponent.h"
 #include "Texture.h"
 
@@ -26,7 +25,7 @@ SpriteComponent::~SpriteComponent()
 	mOwner->GetGame()->GetRenderer()->RemoveSprite(this);
 }
 
-void SpriteComponent::Draw(Shader *shader)
+void SpriteComponent::Draw(OpenGLShader *shader)
 {
 	if (mTexture)
 	{

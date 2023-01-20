@@ -91,11 +91,6 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Shader.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Shader.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/engine/Shader.cpp"
-},
-{
-  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/SpriteComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/SpriteComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/SpriteComponent.cpp"
 },
@@ -143,6 +138,11 @@
   "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLContext.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLContext.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLContext.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/shader/OpenGLShader.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/shader/OpenGLShader.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/shader/OpenGLShader.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",

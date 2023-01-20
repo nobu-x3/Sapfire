@@ -4,7 +4,6 @@
 #include "GL/glew.h"
 #include "Mesh.h"
 #include "PlaneActor.h"
-#include "Shader.h"
 #include "SpriteComponent.h"
 #include "Texture.h"
 #include "VertexArray.h"
@@ -12,6 +11,7 @@
 #include "engine/MeshComponent.h"
 #include "engine/Texture.h"
 #include "engine/renderer/Renderer.h"
+#include "engine/shader/Shader.h"
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_log.h>

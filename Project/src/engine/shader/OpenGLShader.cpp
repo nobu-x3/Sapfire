@@ -1,9 +1,9 @@
-#include "Shader.h"
+#include "engine/shader/OpenGLShader.h"
 #include "GL/glew.h"
 #include "SDL.h"
 #include <SDL_log.h>
 
-bool Shader::Load(const std::string &vertName, const std::string &fragName)
+bool OpenGLShader::Load(const std::string &vertName, const std::string &fragName)
 {
 	// Compile vertex and pixel shaders
 	if (!CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader) ||
@@ -28,7 +28,7 @@ bool Shader::Load(const std::string &vertName, const std::string &fragName)
 	return true;
 }
 
-void Shader::Unload()
+void OpenGLShader::Unload()
 {
 	// Delete the program/shaders
 	glDeleteProgram(mShaderProgram);
@@ -36,13 +36,13 @@ void Shader::Unload()
 	glDeleteShader(mFragShader);
 }
 
-void Shader::SetActive()
+void OpenGLShader::SetActive()
 {
 	// Set this program as the active one
 	glUseProgram(mShaderProgram);
 }
 
-void Shader::SetMatrixUniform(const std::string &name, const Matrix4 &matrix)
+void OpenGLShader::SetMatrixUniform(const std::string &name, const Matrix4 &matrix)
 {
 	// Find the uniform by this name
 	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
@@ -50,18 +50,18 @@ void Shader::SetMatrixUniform(const std::string &name, const Matrix4 &matrix)
 	glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsConstFloatPtr());
 }
 
-void Shader::SetVectorUniform(const std::string &name, const Vector3 &vec)
+void OpenGLShader::SetVectorUniform(const std::string &name, const Vector3 &vec)
 {
 	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 	glUniform3fv(loc, 1, vec.GetAsConstFloatPtr());
 }
-void Shader::SetFloatUniform(const std::string &name, float val)
+void OpenGLShader::SetFloatUniform(const std::string &name, float val)
 {
 	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 	glUniform1f(loc, val);
 }
 
-bool Shader::CompileShader(const std::string &fileName, GLenum shaderType, GLuint &outShader)
+bool OpenGLShader::CompileShader(const std::string &fileName, GLenum shaderType, GLuint &outShader)
 {
 	// Open file
 	std::ifstream shaderFile(fileName);
@@ -94,7 +94,7 @@ bool Shader::CompileShader(const std::string &fileName, GLenum shaderType, GLuin
 	return true;
 }
 
-bool Shader::IsCompiled(GLuint shader)
+bool OpenGLShader::IsCompiled(GLuint shader)
 {
 	GLint status;
 	// Query the compile status
@@ -112,7 +112,7 @@ bool Shader::IsCompiled(GLuint shader)
 	return true;
 }
 
-bool Shader::IsValidProgram()
+bool OpenGLShader::IsValidProgram()
 {
 
 	GLint status;

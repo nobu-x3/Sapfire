@@ -35,8 +35,8 @@ class Renderer
 	inline void SetViewMatrix(const Matrix4 &view) { mView = view; }
 	class Texture *GetTexture(const char *fileName);
 	class Mesh *GetMesh(const char *fileName);
-	class Shader *GetShader(const std::string &fileName);
-	void LoadShader(class Shader *sh);
+	class OpenGLShader *GetShader(const std::string &fileName);
+	void LoadShader(class OpenGLShader *sh);
 	void LinkShaderToMeshComp(const std::string &fileName, class MeshComponent *meshComp);
 	inline float GetScreenWidth() const { return mScreenWidth; }
 	inline float GetScreenHeight() const { return mScreenHeight; }
@@ -47,18 +47,18 @@ class Renderer
 	private:
 	void CreateSpriteVerts();
 	bool LoadShaders();
-	void SetLightUniforms(class Shader *shader);
+	void SetLightUniforms(class OpenGLShader *shader);
 
 	std::unordered_map<std::string, class Texture *> mTextures;
 	std::unordered_map<std::string, class Mesh *> mMeshes;
-	std::unordered_map<std::string, class Shader *> mShaders;
-	std::unordered_map<class Shader *, std::vector<class MeshComponent *>> mShaderMeshCompMap;
+	std::unordered_map<std::string, class OpenGLShader *> mShaders;
+	std::unordered_map<class OpenGLShader *, std::vector<class MeshComponent *>> mShaderMeshCompMap;
 	std::vector<class SpriteComponent *> mSprites; // this list is sorted
 	std::vector<class MeshComponent *> mMeshComponents;
-	std::vector<class Shader *> mMeshShaders;
+	std::vector<class OpenGLShader *> mMeshShaders;
 
 	class VertexArray *mSpriteVerts;
-	class Shader *mSpriteShader;
+	class OpenGLShader *mSpriteShader;
 
 	class SDL_Window *mWindow;
 	class RenderingContext *mRenderingContext;
