@@ -1,7 +1,6 @@
 #include "engine/shader/OpenGLShader.h"
 #include "GL/glew.h"
-#include "SDL.h"
-#include <SDL_log.h>
+#include "engine/Log.h"
 
 bool OpenGLShader::Load(const std::string &vertName, const std::string &fragName)
 {
@@ -81,13 +80,13 @@ bool OpenGLShader::CompileShader(const std::string &fileName, GLenum shaderType,
 
 		if (!IsCompiled(outShader))
 		{
-			SDL_Log("Failed to compile shader %s", fileName.c_str());
+			ENGINE_ERROR("Failed to compile shader: {0}", fileName);
 			return false;
 		}
 	}
 	else
 	{
-		SDL_Log("Shader file not found: %s", fileName.c_str());
+		ENGINE_ERROR("Shader file not found: {0}", fileName);
 		return false;
 	}
 
@@ -105,7 +104,7 @@ bool OpenGLShader::IsCompiled(GLuint shader)
 		char buffer[512];
 		memset(buffer, 0, 512);
 		glGetShaderInfoLog(shader, 511, nullptr, buffer);
-		SDL_Log("GLSL Compile Failed:\n%s", buffer);
+		ENGINE_ERROR("GLSL Compile failed:\n{0}", buffer);
 		return false;
 	}
 
@@ -123,7 +122,7 @@ bool OpenGLShader::IsValidProgram()
 		char buffer[512];
 		memset(buffer, 0, 512);
 		glGetProgramInfoLog(mShaderProgram, 511, nullptr, buffer);
-		SDL_Log("GLSL Link Status:\n%s", buffer);
+		ENGINE_ERROR("GLSL Link status:\n{0}", buffer);
 		return false;
 	}
 
