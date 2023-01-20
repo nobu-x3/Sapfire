@@ -2,6 +2,12 @@
 #include "GL/glew.h"
 #include "engine/Log.h"
 
+OpenGLShader::~OpenGLShader()
+{
+	ENGINE_INFO("destructor called");
+	glDeleteProgram(mShaderProgram);
+}
+
 bool OpenGLShader::Load(const std::string &vertName, const std::string &fragName)
 {
 	// Compile vertex and pixel shaders
@@ -10,20 +16,22 @@ bool OpenGLShader::Load(const std::string &vertName, const std::string &fragName
 	{
 		return false;
 	}
-
 	// Now create a shader program that
 	// links together the vertex/frag shaders
 	mShaderProgram = glCreateProgram();
 	glAttachShader(mShaderProgram, mVertexShader);
 	glAttachShader(mShaderProgram, mFragShader);
 	glLinkProgram(mShaderProgram);
-
 	// Verify that the program linked successfully
 	if (!IsValidProgram())
 	{
+		glDeleteProgram(mShaderProgram);
+		glDeleteShader(mFragShader);
+		glDeleteShader(mVertexShader);
 		return false;
 	}
-
+	glDetachShader(mShaderProgram, mVertexShader);
+	glDetachShader(mShaderProgram, mFragShader);
 	return true;
 }
 
@@ -71,16 +79,17 @@ bool OpenGLShader::CompileShader(const std::string &fileName, GLenum shaderType,
 		sstream << shaderFile.rdbuf();
 		std::string contents = sstream.str();
 		const char *contentsChar = contents.c_str();
-
 		// Create a shader of the specified type
 		outShader = glCreateShader(shaderType);
 		// Set the source characters and try to compile
 		glShaderSource(outShader, 1, &(contentsChar), nullptr);
 		glCompileShader(outShader);
-
 		if (!IsCompiled(outShader))
 		{
 			ENGINE_ERROR("Failed to compile shader: {0}", fileName);
+			glDeleteProgram(mShaderProgram);
+			glDeleteShader(mFragShader);
+			glDeleteShader(mVertexShader);
 			return false;
 		}
 	}
@@ -89,7 +98,6 @@ bool OpenGLShader::CompileShader(const std::string &fileName, GLenum shaderType,
 		ENGINE_ERROR("Shader file not found: {0}", fileName);
 		return false;
 	}
-
 	return true;
 }
 
@@ -98,7 +106,6 @@ bool OpenGLShader::IsCompiled(GLuint shader)
 	GLint status;
 	// Query the compile status
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-
 	if (status != GL_TRUE)
 	{
 		char buffer[512];
@@ -107,13 +114,11 @@ bool OpenGLShader::IsCompiled(GLuint shader)
 		ENGINE_ERROR("GLSL Compile failed:\n{0}", buffer);
 		return false;
 	}
-
 	return true;
 }
 
 bool OpenGLShader::IsValidProgram()
 {
-
 	GLint status;
 	// Query the link status
 	glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &status);
@@ -125,6 +130,5 @@ bool OpenGLShader::IsValidProgram()
 		ENGINE_ERROR("GLSL Link status:\n{0}", buffer);
 		return false;
 	}
-
 	return true;
 }

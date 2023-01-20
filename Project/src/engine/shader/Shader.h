@@ -3,6 +3,7 @@
 class Shader
 {
 	public:
+	virtual ~Shader() {}
 	virtual bool Load(const std::string &vertName, const std::string &fragName) = 0;
 	virtual void Unload() = 0;
 

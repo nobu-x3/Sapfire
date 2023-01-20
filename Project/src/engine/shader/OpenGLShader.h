@@ -6,7 +6,7 @@ class OpenGLShader : public Shader
 {
 	public:
 	OpenGLShader() = default;
-	~OpenGLShader() = default;
+	~OpenGLShader();
 	// tries to load v/f shaders with speicifed names
 	virtual bool Load(const std::string &vertName, const std::string &fragName) override;
 	virtual void Unload() override;
