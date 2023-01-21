@@ -1,7 +1,7 @@
 #include "engine/Test.h"
 #include "engine/Log.h"
 #include "engine/events/WindowEvent.h"
-#include "engine/window/Window.h"
+#include "engine/renderer/Window.h"
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 TestApp::TestApp()

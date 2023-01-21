@@ -6,8 +6,8 @@
 #include "engine/Texture.h"
 #include "engine/VertexArray.h"
 #include "engine/events/WindowEvent.h"
+#include "engine/renderer/Shader.h"
 #include "engine/renderer/opengl/OpenGLContext.h"
-#include "engine/shader/Shader.h"
 #include <SDL2/SDL.h>
 
 Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr)

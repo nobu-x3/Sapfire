@@ -11,7 +11,7 @@
 #include "engine/MeshComponent.h"
 #include "engine/Texture.h"
 #include "engine/renderer/Renderer.h"
-#include "engine/shader/Shader.h"
+#include "engine/renderer/Shader.h"
 #include <SDL.h>
 #include <SDL_error.h>
 #include <SDL_log.h>

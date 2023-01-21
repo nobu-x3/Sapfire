@@ -6,7 +6,7 @@
 #include "Texture.h"
 #include "VertexArray.h"
 #include "engine/renderer/Renderer.h"
-#include "engine/shader/Shader.h"
+#include "engine/renderer/Shader.h"
 
 MeshComponent::MeshComponent(Actor *owner) : Component(owner), mMesh(nullptr), mTextureIndex(0)
 {

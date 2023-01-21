@@ -1,4 +1,4 @@
-#include "engine/shader/OpenGLShader.h"
+#include "engine/renderer/opengl/OpenGLShader.h"
 #include "engine/Log.h"
 
 Shader *Shader::Create()

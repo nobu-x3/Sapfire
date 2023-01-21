@@ -6,7 +6,7 @@
 #include "Math.h"
 #include "engine/Texture.h"
 #include "engine/renderer/Renderer.h"
-#include "engine/shader/OpenGLShader.h"
+#include "engine/renderer/opengl/OpenGLShader.h"
 #include <SDL_render.h>
 
 #include "Actor.h"
