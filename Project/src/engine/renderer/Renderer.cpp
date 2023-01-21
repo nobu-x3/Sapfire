@@ -7,7 +7,7 @@
 #include "engine/VertexArray.h"
 #include "engine/events/WindowEvent.h"
 #include "engine/renderer/opengl/OpenGLContext.h"
-#include "engine/shader/OpenGLShader.h"
+#include "engine/shader/Shader.h"
 #include <SDL2/SDL.h>
 
 Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr)
@@ -95,7 +95,7 @@ void Renderer::Draw()
 	mSpriteVerts->SetActive();
 	for (auto sprite : mSprites)
 	{
-		sprite->Draw(mSpriteShader);
+		/* sprite->Draw(mSpriteShader); */
 	}
 	SDL_GL_SwapWindow(mWindow);
 }
@@ -181,7 +181,7 @@ Mesh *Renderer::GetMesh(const char *fileName)
 
 void Renderer::LinkShaderToMeshComp(const std::string &fileName, MeshComponent *meshComp)
 {
-	OpenGLShader *shader = GetShader(fileName);
+	Shader *shader = GetShader(fileName);
 	if (shader == nullptr)
 	{
 		return;
@@ -198,9 +198,9 @@ void Renderer::LinkShaderToMeshComp(const std::string &fileName, MeshComponent *
 		mShaderMeshCompMap.emplace(shader, vec);
 	}
 }
-OpenGLShader *Renderer::GetShader(const std::string &fileName)
+Shader *Renderer::GetShader(const std::string &fileName)
 {
-	OpenGLShader *sh = nullptr;
+	Shader *sh = nullptr;
 	auto iter = mShaders.find(fileName);
 	if (iter != mShaders.end())
 	{
@@ -208,7 +208,7 @@ OpenGLShader *Renderer::GetShader(const std::string &fileName)
 	}
 	else
 	{
-		sh = new OpenGLShader();
+		sh = Shader::Create();
 		if (sh->Load(fileName + ".vert", fileName + ".frag"))
 		{
 			mShaders.emplace(fileName, sh);
@@ -240,7 +240,7 @@ void Renderer::UnloadData()
 	mMeshes.clear();
 }
 
-void Renderer::LoadShader(OpenGLShader *sh)
+void Renderer::LoadShader(Shader *sh)
 {
 	sh->SetActive();
 	mView = Matrix4::CreateLookAt(Vector3::Zero,  // Camera pos
@@ -254,7 +254,7 @@ void Renderer::LoadShader(OpenGLShader *sh)
 bool Renderer::LoadShaders()
 {
 	// 2D stuff
-	mSpriteShader = new OpenGLShader();
+	mSpriteShader = Shader::Create();
 	if (!mSpriteShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag"))
 	{
 		return false;
@@ -266,7 +266,7 @@ bool Renderer::LoadShaders()
 	return true;
 }
 
-void Renderer::SetLightUniforms(OpenGLShader *shader)
+void Renderer::SetLightUniforms(Shader *shader)
 {
 	Matrix4 invertedView = mView;
 	invertedView.Invert();

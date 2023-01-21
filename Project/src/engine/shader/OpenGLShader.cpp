@@ -1,10 +1,13 @@
 #include "engine/shader/OpenGLShader.h"
-#include "GL/glew.h"
 #include "engine/Log.h"
+
+Shader *Shader::Create()
+{
+	return new OpenGLShader();
+}
 
 OpenGLShader::~OpenGLShader()
 {
-	ENGINE_INFO("destructor called");
 	glDeleteProgram(mShaderProgram);
 }
 

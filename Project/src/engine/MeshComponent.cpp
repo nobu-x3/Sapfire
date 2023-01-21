@@ -1,11 +1,12 @@
 #include "MeshComponent.h"
 #include "Actor.h"
+#include "GL/gl.h"
 #include "Game.h"
 #include "Mesh.h"
 #include "Texture.h"
 #include "VertexArray.h"
 #include "engine/renderer/Renderer.h"
-#include "engine/shader/OpenGLShader.h"
+#include "engine/shader/Shader.h"
 
 MeshComponent::MeshComponent(Actor *owner) : Component(owner), mMesh(nullptr), mTextureIndex(0)
 {
@@ -22,7 +23,7 @@ void MeshComponent::SetMesh(Mesh *mesh)
 	mMesh = mesh;
 	mOwner->GetGame()->GetRenderer()->LinkShaderToMeshComp(mesh->GetShaderName(), this);
 }
-void MeshComponent::Draw(OpenGLShader *shader)
+void MeshComponent::Draw(Shader *shader)
 {
 	if (mMesh)
 	{

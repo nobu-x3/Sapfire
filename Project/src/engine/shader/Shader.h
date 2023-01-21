@@ -12,4 +12,6 @@ class Shader
 	virtual void SetMatrixUniform(const std::string &name, const Matrix4 &matrix) = 0;
 	virtual void SetVectorUniform(const std::string &name, const Vector3 &vec) = 0;
 	virtual void SetFloatUniform(const std::string &name, float val) = 0;
+
+	static Shader *Create();
 };
