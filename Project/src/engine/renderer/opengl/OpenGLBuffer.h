@@ -12,9 +12,13 @@ class OpenGLVertexBuffer : public VertexBuffer
 	virtual void Unbind() const override;
 	inline virtual uint32_t GetCount() const override { return mCount; }
 
+	inline virtual void SetLayout(const BufferLayout &layout) override { mLayout = layout; }
+	inline virtual const BufferLayout &GetLayout() const override { return mLayout; }
+
 	private:
 	RendererID mRendererID;
 	uint32_t mCount;
+	BufferLayout mLayout;
 };
 
 class OpenGLIndexBuffer : public IndexBuffer

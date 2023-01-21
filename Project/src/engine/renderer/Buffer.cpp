@@ -1,8 +1,18 @@
 #include "Buffer.h"
-#include "engine/Log.h"
 #include "engine/renderer/Renderer.h"
 #include "engine/renderer/opengl/OpenGLBuffer.h"
 
+void BufferLayout::CalculateOffsets()
+{
+	uint32_t offset = 0;
+	mStride = 0;
+	for (auto &element : mElements)
+	{
+		element.Offset = offset;
+		offset += element.Size;
+		mStride += element.Size;
+	}
+}
 VertexBuffer *VertexBuffer::Create(float *vertices, size_t size)
 {
 	auto api = Renderer::GetAPI();
