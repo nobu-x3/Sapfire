@@ -1,4 +1,7 @@
 #pragma once
+
+#include "engine/renderer/Buffer.h"
+
 class Mesh
 {
 	public:
@@ -6,7 +9,8 @@ class Mesh
 	~Mesh() = default;
 	bool Load(const std::string &fileName, class Renderer *renderer);
 	void Unload();
-	class VertexArray *GetVertexArray() const { return mVertexArray; }
+	inline class VertexBuffer *GetVertexBuffer() const { return mVertexBuffer; }
+	inline class IndexBuffer *GetIndexBuffer() const { return mIndexBuffer; }
 	class Texture *GetTexture(int index) const;
 	inline const std::string &GetShaderName() const { return mShaderName; }
 	inline float GetRadius() const { return mRadius; }
@@ -15,7 +19,8 @@ class Mesh
 	private:
 	std::vector<class Texture *> mTextures;
 	class OpenGLShader *mShader;
-	class VertexArray *mVertexArray;
+	class VertexBuffer *mVertexBuffer;
+	class IndexBuffer *mIndexBuffer;
 	std::string mShaderName;
 	float mSpecPower;
 	// object space bounding sphere radius

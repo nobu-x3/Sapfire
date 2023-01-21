@@ -4,7 +4,7 @@
 #include "Game.h"
 #include "Mesh.h"
 #include "Texture.h"
-#include "VertexArray.h"
+#include "engine/renderer/Buffer.h"
 #include "engine/renderer/Renderer.h"
 #include "engine/renderer/Shader.h"
 
@@ -34,8 +34,9 @@ void MeshComponent::Draw(Shader *shader)
 		{
 			t->SetActive();
 		}
-		VertexArray *va = mMesh->GetVertexArray();
-		va->SetActive();
-		glDrawElements(GL_TRIANGLES, va->GetNumIndices(), GL_UNSIGNED_INT, nullptr);
+		VertexBuffer *vb = mMesh->GetVertexBuffer();
+		vb->Bind();
+
+		glDrawElements(GL_TRIANGLES, mMesh->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
 }

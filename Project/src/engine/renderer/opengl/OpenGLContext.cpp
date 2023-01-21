@@ -37,9 +37,9 @@ void OpenGLContext::Init()
 
 void OpenGLContext::SwapBuffers()
 {
-	glClearColor(0.83f, 0.83f, 0.83f, 1.0f);
-	// clear color and depth buffers
-	glClear(GL_COLOR_BUFFER_BIT);
+	/* glClearColor(0.83f, 0.83f, 0.83f, 1.0f); */
+	/* // clear color and depth buffers */
+	/* glClear(GL_COLOR_BUFFER_BIT); */
 	SDL_GL_SwapWindow(mWindowHandle);
 }
 

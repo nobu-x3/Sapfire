@@ -1,6 +1,6 @@
 #include "Mesh.h"
 #include "Math.h"
-#include "VertexArray.h"
+#include "engine/renderer/Buffer.h"
 #include "engine/renderer/Renderer.h"
 #include "nlohmann/json.hpp"
 #include <SDL2/SDL_log.h>
@@ -107,17 +107,17 @@ bool Mesh::Load(const std::string &fileName, Renderer *renderer)
 		indices.emplace_back(indArr[1].get<unsigned int>());
 		indices.emplace_back(indArr[2].get<unsigned int>());
 	}
-
-	// Create vertex array
-	mVertexArray = new VertexArray(vertices.data(), static_cast<unsigned>(vertices.size()) / vertSize,
-				       indices.data(), static_cast<unsigned>(indices.size()));
+	mVertexBuffer = VertexBuffer::Create(vertices.data(), static_cast<uint32_t>(vertices.size()) / vertSize);
+	mIndexBuffer = IndexBuffer::Create(indices.data(), static_cast<uint32_t>(indices.size()));
 	return true;
 }
 
 void Mesh::Unload()
 {
-	delete mVertexArray;
-	mVertexArray = nullptr;
+	delete mVertexBuffer;
+	delete mIndexBuffer;
+	mVertexBuffer = nullptr;
+	mIndexBuffer = nullptr;
 }
 
 Texture *Mesh::GetTexture(int index) const

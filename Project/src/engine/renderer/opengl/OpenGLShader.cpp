@@ -44,7 +44,7 @@ void OpenGLShader::Unload()
 	glDeleteShader(mFragShader);
 }
 
-void OpenGLShader::SetActive()
+void OpenGLShader::Bind()
 {
 	// Set this program as the active one
 	glUseProgram(mShaderProgram);

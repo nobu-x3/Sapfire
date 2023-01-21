@@ -18,6 +18,12 @@ struct PointLight
 	float mRadius;
 };
 
+enum class RendererAPI
+{
+	None = 0,
+	OpenGL = 1,
+};
+
 class Renderer
 {
 	public:
@@ -43,8 +49,11 @@ class Renderer
 	inline void SetAmbientLight(const Vector3 &light) { mAmbientLight = light; }
 	inline DirectionalLight &GetDirectionalLight() { return mDirectionalLight; }
 	inline std::array<PointLight, 4> &GetPointLights() { return mPointLights; }
+	inline static RendererAPI GetAPI() { return sAPI; }
+	inline static void SetAPI(RendererAPI api) { sAPI = api; }
 
 	private:
+	static RendererAPI sAPI;
 	void CreateSpriteVerts();
 	bool LoadShaders();
 	void SetLightUniforms(class Shader *shader);

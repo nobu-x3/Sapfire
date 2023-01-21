@@ -10,6 +10,8 @@
 #include "engine/renderer/opengl/OpenGLContext.h"
 #include <SDL2/SDL.h>
 
+RendererAPI Renderer::sAPI = RendererAPI::OpenGL;
+
 Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr)
 {
 }
@@ -46,7 +48,7 @@ bool Renderer::Initialize(float width, float height)
 
 void Renderer::Shutdown()
 {
-	delete mSpriteVerts;
+	/* delete mSpriteVerts; */
 	mSpriteShader->Unload();
 	delete mSpriteShader;
 	for (auto pair : mShaderMeshCompMap)
@@ -76,7 +78,7 @@ void Renderer::Draw()
 	auto viewProj = mView * mProjection;
 	for (auto pair : mShaderMeshCompMap)
 	{
-		pair.first->SetActive();
+		pair.first->Bind();
 		pair.first->SetMatrixUniform("uViewProj", mView * mProjection);
 		SetLightUniforms(pair.first);
 		for (auto meshComp : pair.second)
@@ -91,12 +93,12 @@ void Renderer::Draw()
 	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 	// TODO: draw scene
-	mSpriteShader->SetActive();
-	mSpriteVerts->SetActive();
-	for (auto sprite : mSprites)
-	{
-		/* sprite->Draw(mSpriteShader); */
-	}
+	mSpriteShader->Bind();
+	/* mSpriteVerts->SetActive(); */
+	/* for (auto sprite : mSprites) */
+	/* { */
+	/* 	/1* sprite->Draw(mSpriteShader); *1/ */
+	/* } */
 	SDL_GL_SwapWindow(mWindow);
 }
 
@@ -242,7 +244,7 @@ void Renderer::UnloadData()
 
 void Renderer::LoadShader(Shader *sh)
 {
-	sh->SetActive();
+	sh->Bind();
 	mView = Matrix4::CreateLookAt(Vector3::Zero,  // Camera pos
 				      Vector3::UnitX, // Target pos
 				      Vector3::UnitZ  // Up
@@ -259,7 +261,7 @@ bool Renderer::LoadShaders()
 	{
 		return false;
 	}
-	mSpriteShader->SetActive();
+	mSpriteShader->Bind();
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
 	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
 
@@ -299,5 +301,5 @@ void Renderer::CreateSpriteVerts()
 
 	unsigned int indices[] = {0, 1, 2, 2, 3, 0};
 
-	mSpriteVerts = new VertexArray(vertices, 4, indices, 6);
+	/* mSpriteVerts = */
 }

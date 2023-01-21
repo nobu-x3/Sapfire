@@ -16,7 +16,11 @@ class TestApp
 
 	private:
 	Scope<class Window> mWindow;
+	Scope<class VertexBuffer> mVB;
+	Scope<class IndexBuffer> mIB;
+	Scope<class Shader> mShader;
 	LayerStack mLayerStack;
 
 	bool mRunning;
+	uint32_t mVertexArray;
 };
