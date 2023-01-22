@@ -15,7 +15,7 @@ void BufferLayout::CalculateOffsets()
 }
 VertexBuffer *VertexBuffer::Create(float *vertices, size_t size)
 {
-	auto api = Renderer::GetAPI();
+	auto api = Renderer::GetRendererAPI();
 	switch (api)
 	{
 	case RendererAPI::OpenGL: {
@@ -30,7 +30,7 @@ VertexBuffer *VertexBuffer::Create(float *vertices, size_t size)
 
 IndexBuffer *IndexBuffer::Create(uint32_t *indices, size_t size)
 {
-	auto api = Renderer::GetAPI();
+	auto api = Renderer::GetRendererAPI();
 	switch (api)
 	{
 	case RendererAPI::OpenGL: {

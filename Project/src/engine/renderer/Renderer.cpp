@@ -4,9 +4,9 @@
 #include "engine/MeshComponent.h"
 #include "engine/SpriteComponent.h"
 #include "engine/Texture.h"
-#include "engine/VertexArray.h"
 #include "engine/events/WindowEvent.h"
 #include "engine/renderer/Shader.h"
+#include "engine/renderer/VertexArray.h"
 #include "engine/renderer/opengl/OpenGLContext.h"
 #include <SDL2/SDL.h>
 

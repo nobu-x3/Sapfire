@@ -121,11 +121,6 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/VertexArray.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/engine/VertexArray.cpp"
-},
-{
-  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/engpch.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/engpch.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/engpch.cpp"
 },
@@ -146,6 +141,16 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/VertexArray.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/VertexArray.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/VertexArray.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/Window.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/Window.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/Window.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLBuffer.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLBuffer.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLBuffer.cpp"
 },
@@ -158,6 +163,11 @@
   "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLShader.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLShader.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLShader.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLVertexArray.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLVertexArray.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLVertexArray.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build/libs/csv-parser/include/internal",

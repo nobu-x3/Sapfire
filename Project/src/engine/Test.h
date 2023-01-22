@@ -16,9 +16,8 @@ class TestApp
 
 	private:
 	Scope<class Window> mWindow;
-	Scope<class VertexBuffer> mVB;
-	Scope<class IndexBuffer> mIB;
-	Scope<class Shader> mShader;
+	Scope<class VertexArray> mVA;
+	Ref<class Shader> mShader;
 	LayerStack mLayerStack;
 
 	bool mRunning;
