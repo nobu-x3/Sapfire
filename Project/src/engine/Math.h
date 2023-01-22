@@ -382,6 +382,116 @@ struct Vector3
 		static const Vector3 NegInfinity;
 };
 
+struct Vector4
+{
+
+		float x;
+		float y;
+		float z;
+		float w;
+
+		Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
+		Vector4(Vector2 vec) : x(vec.x), y(vec.y), z(0.0f), w(0.f) {}
+		Vector4(Vector3 vec) : x(vec.x), y(vec.y), z(vec.z), w(0.f) {}
+		inline explicit Vector4(float inX, float inY, float inZ, float inW) : x(inX), y(inY), z(inZ), w(inW) {}
+
+		// Cast to a const float pointer
+		inline const float *GetAsConstFloatPtr() const { return reinterpret_cast<const float *>(&x); }
+
+		// Set all three components in one line
+		inline void Set(float inX, float inY, float inZ, float inW)
+		{
+			x = inX;
+			y = inY;
+			z = inZ;
+			w = inW;
+		}
+
+		// Vector addition (a + b)
+		inline friend Vector4 operator+(const Vector4 &a, const Vector4 &b)
+		{
+			return Vector4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+		}
+
+		// Vector subtraction (a - b)
+		inline friend Vector4 operator-(const Vector4 &a, const Vector4 &b)
+		{
+			return Vector4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+		}
+
+		// Component-wise multiplication
+		inline friend Vector4 operator*(const Vector4 &left, const Vector4 &right)
+		{
+			return Vector4(left.x * right.x, left.y * right.y, left.z * right.z, left.w * right.w);
+		}
+
+		// Scalar multiplication
+		inline friend Vector4 operator*(const Vector4 &vec, float scalar)
+		{
+			return Vector4(vec.x * scalar, vec.y * scalar, vec.z * scalar, vec.w * scalar);
+		}
+
+		// Scalar multiplication
+		inline friend Vector4 operator*(float scalar, const Vector4 &vec)
+		{
+			return Vector4(vec.x * scalar, vec.y * scalar, vec.z * scalar, vec.w * scalar);
+		}
+
+		// Scalar *=
+		inline Vector4 &operator*=(float scalar)
+		{
+			x *= scalar;
+			y *= scalar;
+			z *= scalar;
+			w *= scalar;
+			return *this;
+		}
+
+		// Vector +=
+		inline Vector4 &operator+=(const Vector4 &right)
+		{
+			x += right.x;
+			y += right.y;
+			z += right.z;
+			w += right.w;
+			return *this;
+		}
+
+		// Vector -=
+		inline Vector4 &operator-=(const Vector4 &right)
+		{
+			x -= right.x;
+			y -= right.y;
+			z -= right.z;
+			w -= right.w;
+			return *this;
+		}
+
+		// Length squared of vector
+		inline float LengthSq() const { return (x * x + y * y + z * z + w * w); }
+
+		// Length of vector
+		inline float Length() const { return (Math::Sqrt(LengthSq())); }
+
+		// Normalize this vector
+		inline void Normalize()
+		{
+			float length = Length();
+			x /= length;
+			y /= length;
+			z /= length;
+			w /= length;
+		}
+
+		// Normalize the provided vector
+		static Vector4 Normalize(const Vector4 &vec)
+		{
+			Vector4 temp = vec;
+			temp.Normalize();
+			return temp;
+		}
+};
+
 // 3x3 Matrix
 struct Matrix3
 {
