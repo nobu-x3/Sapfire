@@ -11,5 +11,6 @@ void Renderer::EndScene()
 
 void Renderer::Submit(const Ref<VertexArray> &vertexArray)
 {
+	vertexArray->Bind();
 	RenderCommands::Draw(vertexArray);
 }
