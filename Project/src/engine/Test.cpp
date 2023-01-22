@@ -70,7 +70,10 @@ void TestApp::Tick()
 		glClear(GL_COLOR_BUFFER_BIT);
 		mShader->Bind();
 		mVA->Bind();
-		glDrawElements(GL_TRIANGLES, mVA->GetIndexBuffers()[0]->GetCount(), GL_UNSIGNED_INT, nullptr);
+		for (auto ib : mVA->GetIndexBuffers())
+		{
+			glDrawElements(GL_TRIANGLES, ib->GetCount(), GL_UNSIGNED_INT, nullptr);
+		}
 		mWindow->OnUpdate();
 	}
 }

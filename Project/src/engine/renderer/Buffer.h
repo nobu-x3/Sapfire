@@ -27,7 +27,6 @@ static uint32_t ShaderDataTypeSize(ShaderDataType type)
 		return 4;
 	case ShaderDataType::Int:
 		return 4;
-
 	case ShaderDataType::Vec2:
 		return 8;
 	case ShaderDataType::Vec3:
@@ -46,6 +45,8 @@ static uint32_t ShaderDataTypeSize(ShaderDataType type)
 		return 64;
 	case ShaderDataType::Bool:
 		return 1;
+	default:
+		return 0;
     }
     ENGINE_ERROR("Unknown shader data type");
     return 0;
