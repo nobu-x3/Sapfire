@@ -10,7 +10,8 @@
 #include "engine/renderer/opengl/OpenGLContext.h"
 #include <SDL2/SDL.h>
 
-RendererAPI Renderer::sAPI = RendererAPI::OpenGL;
+RendererAPI Renderer::sRendererAPI = RendererAPI::OpenGL;
+WindowAPI Renderer::sWindowAPI = WindowAPI::SDL;
 
 Renderer::Renderer(Game *game) : mGame(game), mSpriteShader(nullptr)
 {

@@ -6,10 +6,6 @@
 #include "engine/renderer/opengl/OpenGLContext.h"
 #include <SDL2/SDL.h>
 
-Window *Window::Create(const WindowProperties &props)
-{
-	return new SDLWindow(props);
-}
 
 SDLWindow::SDLWindow(const WindowProperties &props)
 {

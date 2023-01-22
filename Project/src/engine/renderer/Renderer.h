@@ -24,6 +24,12 @@ enum class RendererAPI
 	OpenGL = 1,
 };
 
+enum class WindowAPI
+{
+	None = 0,
+	SDL = 1,
+};
+
 class Renderer
 {
 	public:
@@ -49,11 +55,14 @@ class Renderer
 	inline void SetAmbientLight(const Vector3 &light) { mAmbientLight = light; }
 	inline DirectionalLight &GetDirectionalLight() { return mDirectionalLight; }
 	inline std::array<PointLight, 4> &GetPointLights() { return mPointLights; }
-	inline static RendererAPI GetAPI() { return sAPI; }
-	inline static void SetAPI(RendererAPI api) { sAPI = api; }
+	inline static RendererAPI GetRendererAPI() { return sRendererAPI; }
+	inline static void SetRendererAPI(RendererAPI api) { sRendererAPI = api; }
+	inline static WindowAPI GetWindowAPI() { return sWindowAPI; }
+	inline static void SetWindowAPI(WindowAPI api) { sWindowAPI = api; }
 
 	private:
-	static RendererAPI sAPI;
+	static RendererAPI sRendererAPI;
+	static WindowAPI sWindowAPI;
 	void CreateSpriteVerts();
 	bool LoadShaders();
 	void SetLightUniforms(class Shader *shader);
