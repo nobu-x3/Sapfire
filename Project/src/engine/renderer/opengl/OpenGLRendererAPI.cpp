@@ -16,6 +16,7 @@ void OpenGLRendererAPI::Draw(const Ref<VertexArray> &vertexArray)
 {
 	for (auto buffer : vertexArray->GetIndexBuffers())
 	{
+		buffer->Bind();
 		glDrawElements(GL_TRIANGLES, buffer->GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
 }

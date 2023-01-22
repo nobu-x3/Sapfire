@@ -1,5 +1,4 @@
 #include "engine/Test.h"
-#include "GL/glew.h"
 #include "engine/Log.h"
 #include "engine/events/WindowEvent.h"
 #include "engine/renderer/Buffer.h"
@@ -58,7 +57,6 @@ void TestApp::Tick()
 {
 	while (mRunning)
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
 		RenderCommands::SetClearColor(clearColor);
 		RenderCommands::ClearScreen();
 		Renderer::BeginScene();
@@ -66,11 +64,6 @@ void TestApp::Tick()
 		Renderer::Submit(mVA);
 		Renderer::EndScene();
 		/* Renderer::Flush(); */
-		mVA->Bind();
-		for (auto ib : mVA->GetIndexBuffers())
-		{
-			glDrawElements(GL_TRIANGLES, ib->GetCount(), GL_UNSIGNED_INT, nullptr);
-		}
 		mWindow->OnUpdate();
 	}
 }
