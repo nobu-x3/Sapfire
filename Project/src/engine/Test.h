@@ -16,7 +16,7 @@ class TestApp
 
 	private:
 	Scope<class Window> mWindow;
-	Scope<class VertexArray> mVA;
+	Ref<class VertexArray> mVA;
 	Ref<class Shader> mShader;
 	LayerStack mLayerStack;
 

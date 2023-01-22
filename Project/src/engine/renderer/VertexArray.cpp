@@ -1,15 +1,15 @@
 #include "VertexArray.h"
 #include "GL/glew.h"
-#include "engine/renderer/Renderer.h"
+#include "engine/renderer/RendererAPI.h"
 #include "engine/renderer/opengl/OpenGLVertexArray.h"
 
 VertexArray *VertexArray::Create()
 {
-	auto api = Renderer::GetRendererAPI();
+	auto api = RendererAPI::GetAPI();
 
 	switch (api)
 	{
-	case RendererAPI::OpenGL: {
+	case RendererAPI::API::OpenGL: {
 		return new OpenGLVertexArray();
 	}
 	default:

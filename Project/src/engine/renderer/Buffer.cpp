@@ -1,5 +1,5 @@
 #include "Buffer.h"
-#include "engine/renderer/Renderer.h"
+#include "engine/renderer/RendererAPI.h"
 #include "engine/renderer/opengl/OpenGLBuffer.h"
 
 void BufferLayout::CalculateOffsets()
@@ -15,10 +15,10 @@ void BufferLayout::CalculateOffsets()
 }
 VertexBuffer *VertexBuffer::Create(float *vertices, size_t size)
 {
-	auto api = Renderer::GetRendererAPI();
+	auto api = RendererAPI::GetAPI();
 	switch (api)
 	{
-	case RendererAPI::OpenGL: {
+	case RendererAPI::API::OpenGL: {
 		return new OpenGLVertexBuffer(vertices, size);
 	}
 	default:
@@ -30,10 +30,10 @@ VertexBuffer *VertexBuffer::Create(float *vertices, size_t size)
 
 IndexBuffer *IndexBuffer::Create(uint32_t *indices, size_t size)
 {
-	auto api = Renderer::GetRendererAPI();
+	auto api = RendererAPI::GetAPI();
 	switch (api)
 	{
-	case RendererAPI::OpenGL: {
+	case RendererAPI::API::OpenGL: {
 		return new OpenGLIndexBuffer(indices, size);
 	}
 	default:

@@ -393,6 +393,7 @@ struct Vector4
 		Vector4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
 		Vector4(Vector2 vec) : x(vec.x), y(vec.y), z(0.0f), w(0.f) {}
 		Vector4(Vector3 vec) : x(vec.x), y(vec.y), z(vec.z), w(0.f) {}
+		Vector4(Vector4 const &vec) : x(vec.x), y(vec.y), z(vec.z), w(vec.w) {}
 		inline explicit Vector4(float inX, float inY, float inZ, float inW) : x(inX), y(inY), z(inZ), w(inW) {}
 
 		// Cast to a const float pointer

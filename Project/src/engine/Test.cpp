@@ -3,6 +3,8 @@
 #include "engine/Log.h"
 #include "engine/events/WindowEvent.h"
 #include "engine/renderer/Buffer.h"
+#include "engine/renderer/RenderCommands.h"
+#include "engine/renderer/RendererNew.h"
 #include "engine/renderer/Shader.h"
 #include "engine/renderer/VertexArray.h"
 #include "engine/renderer/Window.h"
@@ -27,17 +29,6 @@ TestApp::TestApp()
 	vb.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
 	vb->SetLayout(layout);
 	mVA->AddVertexBuffer(vb);
-	// Specify the vertex attributes
-	// (For now, assume one vertex format)
-	// Position is 3 floats starting at offset 0
-	/* glEnableVertexAttribArray(0); */
-	/* glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, 0); */
-	/* glEnableVertexAttribArray(1); */
-	/* glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 8, reinterpret_cast<void *>(sizeof(float) *
-	 * 3)); */
-	/* glEnableVertexAttribArray(2); */
-	/* glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 8, reinterpret_cast<void *>(sizeof(float) *
-	 * 6)); */
 	Ref<IndexBuffer> ib;
 	ib.reset(IndexBuffer::Create(indices, 3));
 	mVA->AddIndexBuffer(ib);
@@ -62,13 +53,19 @@ void TestApp::OnEvent(Event &event)
 	}
 }
 
+static Vector4 clearColor(0.1f, 0.1f, 0.1f, 1);
 void TestApp::Tick()
 {
 	while (mRunning)
 	{
-		glClearColor(0.1f, 0.1f, 0.1f, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
+		RenderCommands::SetClearColor(clearColor);
+		RenderCommands::ClearScreen();
+		Renderer::BeginScene();
 		mShader->Bind();
+		Renderer::Submit(mVA);
+		Renderer::EndScene();
+		/* Renderer::Flush(); */
 		mVA->Bind();
 		for (auto ib : mVA->GetIndexBuffers())
 		{
