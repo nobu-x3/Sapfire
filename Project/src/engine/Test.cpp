@@ -10,7 +10,7 @@
 
 #define BIND_EVENT_FN(x) std::bind(&x, this, std::placeholders::_1)
 
-TestApp::TestApp()
+TestApp::TestApp() : mCamera(-5.f, 5.f, -5.f, 5.f)
 {
 	mWindow = std::unique_ptr<Window>(Window::Create());
 	mWindow->SetEventCallback(BIND_EVENT_FN(TestApp::OnEvent));
@@ -33,6 +33,7 @@ TestApp::TestApp()
 	mVA->AddIndexBuffer(ib);
 	mShader.reset(Shader::Create());
 	mShader->Load("../Shaders/Triangle.vert", "../Shaders/Triangle.frag");
+	mCamera.SetRotation(45.f);
 }
 
 TestApp::~TestApp()
@@ -59,9 +60,8 @@ void TestApp::Tick()
 	{
 		RenderCommands::SetClearColor(clearColor);
 		RenderCommands::ClearScreen();
-		Renderer::BeginScene();
-		mShader->Bind();
-		Renderer::Submit(mVA);
+		Renderer::BeginScene(mCamera);
+		Renderer::Submit(mVA, mShader);
 		Renderer::EndScene();
 		/* Renderer::Flush(); */
 		mWindow->OnUpdate();
