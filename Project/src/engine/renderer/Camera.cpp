@@ -9,8 +9,7 @@ OrthographicCamera::OrthographicCamera(float left, float right, float bottom, fl
 
 void OrthographicCamera::RecalculateViewMatrix()
 {
-	Matrix4 transform =
-	    Matrix4::CreateTranslation(mPosition) * Matrix4::CreateRotationZ(Math::ToRadians(mRotation));
+	Matrix4 transform = Matrix4::CreateTranslation(mPosition) * Matrix4::CreateRotationZ(mRotation);
 	transform.Invert();
 	mViewMatrix = transform;
 	mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;

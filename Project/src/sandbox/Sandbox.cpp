@@ -1,6 +1,6 @@
 #include "Sandbox.h"
 
-SandboxLayer::SandboxLayer() : mCamera(-5.f, 5.f, -5.f, 5.f)
+SandboxLayer::SandboxLayer() : mCamera(-1.8f, 1.8f, -1.6f, 1.6f)
 {
 	mVA.reset(VertexArray::Create());
 	float vertices[7 * 3] = {-0.5f, -0.5f, 0.f,  1.f, 0.f, 1.f,
@@ -19,12 +19,15 @@ SandboxLayer::SandboxLayer() : mCamera(-5.f, 5.f, -5.f, 5.f)
 	mVA->AddIndexBuffer(ib);
 	mShader.reset(Shader::Create());
 	mShader->Load("../Shaders/Triangle.vert", "../Shaders/Triangle.frag");
-	mCamera.SetRotation(45.f);
 }
 
 static Vector4 clearColor(0.1f, 0.1f, 0.1f, 1);
 void SandboxLayer::OnUpdate()
 {
+
+	mCameraRotation += Math::Sin(Math::ToRadians(1.f));
+	mCamera.SetRotation(mCameraRotation);
+
 	RenderCommands::SetClearColor(clearColor);
 	RenderCommands::ClearScreen();
 	Renderer::BeginScene(mCamera);

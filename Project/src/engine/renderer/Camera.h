@@ -5,7 +5,7 @@
 class Camera
 {
 	public:
-	virtual ~Camera() {}
+	virtual ~Camera(){};
 	virtual const Matrix4 &GetProjectionMatrix() const = 0;
 	virtual const Matrix4 &GetViewMatrix() const = 0;
 	virtual const Matrix4 &GetViewProjectionMatrix() const = 0;
