@@ -1,10 +1,11 @@
 #include "Game.h"
-#include "engine/Test.h"
+#include "engine/Application.h"
 
 int main(int argc, char *argv[])
 {
-	TestApp testApp;
-	testApp.Tick();
+	Application *application = CreateApplication();
+	application->Run();
+	delete application;
 	// Game game;
 	// bool success = game.Initialize();
 	// if (success)
