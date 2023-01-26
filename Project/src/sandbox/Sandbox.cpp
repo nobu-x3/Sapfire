@@ -22,10 +22,10 @@ SandboxLayer::SandboxLayer() : mCamera(-1.8f, 1.8f, -1.6f, 1.6f)
 }
 
 static Vector4 clearColor(0.1f, 0.1f, 0.1f, 1);
-void SandboxLayer::OnUpdate()
+void SandboxLayer::OnUpdate(float deltaTime)
 {
 
-	mCameraRotation += Math::Sin(Math::ToRadians(1.f));
+	mCameraRotation += Math::Sin(Math::ToRadians(30.f)) * deltaTime;
 	mCamera.SetRotation(mCameraRotation);
 
 	RenderCommands::SetClearColor(clearColor);

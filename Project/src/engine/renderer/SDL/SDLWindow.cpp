@@ -6,7 +6,6 @@
 #include "engine/renderer/opengl/OpenGLContext.h"
 #include <SDL2/SDL.h>
 
-
 SDLWindow::SDLWindow(const WindowProperties &props)
 {
 	mData.Title = props.Title;
@@ -95,4 +94,9 @@ void SDLWindow::OnUpdate()
 	}
 
 	mRenderer->SwapBuffers();
+}
+
+float SDLWindow::GetTime() const
+{
+	return (float)(SDL_GetTicks()) / 1000;
 }

@@ -20,6 +20,7 @@ class Application
 	private:
 	Scope<class Window> mWindow;
 	LayerStack mLayerStack;
+	float mLastFrameTime = 0.f;
 
 	bool mRunning;
 	uint32_t mVertexArray;

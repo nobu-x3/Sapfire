@@ -6,7 +6,7 @@ class SandboxLayer : public Layer
 {
 	public:
 	SandboxLayer();
-	virtual void OnUpdate() override;
+	virtual void OnUpdate(float deltaTime) override;
 
 	private:
 	Ref<VertexArray> mVA;

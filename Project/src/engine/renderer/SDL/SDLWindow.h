@@ -9,6 +9,7 @@ class SDLWindow : public Window
 	inline virtual unsigned int GetWidth() const override { return mData.Width; }
 	inline virtual unsigned int GetHeight() const override { return mData.Height; }
 	virtual void SetEventCallback(const EventCallback &event) override;
+	virtual float GetTime() const override;
 
 	private:
 	void PollEvents();

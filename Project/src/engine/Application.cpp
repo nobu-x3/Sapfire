@@ -34,10 +34,14 @@ void Application::OnEvent(Event &event)
 
 void Application::Run()
 {
+
 	while (mRunning)
 	{
+		float timestamp = mWindow->GetTime();
+		float deltaTime = timestamp - mLastFrameTime;
+		mLastFrameTime = timestamp;
 		for (Layer *layer : mLayerStack)
-			layer->OnUpdate();
+			layer->OnUpdate(deltaTime);
 		mWindow->OnUpdate();
 	}
 }
