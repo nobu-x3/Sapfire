@@ -2,8 +2,8 @@
 #include "engpch.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-Ref<spdlog::logger> Log::mEngineLogger;
-Ref<spdlog::logger> Log::mClientLogger;
+std::shared_ptr<spdlog::logger> Log::mEngineLogger;
+std::shared_ptr<spdlog::logger> Log::mClientLogger;
 
 void Log::Init()
 {

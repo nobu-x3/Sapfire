@@ -7,12 +7,12 @@ class Log
 {
 	public:
 	static void Init();
-	inline static Ref<spdlog::logger> &GetEngineLogger() { return mEngineLogger; }
-	inline static Ref<spdlog::logger> &GetClientLogger() { return mClientLogger; }
+	inline static std::shared_ptr<spdlog::logger> &GetEngineLogger() { return mEngineLogger; }
+	inline static std::shared_ptr<spdlog::logger> &GetClientLogger() { return mClientLogger; }
 
 	private:
-	static Ref<spdlog::logger> mEngineLogger;
-	static Ref<spdlog::logger> mClientLogger;
+	static std::shared_ptr<spdlog::logger> mEngineLogger;
+	static std::shared_ptr<spdlog::logger> mClientLogger;
 };
 
 #define ENGINE_TRACE(...) Log::GetEngineLogger()->trace(__VA_ARGS__)
