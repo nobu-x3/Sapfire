@@ -1,9 +1,18 @@
 #include "engine/renderer/opengl/OpenGLShader.h"
 #include "engine/Log.h"
+#include "engine/renderer/RendererNew.h"
 
 Shader *Shader::Create()
 {
-	return new OpenGLShader();
+	switch (RendererAPI::GetAPI())
+	{
+	case RendererAPI::API::OpenGL: {
+		return new OpenGLShader();
+	}
+	default:
+		return nullptr;
+	}
+	return nullptr;
 }
 
 OpenGLShader::~OpenGLShader()
