@@ -21,6 +21,8 @@ SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 	mVA->AddIndexBuffer(ib);
 	mShader.reset(Shader::Create());
 	mShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag");
+	mTexture = Texture::Create("../Assets/Plane.png");
+	mShader->SetIntUniform("uTexture", mTexture->GetID());
 }
 
 static Vector4 clearColor(0.1f, 0.1f, 0.1f, 1);
@@ -33,6 +35,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	RenderCommands::SetClearColor(clearColor);
 	RenderCommands::ClearScreen();
 	Renderer::BeginScene(mCamera);
+	mTexture->Bind();
 	Renderer::Submit(mVA, mShader);
 	Renderer::EndScene();
 }

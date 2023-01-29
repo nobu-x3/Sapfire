@@ -16,6 +16,7 @@ class OpenGLShader : public Shader
 	virtual void SetMatrixUniform(const std::string &name, const Matrix4 &matrix) override;
 	virtual void SetVectorUniform(const std::string &name, const Vector3 &vec) override;
 	virtual void SetFloatUniform(const std::string &name, float val) override;
+	virtual void SetIntUniform(const std::string &name, int val) override;
 
 	private:
 	// tries to compile specified shader

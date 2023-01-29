@@ -140,3 +140,9 @@ bool OpenGLShader::IsValidProgram()
 	}
 	return true;
 }
+
+void OpenGLShader::SetIntUniform(const std::string &name, int val)
+{
+	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
+	glUniform1i(loc, val);
+}

@@ -11,6 +11,7 @@ class SandboxLayer : public Layer
 	private:
 	Ref<VertexArray> mVA;
 	Ref<Shader> mShader;
+	Ref<Texture> mTexture;
 	OrthographicCamera mCamera;
 
 	float mCameraRotation;

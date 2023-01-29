@@ -6,6 +6,7 @@
 #include "engine/renderer/RendererAPI.h"
 #include "engine/renderer/RendererNew.h"
 #include "engine/renderer/Shader.h"
+#include "engine/renderer/Texture.h"
 #include "engine/renderer/VertexArray.h"
 #include "engine/renderer/Window.h"
 ///////////////////////////////////////////

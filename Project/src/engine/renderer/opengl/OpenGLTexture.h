@@ -9,6 +9,7 @@ class OpenGLTexture : public Texture
 	virtual void Bind() override;
 	virtual inline int GetWidth() const override { return mWidth; }
 	virtual inline int GetHeight() const override { return mHeight; }
+	virtual inline RendererID GetID() const override { return mTextureID; }
 
 	private:
 	// OpenGL id
