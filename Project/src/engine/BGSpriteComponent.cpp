@@ -1,6 +1,5 @@
 #include "BGSpriteComponent.h"
 #include "SpriteComponent.h"
-#include "engine/Texture.h"
 #include <SDL_rect.h>
 #include <SDL_render.h>
 

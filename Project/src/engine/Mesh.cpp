@@ -39,7 +39,7 @@ bool Mesh::Load(const std::string &fileName, Renderer *renderer)
 	for (int i = 0; i < textures.size(); ++i)
 	{
 		std::string texName = textures[i].get<std::string>();
-		Texture *t = renderer->GetTexture(texName.c_str());
+		Ref<Texture> t = renderer->GetTexture(texName.c_str());
 		if (t == nullptr)
 		{
 			t = renderer->GetTexture(texName.c_str());
@@ -124,7 +124,7 @@ void Mesh::Unload()
 	mIndexBuffer = nullptr;
 }
 
-Texture *Mesh::GetTexture(int index) const
+Ref<Texture> Mesh::GetTexture(int index) const
 {
 	if (index < mTextures.size())
 	{

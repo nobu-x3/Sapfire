@@ -111,11 +111,6 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
-  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/Texture.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/Texture.cpp",
-  "file": "/home/nobu/workspace/Engine/Project/src/engine/Texture.cpp"
-},
-{
-  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/TileMapComponent.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/TileMapComponent.cpp"
 },
@@ -161,6 +156,11 @@
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/Texture.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/Texture.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/Texture.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/VertexArray.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/VertexArray.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/VertexArray.cpp"
 },
@@ -188,6 +188,11 @@
   "directory": "/home/nobu/workspace/Engine/Project/build",
   "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLShader.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLShader.cpp",
   "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLShader.cpp"
+},
+{
+  "directory": "/home/nobu/workspace/Engine/Project/build",
+  "command": "/usr/bin/clang++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/nobu/workspace/Engine/Project/libs/csv-parser/include -I/home/nobu/workspace/Engine/Project/src -isystem /usr/local/include/SDL2  -Winvalid-pch -Xclang -include-pch -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/nobu/workspace/Engine/Project/build/CMakeFiles/Engine.dir/cmake_pch.hxx -o CMakeFiles/Engine.dir/src/engine/renderer/opengl/OpenGLTexture.cpp.o -c /home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLTexture.cpp",
+  "file": "/home/nobu/workspace/Engine/Project/src/engine/renderer/opengl/OpenGLTexture.cpp"
 },
 {
   "directory": "/home/nobu/workspace/Engine/Project/build",

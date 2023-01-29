@@ -11,13 +11,13 @@ class Mesh
 	void Unload();
 	inline class VertexBuffer *GetVertexBuffer() const { return mVertexBuffer; }
 	inline class IndexBuffer *GetIndexBuffer() const { return mIndexBuffer; }
-	class Texture *GetTexture(int index) const;
+	Ref<class Texture> GetTexture(int index) const;
 	inline const std::string &GetShaderName() const { return mShaderName; }
 	inline float GetRadius() const { return mRadius; }
 	inline float GetSpecPower() const { return mSpecPower; }
 
 	private:
-	std::vector<class Texture *> mTextures;
+	std::vector<Ref<class Texture>> mTextures;
 	class OpenGLShader *mShader;
 	class VertexBuffer *mVertexBuffer;
 	class IndexBuffer *mIndexBuffer;

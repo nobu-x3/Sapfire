@@ -3,9 +3,9 @@
 #include "engine/Mesh.h"
 #include "engine/MeshComponent.h"
 #include "engine/SpriteComponent.h"
-#include "engine/Texture.h"
 #include "engine/events/WindowEvent.h"
 #include "engine/renderer/Shader.h"
+#include "engine/renderer/Texture.h"
 #include "engine/renderer/VertexArray.h"
 #include "engine/renderer/opengl/OpenGLContext.h"
 #include <SDL2/SDL.h>
@@ -134,9 +134,9 @@ void Renderer::RemoveMeshComponent(MeshComponent *mesh)
 	auto iter = std::find(mMeshComponents.begin(), mMeshComponents.end(), mesh);
 	mMeshComponents.erase(iter);
 }
-Texture *Renderer::GetTexture(const char *fileName)
+Ref<Texture> Renderer::GetTexture(const char *fileName)
 {
-	Texture *tex = nullptr;
+	Ref<Texture> tex = nullptr;
 	auto iter = mTextures.find(fileName);
 	if (iter != mTextures.end())
 	{
@@ -144,16 +144,8 @@ Texture *Renderer::GetTexture(const char *fileName)
 	}
 	else
 	{
-		tex = new Texture();
-		if (tex->Load(fileName))
-		{
-			mTextures.emplace(fileName, tex);
-		}
-		else
-		{
-			delete tex;
-			tex = nullptr;
-		}
+		tex = Texture::Create(fileName);
+		mTextures.emplace(fileName, tex);
 	}
 	return tex;
 }
@@ -229,11 +221,6 @@ Shader *Renderer::GetShader(const std::string &fileName)
 
 void Renderer::UnloadData()
 {
-	for (auto i : mTextures)
-	{
-		i.second->Unload();
-		delete i.second;
-	}
 	mTextures.clear();
 	for (auto mesh : mMeshes)
 	{

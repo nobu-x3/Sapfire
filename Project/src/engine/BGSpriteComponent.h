@@ -1,6 +1,6 @@
 #pragma once
 #include "SpriteComponent.h"
-#include "engine/Texture.h"
+#include "engine/renderer/Texture.h"
 class BGSpriteComponent : public SpriteComponent
 {
 	public:

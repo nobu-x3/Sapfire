@@ -5,12 +5,11 @@
 #include "Mesh.h"
 #include "PlaneActor.h"
 #include "SpriteComponent.h"
-#include "Texture.h"
 #include "engine/Math.h"
 #include "engine/MeshComponent.h"
-#include "engine/Texture.h"
 #include "engine/renderer/Renderer.h"
 #include "engine/renderer/Shader.h"
+#include "engine/renderer/Texture.h"
 #include "engine/renderer/VertexArray.h"
 #include <SDL.h>
 #include <SDL_error.h>

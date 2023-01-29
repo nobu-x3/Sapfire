@@ -3,10 +3,10 @@
 #include "GL/gl.h"
 #include "Game.h"
 #include "Mesh.h"
-#include "Texture.h"
 #include "engine/renderer/Buffer.h"
 #include "engine/renderer/Renderer.h"
 #include "engine/renderer/Shader.h"
+#include "engine/renderer/Texture.h"
 
 MeshComponent::MeshComponent(Actor *owner) : Component(owner), mMesh(nullptr), mTextureIndex(0)
 {
@@ -29,10 +29,10 @@ void MeshComponent::Draw(Shader *shader)
 	{
 		shader->SetMatrixUniform("uWorldTransform", mOwner->GetWorldTransform());
 		shader->SetFloatUniform("uSpecPower", mMesh->GetSpecPower());
-		Texture *t = mMesh->GetTexture(mTextureIndex);
+		Ref<Texture> t = mMesh->GetTexture(mTextureIndex);
 		if (t)
 		{
-			t->SetActive();
+			t->Bind();
 		}
 		VertexBuffer *vb = mMesh->GetVertexBuffer();
 		vb->Bind();

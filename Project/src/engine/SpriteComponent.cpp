@@ -4,15 +4,11 @@
 #include "GL/glew.h"
 #include "Game.h"
 #include "Math.h"
-#include "engine/Texture.h"
+#include "SpriteComponent.h"
 #include "engine/renderer/Renderer.h"
+#include "engine/renderer/Texture.h"
 #include "engine/renderer/opengl/OpenGLShader.h"
 #include <SDL_render.h>
-
-#include "Actor.h"
-#include "Game.h"
-#include "SpriteComponent.h"
-#include "Texture.h"
 
 SpriteComponent::SpriteComponent(Actor *owner, int drawOrder)
     : Component(owner), mTexture(nullptr), mDrawOrder(drawOrder), mTexWidth(0), mTexHeight(0)
@@ -41,7 +37,7 @@ void SpriteComponent::Draw(OpenGLShader *shader)
 		// Set world transform
 		shader->SetMatrixUniform("uWorldTransform", world);
 		// Set current texture
-		mTexture->SetActive();
+		mTexture->Bind();
 		// Draw quad
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 	}

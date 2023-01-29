@@ -1,24 +1,26 @@
 #include "Sandbox.h"
 
-SandboxLayer::SandboxLayer() : mCamera(-1.8f, 1.8f, -1.6f, 1.6f)
+SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 {
 	mVA.reset(VertexArray::Create());
-	float vertices[7 * 3] = {-0.5f, -0.5f, 0.f,  1.f, 0.f, 1.f,
-				 1.f, // first
-				 0.5f,	-0.5f, 0.0f, 1.f, 0.f, 1.f,
-				 1.f, // second
-				 0.0f,	0.5f,  0.0f, 1.f, 0.f, 1.f, 1.f};
-	uint32_t indices[] = {0, 1, 2};
-	BufferLayout layout = {{"a_Position", ShaderDataType::Vec3}, {"a_Color", ShaderDataType::Vec4}};
+	float vertices[7 * 4] = {
+	    -0.5f, 0.5f,  0.f, 0.f, 1.f, // top left
+	    0.5f,  0.5f,  0.f, 1.f, 1.f, // top right
+	    0.5f,  -0.5f, 0.f, 1.f, 0.f, // bottom right
+	    -0.5f, -0.5f, 0.f, 0.f, 0.f	 // bottom left
+	};
+
+	uint32_t indices[] = {0, 1, 2, 2, 3, 0};
+	BufferLayout layout = {{"inPosition", ShaderDataType::Vec3}, {"inTexCoord", ShaderDataType::Vec2}};
 	Ref<VertexBuffer> vb;
 	vb.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
 	vb->SetLayout(layout);
 	mVA->AddVertexBuffer(vb);
 	Ref<IndexBuffer> ib;
-	ib.reset(IndexBuffer::Create(indices, 3));
+	ib.reset(IndexBuffer::Create(indices, 6));
 	mVA->AddIndexBuffer(ib);
 	mShader.reset(Shader::Create());
-	mShader->Load("../Shaders/Triangle.vert", "../Shaders/Triangle.frag");
+	mShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag");
 }
 
 static Vector4 clearColor(0.1f, 0.1f, 0.1f, 1);

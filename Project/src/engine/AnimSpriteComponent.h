@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SpriteComponent.h"
-#include "engine/Texture.h"
+#include "engine/renderer/Texture.h"
 struct AnimData
 {
 	std::string AnimName;
