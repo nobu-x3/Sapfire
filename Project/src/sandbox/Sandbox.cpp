@@ -1,4 +1,5 @@
 #include "Sandbox.h"
+#include "GL/glew.h"
 
 SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 {
@@ -21,7 +22,7 @@ SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 	mVA->AddIndexBuffer(ib);
 	mShader.reset(Shader::Create());
 	mShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag");
-	mTexture = Texture::Create("../Assets/Plane.png");
+	mTexture = Texture::Create("../Assets/Asteroid.png");
 	mShader->SetIntUniform("uTexture", mTexture->GetID());
 }
 
@@ -32,6 +33,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	mCameraRotation += Math::Sin(Math::ToRadians(30.f)) * deltaTime;
 	mCamera.SetRotation(mCameraRotation);
 
+	RenderCommands::Init();
 	RenderCommands::SetClearColor(clearColor);
 	RenderCommands::ClearScreen();
 	Renderer::BeginScene(mCamera);

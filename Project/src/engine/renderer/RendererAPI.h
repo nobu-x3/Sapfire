@@ -11,6 +11,7 @@ class RendererAPI
 	};
 
 	public:
+	virtual void Init() = 0;
 	virtual void ClearScreen() = 0;
 	virtual void SetClearColor(Vector4 &color) = 0;
 	virtual void Draw(const Ref<VertexArray> &vertexArray) = 0;
