@@ -20,8 +20,7 @@ SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 	Ref<IndexBuffer> ib;
 	ib.reset(IndexBuffer::Create(indices, 6));
 	mVA->AddIndexBuffer(ib);
-	mShader.reset(Shader::Create());
-	mShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag");
+	mShader = Shader::Create("../Shaders/Sprite.glsl");
 	mTexture = Texture::Create("../Assets/Asteroid.png");
 	mShader->SetIntUniform("uTexture", mTexture->GetID());
 }

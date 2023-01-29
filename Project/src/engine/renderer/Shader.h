@@ -1,4 +1,5 @@
 #pragma once
+#include "engine/Core.h"
 #include "engine/Math.h"
 class Shader
 {
@@ -15,4 +16,5 @@ class Shader
 	virtual void SetIntUniform(const std::string &name, int val) = 0;
 
 	static Shader *Create();
+	static Ref<Shader> Create(const std::string &path);
 };
