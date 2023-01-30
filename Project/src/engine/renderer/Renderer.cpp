@@ -8,6 +8,7 @@
 #include "engine/renderer/Texture.h"
 #include "engine/renderer/VertexArray.h"
 #include "engine/renderer/opengl/OpenGLContext.h"
+#include "engine/renderer/opengl/OpenGLShader.h"
 #include <SDL2/SDL.h>
 
 RendererAPI Renderer::sRendererAPI = RendererAPI::OpenGL;
@@ -50,11 +51,9 @@ bool Renderer::Initialize(float width, float height)
 void Renderer::Shutdown()
 {
 	/* delete mSpriteVerts; */
-	mSpriteShader->Unload();
 	delete mSpriteShader;
 	for (auto pair : mShaderMeshCompMap)
 	{
-		pair.first->Unload();
 		delete pair.first;
 		pair.second.clear();
 	}
@@ -193,6 +192,7 @@ void Renderer::LinkShaderToMeshComp(const std::string &fileName, MeshComponent *
 		mShaderMeshCompMap.emplace(shader, vec);
 	}
 }
+
 Shader *Renderer::GetShader(const std::string &fileName)
 {
 	Shader *sh = nullptr;
@@ -203,18 +203,6 @@ Shader *Renderer::GetShader(const std::string &fileName)
 	}
 	else
 	{
-		sh = Shader::Create();
-		if (sh->Load(fileName + ".vert", fileName + ".frag"))
-		{
-			mShaders.emplace(fileName, sh);
-			LoadShader(sh);
-		}
-		else
-		{
-			SDL_Log("Could not find shader %s.", fileName.c_str());
-			delete sh;
-			sh = nullptr;
-		}
 	}
 	return sh;
 }
@@ -244,11 +232,6 @@ void Renderer::LoadShader(Shader *sh)
 bool Renderer::LoadShaders()
 {
 	// 2D stuff
-	mSpriteShader = Shader::Create();
-	if (!mSpriteShader->Load("../Shaders/Sprite.vert", "../Shaders/Sprite.frag"))
-	{
-		return false;
-	}
 	mSpriteShader->Bind();
 	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(1024.f, 768.f);
 	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);

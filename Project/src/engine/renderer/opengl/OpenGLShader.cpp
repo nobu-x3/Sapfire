@@ -3,20 +3,6 @@
 #include "engine/renderer/RendererNew.h"
 #include <fstream>
 
-Shader *Shader::Create()
-{
-	switch (RendererAPI::GetAPI())
-	{
-	case RendererAPI::API::OpenGL: {
-		return new OpenGLShader();
-	}
-	default:
-		ENGINE_ERROR("Unknown RenderAPI!");
-		return nullptr;
-	}
-	return nullptr;
-}
-
 Ref<Shader> Shader::Create(const std::string &path)
 {
 	switch (RendererAPI::GetAPI())
@@ -103,7 +89,8 @@ bool OpenGLShader::CompileShader(const std::unordered_map<GLenum, std::string> &
 {
 	// TODO: in case of failures, most likely leaks memory due to not keeping track of specific shader ids
 	RendererID program = glCreateProgram();
-	std::vector<GLuint> shaderIds(sources.size());
+	std::vector<GLuint> shaderIds;
+	shaderIds.reserve(sources.size());
 	for (auto &src : sources)
 	{
 		GLenum shaderType = src.first;
@@ -115,8 +102,12 @@ bool OpenGLShader::CompileShader(const std::unordered_map<GLenum, std::string> &
 		glCompileShader(outShader);
 		if (!IsCompiled(outShader))
 		{
-			ENGINE_ERROR("Failed to compile shader");
-			Unload();
+			ENGINE_ERROR("Shader failed to compile:\n{0}", contents);
+			for (auto &shader : shaderIds)
+			{
+				glDeleteShader(shader);
+			}
+			glDeleteProgram(mShaderProgram);
 			return false;
 		}
 		glAttachShader(program, outShader);
@@ -127,7 +118,12 @@ bool OpenGLShader::CompileShader(const std::unordered_map<GLenum, std::string> &
 	// Verify that the program linked successfully
 	if (!IsValidProgram())
 	{
-		Unload();
+		ENGINE_ERROR("Shader failed to link!");
+		for (auto &shader : shaderIds)
+		{
+			glDeleteShader(shader);
+		}
+		glDeleteProgram(mShaderProgram);
 		return false;
 	}
 	for (auto &id : shaderIds)
@@ -135,70 +131,6 @@ bool OpenGLShader::CompileShader(const std::unordered_map<GLenum, std::string> &
 		glDetachShader(mShaderProgram, id);
 	}
 	return true;
-}
-
-bool OpenGLShader::CompileShader(const std::string &fileName, GLenum shaderType, GLuint &outShader)
-{
-	// Open file
-	std::ifstream shaderFile(fileName);
-	if (shaderFile.is_open())
-	{
-		// Read all the text into a string
-		std::stringstream sstream;
-		sstream << shaderFile.rdbuf();
-		std::string contents = sstream.str();
-		const char *contentsChar = contents.c_str();
-		// Create a shader of the specified type
-		outShader = glCreateShader(shaderType);
-		// Set the source characters and try to compile
-		glShaderSource(outShader, 1, &(contentsChar), nullptr);
-		glCompileShader(outShader);
-		if (!IsCompiled(outShader))
-		{
-			ENGINE_ERROR("Failed to compile shader: {0}", fileName);
-			Unload();
-			return false;
-		}
-	}
-	else
-	{
-		ENGINE_ERROR("Shader file not found: {0}", fileName);
-		return false;
-	}
-	return true;
-}
-
-bool OpenGLShader::Load(const std::string &vertName, const std::string &fragName)
-{
-	// Compile vertex and pixel shaders
-	if (!CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader) ||
-	    !CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader))
-	{
-		return false;
-	}
-	// Now create a shader program that
-	// links together the vertex/frag shaders
-	mShaderProgram = glCreateProgram();
-	glAttachShader(mShaderProgram, mVertexShader);
-	glAttachShader(mShaderProgram, mFragShader);
-	glLinkProgram(mShaderProgram);
-	// Verify that the program linked successfully
-	if (!IsValidProgram())
-	{
-		Unload();
-		return false;
-	}
-	glDetachShader(mShaderProgram, mVertexShader);
-	glDetachShader(mShaderProgram, mFragShader);
-	return true;
-}
-
-void OpenGLShader::Unload()
-{
-	// Delete the program/shaders
-	glDeleteProgram(mShaderProgram);
-	glDeleteShader(mVertexShader);
-	glDeleteShader(mFragShader);
 }
 
 void OpenGLShader::Bind()

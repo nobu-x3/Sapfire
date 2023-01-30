@@ -12,9 +12,6 @@ class OpenGLShader : public Shader
 	OpenGLShader() = default;
 	OpenGLShader(const std::string &path);
 	~OpenGLShader();
-	// tries to load v/f shaders with speicifed names
-	virtual bool Load(const std::string &vertName, const std::string &fragName) override;
-	virtual void Unload() override;
 
 	// sets the active shader to this
 	virtual void Bind() override;
@@ -27,13 +24,10 @@ class OpenGLShader : public Shader
 	std::string ParseFile(const std::string &path);
 	std::unordered_map<GLenum, std::string> Process(const std::string &source);
 	// tries to compile specified shader
-	bool CompileShader(const std::string &filePath, GLenum shaderType, GLuint &outShader);
 	bool CompileShader(const std::unordered_map<GLenum, std::string> &sources);
 	// tests if compiled
 	bool IsCompiled(GLuint shader);
 	// tests if linked
 	bool IsValidProgram();
-	GLuint mVertexShader;
-	GLuint mFragShader;
 	RendererID mShaderProgram;
 };
