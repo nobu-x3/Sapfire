@@ -1,6 +1,9 @@
 #include "Sandbox.h"
 #include "GL/glew.h"
 
+const std::string SHADER_PATH = "../Shaders/Sprite.glsl";
+const std::string SHADER_NAME = "Sprite";
+
 SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 {
 	mVA.reset(VertexArray::Create());
@@ -20,9 +23,9 @@ SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 	Ref<IndexBuffer> ib;
 	ib.reset(IndexBuffer::Create(indices, 6));
 	mVA->AddIndexBuffer(ib);
-	mShader = Shader::Create("../Shaders/Sprite.glsl");
+	mShaderLibrary.Load(SHADER_PATH);
 	mTexture = Texture::Create("../Assets/Asteroid.png");
-	mShader->SetIntUniform("uTexture", mTexture->GetID());
+	mShaderLibrary.Get(SHADER_NAME)->SetIntUniform("uTexture", mTexture->GetID());
 }
 
 static Vector4 clearColor(0.1f, 0.1f, 0.1f, 1);
@@ -37,7 +40,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	RenderCommands::ClearScreen();
 	Renderer::BeginScene(mCamera);
 	mTexture->Bind();
-	Renderer::Submit(mVA, mShader);
+	Renderer::Submit(mVA, mShaderLibrary.Get(SHADER_NAME));
 	Renderer::EndScene();
 }
 

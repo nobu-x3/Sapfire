@@ -19,6 +19,7 @@ class OpenGLShader : public Shader
 	virtual void SetVectorUniform(const std::string &name, const Vector3 &vec) override;
 	virtual void SetFloatUniform(const std::string &name, float val) override;
 	virtual void SetIntUniform(const std::string &name, int val) override;
+	inline virtual const std::string &GetName() const override { return mName; }
 
 	private:
 	std::string ParseFile(const std::string &path);
@@ -30,4 +31,5 @@ class OpenGLShader : public Shader
 	// tests if linked
 	bool IsValidProgram();
 	RendererID mShaderProgram;
+	std::string mName;
 };

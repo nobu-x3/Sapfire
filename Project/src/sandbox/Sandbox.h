@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/Engine.h"
+#include "engine/renderer/ShaderLibrary.h"
 
 class SandboxLayer : public Layer
 {
@@ -10,7 +11,7 @@ class SandboxLayer : public Layer
 
 	private:
 	Ref<VertexArray> mVA;
-	Ref<Shader> mShader;
+	ShaderLibrary mShaderLibrary;
 	Ref<Texture> mTexture;
 	OrthographicCamera mCamera;
 

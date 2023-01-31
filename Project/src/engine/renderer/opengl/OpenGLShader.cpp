@@ -1,6 +1,7 @@
 #include "engine/renderer/opengl/OpenGLShader.h"
 #include "engine/Log.h"
 #include "engine/renderer/RendererNew.h"
+#include <filesystem>
 #include <fstream>
 
 Ref<Shader> Shader::Create(const std::string &path)
@@ -22,6 +23,8 @@ OpenGLShader::OpenGLShader(const std::string &path)
 	std::string source = ParseFile(path);
 	auto shaderSources = Process(source);
 	CompileShader(shaderSources);
+	std::filesystem::path p = path;
+	mName = p.stem().string();
 }
 
 OpenGLShader::~OpenGLShader()
@@ -32,7 +35,7 @@ OpenGLShader::~OpenGLShader()
 std::string OpenGLShader::ParseFile(const std::string &path)
 {
 	std::string result;
-	std::ifstream in(path, std::ios::in);
+	std::ifstream in(path, std::ios::in | std::ios::binary);
 	if (in)
 	{
 		in.seekg(0, std::ios::end);
