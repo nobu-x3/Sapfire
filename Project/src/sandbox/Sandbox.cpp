@@ -23,9 +23,9 @@ SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 	Ref<IndexBuffer> ib;
 	ib.reset(IndexBuffer::Create(indices, 6));
 	mVA->AddIndexBuffer(ib);
-	mShaderLibrary.Load(SHADER_PATH);
+	mSpriteShader = mShaderLibrary.Load(SHADER_PATH);
 	mTexture = Texture::Create("../Assets/Asteroid.png");
-	mShaderLibrary.Get(SHADER_NAME)->SetIntUniform("uTexture", mTexture->GetID());
+	mSpriteShader->SetIntUniform("uTexture", mTexture->GetID());
 }
 
 static Vector4 clearColor(0.1f, 0.1f, 0.1f, 1);
@@ -40,7 +40,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	RenderCommands::ClearScreen();
 	Renderer::BeginScene(mCamera);
 	mTexture->Bind();
-	Renderer::Submit(mVA, mShaderLibrary.Get(SHADER_NAME));
+	Renderer::Submit(mVA, mSpriteShader);
 	Renderer::EndScene();
 }
 
