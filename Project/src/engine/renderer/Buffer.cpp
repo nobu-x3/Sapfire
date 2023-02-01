@@ -1,6 +1,7 @@
 #include "Buffer.h"
 #include "engine/renderer/RendererAPI.h"
 #include "engine/renderer/opengl/OpenGLBuffer.h"
+#include <memory>
 
 void BufferLayout::CalculateOffsets()
 {
@@ -13,13 +14,13 @@ void BufferLayout::CalculateOffsets()
 		mStride += element.Size;
 	}
 }
-VertexBuffer *VertexBuffer::Create(float *vertices, size_t size)
+Ref<VertexBuffer> VertexBuffer::Create()
 {
 	auto api = RendererAPI::GetAPI();
 	switch (api)
 	{
 	case RendererAPI::API::OpenGL: {
-		return new OpenGLVertexBuffer(vertices, size);
+		return std::make_shared<OpenGLVertexBuffer>();
 	}
 	default:
 		return nullptr;
@@ -28,13 +29,13 @@ VertexBuffer *VertexBuffer::Create(float *vertices, size_t size)
 	return nullptr;
 }
 
-IndexBuffer *IndexBuffer::Create(uint32_t *indices, size_t size)
+Ref<IndexBuffer> IndexBuffer::Create()
 {
 	auto api = RendererAPI::GetAPI();
 	switch (api)
 	{
 	case RendererAPI::API::OpenGL: {
-		return new OpenGLIndexBuffer(indices, size);
+		return std::make_shared<OpenGLIndexBuffer>();
 	}
 	default:
 		return nullptr;

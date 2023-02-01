@@ -17,11 +17,13 @@ SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 	uint32_t indices[] = {0, 1, 2, 2, 3, 0};
 	BufferLayout layout = {{"inPosition", ShaderDataType::Vec3}, {"inTexCoord", ShaderDataType::Vec2}};
 	Ref<VertexBuffer> vb;
-	vb.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
+	vb = VertexBuffer::Create();
 	vb->SetLayout(layout);
+	vb->SetData(vertices, sizeof(vertices));
 	mVA->AddVertexBuffer(vb);
 	Ref<IndexBuffer> ib;
-	ib.reset(IndexBuffer::Create(indices, 6));
+	ib = IndexBuffer::Create();
+	ib->SetData(indices, sizeof(indices));
 	mVA->AddIndexBuffer(ib);
 	mSpriteShader = mShaderLibrary.Load(SHADER_PATH);
 	mTexture = Texture::Create("../Assets/Asteroid.png");

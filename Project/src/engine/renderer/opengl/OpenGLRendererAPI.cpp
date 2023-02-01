@@ -26,3 +26,8 @@ void OpenGLRendererAPI::Draw(const Ref<VertexArray> &vertexArray)
 		glDrawElements(GL_TRIANGLES, buffer->GetCount(), GL_UNSIGNED_INT, nullptr);
 	}
 }
+
+void OpenGLRendererAPI::Draw(size_t count)
+{
+	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+}

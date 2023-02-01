@@ -226,8 +226,8 @@ struct Vector3
 
 	Vector3() : x(0.0f), y(0.0f), z(0.0f) {}
 	Vector3(Vector2 vec) : x(vec.x), y(vec.y), z(0.0f) {}
+	Vector3(float inX, float inY, float inZ) : x(inX), y(inY), z(inZ) {}
 
-	inline explicit Vector3(float inX, float inY, float inZ) : x(inX), y(inY), z(inZ) {}
 
 	// Cast to a const float pointer
 	inline const float *GetAsConstFloatPtr() const { return reinterpret_cast<const float *>(&x); }

@@ -107,12 +107,12 @@ bool Mesh::Load(const std::string &fileName, Renderer *renderer)
 		indices.emplace_back(indArr[1].get<unsigned int>());
 		indices.emplace_back(indArr[2].get<unsigned int>());
 	}
-	mVertexBuffer = VertexBuffer::Create(vertices.data(), static_cast<uint32_t>(vertices.size()) / vertSize);
+	/* mVertexBuffer = VertexBuffer::Create(vertices.data(), static_cast<uint32_t>(vertices.size()) / vertSize); */
 	BufferLayout layout = {{"inPosition", ShaderDataType::Vec3},
 			       {"inNormal", ShaderDataType::Vec3},
 			       {"inTexCoord", ShaderDataType::Vec2}};
 	mVertexBuffer->SetLayout(layout);
-	mIndexBuffer = IndexBuffer::Create(indices.data(), static_cast<uint32_t>(indices.size()));
+	/* mIndexBuffer = IndexBuffer::Create(indices.data(), static_cast<uint32_t>(indices.size())); */
 	return true;
 }
 

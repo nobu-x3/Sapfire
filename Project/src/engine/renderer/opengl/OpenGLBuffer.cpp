@@ -5,16 +5,21 @@
 
 ////////////////////////// VERTEX BUFFER //////////////////////////////////////
 
-OpenGLVertexBuffer::OpenGLVertexBuffer(float *vertices, uint32_t count) : mCount(count)
+OpenGLVertexBuffer::OpenGLVertexBuffer()
 {
 	glGenBuffers(1, &mRendererID);
-	glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
-	glBufferData(GL_ARRAY_BUFFER, count * 8 * sizeof(float), vertices, GL_STATIC_DRAW);
 }
 
 OpenGLVertexBuffer::~OpenGLVertexBuffer()
 {
 	glDeleteBuffers(1, &mRendererID);
+}
+
+void OpenGLVertexBuffer::SetData(void *buffer, size_t size, uint32_t offset)
+{
+	mCount = size;
+	glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
+	glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
 }
 
 void OpenGLVertexBuffer::Bind() const
@@ -29,16 +34,21 @@ void OpenGLVertexBuffer::Unbind() const
 
 ////////////////////////// INDEX BUFFER //////////////////////////////////////
 
-OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t *indeces, uint32_t count) : mCount(count)
+OpenGLIndexBuffer::OpenGLIndexBuffer()
 {
 	glGenBuffers(1, &mRendererID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indeces, GL_STATIC_DRAW);
 }
 
 OpenGLIndexBuffer::~OpenGLIndexBuffer()
 {
 	glDeleteBuffers(1, &mRendererID);
+}
+
+void OpenGLIndexBuffer::SetData(void *buffer, size_t size, uint32_t offset)
+{
+	mCount = size;
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
 }
 
 void OpenGLIndexBuffer::Bind() const

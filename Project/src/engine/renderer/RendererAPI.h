@@ -15,6 +15,7 @@ class RendererAPI
 	virtual void ClearScreen() = 0;
 	virtual void SetClearColor(Vector4 &color) = 0;
 	virtual void Draw(const Ref<VertexArray> &vertexArray) = 0;
+	virtual void Draw(size_t count) = 0;
 	inline static API GetAPI() { return sAPI; }
 
 	private:
