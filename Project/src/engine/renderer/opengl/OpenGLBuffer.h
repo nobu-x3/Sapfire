@@ -8,7 +8,7 @@ class OpenGLVertexBuffer : public VertexBuffer
 	public:
 	OpenGLVertexBuffer();
 	~OpenGLVertexBuffer();
-	virtual void SetData(void *buffer, size_t size, uint32_t offset) override;
+	virtual void SetData(void *buffer, size_t size) override;
 	virtual void Bind() const override;
 	virtual void Unbind() const override;
 	inline virtual uint32_t GetCount() const override { return mCount; }
@@ -27,7 +27,7 @@ class OpenGLIndexBuffer : public IndexBuffer
 	public:
 	OpenGLIndexBuffer();
 	~OpenGLIndexBuffer();
-	virtual void SetData(void *buffer, size_t size, uint32_t offset) override;
+	virtual void SetData(void *buffer, size_t size) override;
 	virtual void Bind() const override;
 	virtual void Unbind() const override;
 	inline virtual uint32_t GetCount() const override { return mCount; }

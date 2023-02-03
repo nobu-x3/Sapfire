@@ -1,4 +1,3 @@
-#include "Game.h"
 #include "engine/Application.h"
 
 int main(int argc, char *argv[])

@@ -1,30 +1,6 @@
 #pragma once
 
-#include "engine/Core.h"
-#include "engine/Math.h"
-#include <SDL2/SDL.h>
-
-struct DirectionalLight
-{
-	Vector3 mDirection;
-	Vector3 mDiffuseColor;
-	Vector3 mSpecColor;
-};
-
-struct PointLight
-{
-	Vector3 mPosition;
-	Vector3 mDiffuseColor;
-	Vector3 mSpecColor;
-	float mIntensity;
-	float mRadius;
-};
-
-enum class RendererAPI
-{
-	None = 0,
-	OpenGL = 1,
-};
+#include "RendererAPI.h"
 
 enum class WindowAPI
 {
@@ -35,64 +11,16 @@ enum class WindowAPI
 class Renderer
 {
 	public:
-	Renderer() = default;
-	Renderer(class Game *game);
-	~Renderer() = default;
-	bool Initialize(float width, float height);
-	void Shutdown();
-	void UnloadData();
-	void Draw();
-	void AddSprite(class SpriteComponent *sprite);
-	void RemoveSprite(class SpriteComponent *sprite);
-	void AddMeshComponent(class MeshComponent *mesh);
-	void RemoveMeshComponent(class MeshComponent *mesh);
-	inline void SetViewMatrix(const Matrix4 &view) { mView = view; }
-	Ref<class Texture> GetTexture(const char *fileName);
-	class Mesh *GetMesh(const char *fileName);
-	class Shader *GetShader(const std::string &fileName);
-	void LoadShader(class Shader *sh);
-	void LinkShaderToMeshComp(const std::string &fileName, class MeshComponent *meshComp);
-	inline float GetScreenWidth() const { return mScreenWidth; }
-	inline float GetScreenHeight() const { return mScreenHeight; }
-	inline void SetAmbientLight(const Vector3 &light) { mAmbientLight = light; }
-	inline DirectionalLight &GetDirectionalLight() { return mDirectionalLight; }
-	inline std::array<PointLight, 4> &GetPointLights() { return mPointLights; }
-	inline static RendererAPI GetRendererAPI() { return sRendererAPI; }
-	inline static void SetRendererAPI(RendererAPI api) { sRendererAPI = api; }
-	inline static WindowAPI GetWindowAPI() { return sWindowAPI; }
-	inline static void SetWindowAPI(WindowAPI api) { sWindowAPI = api; }
+	static void BeginScene(class Camera &camera);
+	static void EndScene();
+	static void Submit(const Ref<VertexArray> &vertexArray, const Ref<class Shader> &shader);
+	static WindowAPI GetWindowAPI() { return sWindowAPI; }
 
 	private:
-	static RendererAPI sRendererAPI;
+	struct SceneData
+	{
+		glm::mat4 ViewProjectionMatrix;
+	};
+	static SceneData *sSceneData;
 	static WindowAPI sWindowAPI;
-	void CreateSpriteVerts();
-	bool LoadShaders();
-	void SetLightUniforms(class Shader *shader);
-
-	std::unordered_map<std::string, Ref<class Texture>> mTextures;
-	std::unordered_map<std::string, class Mesh *> mMeshes;
-	std::unordered_map<std::string, class Shader *> mShaders;
-	std::unordered_map<class Shader *, std::vector<class MeshComponent *>> mShaderMeshCompMap;
-	std::vector<class SpriteComponent *> mSprites; // this list is sorted
-	std::vector<class MeshComponent *> mMeshComponents;
-	std::vector<class Shader *> mMeshShaders;
-
-	class VertexArray *mSpriteVerts;
-	class Shader *mSpriteShader;
-
-	class SDL_Window *mWindow;
-	class RenderingContext *mRenderingContext;
-	SDL_GLContext mContext;
-	class Game *mGame;
-
-	// View/projection for 3D shaders
-	Matrix4 mView;
-	Matrix4 mProjection;
-	// Width/height of screen
-	float mScreenWidth;
-	float mScreenHeight;
-
-	Vector3 mAmbientLight;
-	DirectionalLight mDirectionalLight;
-	std::array<PointLight, 4> mPointLights;
 };

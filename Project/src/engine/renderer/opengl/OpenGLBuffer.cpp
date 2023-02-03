@@ -15,7 +15,7 @@ OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	glDeleteBuffers(1, &mRendererID);
 }
 
-void OpenGLVertexBuffer::SetData(void *buffer, size_t size, uint32_t offset)
+void OpenGLVertexBuffer::SetData(void *buffer, size_t size)
 {
 	mCount = size;
 	glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
@@ -44,7 +44,7 @@ OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	glDeleteBuffers(1, &mRendererID);
 }
 
-void OpenGLIndexBuffer::SetData(void *buffer, size_t size, uint32_t offset)
+void OpenGLIndexBuffer::SetData(void *buffer, size_t size)
 {
 	mCount = size;
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);

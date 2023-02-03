@@ -93,7 +93,7 @@ class VertexBuffer
 {
 	public:
 	virtual ~VertexBuffer() {}
-	virtual void SetData(void *buffer, size_t size, uint32_t offset = 0) = 0;
+	virtual void SetData(void *buffer, size_t size) = 0;
 	virtual void Bind() const = 0;
 	virtual void Unbind() const = 0;
 	virtual uint32_t GetCount() const = 0;
@@ -109,7 +109,7 @@ class IndexBuffer
 {
 	public:
 	virtual ~IndexBuffer() {}
-	virtual void SetData(void *buffer, size_t size, uint32_t offset = 0) = 0;
+	virtual void SetData(void *buffer, size_t size) = 0;
 	virtual void Bind() const = 0;
 	virtual void Unbind() const = 0;
 	virtual uint32_t GetCount() const = 0;

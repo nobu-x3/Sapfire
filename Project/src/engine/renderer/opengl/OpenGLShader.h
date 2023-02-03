@@ -15,8 +15,8 @@ class OpenGLShader : public Shader
 
 	// sets the active shader to this
 	virtual void Bind() override;
-	virtual void SetMatrixUniform(const std::string &name, const Matrix4 &matrix) override;
-	virtual void SetVectorUniform(const std::string &name, const Vector3 &vec) override;
+	virtual void SetMatrixUniform(const std::string &name, const glm::mat4 &matrix) override;
+	virtual void SetVectorUniform(const std::string &name, const glm::vec3 &vec) override;
 	virtual void SetFloatUniform(const std::string &name, float val) override;
 	virtual void SetIntUniform(const std::string &name, int val) override;
 	inline virtual const std::string &GetName() const override { return mName; }

@@ -1,6 +1,6 @@
 #include "engine/renderer/opengl/OpenGLShader.h"
 #include "engine/Log.h"
-#include "engine/renderer/RendererNew.h"
+#include "engine/renderer/Renderer.h"
 #include <filesystem>
 #include <fstream>
 
@@ -142,18 +142,18 @@ void OpenGLShader::Bind()
 	glUseProgram(mShaderProgram);
 }
 
-void OpenGLShader::SetMatrixUniform(const std::string &name, const Matrix4 &matrix)
+void OpenGLShader::SetMatrixUniform(const std::string &name, const glm::mat4 &matrix)
 {
 	// Find the uniform by this name
 	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 	// Send the matrix data to the uniform
-	glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsConstFloatPtr());
+	glUniformMatrix4fv(loc, 1, GL_TRUE, glm::value_ptr(matrix));
 }
 
-void OpenGLShader::SetVectorUniform(const std::string &name, const Vector3 &vec)
+void OpenGLShader::SetVectorUniform(const std::string &name, const glm::vec3 &vec)
 {
 	GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
-	glUniform3fv(loc, 1, vec.GetAsConstFloatPtr());
+	glUniform3fv(loc, 1, glm::value_ptr(vec));
 }
 
 void OpenGLShader::SetFloatUniform(const std::string &name, float val)

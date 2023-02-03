@@ -14,7 +14,7 @@ void OpenGLRendererAPI::ClearScreen()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRendererAPI::SetClearColor(Vector4 &color)
+void OpenGLRendererAPI::SetClearColor(glm::vec4 &color)
 {
 	glClearColor(color.x, color.y, color.z, color.w);
 }

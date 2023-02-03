@@ -1,5 +1,4 @@
 #pragma once
-#include "engine/Math.h"
 #include "engine/renderer/VertexArray.h"
 class RendererAPI
 {
@@ -13,7 +12,7 @@ class RendererAPI
 	public:
 	virtual void Init() = 0;
 	virtual void ClearScreen() = 0;
-	virtual void SetClearColor(Vector4 &color) = 0;
+	virtual void SetClearColor(glm::vec4 &color) = 0;
 	virtual void Draw(const Ref<VertexArray> &vertexArray) = 0;
 	virtual void Draw(size_t count) = 0;
 	inline static API GetAPI() { return sAPI; }

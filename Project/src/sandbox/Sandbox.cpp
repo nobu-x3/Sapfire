@@ -4,7 +4,7 @@
 const std::string SHADER_PATH = "../Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";
 
-SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
+SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -0.9f, 0.9f)
 {
 	mVA.reset(VertexArray::Create());
 	float vertices[7 * 4] = {
@@ -28,15 +28,14 @@ SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -1.2f, 1.2f)
 	mSpriteShader = mShaderLibrary.Load(SHADER_PATH);
 	mTexture = Texture::Create("../Assets/Asteroid.png");
 	mSpriteShader->SetIntUniform("uTexture", mTexture->GetID());
+	mCamera.SetRotation(0);
 }
 
-static Vector4 clearColor(0.1f, 0.1f, 0.1f, 1);
+static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
 void SandboxLayer::OnUpdate(float deltaTime)
 {
-
-	mCameraRotation += Math::Sin(Math::ToRadians(30.f)) * deltaTime;
+	mCameraRotation += 30.f * deltaTime;
 	mCamera.SetRotation(mCameraRotation);
-
 	RenderCommands::Init();
 	RenderCommands::SetClearColor(clearColor);
 	RenderCommands::ClearScreen();

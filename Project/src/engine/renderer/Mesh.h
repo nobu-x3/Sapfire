@@ -9,11 +9,11 @@ class Mesh
 	public:
 	struct Vertex
 	{
-		Vector3 Position;
-		Vector3 Normal;
-		Vector3 Tangent;
-		Vector3 Binormal;
-		Vector2 Texcoord;
+		glm::vec3 Position;
+		glm::vec3 Normal;
+		glm::vec3 Tangent;
+		glm::vec3 Binormal;
+		glm::vec2 Texcoord;
 	};
 
 	struct Index

@@ -3,7 +3,7 @@
 #include "engine/events/WindowEvent.h"
 #include "engine/renderer/Buffer.h"
 #include "engine/renderer/RenderCommands.h"
-#include "engine/renderer/RendererNew.h"
+#include "engine/renderer/Renderer.h"
 #include "engine/renderer/Shader.h"
 #include "engine/renderer/VertexArray.h"
 #include "engine/renderer/Window.h"
