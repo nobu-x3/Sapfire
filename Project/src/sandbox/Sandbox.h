@@ -12,7 +12,9 @@ class SandboxLayer : public Layer
 	private:
 	Ref<VertexArray> mVA;
 	ShaderLibrary mShaderLibrary;
+	Ref<class Mesh> mSphereMesh;
 	Ref<Shader> mSpriteShader;
+	Ref<Shader> mMeshShader;
 	Ref<Texture> mTexture;
 	OrthographicCamera mCamera;
 

@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "engine/renderer/Camera.h"
+#include "engine/renderer/Mesh.h"
 #include "engine/renderer/RenderCommands.h"
 #include "engine/renderer/Shader.h"
 
@@ -22,4 +23,12 @@ void Renderer::Submit(const Ref<VertexArray> &vertexArray, const Ref<Shader> &sh
 	shader->SetMatrixUniform("uViewProjection", sSceneData->ViewProjectionMatrix);
 	vertexArray->Bind();
 	RenderCommands::Draw(vertexArray);
+}
+
+void Renderer::SubmitMesh(const Ref<Mesh> &mesh, const Ref<Shader> &shader)
+{
+	shader->Bind();
+	shader->SetMatrixUniform("uViewProj", sSceneData->ViewProjectionMatrix);
+	shader->SetMatrixUniform("uWorldTransform", mesh->GetWorldTransform());
+	mesh->Render();
 }

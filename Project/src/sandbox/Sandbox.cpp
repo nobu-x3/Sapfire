@@ -1,5 +1,6 @@
 #include "Sandbox.h"
 #include "GL/glew.h"
+#include "engine/renderer/Mesh.h"
 
 const std::string SHADER_PATH = "../Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";
@@ -28,20 +29,36 @@ SandboxLayer::SandboxLayer() : mCamera(-1.6f, 1.6f, -0.9f, 0.9f)
 	mSpriteShader = mShaderLibrary.Load(SHADER_PATH);
 	mTexture = Texture::Create("../Assets/Asteroid.png");
 	mSpriteShader->SetIntUniform("uTexture", mTexture->GetID());
-	mCamera.SetRotation(0);
+	/* mCamera.SetRotation(0); */
+	mCamera.SetPosition(glm::vec3(0.f));
+	mCamera.SetRotation(30.f);
+	mMeshShader = mShaderLibrary.Load("../Shaders/BasicMesh.glsl");
+	mSphereMesh = CreateRef<Mesh>("../Assets/Sphere.blend1");
+	mSphereMesh->SetTexture("../Assets/Plane.png");
+	mSphereMesh->SetPosition(glm::vec3(0.f));
+	mSphereMesh->SetScale(glm::vec3(3.f));
 }
 
 static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
+static glm::vec3 scale(1.f);
+
 void SandboxLayer::OnUpdate(float deltaTime)
 {
 	mCameraRotation += 30.f * deltaTime;
-	mCamera.SetRotation(mCameraRotation);
+	/* scale += 3.f * deltaTime; */
+	// (sin + 1) / 2
+
+	/* mSphereMesh->SetScale((glm::sin(scale) + 1.5f) / 2.f); */
+	mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
+	/* glm::rotate(mSphereMesh->GetRotation(), glm::radians(mCameraRotation), glm::vec3({1.f, 0.f, 0.f}))); */
+	/* mCamera.SetRotation(mCameraRotation); */
 	RenderCommands::Init();
 	RenderCommands::SetClearColor(clearColor);
 	RenderCommands::ClearScreen();
 	Renderer::BeginScene(mCamera);
-	mTexture->Bind();
-	Renderer::Submit(mVA, mSpriteShader);
+	/* mTexture->Bind(); */
+	/* Renderer::Submit(mVA, mSpriteShader); */
+	Renderer::SubmitMesh(mSphereMesh, mMeshShader);
 	Renderer::EndScene();
 }
 

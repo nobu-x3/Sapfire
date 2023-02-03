@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "engine/renderer/RenderCommands.h"
+#include "engine/renderer/Texture.h"
 #include <GL/glew.h> // TODO: make API-agnostic
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
@@ -10,7 +11,8 @@
 const unsigned int IMPORT_FLAGS = aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_SortByPType |
 				  aiProcess_PreTransformVertices | aiProcess_GenNormals | aiProcess_GenUVCoords |
 				  aiProcess_OptimizeMeshes | aiProcess_Debone | aiProcess_ValidateDataStructure;
-Mesh::Mesh(const std::string &fileName)
+
+Mesh::Mesh(const std::string &fileName) : mWorldTransform(1.f)
 {
 	std::filesystem::path p = fileName;
 	mName = p.stem().string();
@@ -36,6 +38,12 @@ Mesh::Mesh(const std::string &fileName)
 		mVertices.push_back(vertex);
 	}
 	mVertexBuffer = VertexBuffer::Create();
+	BufferLayout layout = {{"inPosition", ShaderDataType::Vec3},
+			       {"inNormal", ShaderDataType::Vec3},
+			       {"inTangent", ShaderDataType::Vec3},
+			       {"inBinormal", ShaderDataType::Vec3},
+			       {"inTexCoord", ShaderDataType::Vec3}};
+	mVertexBuffer->SetLayout(layout);
 	mVertexBuffer->SetData(mVertices.data(), mVertices.size() * sizeof(Vertex));
 	// Index buffer
 	mIndices.reserve(mesh->mNumFaces);
@@ -50,16 +58,22 @@ Mesh::Mesh(const std::string &fileName)
 	}
 	mIndexBuffer = IndexBuffer::Create();
 	mIndexBuffer->SetData(mIndices.data(), mIndices.size() * sizeof(Index));
+	ENGINE_INFO("Done parsing mesh: {0}", fileName);
 }
 Mesh::~Mesh()
 {
+}
+
+void Mesh::SetTexture(const std::string &path)
+{
+	mTexture = Texture::Create(path);
 }
 
 void Mesh::Render()
 {
 	mVertexBuffer->Bind();
 	mIndexBuffer->Bind();
-
+	mTexture->Bind();
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Position));
 
@@ -75,4 +89,11 @@ void Mesh::Render()
 	glEnableVertexAttribArray(4);
 	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Texcoord));
 	RenderCommands::Draw(mIndexBuffer->GetCount());
+}
+
+void Mesh::CalculateWorldTransform()
+{
+	mWorldTransform = glm::translate(glm::mat4(1.f), mWorldPosition);
+	mWorldTransform *= glm::mat4_cast(mRotation);
+	mWorldTransform *= glm::scale(glm::mat4(1.f), mScale);
 }

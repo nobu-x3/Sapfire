@@ -24,7 +24,26 @@ class Mesh
 	Mesh(const std::string &fileName);
 	~Mesh();
 	void Render();
+	inline void SetPosition(const glm::vec3 &pos)
+	{
+		mWorldPosition = pos;
+		CalculateWorldTransform();
+	}
+	inline void SetRotation(const glm::quat &quat)
+	{
+		mRotation = quat;
+		CalculateWorldTransform();
+	}
+	inline void SetScale(const glm::vec3 &scale)
+	{
+		mScale = scale;
+		CalculateWorldTransform();
+	}
+	void SetTexture(const std::string &path);
 	inline const std::string &GetName() const { return mName; }
+	inline const glm::mat4 &GetWorldTransform() const { return mWorldTransform; }
+	inline const glm::quat &GetRotation() const { return mRotation; }
+	void CalculateWorldTransform();
 
 	private:
 	std::string mName;
@@ -32,4 +51,9 @@ class Mesh
 	std::vector<Index> mIndices;
 	Ref<VertexBuffer> mVertexBuffer;
 	Ref<IndexBuffer> mIndexBuffer;
+	glm::vec3 mWorldPosition;
+	glm::quat mRotation;
+	glm::vec3 mScale = glm::vec3(1.f);
+	glm::mat4 mWorldTransform;
+	Ref<class Texture> mTexture;
 };
