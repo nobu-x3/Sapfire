@@ -20,7 +20,7 @@ Ref<VertexBuffer> VertexBuffer::Create()
 	switch (api)
 	{
 	case RendererAPI::API::OpenGL: {
-		return std::make_shared<OpenGLVertexBuffer>();
+		return CreateRef<OpenGLVertexBuffer>();
 	}
 	default:
 		return nullptr;
@@ -35,7 +35,7 @@ Ref<IndexBuffer> IndexBuffer::Create()
 	switch (api)
 	{
 	case RendererAPI::API::OpenGL: {
-		return std::make_shared<OpenGLIndexBuffer>();
+		return CreateRef<OpenGLIndexBuffer>();
 	}
 	default:
 		return nullptr;

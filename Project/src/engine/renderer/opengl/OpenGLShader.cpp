@@ -9,7 +9,7 @@ Ref<Shader> Shader::Create(const std::string &path)
 	switch (RendererAPI::GetAPI())
 	{
 	case RendererAPI::API::OpenGL: {
-		return std::make_shared<OpenGLShader>(path);
+		return CreateRef<OpenGLShader>(path);
 	}
 	default:
 		ENGINE_ERROR("Unknown RenderAPI!");
