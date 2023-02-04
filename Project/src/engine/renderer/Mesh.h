@@ -26,7 +26,7 @@ class Mesh
 	virtual void Render();
 	inline void SetPosition(const glm::vec3 &pos)
 	{
-		mWorldPosition = pos;
+		mWorldPosition = -pos;
 		CalculateWorldTransform();
 	}
 	inline void SetRotation(const glm::quat &quat)

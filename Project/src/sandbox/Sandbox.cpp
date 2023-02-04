@@ -5,8 +5,9 @@
 const std::string SHADER_PATH = "../Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";
 
-SandboxLayer::SandboxLayer() : mCamera(1.6f, -1.6f, 0.9f, -0.9)
-// mCamera(70.f, 1280, 720, 20, 2000)
+SandboxLayer::SandboxLayer()
+    : /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
+      mCamera(70.f, 1280, 720, 0, 2000)
 {
 	mVA.reset(VertexArray::Create());
 	float vertices[7 * 4] = {
@@ -34,8 +35,8 @@ SandboxLayer::SandboxLayer() : mCamera(1.6f, -1.6f, 0.9f, -0.9)
 	mMeshShader = mShaderLibrary.Load("../Shaders/BasicMesh.glsl");
 	mSphereMesh = CreateRef<Mesh>("../Assets/Sphere.blend1");
 	mSphereMesh->SetTexture("../Assets/Plane.png");
-	mSphereMesh->SetPosition(glm::vec3(0.f));
-	mSphereMesh->SetScale(glm::vec3(3.f));
+	mSphereMesh->SetPosition(glm::vec3({0.f, 0.f, 0.4f}));
+	mSphereMesh->SetScale(glm::vec3(1.f));
 }
 
 static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
@@ -48,7 +49,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	// (sin + 1) / 2
 
 	/* mSphereMesh->SetScale((glm::sin(scale) + 1.5f) / 2.f); */
-	mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 1.f, 1.f})));
+	mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
 	/* glm::rotate(mSphereMesh->GetRotation(), glm::radians(mCameraRotation), glm::vec3({1.f, 0.f, 0.f}))); */
 	/* mCamera.SetRotation(mCameraRotation); */
 	RenderCommands::Init();

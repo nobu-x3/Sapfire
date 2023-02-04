@@ -24,16 +24,10 @@ class PerspectiveCamera : public Camera
 		mPosition = position;
 		RecalculateViewMatrix();
 	}
-	inline glm::quat GetRotation() const { return mRotation; }
-	inline void SetRotation(glm::quat rotation)
+	inline float GetRotation() const { return mRotation; }
+	inline void SetRotation(float rotation)
 	{
 		mRotation = rotation;
-		RecalculateViewMatrix();
-	}
-
-	inline void AddRotation(float angle, glm::vec3 axis)
-	{
-		mRotation = glm::rotate(mRotation, angle, axis);
 		RecalculateViewMatrix();
 	}
 
@@ -46,7 +40,7 @@ class PerspectiveCamera : public Camera
 
 	private:
 	glm::vec3 mPosition{0.f, 0.f, 0.f};
-	glm::quat mRotation;
+	float mRotation;
 	glm::mat4 mProjectionMatrix;
 	glm::mat4 mViewMatrix;
 	glm::mat4 mViewProjectionMatrix;

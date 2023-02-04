@@ -16,7 +16,7 @@ class SandboxLayer : public Layer
 	Ref<Shader> mSpriteShader;
 	Ref<Shader> mMeshShader;
 	Ref<Texture> mTexture;
-	OrthographicCamera mCamera;
+	PerspectiveCamera mCamera;
 
 	float mCameraRotation;
 };
