@@ -1,7 +1,6 @@
 #include "Mesh.h"
 #include "engine/renderer/RenderCommands.h"
 #include "engine/renderer/Texture.h"
-#include <GL/glew.h> // TODO: make API-agnostic
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
 #include <assimp/postprocess.h>
@@ -74,20 +73,7 @@ void Mesh::Render()
 	mVertexBuffer->Bind();
 	mIndexBuffer->Bind();
 	mTexture->Bind();
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Position));
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Normal));
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Tangent));
-
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Binormal));
-
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, Texcoord));
+	RenderCommands::DrawMesh();
 	RenderCommands::Draw(mIndexBuffer->GetCount());
 }
 

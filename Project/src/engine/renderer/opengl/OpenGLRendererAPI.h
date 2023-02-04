@@ -9,5 +9,6 @@ class OpenGLRendererAPI : public RendererAPI
 	virtual void ClearScreen() override;
 	virtual void SetClearColor(glm::vec4 &color) override;
 	virtual void Draw(const Ref<VertexArray> &vertexArray) override;
+	virtual void DrawMesh() override;
 	virtual void Draw(size_t count) override;
 };

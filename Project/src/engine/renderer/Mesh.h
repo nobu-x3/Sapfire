@@ -23,7 +23,7 @@ class Mesh
 
 	Mesh(const std::string &fileName);
 	~Mesh();
-	void Render();
+	virtual void Render();
 	inline void SetPosition(const glm::vec3 &pos)
 	{
 		mWorldPosition = pos;

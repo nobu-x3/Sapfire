@@ -15,6 +15,7 @@ class RendererAPI
 	virtual void SetClearColor(glm::vec4 &color) = 0;
 	virtual void Draw(const Ref<VertexArray> &vertexArray) = 0;
 	virtual void Draw(size_t count) = 0;
+	virtual void DrawMesh() = 0;
 	inline static API GetAPI() { return sAPI; }
 
 	private:
