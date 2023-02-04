@@ -1,3 +1,15 @@
 [submodule "Project/csv-parser"]
 	path = Project/csv-parser
 	url = git@github.com:vincentlaucsb/csv-parser.git
+[submodule "Project/libs/glm"]
+	path = Project/libs/glm
+	url = https://github.com/g-truc/glm
+[submodule "Project/libs/SDL"]
+	path = Project/libs/SDL
+	url = git@github.com:libsdl-org/SDL.git
+[submodule "Project/libs/spdlog"]
+	path = Project/libs/spdlog
+	url = git@github.com:gabime/spdlog.git
+[submodule "Project/libs/assimp"]
+	path = Project/libs/assimp
+	url = git@github.com:assimp/assimp.git
