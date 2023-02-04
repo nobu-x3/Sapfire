@@ -14,3 +14,14 @@ void OrthographicCamera::RecalculateViewMatrix()
 	mViewMatrix = glm::inverse(transform);
 	mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
 }
+
+PerspectiveCamera::PerspectiveCamera(float fov, float width, float height, float near, float far)
+    : mProjectionMatrix(glm::perspectiveFov(glm::radians(fov), width, height, near, far)), mViewMatrix(1.f)
+{
+	mRotation = glm::quatLookAt(glm::vec3({0, 0, 1}), glm::vec3({0, 1, 0}));
+	mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
+}
+
+void PerspectiveCamera::RecalculateViewMatrix()
+{
+}
