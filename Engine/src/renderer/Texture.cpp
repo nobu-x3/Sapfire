@@ -1,6 +1,7 @@
+#include "engpch.h"
 #include "Texture.h"
-#include "engine/renderer/RendererAPI.h"
-#include "engine/renderer/opengl/OpenGLTexture.h"
+#include "renderer/RendererAPI.h"
+#include "renderer/opengl/OpenGLTexture.h"
 
 Ref<Texture> Texture::Create(const std::string &path)
 {

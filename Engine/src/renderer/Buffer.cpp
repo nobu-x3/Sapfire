@@ -1,6 +1,7 @@
+#include "engpch.h"
 #include "Buffer.h"
-#include "engine/renderer/RendererAPI.h"
-#include "engine/renderer/opengl/OpenGLBuffer.h"
+#include "renderer/RendererAPI.h"
+#include "renderer/opengl/OpenGLBuffer.h"
 #include <memory>
 
 void BufferLayout::CalculateOffsets()

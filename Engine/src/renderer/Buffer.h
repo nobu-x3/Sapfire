@@ -1,7 +1,7 @@
 #pragma once
 
-#include "engine/Core.h"
-#include "engine/Log.h"
+#include "Core.h"
+#include "Log.h"
 
 enum class ShaderDataType
 {

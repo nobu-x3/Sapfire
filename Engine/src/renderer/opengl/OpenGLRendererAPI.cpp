@@ -1,7 +1,7 @@
+#include "engpch.h"
 #include "OpenGLRendererAPI.h"
 #include "GL/glew.h"
-#include "engine/engpch.h"
-#include "engine/renderer/Mesh.h"
+#include "renderer/Mesh.h"
 
 void OpenGLRendererAPI::Init()
 {

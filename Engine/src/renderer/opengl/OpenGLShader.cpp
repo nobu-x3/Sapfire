@@ -1,6 +1,7 @@
-#include "engine/renderer/opengl/OpenGLShader.h"
-#include "engine/Log.h"
-#include "engine/renderer/Renderer.h"
+#include "engpch.h"
+#include "renderer/opengl/OpenGLShader.h"
+#include "Log.h"
+#include "renderer/Renderer.h"
 #include <filesystem>
 #include <fstream>
 

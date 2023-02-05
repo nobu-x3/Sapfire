@@ -1,7 +1,7 @@
 #pragma once
 #include "Core.h"
-#include "spdlog/fmt/ostr.h"
-#include "spdlog/spdlog.h"
+#include <spdlog/fmt/ostr.h>
+#include <spdlog/spdlog.h>
 
 class Log
 {
@@ -19,10 +19,10 @@ class Log
 #define ENGINE_INFO(...) Log::GetEngineLogger()->info(__VA_ARGS__)
 #define ENGINE_WARN(...) Log::GetEngineLogger()->warn(__VA_ARGS__)
 #define ENGINE_ERROR(...) Log::GetEngineLogger()->error(__VA_ARGS__)
-#define ENGINE_FATAL(...) Log::GetEngineLogger()->fatal(__VA_ARGS__)
+#define ENGINE_FATAL(...) Log::GetEngineLogger()->critical(__VA_ARGS__)
 
-#define TRACE(...) Log::GetClientLogger()->trace(__VA_ARGS__)
-#define INFO(...) Log::GetClientLogger()->info(__VA_ARGS__)
-#define WARN(...) Log::GetClientLogger()->warn(__VA_ARGS__)
-#define ERROR(...) Log::GetClientLogger()->error(__VA_ARGS__)
-#define FATAL(...) Log::GetClientLogger()->fatal(__VA_ARGS__)
+#define LOG_TRACE(...) Log::GetClientLogger()->trace(__VA_ARGS__)
+#define LOG_INFO(...) Log::GetClientLogger()->info(__VA_ARGS__)
+#define LOG_WARN(...) Log::GetClientLogger()->warn(__VA_ARGS__)
+#define LOG_ERROR(...) Log::GetClientLogger()->error(__VA_ARGS__)
+#define LOG_FATAL(...) Log::GetClientLogger()->critical(__VA_ARGS__)

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "engine/renderer/RenderingContext.h"
+#include "renderer/RenderingContext.h"
 #include <GL/glew.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 class OpenGLContext : public RenderingContext
 {

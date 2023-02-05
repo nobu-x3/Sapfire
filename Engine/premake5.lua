@@ -6,8 +6,8 @@ project "Engine"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
-    pchheader "engpch.h"
-    pchsource "src/engpch.cpp"
+    -- pchheader "engpch.h"
+    -- pchsource "src/engpch.cpp"
 
     -- include "%{wks.location}/"
     files
@@ -17,9 +17,7 @@ project "Engine"
         "deps/stb_image/**.h",
         "deps/stb_image/**.cpp",
         "deps/glm/glm/**.hpp",
-        "deps/glm/glm/**.inl",
-        "%{wks.location}/Engine/deps/SOIL2/src/**.h",
-        "%{wks.location}/Engine/deps/SOIL2/src/**.c"
+        "deps/glm/glm/**.inl"
     }
 
     defines
@@ -31,16 +29,19 @@ project "Engine"
         "src",
         "%{IncludeDir.SDL2}",
         "%{IncludeDir.glew}",
-        "%{IncludeDir.spglog}",
+        "%{IncludeDir.spdlog}",
         "%{IncludeDir.assimp}",
-        "%{IncludeDir.glm}"
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.SOIL2}"
     }
 
     links
     {
-        "SDL2",
-        "Glad",
-        "ImGui",
+        "%{Libs.glew}",
+        "%{Libs.SDL2}",
+        "%{Libs.spdlog}",
+        "%{Libs.assimp}",
+        "%{Libs.SOIL2}",
         "winmm",
         "imm32",
         "version",

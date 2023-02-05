@@ -1,28 +1,28 @@
 #pragma once
 //    Renderer /////////////////////////////
-#include "engine/renderer/Buffer.h"
-#include "engine/renderer/Camera.h"
-#include "engine/renderer/RenderCommands.h"
-#include "engine/renderer/Renderer.h"
-#include "engine/renderer/RendererAPI.h"
-#include "engine/renderer/Shader.h"
-#include "engine/renderer/Texture.h"
-#include "engine/renderer/VertexArray.h"
-#include "engine/renderer/Window.h"
+#include "renderer/Buffer.h"
+#include "renderer/Camera.h"
+#include "renderer/RenderCommands.h"
+#include "renderer/Renderer.h"
+#include "renderer/RendererAPI.h"
+#include "renderer/Shader.h"
+#include "renderer/Texture.h"
+#include "renderer/VertexArray.h"
+#include "renderer/Window.h"
 ///////////////////////////////////////////
 
 //    Events /////////////////////////////
-#include "engine/events/Event.h"
-#include "engine/events/KeyEvent.h"
-#include "engine/events/MouseEvent.h"
-#include "engine/events/WindowEvent.h"
+#include "events/Event.h"
+#include "events/KeyEvent.h"
+#include "events/MouseEvent.h"
+#include "events/WindowEvent.h"
 ///////////////////////////////////////////
 
 //    Base Engine ///////////////////////////////
-#include "engine/Application.h"
-#include "engine/Core.h"
-#include "engine/Layer.h"
-#include "engine/Log.h"
+#include "Application.h"
+#include "Core.h"
+#include "Layer.h"
+#include "Log.h"
 ///////////////////////////////////////////
 ///////////////////////////////////////////
 ///////////////////////////////////////////

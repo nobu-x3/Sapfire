@@ -1,5 +1,6 @@
+#include "engpch.h"
 #include "OpenGLContext.h"
-#include "engine/Log.h"
+#include "Log.h"
 #include <SDL_video.h>
 
 OpenGLContext::OpenGLContext(SDL_Window *window) : mWindowHandle(window)

@@ -1,10 +1,11 @@
+#include "engpch.h"
 #include "SDLWindow.h"
-#include "engine/Log.h"
-#include "engine/events/KeyEvent.h"
-#include "engine/events/MouseEvent.h"
-#include "engine/events/WindowEvent.h"
-#include "engine/renderer/opengl/OpenGLContext.h"
-#include <SDL2/SDL.h>
+#include "Log.h"
+#include "events/KeyEvent.h"
+#include "events/MouseEvent.h"
+#include "events/WindowEvent.h"
+#include "renderer/opengl/OpenGLContext.h"
+#include <SDL.h>
 
 SDLWindow::SDLWindow(const WindowProperties &props)
 {

@@ -1,5 +1,5 @@
+#include "engpch.h"
 #include "Camera.h"
-#include "engine/engpch.h"
 
 OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top)
     : mProjectionMatrix(glm::ortho(left, right, bottom, top, -1.f, 1.f)), mViewMatrix(1.0f)

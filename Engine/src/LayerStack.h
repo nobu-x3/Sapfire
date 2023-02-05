@@ -1,7 +1,7 @@
 #pragma once
 
-#include "engine/Core.h"
-#include "engine/Layer.h"
+#include "Core.h"
+#include "Layer.h"
 class LayerStack
 {
 	public:

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "engine/Core.h"
-#include "engine/engpch.h"
-#include "engine/events/Event.h"
+#include "Core.h"
+#include "engpch.h"
+#include "events/Event.h"
 
 struct WindowProperties
 {

@@ -1,12 +1,13 @@
-#include "engine/Application.h"
-#include "engine/Log.h"
-#include "engine/events/WindowEvent.h"
-#include "engine/renderer/Buffer.h"
-#include "engine/renderer/RenderCommands.h"
-#include "engine/renderer/Renderer.h"
-#include "engine/renderer/Shader.h"
-#include "engine/renderer/VertexArray.h"
-#include "engine/renderer/Window.h"
+#include "engpch.h"
+#include "Application.h"
+#include "Log.h"
+#include "events/WindowEvent.h"
+#include "renderer/Buffer.h"
+#include "renderer/RenderCommands.h"
+#include "renderer/Renderer.h"
+#include "renderer/Shader.h"
+#include "renderer/VertexArray.h"
+#include "renderer/Window.h"
 
 Application::Application() : mRunning(true)
 {

@@ -1,9 +1,9 @@
+#include "engpch.h"
 #include "OpenGLTexture.h"
-#include "engine/Log.h"
-#include "engine/engpch.h"
+#include "Log.h"
 #include <GL/glew.h>
-#include <SDL2/SDL_log.h>
-#include <SOIL2.h>
+#include <SDL_log.h>
+#include <SOIL2/SOIL2.h>
 
 OpenGLTexture::OpenGLTexture(const std::string &fileName)
 {

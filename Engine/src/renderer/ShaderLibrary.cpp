@@ -1,5 +1,6 @@
+#include "engpch.h"
 #include "ShaderLibrary.h"
-#include "engine/Log.h"
+#include "Log.h"
 
 void ShaderLibrary::Add(const Ref<Shader> &shader)
 {

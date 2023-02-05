@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/renderer/Shader.h"
+#include "renderer/Shader.h"
 #include <unordered_map>
 
 class ShaderLibrary

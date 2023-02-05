@@ -1,6 +1,7 @@
+#include "engpch.h"
 #include "Window.h"
-#include "engine/renderer/Renderer.h"
-#include "engine/renderer/SDL/SDLWindow.h"
+#include "renderer/Renderer.h"
+#include "renderer/SDL/SDLWindow.h"
 
 Window *Window::Create(const WindowProperties &props)
 {

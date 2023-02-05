@@ -1,8 +1,9 @@
+#include "engpch.h"
 #include "Renderer.h"
-#include "engine/renderer/Camera.h"
-#include "engine/renderer/Mesh.h"
-#include "engine/renderer/RenderCommands.h"
-#include "engine/renderer/Shader.h"
+#include "renderer/Camera.h"
+#include "renderer/Mesh.h"
+#include "renderer/RenderCommands.h"
+#include "renderer/Shader.h"
 
 Renderer::SceneData *Renderer::sSceneData = new Renderer::SceneData;
 

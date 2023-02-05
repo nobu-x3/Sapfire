@@ -1,6 +1,6 @@
 #pragma once
 
-#include "engine/renderer/Buffer.h"
+#include "renderer/Buffer.h"
 
 #define VERTEX_NUM_ATTRIBUTES 5
 

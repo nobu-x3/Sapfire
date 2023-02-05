@@ -1,7 +1,8 @@
+#include "engpch.h"
 #include "VertexArray.h"
 #include "GL/glew.h"
-#include "engine/renderer/RendererAPI.h"
-#include "engine/renderer/opengl/OpenGLVertexArray.h"
+#include "renderer/RendererAPI.h"
+#include "renderer/opengl/OpenGLVertexArray.h"
 
 VertexArray *VertexArray::Create()
 {

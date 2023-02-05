@@ -1,5 +1,5 @@
 #pragma once
-#include "engine/Core.h"
+#include "Core.h"
 
 // TODO: Make this a queue to avoid blocking
 enum class EventType

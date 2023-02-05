@@ -1,7 +1,7 @@
 #pragma once
-#include "engine/Core.h"
-#include "engine/LayerStack.h"
-#include "engine/renderer/Camera.h"
+#include "Core.h"
+#include "LayerStack.h"
+#include "renderer/Camera.h"
 
 class Application
 {

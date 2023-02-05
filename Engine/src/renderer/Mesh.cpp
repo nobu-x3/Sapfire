@@ -1,6 +1,7 @@
+#include "engpch.h"
 #include "Mesh.h"
-#include "engine/renderer/RenderCommands.h"
-#include "engine/renderer/Texture.h"
+#include "renderer/RenderCommands.h"
+#include "renderer/Texture.h"
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
 #include <assimp/postprocess.h>
