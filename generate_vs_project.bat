@@ -1,1 +1,1 @@
-premake5 --os=windows --cc=clang vs2022
+premake5 --os=windows vs2022

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "engine/Engine.h"
-#include "engine/renderer/ShaderLibrary.h"
+#include "Engine.h"
+#include "renderer/ShaderLibrary.h"
 
 class SandboxLayer : public Layer
 {
