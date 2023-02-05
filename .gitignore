@@ -1,4 +1,9 @@
 bin/
+bin-int/
+.vs/
+.vscode/
+*.sln
+*.vcxproj*
 obj/
 /packages/
 riderModule.iml
