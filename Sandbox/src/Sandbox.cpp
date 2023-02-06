@@ -1,6 +1,6 @@
 #include "Sandbox.h"
 #include <GL/glew.h>
-#include "renderer/Mesh.h"
+#include "Sapfire/renderer/Mesh.h"
 
 const std::string SHADER_PATH = "../Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";

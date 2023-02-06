@@ -5,6 +5,12 @@ startproject "Sandbox"
 configurations { "Debug", "Release" }
 flags { "MultiProcessorCompile" }
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+group "Dependencies"
+include "Engine/deps/GLFW"
+include "Engine/deps/Glad"
+group ""
+
 project "Sapfire"
     location "Engine"
     kind "StaticLib"
@@ -14,46 +20,41 @@ project "Sapfire"
 
     targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
     objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
-    -- pchheader "engpch.h"
-    -- pchsource "src/engpch.cpp"
+    pchheader "engpch.h"
+    pchsource "%{wks.location}/Engine/src/engpch.cpp"
 
     -- include "%{wks.location}/"
     files
     {
         "Engine/src/**.h",
         "Engine/src/**.cpp",
-        "Engine/deps/stb_image/**.h",
-        "Engine/deps/stb_image/**.cpp",
-        "Engine/deps/glm/glm/**.hpp",
-        "Engine/deps/glm/glm/**.inl"
+        "%{wks.location}/Engine/deps/stb_image/**.h",
+        "%{wks.location}/Engine/deps/stb_image/**.cpp",
+        "%{wks.location}/Engine/deps/glm/glm/**.hpp",
+        "%{wks.location}/Engine/deps/glm/glm/**.inl"
     }
 
     defines
     {
-        "_CRT_SECURE_NO_WARNINGS"
+        "_CRT_SECURE_NO_WARNINGS", "GLFW_INCLUDE_NONE"
     }
+
     includedirs
     {
         "Engine/src",
-        "%{IncludeDir.SDL2}",
-        "%{IncludeDir.glew}",
-        "%{IncludeDir.spdlog}",
-        "%{IncludeDir.assimp}",
+        "Engine/deps",
+        "%{IncludeDir.Assimp}",
         "%{IncludeDir.glm}",
-        "%{IncludeDir.SOIL2}"
+        "%{IncludeDir.GLFW}",
+        "%{IncludeDir.Glad}",
+        "%{IncludeDir.stb_image}",
     }
 
     links
     {
-        "%{Libs.glew}",
-        "%{Libs.SDL2}",
-        "%{Libs.spdlog}",
-        "%{Libs.assimp}",
-        "%{Libs.SOIL2}",
-        "winmm",
-        "imm32",
-        "version",
-        "setupapi",
+        "GLFW",
+        "Glad",
+        "opengl32.lib",
     }
 
     filter "system:windows"
@@ -61,6 +62,31 @@ project "Sapfire"
 
         defines
         {
+        }
+    
+    filter "system:linux"
+        systemversion "latest"
+
+        defines
+        {
+            "USE_SDL"
+        }
+
+    filter "configurations:Debug"
+		runtime "Debug"
+		symbols "on"
+        defines { "DEBUG" }
+        links 
+        {
+            "%{Libs.Assimp_Debug}"
+        }
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+        links 
+        {
+            "%{Libs.Assimp_Release}"
         }
 
 project "Sandbox"
@@ -80,7 +106,7 @@ project "Sandbox"
     includedirs
     {
         "Sandbox/src",
-        "%{wks.location}/Engine/deps/spdlog/include",
+        "%{IncludeDir.spdlog}",
         "%{wks.location}/Engine/src",
         "%{wks.location}/Engine/deps",
         "%{IncludeDir.glm}",
@@ -96,5 +122,28 @@ project "Sandbox"
     systemversion "latest"
 
     filter "configurations:Debug"
-    runtime "Debug"
-    symbols "on"
+		runtime "Debug"
+		symbols "on"
+        links
+        {
+            "%{Libs.Assimp_Debug}"
+        }
+
+        postbuildcommands
+        {
+            '{COPY} "%{Binaries.Assimp_Debug}" "%{cfg.targetdir}"',
+        }
+        defines { "DEBUG" }
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+        links
+        {
+            "%{Libs.Assimp_Release}"
+        }
+
+        postbuildcommands
+        {
+            '{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
+        }

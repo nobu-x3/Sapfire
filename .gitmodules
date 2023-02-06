@@ -2,12 +2,12 @@
 	path = Engine/deps/SDL
 	url = https://github.com/libsdl-org/SDL.git
 	branch = SDL2
-[submodule "Engine/deps/assimp"]
-	path = Engine/deps/assimp
-	url = https://github.com/assimp/assimp.git
 [submodule "Engine/deps/glm"]
 	path = Engine/deps/glm
 	url = https://github.com/g-truc/glm
 [submodule "Engine/deps/SOIL2"]
 	path = Engine/deps/SOIL2
 	url = https://github.com/SpartanJ/SOIL2.git
+[submodule "Engine/deps/glfw"]
+	path = Engine/deps/glfw
+	url = https://github.com/TheCherno/glfw.git
