@@ -9,11 +9,16 @@
 #include "Sapfire/renderer/VertexArray.h"
 #include "Sapfire/renderer/Window.h"
 
+Application* Application::sInstance = nullptr;
+
 Application::Application() : mRunning(true)
 {
 	Log::Init();
+	sInstance = this;
 	mWindow = std::unique_ptr<Window>(Window::Create());
 	mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+	mImguiLayer = new ImguiLayer();
+	PushOverlay(mImguiLayer);
 }
 
 Application::~Application()
@@ -35,7 +40,6 @@ void Application::OnEvent(Event &event)
 
 void Application::Run()
 {
-
 	while (mRunning)
 	{
 		float timestamp = mWindow->GetTime();
@@ -43,6 +47,13 @@ void Application::Run()
 		mLastFrameTime = timestamp;
 		for (Layer *layer : mLayerStack)
 			layer->OnUpdate(deltaTime);
+
+		mImguiLayer->Begin();
+		for(Layer* layer : mLayerStack)
+		{
+			layer->OnImguiRender();
+		}
+		mImguiLayer->End();
 		mWindow->OnUpdate();
 	}
 }

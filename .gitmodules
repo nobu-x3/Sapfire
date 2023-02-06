@@ -4,3 +4,6 @@
 [submodule "Engine/deps/glfw"]
 	path = Engine/deps/glfw
 	url = https://github.com/TheCherno/glfw.git
+[submodule "Engine/deps/imgui"]
+	path = Engine/deps/imgui
+	url = https://github.com/TheCherno/imgui.git

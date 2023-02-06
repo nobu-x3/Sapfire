@@ -11,6 +11,7 @@ class Layer
 	virtual void OnDetach() {}
 	virtual void OnUpdate(float deltaTime) {}
 	virtual void OnEvent(Event &event) {}
+	virtual void OnImguiRender() {}
 	inline const std::string &GetName() const { return mName; }
 
 	private:

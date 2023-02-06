@@ -8,6 +8,7 @@ class SandboxLayer : public Layer
 	public:
 	SandboxLayer();
 	virtual void OnUpdate(float deltaTime) override;
+	virtual void OnImguiRender() override;
 
 	private:
 	Ref<VertexArray> mVA;

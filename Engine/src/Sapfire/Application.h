@@ -2,6 +2,7 @@
 #include "Sapfire/Core.h"
 #include "Sapfire/LayerStack.h"
 #include "Sapfire/renderer/Camera.h"
+#include "Sapfire/imgui/ImguiLayer.h"
 
 class Application
 {
@@ -9,9 +10,11 @@ class Application
 	Application();
 	~Application();
 	void Run();
-	inline class Window &GetWindow() { return *mWindow; }
+	inline const class Window &GetWindow() const { return *mWindow; }
 	inline void PushLayer(Layer *layer) { mLayerStack.PushLayer(layer); }
 	inline void PushOverlay(Layer *layer) { mLayerStack.PushOverlay(layer); }
+	inline static Application& GetInstance() { return *sInstance; }
+	inline const ImguiLayer& GetImguiLayer() const { return *mImguiLayer; }
 
 	private:
 	void OnEvent(class Event &e);
@@ -21,7 +24,8 @@ class Application
 	Scope<class Window> mWindow;
 	LayerStack mLayerStack;
 	float mLastFrameTime = 0.f;
-
+	static Application* sInstance;
+	ImguiLayer* mImguiLayer;
 	bool mRunning;
 	uint32_t mVertexArray;
 };

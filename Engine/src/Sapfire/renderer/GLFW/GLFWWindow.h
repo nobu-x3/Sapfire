@@ -15,6 +15,8 @@ public:
 	inline virtual unsigned int GetHeight() const override { return mData.Height; }
 	inline virtual void SetEventCallback(const EventCallback& callback) override { mData.EventCallback = callback; }
 	virtual float GetTime() const override;
+	void* GetNativeWindow() const override { return mWindow; }
+
 private:
 	GLFWwindow* mWindow;
 	Scope<RenderingContext> mContext;

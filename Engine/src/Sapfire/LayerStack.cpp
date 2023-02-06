@@ -16,11 +16,14 @@ LayerStack::~LayerStack()
 void LayerStack::PushLayer(Layer *layer)
 {
 	mLayers.emplace(mLayers.begin() + mLayerInsertIndex, layer);
+	layer->OnAttach();
 }
 
 void LayerStack::PushOverlay(Layer *overlay)
 {
 	mLayers.emplace_back(overlay);
+	overlay->OnAttach();
+	mLayerInsertIndex++;
 }
 
 void LayerStack::PopLayer(Layer *layer)
@@ -31,6 +34,7 @@ void LayerStack::PopLayer(Layer *layer)
 		mLayers.erase(it);
 		mLayerInsertIndex--;
 	}
+	layer->OnDetach();
 }
 
 void LayerStack::PopOverlay(Layer *layer)
@@ -40,4 +44,5 @@ void LayerStack::PopOverlay(Layer *layer)
 	{
 		mLayers.erase(it);
 	}
+	layer->OnDetach();
 }

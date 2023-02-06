@@ -9,6 +9,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 group "Dependencies"
 include "Engine/deps/GLFW"
 include "Engine/deps/Glad"
+include "Engine/deps/ImGui"
 group ""
 
 project "Sapfire"
@@ -48,18 +49,19 @@ project "Sapfire"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.Glad}",
         "%{IncludeDir.stb_image}",
+        "%{IncludeDir.imgui}"
     }
 
     links
     {
         "GLFW",
         "Glad",
-        "opengl32.lib",
+        "ImGui",
     }
 
     filter "system:windows"
         systemversion "latest"
-
+        links {"opengl32.lib",}
         defines
         {
         }
@@ -110,7 +112,8 @@ project "Sandbox"
         "%{wks.location}/Engine/src",
         "%{wks.location}/Engine/deps",
         "%{IncludeDir.glm}",
-        "%{IncludeDir.glew}"
+        "%{IncludeDir.glew}",
+        "%{IncludeDir.imgui}"
     }
 
     links

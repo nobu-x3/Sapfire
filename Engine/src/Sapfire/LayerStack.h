@@ -2,6 +2,7 @@
 
 #include "Sapfire/Core.h"
 #include "Sapfire/Layer.h"
+
 class LayerStack
 {
 	public:

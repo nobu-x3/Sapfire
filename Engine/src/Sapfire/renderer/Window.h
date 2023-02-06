@@ -34,5 +34,6 @@ class Window
 	virtual unsigned int GetHeight() const = 0;
 	virtual void SetEventCallback(const EventCallback &event) = 0;
 	virtual float GetTime() const = 0;
+	virtual void* GetNativeWindow() const = 0;
 	static Window *Create(const WindowProperties &properties = WindowProperties());
 };

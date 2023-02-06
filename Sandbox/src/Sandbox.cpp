@@ -1,6 +1,6 @@
 #include "Sandbox.h"
-#include <GL/glew.h>
 #include "Sapfire/renderer/Mesh.h"
+#include <imgui.h>
 
 const std::string SHADER_PATH = "Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";
@@ -58,9 +58,15 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	RenderCommands::ClearScreen();
 	Renderer::BeginScene(mCamera);
 	/* mTexture->Bind(); */
-	/* Renderer::Submit(mVA, mSpriteShader); */
+	//Renderer::Submit(mVA, mSpriteShader);
 	Renderer::SubmitMesh(mSphereMesh, mMeshShader);
 	Renderer::EndScene();
+}
+
+void SandboxLayer::OnImguiRender()
+{
+	ImGui::Begin("TEST");
+	ImGui::End();
 }
 
 SandboxApplication::SandboxApplication()

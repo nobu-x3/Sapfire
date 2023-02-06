@@ -7,10 +7,10 @@ IncludeDir["glm"] = "%{wks.location}/Engine/deps/glm/"
 IncludeDir["Glad"] = "%{wks.location}/Engine/deps/Glad/include"
 IncludeDir["GLFW"] = "%{wks.location}/Engine/deps/GLFW/include"
 IncludeDir["stb_image"] = "%{wks.location}/Engine/deps/stb_image"
+IncludeDir["imgui"] = "%{wks.location}/Engine/deps/imgui"
 
 Libs = {}
 Libs["SDL2"] = "%{wks.location}/Engine/deps/SDL/VisualC/x64/Release/SDL2.lib"
--- Libs["spdlog"] = "%{wks.location}/Engine/deps/spdlog/build/spdlog.lib"
 Libs["glew"] = "%{wks.location}/Engine/deps/glew/lib/Release/x64/glew32s.lib"
 Libs["SOIL2"] = "%{wks.location}/Engine/deps/SOIL2/lib/windows/soil2.lib"
 Libs["Assimp_Debug"] = "%{wks.location}/Engine/deps/assimp/bin/Debug/assimp-vc143-mtd.lib"
