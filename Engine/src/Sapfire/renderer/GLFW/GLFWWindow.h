@@ -8,6 +8,7 @@ class GLFWWindow : public Window
 {
 public:
 	GLFWWindow(const WindowProperties& props);
+	virtual ~GLFWWindow();
 	// Inherited via Window
 	virtual void OnUpdate() override;
 	inline virtual unsigned int GetWidth() const override { return mData.Width; }

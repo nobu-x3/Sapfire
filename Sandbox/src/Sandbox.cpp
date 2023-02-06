@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include "Sapfire/renderer/Mesh.h"
 
-const std::string SHADER_PATH = "../Shaders/Sprite.glsl";
+const std::string SHADER_PATH = "Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";
 
 SandboxLayer::SandboxLayer()
@@ -29,14 +29,15 @@ SandboxLayer::SandboxLayer()
 	ib->SetData(indices, sizeof(indices));
 	mVA->AddIndexBuffer(ib);
 	mSpriteShader = mShaderLibrary.Load(SHADER_PATH);
-	mTexture = Texture::Create("../Assets/Asteroid.png");
+	mTexture = Texture::Create("Assets/Asteroid.png");
 	mSpriteShader->SetIntUniform("uTexture", mTexture->GetID());
 	mCamera.SetPosition(glm::vec3(0.f));
-	mMeshShader = mShaderLibrary.Load("../Shaders/BasicMesh.glsl");
-	mSphereMesh = CreateRef<Mesh>("../Assets/Sphere.blend1");
-	mSphereMesh->SetTexture("../Assets/Plane.png");
+	mMeshShader = mShaderLibrary.Load("Shaders/BasicMesh.glsl");
+	mSphereMesh = CreateRef<Mesh>("Assets/Sphere.blend1");
+	mSphereMesh->SetTexture("Assets/Plane.png");
 	mSphereMesh->SetPosition(glm::vec3({0.f, 0.f, 0.4f}));
 	mSphereMesh->SetScale(glm::vec3(1.f));
+	mCameraRotation = 0.f;
 }
 
 static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);

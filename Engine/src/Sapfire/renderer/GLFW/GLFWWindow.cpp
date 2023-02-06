@@ -128,11 +128,24 @@ GLFWWindow::GLFWWindow(const WindowProperties& props)
 	}
 }
 
+GLFWWindow::~GLFWWindow()
+{
+	glfwDestroyWindow(mWindow);
+	--sGLFWWindowCount;
+
+	if (sGLFWWindowCount == 0)
+	{
+		glfwTerminate();
+	}
+}
+
 void GLFWWindow::OnUpdate()
 {
+	glfwPollEvents();
+	mContext->SwapBuffers();
 }
 
 float GLFWWindow::GetTime() const
 {
-	return 0.0f;
+	return glfwGetTime();
 }

@@ -11,9 +11,9 @@
 
 Application::Application() : mRunning(true)
 {
+	Log::Init();
 	mWindow = std::unique_ptr<Window>(Window::Create());
 	mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
-	Log::Init();
 }
 
 Application::~Application()
