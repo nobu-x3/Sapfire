@@ -40,7 +40,7 @@ class PerspectiveCamera : public Camera
 
 	private:
 	glm::vec3 mPosition{0.f, 0.f, 0.f};
-	float mRotation;
+	float mRotation{ 0.f };
 	glm::mat4 mProjectionMatrix;
 	glm::mat4 mViewMatrix;
 	glm::mat4 mViewProjectionMatrix;

@@ -1,13 +1,14 @@
 #include "Sandbox.h"
 #include "Sapfire/renderer/Mesh.h"
 #include <imgui.h>
+#include <glfw/include/GLFW/glfw3.h>
 
 const std::string SHADER_PATH = "Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";
 
 SandboxLayer::SandboxLayer()
     : /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-      mCamera(70.f, 1280, 720, 0, 2000)
+      mCamera(70.f, 1280, 720, 0, 2000), mDirection(glm::vec3(0))
 {
 	mVA.reset(VertexArray::Create());
 	float vertices[7 * 4] = {
@@ -34,7 +35,7 @@ SandboxLayer::SandboxLayer()
 	mCamera.SetPosition(glm::vec3(0.f));
 	mMeshShader = mShaderLibrary.Load("Shaders/BasicMesh.glsl");
 	mSphereMesh = CreateRef<Mesh>("Assets/Sphere.blend1");
-	mSphereMesh->SetTexture("Assets/Plane.png");
+	mSphereMesh->SetTexture("Assets/Farback01.png");
 	mSphereMesh->SetPosition(glm::vec3({0.f, 0.f, 0.4f}));
 	mSphereMesh->SetScale(glm::vec3(1.f));
 	mCameraRotation = 0.f;
@@ -43,16 +44,14 @@ SandboxLayer::SandboxLayer()
 static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
 static glm::vec3 scale(1.f);
 
+const float MOVE_SPEED = 0.1f;
+
 void SandboxLayer::OnUpdate(float deltaTime)
 {
-	mCameraRotation += 30.f * deltaTime;
-	/* scale += 3.f * deltaTime; */
-	// (sin + 1) / 2
-
-	/* mSphereMesh->SetScale((glm::sin(scale) + 1.5f) / 2.f); */
+	//mCameraRotation += 30.f * deltaTime;
+	auto pos = mCamera.GetPosition();
+	mCamera.SetPosition(pos + mDirection * MOVE_SPEED);
 	mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
-	/* glm::rotate(mSphereMesh->GetRotation(), glm::radians(mCameraRotation), glm::vec3({1.f, 0.f, 0.f}))); */
-	/* mCamera.SetRotation(mCameraRotation); */
 	RenderCommands::Init();
 	RenderCommands::SetClearColor(clearColor);
 	RenderCommands::ClearScreen();
@@ -61,12 +60,49 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	//Renderer::Submit(mVA, mSpriteShader);
 	Renderer::SubmitMesh(mSphereMesh, mMeshShader);
 	Renderer::EndScene();
+	mDirection = glm::vec3(0);
 }
 
 void SandboxLayer::OnImguiRender()
 {
 	ImGui::Begin("TEST");
 	ImGui::End();
+}
+
+void SandboxLayer::OnEvent(Event& event)
+{
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(SandboxLayer::OnKeyPressed));
+	dispatcher.Dispatch<MouseMovedEvent>(BIND_EVENT_FN(SandboxLayer::OnMouseMoved));
+}
+
+bool SandboxLayer::OnKeyPressed(KeyPressedEvent& e)
+{
+	switch(e.GetKeyCode())
+	{
+	case GLFW_KEY_A:
+		mDirection = glm::vec3({ -1, 0, 0 });
+		break;
+	case GLFW_KEY_D:
+		mDirection = glm::vec3({ 1, 0, 0 });
+		break;
+	case GLFW_KEY_W:
+		mDirection = glm::vec3({ 0, 0, -1 });
+		break;
+	case GLFW_KEY_S:
+		mDirection = glm::vec3({ 0, 0, 1 });
+		break;
+	}
+	return true;
+}
+
+static float prevVal = 0.f;
+
+bool SandboxLayer::OnMouseMoved(MouseMovedEvent& e)
+{
+	mCameraRotation -= e.GetX() - prevVal;
+	prevVal = e.GetX();
+	return true;
 }
 
 SandboxApplication::SandboxApplication()

@@ -22,6 +22,7 @@ Mesh::Mesh(const std::string &fileName) : mWorldTransform(1.f)
 	if (!scene || !scene->HasMeshes())
 	{
 		ENGINE_ERROR("Failed to parse mesh {0}", fileName);
+		return;
 	}
 	aiMesh *mesh = scene->mMeshes[0];
 	// Vertex buffer

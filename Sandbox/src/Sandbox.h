@@ -9,7 +9,9 @@ class SandboxLayer : public Layer
 	SandboxLayer();
 	virtual void OnUpdate(float deltaTime) override;
 	virtual void OnImguiRender() override;
-
+	virtual void OnEvent(Event& event) override;
+	bool OnKeyPressed(KeyPressedEvent& e);
+	bool OnMouseMoved(MouseMovedEvent& e);
 	private:
 	Ref<VertexArray> mVA;
 	ShaderLibrary mShaderLibrary;
@@ -18,7 +20,7 @@ class SandboxLayer : public Layer
 	Ref<Shader> mMeshShader;
 	Ref<Texture> mTexture;
 	PerspectiveCamera mCamera;
-
+	glm::vec3 mDirection;
 	float mCameraRotation;
 };
 
