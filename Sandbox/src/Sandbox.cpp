@@ -8,7 +8,7 @@ const std::string SHADER_NAME = "Sprite";
 
 SandboxLayer::SandboxLayer()
     : /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-      mCamera(70.f, 1280, 720, 0, 2000), mDirection(glm::vec3(0))
+      mCamera(70.f, 1280, 720, 0.01, 100), mDirection(glm::vec3(0))
 {
 	mVA.reset(VertexArray::Create());
 	float vertices[7 * 4] = {
@@ -35,7 +35,7 @@ SandboxLayer::SandboxLayer()
 	mCamera.SetPosition(glm::vec3(0.f));
 	mMeshShader = mShaderLibrary.Load("Shaders/BasicMesh.glsl");
 	mSphereMesh = CreateRef<Mesh>("Assets/Sphere.blend1");
-	mSphereMesh->SetTexture("Assets/Farback01.png");
+	mSphereMesh->SetTexture("Assets/Plane.png");
 	mSphereMesh->SetPosition(glm::vec3({0.f, 0.f, 0.4f}));
 	mSphereMesh->SetScale(glm::vec3(1.f));
 	mCameraRotation = 0.f;

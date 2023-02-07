@@ -51,16 +51,18 @@ OpenGLTexture::OpenGLTexture(const std::string &fileName)
 		mInternalFormat = internalFormat;
 		mDataFormat = dataFormat;
 
-		glCreateTextures(GL_TEXTURE_2D, 1, &mTextureID);
-		glTextureStorage2D(mTextureID, 1, internalFormat, mWidth, mHeight);
+		glGenTextures(1, &mTextureID);
+		glBindTexture(GL_TEXTURE_2D, mTextureID);
+		//glTextureStorage2D(mTextureID, 1, internalFormat, mWidth, mHeight);
 
 		glTextureParameteri(mTextureID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(mTextureID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		/*glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(mTextureID, GL_TEXTURE_WRAP_T, GL_REPEAT);*/
 
-		glTextureSubImage2D(mTextureID, 0, 0, 0, mWidth, mHeight, dataFormat, GL_UNSIGNED_BYTE, data);
+		//glTextureSubImage2D(mTextureID, 0, 0, 0, mWidth, mHeight, dataFormat, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, dataFormat, mWidth, mHeight, 0, dataFormat, GL_UNSIGNED_BYTE, data);
 
 		stbi_image_free(data);
 	}

@@ -8,6 +8,8 @@ void OpenGLRendererAPI::Init()
 	glEnable(GL_BLEND);
 	glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 }
 
 void OpenGLRendererAPI::ClearScreen()

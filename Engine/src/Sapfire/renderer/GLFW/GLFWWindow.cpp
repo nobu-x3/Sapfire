@@ -29,6 +29,11 @@ GLFWWindow::GLFWWindow(const WindowProperties& props)
 		if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
 		{
 			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+			glfwWindowHint(GLFW_DEPTH_BITS, 32);
+			glfwWindowHint(GLFW_RED_BITS, 8);
+			glfwWindowHint(GLFW_GREEN_BITS, 8);
+			glfwWindowHint(GLFW_BLUE_BITS, 8);
+			glfwWindowHint(GLFW_ALPHA_BITS, 8);
 		}
 #endif
 		mWindow = glfwCreateWindow((int)props.Width, (int)props.Height, props.Title.c_str(), nullptr, nullptr);
