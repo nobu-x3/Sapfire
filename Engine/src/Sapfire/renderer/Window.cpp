@@ -4,17 +4,20 @@
 #include "Sapfire/renderer/SDL/SDLWindow.h"
 #include "Sapfire/renderer/GLFW/GLFWWindow.h"
 
-Window *Window::Create(const WindowProperties &props)
+namespace Sapfire
 {
-	auto api = Renderer::GetWindowAPI();
-	switch (api)
+	Window* Window::Create(const WindowProperties& props)
 	{
-	/*case WindowAPI::SDL:
-		return new SDLWindow(props);*/
-	case WindowAPI::GLFW:
-		return new GLFWWindow(props);
-	default:
+		auto api = Renderer::GetWindowAPI();
+		switch (api)
+		{
+			/*case WindowAPI::SDL:
+				return new SDLWindow(props);*/
+		case WindowAPI::GLFW:
+			return new GLFWWindow(props);
+		default:
+			return nullptr;
+		}
 		return nullptr;
 	}
-	return nullptr;
 }

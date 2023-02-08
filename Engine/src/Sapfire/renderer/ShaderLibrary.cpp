@@ -1,32 +1,35 @@
 #include "engpch.h"
 #include "ShaderLibrary.h"
-#include "Sapfire/Log.h"
+#include "Sapfire/core/Log.h"
 
-void ShaderLibrary::Add(const Ref<Shader> &shader)
+namespace Sapfire
 {
-	if (mShaders.find(shader->GetName()) == mShaders.end())
+	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
-		mShaders[shader->GetName()] = shader;
+		if (mShaders.find(shader->GetName()) == mShaders.end())
+		{
+			mShaders[shader->GetName()] = shader;
+		}
 	}
-}
 
-Ref<Shader> ShaderLibrary::Load(const std::string &filePath)
-{
-	auto shader = Shader::Create(filePath);
-	Add(shader);
-	return shader;
-}
-
-Ref<Shader> ShaderLibrary::Get(const std::string &name)
-{
-	auto iter = mShaders.find(name);
-	if (iter != mShaders.end())
+	Ref<Shader> ShaderLibrary::Load(const std::string& filePath)
 	{
-		return iter->second;
+		auto shader = Shader::Create(filePath);
+		Add(shader);
+		return shader;
 	}
-	else
+
+	Ref<Shader> ShaderLibrary::Get(const std::string& name)
 	{
-		ENGINE_ERROR("Shader {0} does not exist in memory!", name);
-		return nullptr;
+		auto iter = mShaders.find(name);
+		if (iter != mShaders.end())
+		{
+			return iter->second;
+		}
+		else
+		{
+			ENGINE_ERROR("Shader {0} does not exist in memory!", name);
+			return nullptr;
+		}
 	}
 }

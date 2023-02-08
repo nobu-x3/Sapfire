@@ -1,9 +1,9 @@
 #include "engpch.h"
-#include "Application.h"
+#include "Sapfire/core/Application.h"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	Application *application = CreateApplication();
+	Sapfire::Application* application = Sapfire::CreateApplication();
 	application->Run();
 	delete application;
 	return 0;

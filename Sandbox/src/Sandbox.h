@@ -3,19 +3,22 @@
 #include "Engine.h"
 #include "Sapfire/renderer/ShaderLibrary.h"
 
+using namespace Sapfire;
+
 class SandboxLayer : public Layer
 {
-	public:
+public:
 	SandboxLayer();
 	virtual void OnUpdate(float deltaTime) override;
 	virtual void OnImguiRender() override;
 	virtual void OnEvent(Event& event) override;
 	bool OnKeyPressed(KeyPressedEvent& e);
 	bool OnMouseMoved(MouseMovedEvent& e);
-	private:
+
+private:
 	Ref<VertexArray> mVA;
 	ShaderLibrary mShaderLibrary;
-	Ref<class Mesh> mSphereMesh;
+	Ref<Mesh> mSphereMesh;
 	Ref<Shader> mSpriteShader;
 	Ref<Shader> mMeshShader;
 	Ref<Texture> mTexture;
@@ -26,7 +29,7 @@ class SandboxLayer : public Layer
 
 class SandboxApplication : public Application
 {
-	public:
+public:
 	SandboxApplication();
 	~SandboxApplication();
 };

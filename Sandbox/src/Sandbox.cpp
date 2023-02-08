@@ -7,19 +7,19 @@ const std::string SHADER_PATH = "Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";
 
 SandboxLayer::SandboxLayer()
-    : /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-      mCamera(70.f, 1280, 720, 0.01, 100), mDirection(glm::vec3(0))
+	: /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
+	mCamera(70.f, 1280, 720, 0.01, 100), mDirection(glm::vec3(0))
 {
 	mVA.reset(VertexArray::Create());
 	float vertices[7 * 4] = {
-	    -0.5f, 0.5f,  0.f, 0.f, 1.f, // top left
-	    0.5f,  0.5f,  0.f, 1.f, 1.f, // top right
-	    0.5f,  -0.5f, 0.f, 1.f, 0.f, // bottom right
-	    -0.5f, -0.5f, 0.f, 0.f, 0.f	 // bottom left
+		-0.5f, 0.5f,  0.f, 0.f, 1.f, // top left
+		0.5f,  0.5f,  0.f, 1.f, 1.f, // top right
+		0.5f,  -0.5f, 0.f, 1.f, 0.f, // bottom right
+		-0.5f, -0.5f, 0.f, 0.f, 0.f	 // bottom left
 	};
 
-	uint32_t indices[] = {0, 1, 2, 2, 3, 0};
-	BufferLayout layout = {{"inPosition", ShaderDataType::Vec3}, {"inTexCoord", ShaderDataType::Vec2}};
+	uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
+	BufferLayout layout = { {"inPosition", ShaderDataType::Vec3}, {"inTexCoord", ShaderDataType::Vec2} };
 	Ref<VertexBuffer> vb;
 	vb = VertexBuffer::Create();
 	vb->SetLayout(layout);
@@ -36,7 +36,7 @@ SandboxLayer::SandboxLayer()
 	mMeshShader = mShaderLibrary.Load("Shaders/BasicMesh.glsl");
 	mSphereMesh = CreateRef<Mesh>("Assets/Sphere.blend1");
 	mSphereMesh->SetTexture("Assets/Farback01.png");
-	mSphereMesh->SetPosition(glm::vec3({0.f, 0.f, 0.4f}));
+	mSphereMesh->SetPosition(glm::vec3({ 0.f, 0.f, 0.4f }));
 	mSphereMesh->SetScale(glm::vec3(1.f));
 	mCameraRotation = 0.f;
 }
@@ -51,7 +51,7 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	//mCameraRotation += 30.f * deltaTime;
 	auto pos = mCamera.GetPosition();
 	mCamera.SetPosition(pos + mDirection * MOVE_SPEED);
-	mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
+	mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
 	RenderCommands::Init();
 	RenderCommands::SetClearColor(clearColor);
 	RenderCommands::ClearScreen();
@@ -78,7 +78,7 @@ void SandboxLayer::OnEvent(Event& event)
 
 bool SandboxLayer::OnKeyPressed(KeyPressedEvent& e)
 {
-	switch(e.GetKeyCode())
+	switch (e.GetKeyCode())
 	{
 	case GLFW_KEY_A:
 		mDirection = glm::vec3({ -1, 0, 0 });
@@ -114,7 +114,7 @@ SandboxApplication::~SandboxApplication()
 {
 }
 
-Application *CreateApplication()
+Sapfire::Application* Sapfire::CreateApplication()
 {
 	return new SandboxApplication();
 }

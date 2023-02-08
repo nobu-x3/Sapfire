@@ -4,17 +4,20 @@
 #include "Sapfire/renderer/RendererAPI.h"
 #include "Sapfire/renderer/opengl/OpenGLVertexArray.h"
 
-VertexArray *VertexArray::Create()
+namespace Sapfire
 {
-	auto api = RendererAPI::GetAPI();
-
-	switch (api)
+	VertexArray* VertexArray::Create()
 	{
-	case RendererAPI::API::OpenGL: {
-		return new OpenGLVertexArray();
-	}
-	default:
+		auto api = RendererAPI::GetAPI();
+
+		switch (api)
+		{
+		case RendererAPI::API::OpenGL: {
+			return new OpenGLVertexArray();
+		}
+		default:
+			return nullptr;
+		}
 		return nullptr;
 	}
-	return nullptr;
 }

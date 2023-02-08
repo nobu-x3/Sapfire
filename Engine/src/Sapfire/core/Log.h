@@ -1,19 +1,21 @@
 #pragma once
-#include "Sapfire/Core.h"
+#include "Sapfire/core/Core.h"
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 
-class Log
+namespace Sapfire
 {
+	class Log
+	{
 	public:
-	static void Init();
-	inline static std::shared_ptr<spdlog::logger> &GetEngineLogger() { return mEngineLogger; }
-	inline static std::shared_ptr<spdlog::logger> &GetClientLogger() { return mClientLogger; }
+		static void Init();
+		inline static std::shared_ptr<spdlog::logger>& GetEngineLogger() { return mEngineLogger; }
+		inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return mClientLogger; }
 
 	private:
-	static std::shared_ptr<spdlog::logger> mEngineLogger;
-	static std::shared_ptr<spdlog::logger> mClientLogger;
-};
+		static std::shared_ptr<spdlog::logger> mEngineLogger;
+		static std::shared_ptr<spdlog::logger> mClientLogger;
+	};
 
 #define ENGINE_TRACE(...) Log::GetEngineLogger()->trace(__VA_ARGS__)
 #define ENGINE_INFO(...) Log::GetEngineLogger()->info(__VA_ARGS__)
@@ -25,3 +27,4 @@ class Log
 #define LOG_WARN(...) Log::GetClientLogger()->warn(__VA_ARGS__)
 #define LOG_ERROR(...) Log::GetClientLogger()->error(__VA_ARGS__)
 #define LOG_FATAL(...) Log::GetClientLogger()->critical(__VA_ARGS__)
+}

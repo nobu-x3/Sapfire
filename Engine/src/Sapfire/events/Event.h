@@ -1,32 +1,34 @@
 #pragma once
-#include "Sapfire/Core.h"
+#include "Sapfire/core/Core.h"
 
-// TODO: Make this a queue to avoid blocking
-enum class EventType
+namespace Sapfire
 {
-	None = 0,
-	WindowClose,
-	WindowResize,
-	WindowFocus,
-	WindowLostFocus,
-	WindowMoved,
-	KeyPressed,
-	KeyReleased,
-	MouseButtonPressed,
-	MouseButtonReleased,
-	MouseMoved,
-	MouseScrolled
-};
+	// TODO: Make this a queue to avoid blocking
+	enum class EventType
+	{
+		None = 0,
+		WindowClose,
+		WindowResize,
+		WindowFocus,
+		WindowLostFocus,
+		WindowMoved,
+		KeyPressed,
+		KeyReleased,
+		MouseButtonPressed,
+		MouseButtonReleased,
+		MouseMoved,
+		MouseScrolled
+	};
 
-enum EventCategory
-{
-	None = 0,
-	EventCategoryApplication = BIT(0),
-	EventCategoryInput = BIT(1),
-	EventCategoryKeyboard = BIT(2),
-	EventCategoryMouse = BIT(3),
-	EventCategoryMouseButton = BIT(4)
-};
+	enum EventCategory
+	{
+		None = 0,
+		EventCategoryApplication = BIT(0),
+		EventCategoryInput = BIT(1),
+		EventCategoryKeyboard = BIT(2),
+		EventCategoryMouse = BIT(3),
+		EventCategoryMouseButton = BIT(4)
+	};
 
 #define EVENT_CLASS_TYPE(type)                                                                                         \
 	static EventType GetStaticType()                                                                               \
@@ -48,43 +50,44 @@ enum EventCategory
 		return category;                                                                                       \
 	}
 
-class Event
-{
-	friend class EventDispatcher;
-
-	public:
-	virtual EventType GetEventType() const = 0;
-	virtual const char *GetName() const = 0;
-	virtual int GetCategoryFlags() const = 0;
-	virtual std::string ToString() const { return GetName(); }
-
-	inline bool IsInCategory(EventCategory category) { return GetCategoryFlags() & category; }
-
-	bool Handled = false;
-};
-
-class EventDispatcher
-{
-	template <typename T> using EventFn = std::function<bool(T &)>;
-
-	public:
-	EventDispatcher(Event &event) : mEvent(event) {}
-
-	template <typename T> bool Dispatch(EventFn<T> func)
+	class Event
 	{
-		if (mEvent.GetEventType() == T::GetStaticType())
+		friend class EventDispatcher;
+
+	public:
+		virtual EventType GetEventType() const = 0;
+		virtual const char* GetName() const = 0;
+		virtual int GetCategoryFlags() const = 0;
+		virtual std::string ToString() const { return GetName(); }
+
+		inline bool IsInCategory(EventCategory category) { return GetCategoryFlags() & category; }
+
+		bool Handled = false;
+	};
+
+	class EventDispatcher
+	{
+		template <typename T> using EventFn = std::function<bool(T&)>;
+
+	public:
+		EventDispatcher(Event& event) : mEvent(event) {}
+
+		template <typename T> bool Dispatch(EventFn<T> func)
 		{
-			mEvent.Handled = func(*(T *)&mEvent);
-			return true;
+			if (mEvent.GetEventType() == T::GetStaticType())
+			{
+				mEvent.Handled = func(*(T*)&mEvent);
+				return true;
+			}
+			return false;
 		}
-		return false;
-	}
 
 	private:
-	Event &mEvent;
-};
+		Event& mEvent;
+	};
 
-inline std::ostream &operator<<(std::ostream &os, const Event &e)
-{
-	return os << e.ToString();
+	inline std::ostream& operator<<(std::ostream& os, const Event& e)
+	{
+		return os << e.ToString();
+	}
 }

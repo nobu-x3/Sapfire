@@ -3,13 +3,16 @@
 #include "Sapfire/renderer/opengl/OpenGLContext.h"
 #include <glfw/glfw3.h>
 
-Scope<RenderingContext> RenderingContext::Create(void* window)
+namespace Sapfire
 {
-	switch (RendererAPI::GetAPI())
+	Scope<RenderingContext> RenderingContext::Create(void* window)
 	{
-	case RendererAPI::API::None: ENGINE_ERROR("Rendering API currently not supported!"); return nullptr;
-	case RendererAPI::API::OpenGL: return CreateScope<OpenGLContext>(static_cast<GLFWwindow*>(window));
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::None: ENGINE_ERROR("Rendering API currently not supported!"); return nullptr;
+		case RendererAPI::API::OpenGL: return CreateScope<OpenGLContext>(static_cast<GLFWwindow*>(window));
+		}
+		ENGINE_ERROR("Unsupported API!");
+		return nullptr;
 	}
-	ENGINE_ERROR("Unsupported API!");
-	return nullptr;
 }

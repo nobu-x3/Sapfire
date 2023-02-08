@@ -3,61 +3,64 @@
 #include <glad/glad.h>
 #include <cstdint>
 
-////////////////////////// VERTEX BUFFER //////////////////////////////////////
-
-OpenGLVertexBuffer::OpenGLVertexBuffer()
+namespace Sapfire
 {
-	glGenBuffers(1, &mRendererID);
-}
+	////////////////////////// VERTEX BUFFER //////////////////////////////////////
 
-OpenGLVertexBuffer::~OpenGLVertexBuffer()
-{
-	glDeleteBuffers(1, &mRendererID);
-}
+	OpenGLVertexBuffer::OpenGLVertexBuffer()
+	{
+		glGenBuffers(1, &mRendererID);
+	}
 
-void OpenGLVertexBuffer::SetData(void *buffer, size_t size)
-{
-	mCount = size;
-	glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
-	glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
-}
+	OpenGLVertexBuffer::~OpenGLVertexBuffer()
+	{
+		glDeleteBuffers(1, &mRendererID);
+	}
 
-void OpenGLVertexBuffer::Bind() const
-{
-	glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
-}
+	void OpenGLVertexBuffer::SetData(void* buffer, size_t size)
+	{
+		mCount = size;
+		glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
+		glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
+	}
 
-void OpenGLVertexBuffer::Unbind() const
-{
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
+	void OpenGLVertexBuffer::Bind() const
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
+	}
 
-////////////////////////// INDEX BUFFER //////////////////////////////////////
+	void OpenGLVertexBuffer::Unbind() const
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+	}
 
-OpenGLIndexBuffer::OpenGLIndexBuffer()
-{
-	glGenBuffers(1, &mRendererID);
-}
+	////////////////////////// INDEX BUFFER //////////////////////////////////////
 
-OpenGLIndexBuffer::~OpenGLIndexBuffer()
-{
-	glDeleteBuffers(1, &mRendererID);
-}
+	OpenGLIndexBuffer::OpenGLIndexBuffer()
+	{
+		glGenBuffers(1, &mRendererID);
+	}
 
-void OpenGLIndexBuffer::SetData(void *buffer, size_t size)
-{
-	mCount = size;
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
-}
+	OpenGLIndexBuffer::~OpenGLIndexBuffer()
+	{
+		glDeleteBuffers(1, &mRendererID);
+	}
 
-void OpenGLIndexBuffer::Bind() const
-{
+	void OpenGLIndexBuffer::SetData(void* buffer, size_t size)
+	{
+		mCount = size;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
+	}
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
-}
+	void OpenGLIndexBuffer::Bind() const
+	{
 
-void OpenGLIndexBuffer::Unbind() const
-{
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
+	}
+
+	void OpenGLIndexBuffer::Unbind() const
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	}
 }

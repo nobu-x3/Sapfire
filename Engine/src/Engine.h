@@ -19,10 +19,10 @@
 ///////////////////////////////////////////
 
 //    Base Engine ///////////////////////////////
-#include "Sapfire/Application.h"
-#include "Sapfire/Core.h"
-#include "Sapfire/Layer.h"
-#include "Sapfire/Log.h"
+#include "Sapfire/core/Application.h"
+#include "Sapfire/core/Core.h"
+#include "Sapfire/core/Layer.h"
+#include "Sapfire/core/Log.h"
 ///////////////////////////////////////////
 ///////////////////////////////////////////
 ///////////////////////////////////////////
