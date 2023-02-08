@@ -8,6 +8,7 @@
 #include "Sapfire/renderer/Shader.h"
 #include "Sapfire/renderer/VertexArray.h"
 #include "Sapfire/renderer/Window.h"
+#include "Input.h"
 
 namespace Sapfire
 {
@@ -25,6 +26,7 @@ namespace Sapfire
 
 	Application::~Application()
 	{
+		Input::Deinit();
 	}
 
 	void Application::OnEvent(Event& event)

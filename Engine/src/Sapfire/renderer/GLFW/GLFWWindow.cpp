@@ -125,11 +125,9 @@ namespace Sapfire
 			MouseScrolledEvent event((float)xOffset, (float)yOffset);
 			data.EventCallback(event);
 				});
-
 			glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double xPos, double yPos)
 				{
 					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
 			MouseMovedEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
 				});

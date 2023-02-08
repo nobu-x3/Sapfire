@@ -2,6 +2,7 @@
 #include "Sapfire/renderer/Mesh.h"
 #include <imgui.h>
 #include <glfw/include/GLFW/glfw3.h>
+#include "Sapfire/core/Input.h"
 
 const std::string SHADER_PATH = "Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "Sprite";
