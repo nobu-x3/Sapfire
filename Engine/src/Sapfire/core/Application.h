@@ -21,6 +21,7 @@ namespace Sapfire
 	private:
 		void OnEvent(class Event& e);
 		bool OnWindowClose(class WindowCloseEvent& e);
+		bool OnWindowResize(class WindowResizeEvent& e);
 
 	private:
 		Scope<class Window> mWindow;
@@ -28,8 +29,9 @@ namespace Sapfire
 		float mLastFrameTime = 0.f;
 		static Application* sInstance;
 		ImguiLayer* mImguiLayer;
-		bool mRunning;
 		uint32_t mVertexArray;
+		bool mRunning;
+		bool mMinimized;
 	};
 
 	// Must be defined in the client.

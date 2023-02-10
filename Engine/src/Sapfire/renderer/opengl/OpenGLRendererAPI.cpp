@@ -37,6 +37,11 @@ namespace Sapfire
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 
+	void OpenGLRendererAPI::SetViewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
+	{
+		glViewport(x, y, width, height);
+	}
+
 	void OpenGLRendererAPI::DrawMesh()
 	{
 		glEnableVertexAttribArray(0);

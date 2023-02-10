@@ -35,4 +35,9 @@ namespace Sapfire
 		shader->SetMatrixUniform("uWorldTransform", mesh->GetWorldTransform());
 		mesh->Render();
 	}
+
+	void Renderer::OnWindowResize(uint16_t width, uint16_t height)
+	{
+		RenderCommands::SetViewport(0, 0, width, height);
+	}
 }
