@@ -3,6 +3,7 @@
 #include "engpch.h"
 #include "Sapfire/core/Core.h"
 #include "Sapfire/events/Event.h"
+#include "../core/Input.h"
 
 namespace Sapfire
 {

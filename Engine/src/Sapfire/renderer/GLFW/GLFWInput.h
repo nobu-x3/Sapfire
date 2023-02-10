@@ -9,9 +9,8 @@ namespace Sapfire
 	{
 	protected:
 		// Inherited via Input
-		virtual bool KeyPressed_Impl(int keycode) override;
-		virtual bool KeyDown_Impl(int keycode) override;
-		virtual bool KeyUp_Impl(int keycode) override;
+		virtual bool KeyPressed_Impl(KeyCode keycode) override;
+		virtual bool KeyReleased_Impl(KeyCode keycode) override;
 		virtual bool MouseButtonPressed_Impl(int button) override;
 		virtual bool MouseButtonDown_Impl(int button) override;
 		virtual bool MouseButtonUp_Impl(int button) override;

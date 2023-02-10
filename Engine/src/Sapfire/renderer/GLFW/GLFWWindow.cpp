@@ -3,6 +3,7 @@
 #include "Sapfire/core/Log.h"
 #include <Sapfire/events/WindowEvent.h>
 #include <Sapfire/events/KeyEvent.h>
+#include "Sapfire/core/Input.h"
 #include <Sapfire/events/MouseEvent.h>
 
 namespace Sapfire

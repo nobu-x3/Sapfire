@@ -143,131 +143,23 @@ namespace Sapfire
 		os << static_cast<int32_t>(keyCode);
 		return os;
 	}
+
+	enum class MouseButton : uint16_t
+	{
+		Button0 = 0,
+		Button1 = 1,
+		Button2 = 2,
+		Button3 = 3,
+		Button4 = 4,
+		Button5 = 5,
+		Left = Button0,
+		Right = Button1,
+		Middle = Button2
+	};
+
+	inline std::ostream& operator<<(std::ostream& os, MouseButton button)
+	{
+		os << static_cast<int32_t>(button);
+		return os;
+	}
 }
-
-// From glfw3.h
-#define KEY_SPACE           ::Sapfire::Key::Space
-#define KEY_APOSTROPHE      ::Sapfire::Key::Apostrophe    /* ' */
-#define KEY_COMMA           ::Sapfire::Key::Comma         /* , */
-#define KEY_MINUS           ::Sapfire::Key::Minus         /* - */
-#define KEY_PERIOD          ::Sapfire::Key::Period        /* . */
-#define KEY_SLASH           ::Sapfire::Key::Slash         /* / */
-#define KEY_0               ::Sapfire::Key::D0
-#define KEY_1               ::Sapfire::Key::D1
-#define KEY_2               ::Sapfire::Key::D2
-#define KEY_3               ::Sapfire::Key::D3
-#define KEY_4               ::Sapfire::Key::D4
-#define KEY_5               ::Sapfire::Key::D5
-#define KEY_6               ::Sapfire::Key::D6
-#define KEY_7               ::Sapfire::Key::D7
-#define KEY_8               ::Sapfire::Key::D8
-#define KEY_9               ::Sapfire::Key::D9
-#define KEY_SEMICOLON       ::Sapfire::Key::Semicolon     /* ; */
-#define KEY_EQUAL           ::Sapfire::Key::Equal         /* = */
-#define KEY_A               ::Sapfire::Key::A
-#define KEY_B               ::Sapfire::Key::B
-#define KEY_C               ::Sapfire::Key::C
-#define KEY_D               ::Sapfire::Key::D
-#define KEY_E               ::Sapfire::Key::E
-#define KEY_F               ::Sapfire::Key::F
-#define KEY_G               ::Sapfire::Key::G
-#define KEY_H               ::Sapfire::Key::H
-#define KEY_I               ::Sapfire::Key::I
-#define KEY_J               ::Sapfire::Key::J
-#define KEY_K               ::Sapfire::Key::K
-#define KEY_L               ::Sapfire::Key::L
-#define KEY_M               ::Sapfire::Key::M
-#define KEY_N               ::Sapfire::Key::N
-#define KEY_O               ::Sapfire::Key::O
-#define KEY_P               ::Sapfire::Key::P
-#define KEY_Q               ::Sapfire::Key::Q
-#define KEY_R               ::Sapfire::Key::R
-#define KEY_S               ::Sapfire::Key::S
-#define KEY_T               ::Sapfire::Key::T
-#define KEY_U               ::Sapfire::Key::U
-#define KEY_V               ::Sapfire::Key::V
-#define KEY_W               ::Sapfire::Key::W
-#define KEY_X               ::Sapfire::Key::X
-#define KEY_Y               ::Sapfire::Key::Y
-#define KEY_Z               ::Sapfire::Key::Z
-#define KEY_LEFT_BRACKET    ::Sapfire::Key::LeftBracket   /* [ */
-#define KEY_BACKSLASH       ::Sapfire::Key::Backslash     /* \ */
-#define KEY_RIGHT_BRACKET   ::Sapfire::Key::RightBracket  /* ] */
-#define KEY_GRAVE_ACCENT    ::Sapfire::Key::GraveAccent   /* ` */
-#define KEY_WORLD_1         ::Sapfire::Key::World1        /* non-US #1 */
-#define KEY_WORLD_2         ::Sapfire::Key::World2        /* non-US #2 */
-
-/* Function keys */
-#define KEY_ESCAPE          ::Sapfire::Key::Escape
-#define KEY_ENTER           ::Sapfire::Key::Enter
-#define KEY_TAB             ::Sapfire::Key::Tab
-#define KEY_BACKSPACE       ::Sapfire::Key::Backspace
-#define KEY_INSERT          ::Sapfire::Key::Insert
-#define KEY_DELETE          ::Sapfire::Key::Delete
-#define KEY_RIGHT           ::Sapfire::Key::Right
-#define KEY_LEFT            ::Sapfire::Key::Left
-#define KEY_DOWN            ::Sapfire::Key::Down
-#define KEY_UP              ::Sapfire::Key::Up
-#define KEY_PAGE_UP         ::Sapfire::Key::PageUp
-#define KEY_PAGE_DOWN       ::Sapfire::Key::PageDown
-#define KEY_HOME            ::Sapfire::Key::Home
-#define KEY_END             ::Sapfire::Key::End
-#define KEY_CAPS_LOCK       ::Sapfire::Key::CapsLock
-#define KEY_SCROLL_LOCK     ::Sapfire::Key::ScrollLock
-#define KEY_NUM_LOCK        ::Sapfire::Key::NumLock
-#define KEY_PRINT_SCREEN    ::Sapfire::Key::PrintScreen
-#define KEY_PAUSE           ::Sapfire::Key::Pause
-#define KEY_F1              ::Sapfire::Key::F1
-#define KEY_F2              ::Sapfire::Key::F2
-#define KEY_F3              ::Sapfire::Key::F3
-#define KEY_F4              ::Sapfire::Key::F4
-#define KEY_F5              ::Sapfire::Key::F5
-#define KEY_F6              ::Sapfire::Key::F6
-#define KEY_F7              ::Sapfire::Key::F7
-#define KEY_F8              ::Sapfire::Key::F8
-#define KEY_F9              ::Sapfire::Key::F9
-#define KEY_F10             ::Sapfire::Key::F10
-#define KEY_F11             ::Sapfire::Key::F11
-#define KEY_F12             ::Sapfire::Key::F12
-#define KEY_F13             ::Sapfire::Key::F13
-#define KEY_F14             ::Sapfire::Key::F14
-#define KEY_F15             ::Sapfire::Key::F15
-#define KEY_F16             ::Sapfire::Key::F16
-#define KEY_F17             ::Sapfire::Key::F17
-#define KEY_F18             ::Sapfire::Key::F18
-#define KEY_F19             ::Sapfire::Key::F19
-#define KEY_F20             ::Sapfire::Key::F20
-#define KEY_F21             ::Sapfire::Key::F21
-#define KEY_F22             ::Sapfire::Key::F22
-#define KEY_F23             ::Sapfire::Key::F23
-#define KEY_F24             ::Sapfire::Key::F24
-#define KEY_F25             ::Sapfire::Key::F25
-
-/* Keypad */
-#define KEY_KP_0            ::Sapfire::Key::KP0
-#define KEY_KP_1            ::Sapfire::Key::KP1
-#define KEY_KP_2            ::Sapfire::Key::KP2
-#define KEY_KP_3            ::Sapfire::Key::KP3
-#define KEY_KP_4            ::Sapfire::Key::KP4
-#define KEY_KP_5            ::Sapfire::Key::KP5
-#define KEY_KP_6            ::Sapfire::Key::KP6
-#define KEY_KP_7            ::Sapfire::Key::KP7
-#define KEY_KP_8            ::Sapfire::Key::KP8
-#define KEY_KP_9            ::Sapfire::Key::KP9
-#define KEY_KP_DECIMAL      ::Sapfire::Key::KPDecimal
-#define KEY_KP_DIVIDE       ::Sapfire::Key::KPDivide
-#define KEY_KP_MULTIPLY     ::Sapfire::Key::KPMultiply
-#define KEY_KP_SUBTRACT     ::Sapfire::Key::KPSubtract
-#define KEY_KP_ADD          ::Sapfire::Key::KPAdd
-#define KEY_KP_ENTER        ::Sapfire::Key::KPEnter
-#define KEY_KP_EQUAL        ::Sapfire::Key::KPEqual
-
-#define KEY_LEFT_SHIFT      ::Sapfire::Key::LeftShift
-#define KEY_LEFT_CONTROL    ::Sapfire::Key::LeftControl
-#define KEY_LEFT_ALT        ::Sapfire::Key::LeftAlt
-#define KEY_LEFT_SUPER      ::Sapfire::Key::LeftSuper
-#define KEY_RIGHT_SHIFT     ::Sapfire::Key::RightShift
-#define KEY_RIGHT_CONTROL   ::Sapfire::Key::RightControl
-#define KEY_RIGHT_ALT       ::Sapfire::Key::RightAlt
-#define KEY_RIGHT_SUPER     ::Sapfire::Key::RightSuper
-#define KEY_MENU            ::Sapfire::Key::Menu

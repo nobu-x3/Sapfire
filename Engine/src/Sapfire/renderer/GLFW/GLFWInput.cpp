@@ -7,24 +7,17 @@ namespace Sapfire
 {
 	Input* Input::sInstance = new GLFWInput();
 
-	bool GLFWInput::KeyPressed_Impl(int keycode)
+	bool GLFWInput::KeyPressed_Impl(KeyCode keycode)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
-		auto state = glfwGetKey(window, keycode);
+		auto state = glfwGetKey(window, (int)keycode);
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	bool GLFWInput::KeyDown_Impl(int keycode)
+	bool GLFWInput::KeyReleased_Impl(KeyCode keycode)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
-		auto state = glfwGetKey(window, keycode);
-		return state == GLFW_PRESS;
-	}
-
-	bool GLFWInput::KeyUp_Impl(int keycode)
-	{
-		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
-		auto state = glfwGetKey(window, keycode);
+		auto state = glfwGetKey(window, (int)keycode);
 		return state == GLFW_RELEASE;
 	}
 

@@ -50,8 +50,16 @@ const float MOVE_SPEED = 0.1f;
 void SandboxLayer::OnUpdate(float deltaTime)
 {
 	//mCameraRotation += 30.f * deltaTime;
+	if(Input::KeyPressed(KeyCode::A))
+		mDirection += glm::vec3({ -1, 0, 0 });
+	if(Input::KeyPressed(KeyCode::D))
+		mDirection += glm::vec3({ 1, 0, 0 });
+	if(Input::KeyPressed(KeyCode::W))
+		mDirection += glm::vec3({ 0, 0, -1 });
+	if(Input::KeyPressed(KeyCode::S))
+		mDirection += glm::vec3({ 0, 0, 1 });
 	auto pos = mCamera.GetPosition();
-	mCamera.SetPosition(pos + mDirection * MOVE_SPEED);
+	mCamera.SetPosition(pos + mDirection * MOVE_SPEED * deltaTime);
 	mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
 	RenderCommands::Init();
 	RenderCommands::SetClearColor(clearColor);
@@ -73,28 +81,7 @@ void SandboxLayer::OnImguiRender()
 void SandboxLayer::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<KeyPressedEvent>(BIND_EVENT_FN(SandboxLayer::OnKeyPressed));
 	dispatcher.Dispatch<MouseMovedEvent>(BIND_EVENT_FN(SandboxLayer::OnMouseMoved));
-}
-
-bool SandboxLayer::OnKeyPressed(KeyPressedEvent& e)
-{
-	switch (e.GetKeyCode())
-	{
-	case GLFW_KEY_A:
-		mDirection = glm::vec3({ -1, 0, 0 });
-		break;
-	case GLFW_KEY_D:
-		mDirection = glm::vec3({ 1, 0, 0 });
-		break;
-	case GLFW_KEY_W:
-		mDirection = glm::vec3({ 0, 0, -1 });
-		break;
-	case GLFW_KEY_S:
-		mDirection = glm::vec3({ 0, 0, 1 });
-		break;
-	}
-	return true;
 }
 
 static float prevVal = 0.f;
@@ -119,3 +106,4 @@ Sapfire::Application* Sapfire::CreateApplication()
 {
 	return new SandboxApplication();
 }
+

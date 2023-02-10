@@ -12,7 +12,6 @@ public:
 	virtual void OnUpdate(float deltaTime) override;
 	virtual void OnImguiRender() override;
 	virtual void OnEvent(Event& event) override;
-	bool OnKeyPressed(KeyPressedEvent& e);
 	bool OnMouseMoved(MouseMovedEvent& e);
 
 private:
