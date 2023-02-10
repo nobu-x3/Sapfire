@@ -72,10 +72,23 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	mDirection = glm::vec3(0);
 }
 
+std::string buttonLabel = "hehe";
+
 void SandboxLayer::OnImguiRender()
 {
-	ImGui::Begin("TEST");
-	ImGui::End();
+		ImGui::Begin("TEST1");
+		if(ImGui::Button(buttonLabel.c_str(), { 50, 50 }))
+		{
+			LOG_TRACE("HEHE!");
+		}
+		ImGui::End();
+		ImGui::Begin("TEST2");
+		if (ImGui::Button(buttonLabel.c_str(), { 50, 50 }))
+		{
+			LOG_TRACE("HEHE!");
+		}
+		ImGui::End();
+	
 }
 
 void SandboxLayer::OnEvent(Event& event)
