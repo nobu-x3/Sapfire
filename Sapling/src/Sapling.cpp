@@ -104,11 +104,13 @@ namespace Sapfire
 		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
 		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
 		static bool p_open = true;
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
 		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
 		// DockSpace
 		ImGuiIO& io = ImGui::GetIO();
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
 			RendererID textureID = mFramebuffer->GetColorAttachmentRendererID();
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2((float)Application::GetInstance().GetWindow().GetWidth(), (float)Application::GetInstance().GetWindow().GetHeight()), dockspace_flags);
@@ -120,9 +122,10 @@ namespace Sapfire
 				mViewportSize = { sceneViewportSize.x, sceneViewportSize.y };
 			}
 			ImGui::Image((void*)textureID, {mViewportSize.x, mViewportSize.y}, { 0, 1 }, { 1, 0 });
+			ImGui::PopStyleVar();
 			ImGui::End();
 		}
-
+		ImGui::PopStyleVar();
 		ImGui::End();
 	}
 
