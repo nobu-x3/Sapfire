@@ -64,6 +64,7 @@ namespace Sapfire
 	void OpenGLFramebuffer::Bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, mRendererID);
+		glViewport(0, 0, mProperties.Width, mProperties.Height);
 	}
 
 	void OpenGLFramebuffer::Unbind()

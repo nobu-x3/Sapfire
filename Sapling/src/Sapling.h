@@ -24,7 +24,9 @@ namespace Sapfire
 		Ref<Texture> mTexture;
 		Ref<Framebuffer> mFramebuffer;
 		PerspectiveCamera mCamera;
+		glm::vec2 mViewportSize;
 		glm::vec3 mDirection;
+
 		float mCameraRotation;
 	};
 

@@ -11,7 +11,7 @@ namespace Sapfire
 {
 	SaplingLayer::SaplingLayer()
 		: /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-		mCamera(70.f, 1280, 720, 0.01, 100), mDirection(glm::vec3(0))
+		mCamera(70.f, 1280, 720, 0.01, 100), mDirection(glm::vec3(0)), mViewportSize(0)
 	{
 	}
 
@@ -46,6 +46,7 @@ namespace Sapfire
 		mSphereMesh->SetScale(glm::vec3(1.f));
 		mCameraRotation = 0.f;
 		RenderCommands::Init();
+		mViewportSize = { 1280, 720 };
 		FramebufferProperties fbProps = { 1280, 720, FramebufferFormat::RGBA8 };
 		mFramebuffer = Framebuffer::Create(fbProps);
 	}
@@ -111,8 +112,14 @@ namespace Sapfire
 			RendererID textureID = mFramebuffer->GetColorAttachmentRendererID();
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2((float)Application::GetInstance().GetWindow().GetWidth(), (float)Application::GetInstance().GetWindow().GetHeight()), dockspace_flags);
-			ImGui::Begin("Scene");
-			ImGui::Image((void*)textureID, ImVec2((float)Application::GetInstance().GetWindow().GetWidth(), (float)Application::GetInstance().GetWindow().GetHeight()));
+			ImGui::Begin("Scene View");
+			auto sceneViewportSize = ImGui::GetContentRegionAvail();
+			if (mViewportSize.x != sceneViewportSize.x || mViewportSize.y != sceneViewportSize.y)
+			{
+				mFramebuffer->Resize(sceneViewportSize.x, sceneViewportSize.y);
+				mViewportSize = { sceneViewportSize.x, sceneViewportSize.y };
+			}
+			ImGui::Image((void*)textureID, {mViewportSize.x, mViewportSize.y}, { 0, 1 }, { 1, 0 });
 			ImGui::End();
 		}
 
