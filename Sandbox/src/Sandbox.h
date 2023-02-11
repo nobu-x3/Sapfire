@@ -9,6 +9,7 @@ class SandboxLayer : public Layer
 {
 public:
 	SandboxLayer();
+	virtual void OnAttach() override;
 	virtual void OnUpdate(float deltaTime) override;
 	virtual void OnImguiRender() override;
 	virtual void OnEvent(Event& event) override;
@@ -21,6 +22,7 @@ private:
 	Ref<Shader> mSpriteShader;
 	Ref<Shader> mMeshShader;
 	Ref<Texture> mTexture;
+	Ref<Framebuffer> mFramebuffer;
 	PerspectiveCamera mCamera;
 	glm::vec3 mDirection;
 	float mCameraRotation;

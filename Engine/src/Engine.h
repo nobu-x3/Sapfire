@@ -9,6 +9,7 @@
 #include "Sapfire/renderer/Texture.h"
 #include "Sapfire/renderer/VertexArray.h"
 #include "Sapfire/renderer/Window.h"
+#include "Sapfire/renderer/Framebuffer.h"
 ///////////////////////////////////////////
 
 //    Events /////////////////////////////
