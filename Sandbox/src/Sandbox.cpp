@@ -44,8 +44,6 @@ void SandboxLayer::OnAttach()
 	mSphereMesh->SetScale(glm::vec3(1.f));
 	mCameraRotation = 0.f;
 	RenderCommands::Init();
-	FramebufferProperties fbProps = { 1280, 720, FramebufferFormat::RGBA8 };
-	mFramebuffer = Framebuffer::Create(fbProps);
 }
 
 static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
@@ -68,55 +66,17 @@ void SandboxLayer::OnUpdate(float deltaTime)
 	mCamera.SetPosition(pos + mDirection * MOVE_SPEED * deltaTime);
 	mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
 	RenderCommands::SetClearColor(clearColor);
-	mFramebuffer->Bind();
 	RenderCommands::ClearScreen();
 	Renderer::BeginScene(mCamera);
 	/* mTexture->Bind(); */
 	//Renderer::Submit(mVA, mSpriteShader);
 	Renderer::SubmitMesh(mSphereMesh, mMeshShader);
 	Renderer::EndScene();
-	mFramebuffer->Unbind();
 	mDirection = glm::vec3(0);
 }
 
-std::string buttonLabel = "hehe";
-
 void SandboxLayer::OnImguiRender()
 {
-	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-	// because it would be confusing to have two docking targets within each others.
-	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(viewport->GetWorkPos());
-	ImGui::SetNextWindowSize(viewport->GetWorkSize());
-	ImGui::SetNextWindowViewport(viewport->ID);
-	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-	// and handle the pass-thru hole, so we ask Begin() to not render a background.
-	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-		window_flags |= ImGuiWindowFlags_NoBackground;
-	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-	// all active windows docked into it will lose their parent and become undocked.
-	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-	static bool p_open = true;
-	ImGui::Begin("DockSpace Demo", &p_open, window_flags);
-	// DockSpace
-	ImGuiIO& io = ImGui::GetIO();
-	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-	{
-		RendererID textureID = mFramebuffer->GetColorAttachmentRendererID();
-		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-		ImGui::DockSpace(dockspace_id, ImVec2((float)Application::GetInstance().GetWindow().GetWidth(), (float)Application::GetInstance().GetWindow().GetHeight()), dockspace_flags);
-		ImGui::Begin("Scene");
-		ImGui::Image((void*)textureID, ImVec2((float)Application::GetInstance().GetWindow().GetWidth(), (float)Application::GetInstance().GetWindow().GetHeight()));
-		ImGui::End();
-	}
-
-	ImGui::End();
 }
 
 void SandboxLayer::OnEvent(Event& event)

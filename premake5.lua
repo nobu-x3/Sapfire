@@ -91,6 +91,67 @@ project "Sapfire"
             "%{Libs.Assimp_Release}"
         }
 
+
+project "Sapling"
+        kind "ConsoleApp"
+        location "Sapling"
+        language "C++"
+        cppdialect "C++20"
+        staticruntime "off"
+    
+        targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+        objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
+        files
+        {
+            "Sapling/src/**.h",
+            "Sapling/src/**.cpp"
+        }
+        includedirs
+        {
+            "Sapling/src",
+            "%{IncludeDir.spdlog}",
+            "%{wks.location}/Engine/src",
+            "%{wks.location}/Engine/deps",
+            "%{IncludeDir.glm}",
+            "%{IncludeDir.glew}",
+            "%{IncludeDir.imgui}"
+        }
+    
+        links
+        {
+            "Sapfire"
+        }
+    
+        filter "system:windows"
+        systemversion "latest"
+    
+        filter "configurations:Debug"
+            runtime "Debug"
+            symbols "on"
+            links
+            {
+                "%{Libs.Assimp_Debug}"
+            }
+    
+            postbuildcommands
+            {
+                '{COPY} "%{Binaries.Assimp_Debug}" "%{cfg.targetdir}"',
+            }
+            defines { "DEBUG" }
+    
+        filter "configurations:Release"
+            runtime "Release"
+            optimize "on"
+            links
+            {
+                "%{Libs.Assimp_Release}"
+            }
+    
+            postbuildcommands
+            {
+                '{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
+            }
+            
 project "Sandbox"
     kind "ConsoleApp"
     location "Sandbox"

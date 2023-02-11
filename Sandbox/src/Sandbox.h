@@ -22,7 +22,6 @@ private:
 	Ref<Shader> mSpriteShader;
 	Ref<Shader> mMeshShader;
 	Ref<Texture> mTexture;
-	Ref<Framebuffer> mFramebuffer;
 	PerspectiveCamera mCamera;
 	glm::vec3 mDirection;
 	float mCameraRotation;

@@ -9,7 +9,7 @@ namespace Sapfire
 	class Application
 	{
 	public:
-		Application();
+		Application(const std::string& name = "");
 		~Application();
 		void Run();
 		inline const class Window& GetWindow() const { return *mWindow; }

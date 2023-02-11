@@ -14,11 +14,11 @@ namespace Sapfire
 {
 	Application* Application::sInstance = nullptr;
 
-	Application::Application() : mRunning(true), mMinimized(false)
+	Application::Application(const std::string& name) : mRunning(true), mMinimized(false)
 	{
 		Log::Init();
 		sInstance = this;
-		mWindow = std::unique_ptr<Window>(Window::Create());
+		mWindow = std::unique_ptr<Window>(Window::Create(WindowProperties(name)));
 		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 		mImguiLayer = new ImguiLayer();
 		PushOverlay(mImguiLayer);
