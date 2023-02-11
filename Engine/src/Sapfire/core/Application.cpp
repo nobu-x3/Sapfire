@@ -26,7 +26,6 @@ namespace Sapfire
 
 	Application::~Application()
 	{
-		Input::Deinit();
 	}
 
 	void Application::OnEvent(Event& event)

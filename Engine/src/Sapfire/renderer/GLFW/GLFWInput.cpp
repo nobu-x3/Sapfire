@@ -1,48 +1,40 @@
 #include "engpch.h"
-#include "GLFWInput.h"
+#include "Sapfire/core/Input.h"
 #include "Sapfire/core/Application.h"
 #include "Sapfire/renderer/Window.h"
+#include <GLFW/glfw3.h>
 
 namespace Sapfire
 {
-	Input* Input::sInstance = new GLFWInput();
-
-	bool GLFWInput::KeyPressed_Impl(KeyCode keycode)
+	bool Input::KeyPressed(KeyCode keycode)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
 		auto state = glfwGetKey(window, (int)keycode);
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	bool GLFWInput::KeyReleased_Impl(KeyCode keycode)
+	bool Input::KeyReleased(KeyCode keycode)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
 		auto state = glfwGetKey(window, (int)keycode);
 		return state == GLFW_RELEASE;
 	}
 
-	bool GLFWInput::MouseButtonPressed_Impl(int button)
+	bool Input::MouseButtonDown(int button)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
 		auto state = glfwGetMouseButton(window, button);
 		return state == GLFW_PRESS;
 	}
 
-	bool GLFWInput::MouseButtonDown_Impl(int button)
-	{
-		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
-		auto state = glfwGetMouseButton(window, button);
-		return state == GLFW_PRESS;
-	}
-
-	bool GLFWInput::MouseButtonUp_Impl(int button)
+	bool Input::MouseButtonUp(int button)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
 		auto state = glfwGetMouseButton(window, button);
 		return state == GLFW_RELEASE;
 	}
 
-	std::pair<float, float> GLFWInput::GetMousePosition_Impl()
+	std::pair<float, float> Input::GetMousePosition()
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
 		double xPos, yPos;
@@ -50,15 +42,15 @@ namespace Sapfire
 		return { (float)xPos, (float)yPos };
 	}
 
-	float GLFWInput::GetMouseX_Impl()
+	float Input::GetMouseX()
 	{
-		auto [x, y] = GetMousePosition_Impl();
+		auto [x, y] = GetMousePosition();
 		return x;
 	}
 
-	float GLFWInput::GetMouseY_Impl()
+	float Input::GetMouseY()
 	{
-		auto [x, y] = GetMousePosition_Impl();
+		auto [x, y] = GetMousePosition();
 		return y;
 	}
 }
