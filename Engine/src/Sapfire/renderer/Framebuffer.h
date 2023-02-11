@@ -24,6 +24,7 @@ namespace Sapfire
 		virtual void Bind() = 0;
 		virtual void Unbind() = 0;
 		virtual void Invalidate() = 0;
+		virtual void Resize(uint16_t width, uint16_t height) = 0;
 		virtual const RendererID& GetColorAttachmentRendererID() const = 0;
 		virtual const RendererID& GetDepthAttachmentRendererID() const = 0;
 		virtual const RendererID& GetRendererID() const = 0;

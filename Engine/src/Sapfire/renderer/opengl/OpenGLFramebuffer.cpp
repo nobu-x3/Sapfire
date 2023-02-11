@@ -14,10 +14,18 @@ namespace Sapfire
 	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{
 		glDeleteFramebuffers(1, &mRendererID);
+		glDeleteTextures(1, &mColorAttachment);
+		glDeleteTextures(1, &mDepthAttachment);
 	}
 
 	void OpenGLFramebuffer::Invalidate()
 	{
+		if(mRendererID)
+		{
+			glDeleteFramebuffers(1, &mRendererID);
+			glDeleteTextures(1, &mColorAttachment);
+			glDeleteTextures(1, &mDepthAttachment);
+		}
 		glCreateFramebuffers(1, &mRendererID);
 		glBindFramebuffer(GL_FRAMEBUFFER, mRendererID);
 		// color
@@ -62,4 +70,12 @@ namespace Sapfire
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
+
+	void OpenGLFramebuffer::Resize(uint16_t width, uint16_t height)
+	{
+		mProperties.Width = width;
+		mProperties.Height = height;
+		Invalidate();
+	}
+
 }
