@@ -85,7 +85,7 @@ namespace Sapfire
 
 	void ImguiLayer::OnEvent(Event& event)
 	{
-		if (mBlocksEvents)
+		if (mBlockEvents)
 		{
 			ImGuiIO& io = ImGui::GetIO();
 			event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;

@@ -3,6 +3,7 @@
 #include <imgui.h>
 #include <glfw/include/GLFW/glfw3.h>
 #include "Sapfire/core/Input.h"
+#include "Sapfire/imgui/ImguiLayer.h"
 
 const std::string SHADER_PATH = "../Sandbox/Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "../Sandbox/Sprite";
@@ -58,15 +59,18 @@ namespace Sapfire
 
 	void SaplingLayer::OnUpdate(float deltaTime)
 	{
+		if(mViewportPanelFocused)
+		{
+			if (Input::KeyPressed(KeyCode::A))
+				mDirection += glm::vec3({ -1, 0, 0 });
+			if (Input::KeyPressed(KeyCode::D))
+				mDirection += glm::vec3({ 1, 0, 0 });
+			if (Input::KeyPressed(KeyCode::W))
+				mDirection += glm::vec3({ 0, 0, -1 });
+			if (Input::KeyPressed(KeyCode::S))
+				mDirection += glm::vec3({ 0, 0, 1 });
+		}
 		//mCameraRotation += 30.f * deltaTime;
-		if (Input::KeyPressed(KeyCode::A))
-			mDirection += glm::vec3({ -1, 0, 0 });
-		if (Input::KeyPressed(KeyCode::D))
-			mDirection += glm::vec3({ 1, 0, 0 });
-		if (Input::KeyPressed(KeyCode::W))
-			mDirection += glm::vec3({ 0, 0, -1 });
-		if (Input::KeyPressed(KeyCode::S))
-			mDirection += glm::vec3({ 0, 0, 1 });
 		auto pos = mCamera.GetPosition();
 		mCamera.SetPosition(pos + mDirection * MOVE_SPEED * deltaTime);
 		mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
@@ -104,33 +108,42 @@ namespace Sapfire
 		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
 		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
 		static bool p_open = true;
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
 		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
-		// DockSpace
-		ImGuiIO& io = ImGui::GetIO();
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
+			// DockSpace
+			ImGuiIO& io = ImGui::GetIO();
 			RendererID textureID = mFramebuffer->GetColorAttachmentRendererID();
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2((float)Application::GetInstance().GetWindow().GetWidth(), (float)Application::GetInstance().GetWindow().GetHeight()), dockspace_flags);
 			ImGui::Begin("Scene View");
-			auto sceneViewportSize = ImGui::GetContentRegionAvail();
-			if (mViewportSize.x != sceneViewportSize.x || mViewportSize.y != sceneViewportSize.y)
 			{
-				mFramebuffer->Resize(sceneViewportSize.x, sceneViewportSize.y);
-				mViewportSize = { sceneViewportSize.x, sceneViewportSize.y };
+				mViewportPanelFocused = ImGui::IsWindowFocused(); 
+				mViewportPanelHovered = ImGui::IsWindowHovered();
+				Application::GetInstance().GetImguiLayer()->SetBlockEvents(mViewportPanelFocused && mViewportPanelHovered);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
+				auto sceneViewportSize = ImGui::GetContentRegionAvail();
+				if (mViewportSize.x != sceneViewportSize.x || mViewportSize.y != sceneViewportSize.y)
+				{
+					mFramebuffer->Resize(sceneViewportSize.x, sceneViewportSize.y);
+					mViewportSize = { sceneViewportSize.x, sceneViewportSize.y };
+				}
+				ImGui::Image((void*)textureID, { mViewportSize.x, mViewportSize.y }, { 0, 1 }, { 1, 0 });
+				ImGui::PopStyleVar();
 			}
-			ImGui::Image((void*)textureID, {mViewportSize.x, mViewportSize.y}, { 0, 1 }, { 1, 0 });
-			ImGui::PopStyleVar();
+			ImGui::End();
+
+			ImGui::Begin("Some other panel");
+			{
+				ImGui::Text("Some other text");
+			}
 			ImGui::End();
 		}
-		ImGui::PopStyleVar();
 		ImGui::End();
 	}
 
 	void SaplingLayer::OnEvent(Event& event)
 	{
+		if (event.Handled) return;
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<MouseMovedEvent>(BIND_EVENT_FN(SaplingLayer::OnMouseMoved));
 	}
@@ -139,6 +152,7 @@ namespace Sapfire
 
 	bool SaplingLayer::OnMouseMoved(MouseMovedEvent& e)
 	{
+		if (!mViewportPanelFocused) return true;
 		mCameraRotation -= e.GetX() - prevVal;
 		prevVal = e.GetX();
 		return true;

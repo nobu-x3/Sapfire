@@ -20,17 +20,17 @@ namespace Sapfire
 		return state == GLFW_RELEASE;
 	}
 
-	bool Input::MouseButtonDown(int button)
+	bool Input::MouseButtonDown(MouseButton button)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
-		auto state = glfwGetMouseButton(window, button);
+		auto state = glfwGetMouseButton(window, (int)button);
 		return state == GLFW_PRESS;
 	}
 
-	bool Input::MouseButtonUp(int button)
+	bool Input::MouseButtonUp(MouseButton button)
 	{
 		auto window = static_cast<GLFWwindow*>(Application::GetInstance().GetWindow().GetNativeWindow());
-		auto state = glfwGetMouseButton(window, button);
+		auto state = glfwGetMouseButton(window, (int)button);
 		return state == GLFW_RELEASE;
 	}
 

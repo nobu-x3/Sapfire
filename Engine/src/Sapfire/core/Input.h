@@ -9,8 +9,8 @@ namespace Sapfire
 	public:
 		static bool KeyPressed(KeyCode keycode);
 		static bool KeyReleased(KeyCode keycode);
-		static bool MouseButtonDown(int button);
-		static bool MouseButtonUp(int button);
+		static bool MouseButtonDown(MouseButton button);
+		static bool MouseButtonUp(MouseButton button);
 		static std::pair<float, float> GetMousePosition();
 		static float GetMouseX();
 		static float GetMouseY();

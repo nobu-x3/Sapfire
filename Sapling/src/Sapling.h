@@ -28,6 +28,8 @@ namespace Sapfire
 		glm::vec3 mDirection;
 
 		float mCameraRotation;
+		bool mViewportPanelFocused;
+		bool mViewportPanelHovered;
 	};
 
 	class SaplingApp : public Application

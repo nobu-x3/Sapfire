@@ -17,6 +17,7 @@ namespace Sapfire
 		inline void PushOverlay(Layer* layer) { mLayerStack.PushOverlay(layer); }
 		inline static Application& GetInstance() { return *sInstance; }
 		inline const ImguiLayer& GetImguiLayer() const { return *mImguiLayer; }
+		inline ImguiLayer* GetImguiLayer() { return mImguiLayer; }
 
 	private:
 		void OnEvent(class Event& e);

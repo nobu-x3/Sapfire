@@ -12,13 +12,13 @@ namespace Sapfire
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 		virtual void OnEvent(Event& event) override;
-		inline void SetBlocksEvents(bool val) { mBlocksEvents = val; }
+		inline void SetBlockEvents(bool val) { mBlockEvents = val; }
 		void Begin();
 		void End();
 	private:
 		void SetDarkTheme();
 
 	private:
-		bool mBlocksEvents = true;
+		bool mBlockEvents = true;
 	};
 }
