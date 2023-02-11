@@ -6,6 +6,7 @@
 #include <assimp/LogStream.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include "Sapfire/core/Log.h"
 #include <filesystem>
 
 namespace Sapfire

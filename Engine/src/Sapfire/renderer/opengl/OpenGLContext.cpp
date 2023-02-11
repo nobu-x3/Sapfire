@@ -1,6 +1,5 @@
 #include "engpch.h"
 #include "OpenGLContext.h"
-#include "Sapfire/core/Log.h"
 //#if defined(USE_SDL)
 //#include <SDL_video.h>
 //#else

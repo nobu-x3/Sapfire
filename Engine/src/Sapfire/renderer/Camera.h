@@ -19,7 +19,7 @@ namespace Sapfire
 	class PerspectiveCamera : public Camera
 	{
 	public:
-		PerspectiveCamera(float fov, float width, float height, float near, float far);
+		PerspectiveCamera(float fov, float width, float height, float near, float farPlane);
 		inline const glm::vec3& GetPosition() const { return mPosition; }
 		inline void SetPosition(const glm::vec3& position)
 		{

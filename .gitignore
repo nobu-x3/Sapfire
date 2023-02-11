@@ -5,6 +5,7 @@ bin-int/
 *.sln
 *.vcxproj*
 obj/
+Sapling/SapfireProfile*
 /packages/
 riderModule.iml
 /_ReSharper.Caches
@@ -13,3 +14,4 @@ Project/cmake
 Project/.cache
 Project/.ccls-cache
 Project/.vimspector.json
+Sapling/imgui.ini

@@ -1,6 +1,5 @@
 #include "engpch.h"
 #include "OpenGLTexture.h"
-#include "Sapfire/core/Log.h"
 #include <stb_image.h>
 
 namespace Sapfire

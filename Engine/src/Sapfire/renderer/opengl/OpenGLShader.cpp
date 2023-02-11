@@ -1,9 +1,9 @@
 #include "engpch.h"
 #include "OpenGLShader.h"
-#include "Sapfire/core/Log.h"
 #include "Sapfire/renderer/Renderer.h"
 #include <filesystem>
 #include <fstream>
+#include "Sapfire/core/Log.h"
 
 namespace Sapfire
 {

@@ -4,6 +4,7 @@
 #include <glfw/include/GLFW/glfw3.h>
 #include "Sapfire/core/Input.h"
 #include "Sapfire/imgui/ImguiLayer.h"
+#include "Sapfire/tools/Profiling.h"
 
 const std::string SHADER_PATH = "../Sandbox/Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "../Sandbox/Sprite";
@@ -18,6 +19,7 @@ namespace Sapfire
 
 	void SaplingLayer::OnAttach()
 	{
+		PROFILE_FUNCTION();
 		mVA.reset(VertexArray::Create());
 		float vertices[7 * 4] = {
 			-0.5f, 0.5f,  0.f, 0.f, 1.f, // top left
@@ -59,35 +61,49 @@ namespace Sapfire
 
 	void SaplingLayer::OnUpdate(float deltaTime)
 	{
-		if(mViewportPanelFocused)
+		PROFILE_FUNCTION();
 		{
-			if (Input::KeyPressed(KeyCode::A))
-				mDirection += glm::vec3({ -1, 0, 0 });
-			if (Input::KeyPressed(KeyCode::D))
-				mDirection += glm::vec3({ 1, 0, 0 });
-			if (Input::KeyPressed(KeyCode::W))
-				mDirection += glm::vec3({ 0, 0, -1 });
-			if (Input::KeyPressed(KeyCode::S))
-				mDirection += glm::vec3({ 0, 0, 1 });
+			PROFILE_SCOPE("Inputs");
+			if (mViewportPanelFocused)
+			{
+				if (Input::KeyPressed(KeyCode::A))
+					mDirection += glm::vec3({ -1, 0, 0 });
+				if (Input::KeyPressed(KeyCode::D))
+					mDirection += glm::vec3({ 1, 0, 0 });
+				if (Input::KeyPressed(KeyCode::W))
+					mDirection += glm::vec3({ 0, 0, -1 });
+				if (Input::KeyPressed(KeyCode::S))
+					mDirection += glm::vec3({ 0, 0, 1 });
+			}
 		}
-		//mCameraRotation += 30.f * deltaTime;
-		auto pos = mCamera.GetPosition();
-		mCamera.SetPosition(pos + mDirection * MOVE_SPEED * deltaTime);
-		mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
-		RenderCommands::SetClearColor(clearColor);
-		mFramebuffer->Bind();
-		RenderCommands::ClearScreen();
-		Renderer::BeginScene(mCamera);
-		/* mTexture->Bind(); */
-		//Renderer::Submit(mVA, mSpriteShader);
-		Renderer::SubmitMesh(mSphereMesh, mMeshShader);
-		Renderer::EndScene();
-		mFramebuffer->Unbind();
-		mDirection = glm::vec3(0);
+
+		{
+			PROFILE_SCOPE("Gameplay");
+			//mCameraRotation += 30.f * deltaTime;
+			auto pos = mCamera.GetPosition();
+			mCamera.SetPosition(pos + mDirection * MOVE_SPEED * deltaTime);
+			mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
+			mDirection = glm::vec3(0);
+		}
+
+		{
+			PROFILE_SCOPE("Rendering");
+			RenderCommands::SetClearColor(clearColor);
+			mFramebuffer->Bind();
+			RenderCommands::ClearScreen();
+			Renderer::BeginScene(mCamera);
+			/* mTexture->Bind(); */
+			//Renderer::Submit(mVA, mSpriteShader);
+			Renderer::SubmitMesh(mSphereMesh, mMeshShader);
+			Renderer::EndScene();
+			mFramebuffer->Unbind();
+		}
+
 	}
 
 	void SaplingLayer::OnImguiRender()
 	{
+		PROFILE_FUNCTION();
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
@@ -117,7 +133,7 @@ namespace Sapfire
 			ImGui::DockSpace(dockspace_id, ImVec2((float)Application::GetInstance().GetWindow().GetWidth(), (float)Application::GetInstance().GetWindow().GetHeight()), dockspace_flags);
 			ImGui::Begin("Scene View");
 			{
-				mViewportPanelFocused = ImGui::IsWindowFocused(); 
+				mViewportPanelFocused = ImGui::IsWindowFocused();
 				mViewportPanelHovered = ImGui::IsWindowHovered();
 				Application::GetInstance().GetImguiLayer()->SetBlockEvents(mViewportPanelFocused && mViewportPanelHovered);
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });

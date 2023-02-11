@@ -5,7 +5,7 @@
 namespace Sapfire
 {
 	class Input
-	{ 
+	{
 	public:
 		static bool KeyPressed(KeyCode keycode);
 		static bool KeyReleased(KeyCode keycode);

@@ -17,8 +17,8 @@ namespace Sapfire
 		mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
 	}
 
-	PerspectiveCamera::PerspectiveCamera(float fov, float width, float height, float near, float far)
-		: mProjectionMatrix(glm::perspectiveFov(glm::radians(fov), width, height, near, far)), mViewMatrix(1.f)
+	PerspectiveCamera::PerspectiveCamera(float fov, float width, float height, float near, float farPlane)
+		: mProjectionMatrix(glm::perspectiveFov(glm::radians(fov), width, height, near, farPlane)), mViewMatrix(1.f)
 	{
 		mViewProjectionMatrix = mProjectionMatrix * mViewMatrix;
 	}
