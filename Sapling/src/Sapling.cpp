@@ -135,7 +135,7 @@ namespace Sapfire
 			{
 				mViewportPanelFocused = ImGui::IsWindowFocused();
 				mViewportPanelHovered = ImGui::IsWindowHovered();
-				Application::get_instance().GetImguiLayer()->SetBlockEvents(mViewportPanelFocused && mViewportPanelHovered);
+				Application::get_instance().get_imgui_layer().SetBlockEvents(mViewportPanelFocused && mViewportPanelHovered);
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
 				auto sceneViewportSize = ImGui::GetContentRegionAvail();
 				if (mViewportSize.x != sceneViewportSize.x || mViewportSize.y != sceneViewportSize.y)

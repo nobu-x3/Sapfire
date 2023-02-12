@@ -17,8 +17,7 @@ namespace Sapfire
 		void pop_layer(Layer* layer) { mLayerStack.pop_layer(layer); layer->on_detach(); }
 		void pop_overlay(Layer* layer) { mLayerStack.pop_overlay(layer); layer->on_detach(); }
 		static Application& get_instance() { return *sInstance; }
-		const ImguiLayer& get_imgui_layer() const { return *mImguiLayer; }
-		ImguiLayer* GetImguiLayer() const { return mImguiLayer; }
+		ImguiLayer& get_imgui_layer() const { return *mImguiLayer; }
 
 	private:
 		void on_event(Event& e);
