@@ -19,17 +19,17 @@ namespace Sapfire
 	class Framebuffer
 	{
 	public:
-		virtual ~Framebuffer() {}
-		virtual const FramebufferProperties& GetPropeties() const = 0;
-		virtual void Bind() = 0;
-		virtual void Unbind() = 0;
-		virtual void Invalidate() = 0;
-		virtual void Resize(uint16_t width, uint16_t height) = 0;
-		virtual const RendererID& GetColorAttachmentRendererID() const = 0;
-		virtual const RendererID& GetDepthAttachmentRendererID() const = 0;
-		virtual const RendererID& GetRendererID() const = 0;
+		virtual ~Framebuffer() = default;
+		virtual const FramebufferProperties& get_propeties() const = 0;
+		virtual void bind() = 0;
+		virtual void unbind() = 0;
+		virtual void invalidate() = 0;
+		virtual void resize(uint16_t width, uint16_t height) = 0;
+		virtual const RendererID& get_color_attachment_renderer_id() const = 0;
+		virtual const RendererID& get_depth_attachment_renderer_id() const = 0;
+		virtual const RendererID& get_renderer_id() const = 0;
 
 	public:
-		static Ref<Framebuffer> Create(const FramebufferProperties& props);
+		static Ref<Framebuffer> create(const FramebufferProperties& props);
 	};
 }

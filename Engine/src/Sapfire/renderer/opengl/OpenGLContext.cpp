@@ -20,7 +20,7 @@ namespace Sapfire
 	}
 	//#endif
 
-	void OpenGLContext::Init()
+	void OpenGLContext::init()
 	{
 		PROFILE_FUNCTION();
 		//#if defined(USE_SDL)
@@ -56,7 +56,7 @@ namespace Sapfire
 		//#endif
 	}
 
-	void OpenGLContext::SwapBuffers()
+	void OpenGLContext::swap_buffers()
 	{
 		PROFILE_FUNCTION();
 		//#if defined(USE_SDL)
@@ -69,7 +69,7 @@ namespace Sapfire
 		//#endif
 	}
 
-	void OpenGLContext::Shutdown()
+	void OpenGLContext::shutdown()
 	{
 		PROFILE_FUNCTION();
 		//#if defined(USE_SDL)

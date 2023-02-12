@@ -16,22 +16,22 @@ namespace Sapfire
 		~OpenGLShader();
 
 		// sets the active shader to this
-		virtual void Bind() override;
-		virtual void SetMatrixUniform(const std::string& name, const glm::mat4& matrix) override;
-		virtual void SetVectorUniform(const std::string& name, const glm::vec3& vec) override;
-		virtual void SetFloatUniform(const std::string& name, float val) override;
-		virtual void SetIntUniform(const std::string& name, int val) override;
-		inline virtual const std::string& GetName() const override { return mName; }
+		virtual void bind() override;
+		virtual void set_matrix_uniform(const std::string& name, const glm::mat4& matrix) override;
+		virtual void set_vector_uniform(const std::string& name, const glm::vec3& vec) override;
+		virtual void set_float_uniform(const std::string& name, float val) override;
+		virtual void set_int_uniform(const std::string& name, int val) override;
+		virtual const std::string& get_name() const override { return mName; }
 
 	private:
 		std::string ParseFile(const std::string& path);
-		std::unordered_map<GLenum, std::string> Process(const std::string& source);
+		std::unordered_map<GLenum, std::string> Process(const std::string& source) const;
 		// tries to compile specified shader
 		bool CompileShader(const std::unordered_map<GLenum, std::string>& sources);
 		// tests if compiled
 		bool IsCompiled(GLuint shader);
 		// tests if linked
-		bool IsValidProgram();
+		bool IsValidProgram() const;
 		RendererID mShaderProgram;
 		std::string mName;
 	};

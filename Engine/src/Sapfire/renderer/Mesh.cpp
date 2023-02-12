@@ -41,14 +41,14 @@ namespace Sapfire
 			}
 			mVertices.push_back(vertex);
 		}
-		mVertexBuffer = VertexBuffer::Create();
+		mVertexBuffer = VertexBuffer::create();
 		BufferLayout layout = { {"inPosition", ShaderDataType::Vec3},
 					   {"inNormal", ShaderDataType::Vec3},
 					   {"inTangent", ShaderDataType::Vec3},
 					   {"inBinormal", ShaderDataType::Vec3},
 					   {"inTexCoord", ShaderDataType::Vec3} };
-		mVertexBuffer->SetLayout(layout);
-		mVertexBuffer->SetData(mVertices.data(), mVertices.size() * sizeof(Vertex));
+		mVertexBuffer->set_layout(layout);
+		mVertexBuffer->set_data(mVertices.data(), mVertices.size() * sizeof(Vertex));
 		// Index buffer
 		mIndices.reserve(mesh->mNumFaces);
 		for (int i = 0; i < mesh->mNumFaces; ++i)
@@ -60,35 +60,35 @@ namespace Sapfire
 			mIndices.push_back(
 				{ mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] });
 		}
-		mIndexBuffer = IndexBuffer::Create();
-		mIndexBuffer->SetData(mIndices.data(), mIndices.size() * sizeof(Index));
+		mIndexBuffer = IndexBuffer::create();
+		mIndexBuffer->set_data(mIndices.data(), mIndices.size() * sizeof(Index));
 		ENGINE_INFO("Done parsing mesh: {0}", fileName);
 	}
 	Mesh::~Mesh()
 	{
 	}
 
-	void Mesh::SetTexture(const std::string& path)
+	void Mesh::set_texture(const std::string& path)
 	{
 		PROFILE_FUNCTION();
-		mTexture = Texture::Create(path);
+		mTexture = Texture::create(path);
 	}
 
-	void Mesh::Render()
+	void Mesh::render()
 	{
 		PROFILE_FUNCTION();
-		mVertexBuffer->Bind();
-		mIndexBuffer->Bind();
-		mTexture->Bind();
-		RenderCommands::DrawMesh();
-		RenderCommands::Draw(mIndexBuffer->GetCount());
+		mVertexBuffer->bind();
+		mIndexBuffer->bind();
+		mTexture->bind();
+		RenderCommands::draw_mesh();
+		RenderCommands::draw(mIndexBuffer->get_count());
 	}
 
-	void Mesh::CalculateWorldTransform()
+	void Mesh::calculate_world_transform()
 	{
 		PROFILE_FUNCTION();
-		mWorldTransform = glm::translate(glm::mat4(1.f), mWorldPosition);
-		mWorldTransform *= glm::mat4_cast(mRotation);
-		mWorldTransform *= glm::scale(glm::mat4(1.f), mScale);
+		mWorldTransform = translate(glm::mat4(1.f), mWorldPosition);
+		mWorldTransform *= mat4_cast(mRotation);
+		mWorldTransform *= scale(glm::mat4(1.f), mScale);
 	}
 }

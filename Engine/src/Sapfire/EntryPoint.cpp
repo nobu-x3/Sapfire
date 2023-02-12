@@ -4,11 +4,11 @@
 int main(int argc, char* argv[])
 {
 	PROFILE_BEGIN_SESSION("Startup", "SapfireProfile_Startup.json");
-	Sapfire::Application* application = Sapfire::CreateApplication();
+	Sapfire::Application* application = Sapfire::create_application();
 	PROFILE_END_SESSION();
 
 	PROFILE_BEGIN_SESSION("Runtime", "SapfireProfile_Runtime.json");
-	application->Run();
+	application->run();
 	PROFILE_END_SESSION();
 
 	PROFILE_BEGIN_SESSION("Shutdown", "SapfireProfile_Shutdown.json");

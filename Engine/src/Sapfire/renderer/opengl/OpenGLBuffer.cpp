@@ -1,7 +1,6 @@
 #include "engpch.h"
 #include "OpenGLBuffer.h"
 #include <glad/glad.h>
-#include <cstdint>
 
 namespace Sapfire
 {
@@ -19,7 +18,7 @@ namespace Sapfire
 		glDeleteBuffers(1, &mRendererID);
 	}
 
-	void OpenGLVertexBuffer::SetData(void* buffer, size_t size)
+	void OpenGLVertexBuffer::set_data(void* buffer, size_t size)
 	{
 		PROFILE_FUNCTION();
 		mCount = size;
@@ -27,12 +26,12 @@ namespace Sapfire
 		glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
 	}
 
-	void OpenGLVertexBuffer::Bind() const
+	void OpenGLVertexBuffer::bind() const
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
 	}
 
-	void OpenGLVertexBuffer::Unbind() const
+	void OpenGLVertexBuffer::unbind() const
 	{
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -51,7 +50,7 @@ namespace Sapfire
 		glDeleteBuffers(1, &mRendererID);
 	}
 
-	void OpenGLIndexBuffer::SetData(void* buffer, size_t size)
+	void OpenGLIndexBuffer::set_data(void* buffer, size_t size)
 	{
 		PROFILE_FUNCTION();
 		mCount = size;
@@ -59,12 +58,12 @@ namespace Sapfire
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
 	}
 
-	void OpenGLIndexBuffer::Bind() const
+	void OpenGLIndexBuffer::bind() const
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
 	}
 
-	void OpenGLIndexBuffer::Unbind() const
+	void OpenGLIndexBuffer::unbind() const
 	{
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}

@@ -8,7 +8,7 @@ namespace Sapfire
 	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferProperties& props) : mProperties(props)
 	{
 		PROFILE_FUNCTION();
-		Invalidate();
+		invalidate();
 	}
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
@@ -19,7 +19,7 @@ namespace Sapfire
 		glDeleteTextures(1, &mDepthAttachment);
 	}
 
-	void OpenGLFramebuffer::Invalidate()
+	void OpenGLFramebuffer::invalidate()
 	{
 		PROFILE_FUNCTION();
 		if(mRendererID)
@@ -63,22 +63,22 @@ namespace Sapfire
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void OpenGLFramebuffer::Bind()
+	void OpenGLFramebuffer::bind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, mRendererID);
 		glViewport(0, 0, mProperties.Width, mProperties.Height);
 	}
 
-	void OpenGLFramebuffer::Unbind()
+	void OpenGLFramebuffer::unbind()
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void OpenGLFramebuffer::Resize(uint16_t width, uint16_t height)
+	void OpenGLFramebuffer::resize(uint16_t width, uint16_t height)
 	{
 		mProperties.Width = width;
 		mProperties.Height = height;
-		Invalidate();
+		invalidate();
 	}
 
 }

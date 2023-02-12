@@ -4,24 +4,24 @@
 
 namespace Sapfire
 {
-	void ShaderLibrary::Add(const Ref<Shader>& shader)
+	void ShaderLibrary::add(const Ref<Shader>& shader)
 	{
 		PROFILE_FUNCTION();
-		if (mShaders.find(shader->GetName()) == mShaders.end())
+		if (mShaders.find(shader->get_name()) == mShaders.end())
 		{
-			mShaders[shader->GetName()] = shader;
+			mShaders[shader->get_name()] = shader;
 		}
 	}
 
-	Ref<Shader> ShaderLibrary::Load(const std::string& filePath)
+	Ref<Shader> ShaderLibrary::load(const std::string& filePath)
 	{
 		PROFILE_FUNCTION();
-		auto shader = Shader::Create(filePath);
-		Add(shader);
+		auto shader = Shader::create(filePath);
+		add(shader);
 		return shader;
 	}
 
-	Ref<Shader> ShaderLibrary::Get(const std::string& name)
+	Ref<Shader> ShaderLibrary::get(const std::string& name)
 	{
 		PROFILE_FUNCTION();
 		auto iter = mShaders.find(name);
@@ -29,10 +29,7 @@ namespace Sapfire
 		{
 			return iter->second;
 		}
-		else
-		{
-			ENGINE_ERROR("Shader {0} does not exist in memory!", name);
-			return nullptr;
-		}
+		ENGINE_ERROR("Shader {0} does not exist in memory!", name);
+		return nullptr;
 	}
 }

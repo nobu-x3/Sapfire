@@ -17,10 +17,10 @@ namespace Sapfire
 	{
 	}
 
-	void SaplingLayer::OnAttach()
+	void SaplingLayer::on_attach()
 	{
 		PROFILE_FUNCTION();
-		mVA.reset(VertexArray::Create());
+		mVA.reset(VertexArray::create());
 		float vertices[7 * 4] = {
 			-0.5f, 0.5f,  0.f, 0.f, 1.f, // top left
 			0.5f,  0.5f,  0.f, 1.f, 1.f, // top right
@@ -30,28 +30,28 @@ namespace Sapfire
 		uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
 		BufferLayout layout = { {"inPosition", ShaderDataType::Vec3}, {"inTexCoord", ShaderDataType::Vec2} };
 		Ref<VertexBuffer> vb;
-		vb = VertexBuffer::Create();
-		vb->SetLayout(layout);
-		vb->SetData(vertices, sizeof(vertices));
-		mVA->AddVertexBuffer(vb);
+		vb = VertexBuffer::create();
+		vb->set_layout(layout);
+		vb->set_data(vertices, sizeof vertices);
+		mVA->add_vertex_buffer(vb);
 		Ref<IndexBuffer> ib;
-		ib = IndexBuffer::Create();
-		ib->SetData(indices, sizeof(indices));
-		mVA->AddIndexBuffer(ib);
-		mSpriteShader = mShaderLibrary.Load(SHADER_PATH);
-		mTexture = Texture::Create("../Sandbox/Assets/Asteroid.png");
-		mSpriteShader->SetIntUniform("uTexture", mTexture->GetID());
-		mCamera.SetPosition(glm::vec3(0.f));
-		mMeshShader = mShaderLibrary.Load("../Sandbox/Shaders/BasicMesh.glsl");
-		mSphereMesh = CreateRef<Mesh>("../Sandbox/Assets/Sphere.blend1");
-		mSphereMesh->SetTexture("../Sandbox/Assets/Farback01.png");
-		mSphereMesh->SetPosition(glm::vec3({ 0.f, 0.f, 0.4f }));
-		mSphereMesh->SetScale(glm::vec3(1.f));
+		ib = IndexBuffer::create();
+		ib->set_data(indices, sizeof indices);
+		mVA->add_index_buffer(ib);
+		mSpriteShader = mShaderLibrary.load(SHADER_PATH);
+		mTexture = Texture::create("../Sandbox/Assets/Asteroid.png");
+		mSpriteShader->set_int_uniform("uTexture", mTexture->get_id());
+		mCamera.set_position(glm::vec3(0.f));
+		mMeshShader = mShaderLibrary.load("../Sandbox/Shaders/BasicMesh.glsl");
+		mSphereMesh = create_ref<Mesh>("../Sandbox/Assets/Sphere.blend1");
+		mSphereMesh->set_texture("../Sandbox/Assets/Farback01.png");
+		mSphereMesh->set_position(glm::vec3({ 0.f, 0.f, 0.4f }));
+		mSphereMesh->set_scale(glm::vec3(1.f));
 		mCameraRotation = 0.f;
-		RenderCommands::Init();
+		RenderCommands::init();
 		mViewportSize = { 1280, 720 };
 		FramebufferProperties fbProps = { 1280, 720, FramebufferFormat::RGBA8 };
-		mFramebuffer = Framebuffer::Create(fbProps);
+		mFramebuffer = Framebuffer::create(fbProps);
 	}
 
 	static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
@@ -59,20 +59,20 @@ namespace Sapfire
 
 	const float MOVE_SPEED = 0.1f;
 
-	void SaplingLayer::OnUpdate(float deltaTime)
+	void SaplingLayer::on_update(float deltaTime)
 	{
 		PROFILE_FUNCTION();
 		{
 			PROFILE_SCOPE("Inputs");
 			if (mViewportPanelFocused)
 			{
-				if (Input::KeyPressed(KeyCode::A))
+				if (Input::key_pressed(KeyCode::A))
 					mDirection += glm::vec3({ -1, 0, 0 });
-				if (Input::KeyPressed(KeyCode::D))
+				if (Input::key_pressed(KeyCode::D))
 					mDirection += glm::vec3({ 1, 0, 0 });
-				if (Input::KeyPressed(KeyCode::W))
+				if (Input::key_pressed(KeyCode::W))
 					mDirection += glm::vec3({ 0, 0, -1 });
-				if (Input::KeyPressed(KeyCode::S))
+				if (Input::key_pressed(KeyCode::S))
 					mDirection += glm::vec3({ 0, 0, 1 });
 			}
 		}
@@ -80,28 +80,28 @@ namespace Sapfire
 		{
 			PROFILE_SCOPE("Gameplay");
 			//mCameraRotation += 30.f * deltaTime;
-			auto pos = mCamera.GetPosition();
-			mCamera.SetPosition(pos + mDirection * MOVE_SPEED * deltaTime);
-			mSphereMesh->SetRotation(glm::angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
+			auto pos = mCamera.get_position();
+			mCamera.set_position(pos + mDirection * MOVE_SPEED * deltaTime);
+			mSphereMesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
 			mDirection = glm::vec3(0);
 		}
 
 		{
 			PROFILE_SCOPE("Rendering");
-			RenderCommands::SetClearColor(clearColor);
-			mFramebuffer->Bind();
-			RenderCommands::ClearScreen();
-			Renderer::BeginScene(mCamera);
+			RenderCommands::set_clear_color(clearColor);
+			mFramebuffer->bind();
+			RenderCommands::clear_screen();
+			Renderer::begin_scene(mCamera);
 			/* mTexture->Bind(); */
 			//Renderer::Submit(mVA, mSpriteShader);
-			Renderer::SubmitMesh(mSphereMesh, mMeshShader);
-			Renderer::EndScene();
-			mFramebuffer->Unbind();
+			Renderer::submit_mesh(mSphereMesh, mMeshShader);
+			Renderer::end_scene();
+			mFramebuffer->unbind();
 		}
 
 	}
 
-	void SaplingLayer::OnImguiRender()
+	void SaplingLayer::on_imgui_render()
 	{
 		PROFILE_FUNCTION();
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
@@ -128,19 +128,19 @@ namespace Sapfire
 		{
 			// DockSpace
 			ImGuiIO& io = ImGui::GetIO();
-			RendererID textureID = mFramebuffer->GetColorAttachmentRendererID();
+			RendererID textureID = mFramebuffer->get_color_attachment_renderer_id();
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-			ImGui::DockSpace(dockspace_id, ImVec2((float)Application::GetInstance().GetWindow().GetWidth(), (float)Application::GetInstance().GetWindow().GetHeight()), dockspace_flags);
+			ImGui::DockSpace(dockspace_id, ImVec2(static_cast<float>(Application::get_instance().get_window().get_width()), static_cast<float>(Application::get_instance().get_window().get_height())), dockspace_flags);
 			ImGui::Begin("Scene View");
 			{
 				mViewportPanelFocused = ImGui::IsWindowFocused();
 				mViewportPanelHovered = ImGui::IsWindowHovered();
-				Application::GetInstance().GetImguiLayer()->SetBlockEvents(mViewportPanelFocused && mViewportPanelHovered);
+				Application::get_instance().GetImguiLayer()->SetBlockEvents(mViewportPanelFocused && mViewportPanelHovered);
 				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0, 0 });
 				auto sceneViewportSize = ImGui::GetContentRegionAvail();
 				if (mViewportSize.x != sceneViewportSize.x || mViewportSize.y != sceneViewportSize.y)
 				{
-					mFramebuffer->Resize(sceneViewportSize.x, sceneViewportSize.y);
+					mFramebuffer->resize(sceneViewportSize.x, sceneViewportSize.y);
 					mViewportSize = { sceneViewportSize.x, sceneViewportSize.y };
 				}
 				ImGui::Image((void*)textureID, { mViewportSize.x, mViewportSize.y }, { 0, 1 }, { 1, 0 });
@@ -157,11 +157,11 @@ namespace Sapfire
 		ImGui::End();
 	}
 
-	void SaplingLayer::OnEvent(Event& event)
+	void SaplingLayer::on_event(Event& event)
 	{
 		if (event.Handled) return;
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<MouseMovedEvent>(BIND_EVENT_FN(SaplingLayer::OnMouseMoved));
+		dispatcher.dispatch<MouseMovedEvent>(BIND_EVENT_FN(SaplingLayer::OnMouseMoved));
 	}
 
 	static float prevVal = 0.f;
@@ -169,21 +169,21 @@ namespace Sapfire
 	bool SaplingLayer::OnMouseMoved(MouseMovedEvent& e)
 	{
 		if (!mViewportPanelFocused) return true;
-		mCameraRotation -= e.GetX() - prevVal;
-		prevVal = e.GetX();
+		mCameraRotation -= e.get_x() - prevVal;
+		prevVal = e.get_x();
 		return true;
 	}
 
 	SaplingApp::SaplingApp() : Application("Sapling")
 	{
-		PushLayer(new SaplingLayer());
+		push_layer(new SaplingLayer());
 	}
 
 	SaplingApp::~SaplingApp()
 	{
 	}
 
-	Sapfire::Application* Sapfire::CreateApplication()
+	Application* Sapfire::create_application()
 	{
 		return new SaplingApp();
 	}

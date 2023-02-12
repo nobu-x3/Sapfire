@@ -8,12 +8,12 @@ namespace Sapfire
 	{
 	public:
 		virtual ~Texture() = default;
-		virtual void Bind() = 0;
-		virtual int GetWidth() const = 0;
-		virtual int GetHeight() const = 0;
-		virtual RendererID GetID() const = 0;
-		virtual bool IsLoaded() const = 0;
+		virtual void bind() = 0;
+		virtual int get_width() const = 0;
+		virtual int get_height() const = 0;
+		virtual RendererID get_id() const = 0;
+		virtual bool is_loaded() const = 0;
 
-		static Ref<Texture> Create(const std::string& path);
+		static Ref<Texture> create(const std::string& path);
 	};
 }

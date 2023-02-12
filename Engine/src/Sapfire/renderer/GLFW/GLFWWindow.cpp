@@ -2,7 +2,6 @@
 #include "GLFWWindow.h"
 #include <Sapfire/events/WindowEvent.h>
 #include <Sapfire/events/KeyEvent.h>
-#include "Sapfire/core/Input.h"
 #include <Sapfire/events/MouseEvent.h>
 
 namespace Sapfire
@@ -30,7 +29,7 @@ namespace Sapfire
 			}
 			glfwSetErrorCallback(GLFWErrorCallback);
 #if defined(DEBUG)
-			if (RendererAPI::GetAPI() == RendererAPI::API::OpenGL)
+			if (RendererAPI::get_api() == RendererAPI::API::OpenGL)
 			{
 				glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 				glfwWindowHint(GLFW_DEPTH_BITS, 32);
@@ -40,15 +39,15 @@ namespace Sapfire
 				glfwWindowHint(GLFW_ALPHA_BITS, 8);
 			}
 #endif
-			mWindow = glfwCreateWindow((int)props.Width, (int)props.Height, props.Title.c_str(), nullptr, nullptr);
+			mWindow = glfwCreateWindow(static_cast<int>(props.Width), static_cast<int>(props.Height), props.Title.c_str(), nullptr, nullptr);
 			++sGLFWWindowCount;
-			mContext = RenderingContext::Create(mWindow);
-			mContext->Init();
+			mContext = RenderingContext::create(mWindow);
+			mContext->init();
 			glfwSetWindowUserPointer(mWindow, &mData);
 			// Set GLFW callbacks
 			glfwSetWindowSizeCallback(mWindow, [](GLFWwindow* window, int width, int height)
 				{
-					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			data.Width = width;
 			data.Height = height;
 
@@ -58,14 +57,14 @@ namespace Sapfire
 
 			glfwSetWindowCloseCallback(mWindow, [](GLFWwindow* window)
 				{
-					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 			WindowCloseEvent event;
 			data.EventCallback(event);
 				});
 
 			glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 				{
-					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			switch (action)
 			{
@@ -92,7 +91,7 @@ namespace Sapfire
 
 			glfwSetCharCallback(mWindow, [](GLFWwindow* window, unsigned int keycode)
 				{
-					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			KeyReleasedEvent event(keycode);
 			data.EventCallback(event);
@@ -100,7 +99,7 @@ namespace Sapfire
 
 			glfwSetMouseButtonCallback(mWindow, [](GLFWwindow* window, int button, int action, int mods)
 				{
-					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
 			switch (action)
 			{
@@ -121,15 +120,15 @@ namespace Sapfire
 
 			glfwSetScrollCallback(mWindow, [](GLFWwindow* window, double xOffset, double yOffset)
 				{
-					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-			MouseScrolledEvent event((float)xOffset, (float)yOffset);
+			MouseScrolledEvent event((xOffset), (yOffset));
 			data.EventCallback(event);
 				});
 			glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double xPos, double yPos)
 				{
-					WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			MouseMovedEvent event((float)xPos, (float)yPos);
+					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+			MouseMovedEvent event((xPos), (yPos));
 			data.EventCallback(event);
 				});
 		}
@@ -147,14 +146,14 @@ namespace Sapfire
 		}
 	}
 
-	void GLFWWindow::OnUpdate()
+	void GLFWWindow::on_update()
 	{
 		PROFILE_FUNCTION();
 		glfwPollEvents();
-		mContext->SwapBuffers();
+		mContext->swap_buffers();
 	}
 
-	float GLFWWindow::GetTime() const
+	float GLFWWindow::get_time() const
 	{
 		return glfwGetTime();
 	}

@@ -1,5 +1,4 @@
 #pragma once
-#include <bitset>
 #include "KeyCodes.h"
 
 namespace Sapfire
@@ -7,12 +6,12 @@ namespace Sapfire
 	class Input
 	{
 	public:
-		static bool KeyPressed(KeyCode keycode);
-		static bool KeyReleased(KeyCode keycode);
-		static bool MouseButtonDown(MouseButton button);
-		static bool MouseButtonUp(MouseButton button);
-		static std::pair<float, float> GetMousePosition();
-		static float GetMouseX();
-		static float GetMouseY();
+		static bool key_pressed(KeyCode keycode);
+		static bool key_released(KeyCode keycode);
+		static bool mouse_button_down(MouseButton button);
+		static bool mouse_button_up(MouseButton button);
+		static std::pair<float, float> get_mouse_position();
+		static float get_mouse_x();
+		static float get_mouse_y();
 	};
 }

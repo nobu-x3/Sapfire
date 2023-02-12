@@ -5,12 +5,12 @@
 
 namespace Sapfire
 {
-	Scope<RenderingContext> RenderingContext::Create(void* window)
+	Scope<RenderingContext> RenderingContext::create(void* window)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (RendererAPI::get_api())
 		{
 		case RendererAPI::API::None: ENGINE_ERROR("Rendering API currently not supported!"); return nullptr;
-		case RendererAPI::API::OpenGL: return CreateScope<OpenGLContext>(static_cast<GLFWwindow*>(window));
+		case RendererAPI::API::OpenGL: return create_scope<OpenGLContext>(static_cast<GLFWwindow*>(window));
 		}
 		ENGINE_ERROR("Unsupported API!");
 		return nullptr;

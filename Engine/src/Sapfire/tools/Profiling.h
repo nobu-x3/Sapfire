@@ -2,7 +2,6 @@
 
 #include "Sapfire/core/Log.h"
 
-#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <iomanip>
@@ -44,7 +43,7 @@ namespace Sapfire {
 				// Subsequent profiling output meant for the original session will end up in the
 				// newly opened session instead.  That's better than having badly formatted
 				// profiling output.
-				if (Log::GetEngineLogger()) // Edge case: BeginSession() might be before Log::Init()
+				if (Log::get_engine_logger()) // Edge case: BeginSession() might be before Log::Init()
 				{
 					ENGINE_ERROR("Instrumentor::BeginSession('{0}') when session '{1}' already open.", name, m_CurrentSession->Name);
 				}
@@ -59,7 +58,7 @@ namespace Sapfire {
 			}
 			else
 			{
-				if (Log::GetEngineLogger()) // Edge case: BeginSession() might be before Log::Init()
+				if (Log::get_engine_logger()) // Edge case: BeginSession() might be before Log::Init()
 				{
 					ENGINE_ERROR("Instrumentor could not open results file '{0}'.", filepath);
 				}
@@ -79,7 +78,7 @@ namespace Sapfire {
 			json << std::setprecision(3) << std::fixed;
 			json << ",{";
 			json << "\"cat\":\"function\",";
-			json << "\"dur\":" << (result.ElapsedTime.count()) << ',';
+			json << "\"dur\":" << result.ElapsedTime.count() << ',';
 			json << "\"name\":\"" << result.Name << "\",";
 			json << "\"ph\":\"X\",";
 			json << "\"pid\":0,";

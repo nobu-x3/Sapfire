@@ -10,9 +10,9 @@ namespace Sapfire
 	public:
 		OpenGLContext(GLFWwindow* windowHandle);
 		virtual ~OpenGLContext() {}
-		virtual void Init() override;
-		virtual void SwapBuffers() override;
-		virtual void Shutdown() override;
+		virtual void init() override;
+		virtual void swap_buffers() override;
+		virtual void shutdown() override;
 
 	private:
 		GLFWwindow* mWindowHandle;

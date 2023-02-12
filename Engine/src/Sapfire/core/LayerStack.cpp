@@ -15,18 +15,18 @@ namespace Sapfire
 		}
 	}
 
-	void LayerStack::PushLayer(Layer* layer)
+	void LayerStack::push_layer(Layer* layer)
 	{
 		mLayers.emplace(mLayers.begin() + mLayerInsertIndex, layer);
 	}
 
-	void LayerStack::PushOverlay(Layer* overlay)
+	void LayerStack::push_overlay(Layer* overlay)
 	{
 		mLayers.emplace_back(overlay);
 		mLayerInsertIndex++;
 	}
 
-	void LayerStack::PopLayer(Layer* layer)
+	void LayerStack::pop_layer(Layer* layer)
 	{
 		auto it = std::find(mLayers.begin(), mLayers.end(), layer);
 		if (it != mLayers.end())
@@ -36,7 +36,7 @@ namespace Sapfire
 		}
 	}
 
-	void LayerStack::PopOverlay(Layer* layer)
+	void LayerStack::pop_overlay(Layer* layer)
 	{
 		auto it = std::find(mLayers.begin(), mLayers.end(), layer);
 		if (it != mLayers.end())

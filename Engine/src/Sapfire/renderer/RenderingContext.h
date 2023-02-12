@@ -8,9 +8,9 @@ namespace Sapfire
 	{
 	public:
 		virtual ~RenderingContext() {}
-		virtual void Init() = 0;
-		virtual void SwapBuffers() = 0;
-		virtual void Shutdown() = 0;
-		static Scope<RenderingContext> Create(void* window);
+		virtual void init() = 0;
+		virtual void swap_buffers() = 0;
+		virtual void shutdown() = 0;
+		static Scope<RenderingContext> create(void* window);
 	};
 }

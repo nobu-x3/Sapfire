@@ -75,7 +75,7 @@ namespace Sapfire
 		glDeleteTextures(1, &mTextureID);
 	}
 
-	void OpenGLTexture::Bind()
+	void OpenGLTexture::bind()
 	{
 		glBindTexture(GL_TEXTURE_2D, mTextureID);
 	}

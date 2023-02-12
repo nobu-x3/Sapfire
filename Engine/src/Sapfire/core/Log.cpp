@@ -7,7 +7,7 @@ namespace Sapfire
 	std::shared_ptr<spdlog::logger> Log::mEngineLogger;
 	std::shared_ptr<spdlog::logger> Log::mClientLogger;
 
-	void Log::Init()
+	void Log::init()
 	{
 		spdlog::set_pattern("%^[%T] %n: %v%$");
 		mEngineLogger = spdlog::stdout_color_mt("ENGINE");

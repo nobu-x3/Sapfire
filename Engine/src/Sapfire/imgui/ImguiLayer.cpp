@@ -18,7 +18,7 @@ namespace Sapfire
 
 	}
 
-	void ImguiLayer::SetDarkTheme()
+	void ImguiLayer::set_dark_theme()
 	{
 		PROFILE_FUNCTION();
 		auto& colors = ImGui::GetStyle().Colors;
@@ -52,7 +52,7 @@ namespace Sapfire
 		colors[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
 	}
 
-	void ImguiLayer::OnAttach()
+	void ImguiLayer::on_attach()
 	{
 		PROFILE_FUNCTION();
 		IMGUI_CHECKVERSION();
@@ -70,15 +70,15 @@ namespace Sapfire
 			style.WindowRounding = 0.0f;
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
-		SetDarkTheme();
-		Application& app = Application::GetInstance();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+		set_dark_theme();
+		Application& app = Application::get_instance();
+		GLFWwindow* window = static_cast<GLFWwindow*>(app.get_window().get_native_window());
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 330");
 	}
 
-	void ImguiLayer::OnDetach()
+	void ImguiLayer::on_detach()
 	{
 		PROFILE_FUNCTION();
 		ImGui_ImplOpenGL3_Shutdown();
@@ -86,17 +86,17 @@ namespace Sapfire
 		ImGui::DestroyContext();
 	}
 
-	void ImguiLayer::OnEvent(Event& event)
+	void ImguiLayer::on_event(Event& event)
 	{
 		if (mBlockEvents)
 		{
 			ImGuiIO& io = ImGui::GetIO();
-			event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
-			event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
+			event.Handled |= event.is_in_category(EventCategoryMouse) & io.WantCaptureMouse;
+			event.Handled |= event.is_in_category(EventCategoryKeyboard) & io.WantCaptureKeyboard;
 		}
 	}
 
-	void ImguiLayer::Begin()
+	void ImguiLayer::begin()
 	{
 		PROFILE_FUNCTION();
 		ImGui_ImplOpenGL3_NewFrame();
@@ -104,12 +104,12 @@ namespace Sapfire
 		ImGui::NewFrame();
 	}
 
-	void ImguiLayer::End()
+	void ImguiLayer::end()
 	{
 		PROFILE_FUNCTION();
 		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::GetInstance();
-		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+		Application& app = Application::get_instance();
+		io.DisplaySize = ImVec2(static_cast<float>(app.get_window().get_width()), static_cast<float>(app.get_window().get_height()));
 		// Rendering
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

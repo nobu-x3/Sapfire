@@ -5,16 +5,15 @@
 
 namespace Sapfire
 {
-	Ref<Texture> Texture::Create(const std::string& path)
+	Ref<Texture> Texture::create(const std::string& path)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (RendererAPI::get_api())
 		{
 		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLTexture>(path);
+			return create_ref<OpenGLTexture>(path);
 		default:
 			ENGINE_ERROR("Unknown RendererAPI!");
 			return nullptr;
 		}
-		return nullptr;
 	}
 }

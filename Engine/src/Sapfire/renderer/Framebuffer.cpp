@@ -5,18 +5,16 @@
 
 namespace Sapfire
 {
-	Ref<Framebuffer> Framebuffer::Create(const FramebufferProperties& props)
+	Ref<Framebuffer> Framebuffer::create(const FramebufferProperties& props)
 	{
-		auto api = RendererAPI::GetAPI();
+		auto api = RendererAPI::get_api();
 		switch(api)
 		{
 		case RendererAPI::API::OpenGL:
-			return CreateRef<OpenGLFramebuffer>(props);
+			return create_ref<OpenGLFramebuffer>(props);
 		default:
 			ENGINE_ERROR("API not implemented.");
 			return nullptr;
 		}
-		ENGINE_ERROR("API not implemented.");
-		return nullptr;
 	}
 }

@@ -9,11 +9,11 @@ namespace Sapfire
 	public:
 		OpenGLTexture(const std::string& fileName);
 		~OpenGLTexture();
-		virtual void Bind() override;
-		inline virtual int GetWidth() const override { return mWidth; }
-		inline virtual int GetHeight() const override { return mHeight; }
-		inline virtual RendererID GetID() const override { return mTextureID; }
-		inline virtual bool IsLoaded() const override { return mIsLoaded; }
+		virtual void bind() override;
+		virtual int get_width() const override { return mWidth; }
+		virtual int get_height() const override { return mHeight; }
+		virtual RendererID get_id() const override { return mTextureID; }
+		virtual bool is_loaded() const override { return mIsLoaded; }
 	private:
 		// OpenGL id
 		RendererID mTextureID;

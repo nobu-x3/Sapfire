@@ -1,16 +1,13 @@
 #include "engpch.h"
 #include "VertexArray.h"
-#include <glad/glad.h>
 #include "Sapfire/renderer/RendererAPI.h"
 #include "Sapfire/renderer/opengl/OpenGLVertexArray.h"
 
 namespace Sapfire
 {
-	VertexArray* VertexArray::Create()
+	VertexArray* VertexArray::create()
 	{
-		auto api = RendererAPI::GetAPI();
-
-		switch (api)
+		switch (auto api = RendererAPI::get_api())
 		{
 		case RendererAPI::API::OpenGL: {
 			return new OpenGLVertexArray();
@@ -18,6 +15,5 @@ namespace Sapfire
 		default:
 			return nullptr;
 		}
-		return nullptr;
 	}
 }

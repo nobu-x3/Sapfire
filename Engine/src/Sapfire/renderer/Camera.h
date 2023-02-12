@@ -6,12 +6,12 @@ namespace Sapfire
 	{
 	public:
 		virtual ~Camera() {};
-		virtual const glm::mat4& GetProjectionMatrix() const = 0;
-		virtual const glm::mat4& GetViewMatrix() const = 0;
-		virtual const glm::mat4& GetViewProjectionMatrix() const = 0;
+		virtual const glm::mat4& get_projection_matrix() const = 0;
+		virtual const glm::mat4& get_view_matrix() const = 0;
+		virtual const glm::mat4& get_view_projection_matrix() const = 0;
 
 	protected:
-		virtual void RecalculateViewMatrix() = 0;
+		virtual void recalculate_view_matrix() = 0;
 
 	protected:
 	};
@@ -20,25 +20,28 @@ namespace Sapfire
 	{
 	public:
 		PerspectiveCamera(float fov, float width, float height, float near, float farPlane);
-		inline const glm::vec3& GetPosition() const { return mPosition; }
-		inline void SetPosition(const glm::vec3& position)
+		const glm::vec3& get_position() const { return mPosition; }
+
+		void set_position(const glm::vec3& position)
 		{
 			mPosition = position;
-			RecalculateViewMatrix();
+			recalculate_view_matrix();
 		}
-		inline float GetRotation() const { return mRotation; }
-		inline void SetRotation(float rotation)
+
+		float get_rotation() const { return mRotation; }
+
+		void set_rotation(float rotation)
 		{
 			mRotation = rotation;
-			RecalculateViewMatrix();
+			recalculate_view_matrix();
 		}
 
-		inline virtual const glm::mat4& GetProjectionMatrix() const override { return mProjectionMatrix; }
-		inline virtual const glm::mat4& GetViewMatrix() const override { return mViewMatrix; }
-		inline virtual const glm::mat4& GetViewProjectionMatrix() const override { return mViewProjectionMatrix; }
+		virtual const glm::mat4& get_projection_matrix() const override { return mProjectionMatrix; }
+		virtual const glm::mat4& get_view_matrix() const override { return mViewMatrix; }
+		virtual const glm::mat4& get_view_projection_matrix() const override { return mViewProjectionMatrix; }
 
 	protected:
-		virtual void RecalculateViewMatrix() override;
+		virtual void recalculate_view_matrix() override;
 
 	private:
 		glm::vec3 mPosition{ 0.f, 0.f, 0.f };
@@ -52,24 +55,28 @@ namespace Sapfire
 	{
 	public:
 		OrthographicCamera(float left, float right, float bottom, float top);
-		inline const glm::vec3& GetPosition() const { return mPosition; }
-		inline void SetPosition(const glm::vec3& position)
+		const glm::vec3& get_position() const { return mPosition; }
+
+		void set_position(const glm::vec3& position)
 		{
 			mPosition = position;
-			RecalculateViewMatrix();
+			recalculate_view_matrix();
 		}
-		inline float GetRotation() const { return mRotation; }
-		inline void SetRotation(float rotation)
+
+		float get_rotation() const { return mRotation; }
+
+		void set_rotation(float rotation)
 		{
 			mRotation = rotation;
-			RecalculateViewMatrix();
+			recalculate_view_matrix();
 		}
-		inline virtual const glm::mat4& GetProjectionMatrix() const override { return mProjectionMatrix; }
-		inline virtual const glm::mat4& GetViewMatrix() const override { return mViewMatrix; }
-		inline virtual const glm::mat4& GetViewProjectionMatrix() const override { return mViewProjectionMatrix; }
+
+		virtual const glm::mat4& get_projection_matrix() const override { return mProjectionMatrix; }
+		virtual const glm::mat4& get_view_matrix() const override { return mViewMatrix; }
+		virtual const glm::mat4& get_view_projection_matrix() const override { return mViewProjectionMatrix; }
 
 	protected:
-		virtual void RecalculateViewMatrix() override;
+		virtual void recalculate_view_matrix() override;
 
 	private:
 		glm::vec3 mPosition{ 0.f, 0.f, 0.f };

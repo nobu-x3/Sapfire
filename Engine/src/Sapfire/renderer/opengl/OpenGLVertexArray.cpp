@@ -33,7 +33,6 @@ namespace Sapfire
 		default:
 			return 0;
 		}
-		return 0;
 	}
 
 	OpenGLVertexArray::OpenGLVertexArray()
@@ -48,39 +47,39 @@ namespace Sapfire
 		glDeleteVertexArrays(1, &mRendererID);
 	}
 
-	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArray::add_vertex_buffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
 		PROFILE_FUNCTION();
 		glBindVertexArray(mRendererID);
-		vertexBuffer->Bind();
+		vertexBuffer->bind();
 		uint32_t index = 0;
-		const auto& layout = vertexBuffer->GetLayout();
-		auto elements = layout.GetElements();
+		const auto& layout = vertexBuffer->get_layout();
+		auto elements = layout.get_elements();
 		for (const auto& element : elements)
 		{
 			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(index, element.GetComponentCount(), ConvertShaderDataTypeToGLenum(element.Type),
-				element.Normalized ? GL_TRUE : GL_FALSE, layout.GetStride(),
+			glVertexAttribPointer(index, element.get_component_count(), ConvertShaderDataTypeToGLenum(element.Type),
+				element.Normalized ? GL_TRUE : GL_FALSE, layout.get_stride(),
 				(const void*)element.Offset);
 			index++;
 		}
 		mVertexBuffers.push_back(vertexBuffer);
 	}
 
-	void OpenGLVertexArray::AddIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
+	void OpenGLVertexArray::add_index_buffer(const Ref<IndexBuffer>& indexBuffer)
 	{
 		PROFILE_FUNCTION();
 		glBindVertexArray(mRendererID);
-		indexBuffer->Bind();
+		indexBuffer->bind();
 		mIndexBuffers.push_back(indexBuffer);
 	}
 
-	void OpenGLVertexArray::Bind() const
+	void OpenGLVertexArray::bind() const
 	{
 		glBindVertexArray(mRendererID);
 	}
 
-	void OpenGLVertexArray::Unbind() const
+	void OpenGLVertexArray::unbind() const
 	{
 		glBindVertexArray(0);
 	}

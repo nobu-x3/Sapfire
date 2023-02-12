@@ -1,7 +1,6 @@
 #pragma once
 
 #include "engpch.h"
-#include "Sapfire/core/Core.h"
 #include "Sapfire/events/Event.h"
 #include "../core/Input.h"
 
@@ -31,13 +30,13 @@ namespace Sapfire
 	{
 	public:
 		using EventCallback = std::function<void(Event&)>;
-		virtual ~Window() {}
-		virtual void OnUpdate() = 0;
-		virtual unsigned int GetWidth() const = 0;
-		virtual unsigned int GetHeight() const = 0;
-		virtual void SetEventCallback(const EventCallback& event) = 0;
-		virtual float GetTime() const = 0;
-		virtual void* GetNativeWindow() const = 0;
-		static Window* Create(const WindowProperties& properties = WindowProperties());
+		virtual ~Window() = default;
+		virtual void on_update() = 0;
+		virtual unsigned int get_width() const = 0;
+		virtual unsigned int get_height() const = 0;
+		virtual void set_event_callback(const EventCallback& event) = 0;
+		virtual float get_time() const = 0;
+		virtual void* get_native_window() const = 0;
+		static Window* create(const WindowProperties& properties = WindowProperties());
 	};
 }

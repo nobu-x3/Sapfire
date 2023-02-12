@@ -6,18 +6,17 @@
 
 namespace Sapfire
 {
-	Ref<Shader> Shader::Create(const std::string& path)
+	Ref<Shader> Shader::create(const std::string& path)
 	{
-		switch (RendererAPI::GetAPI())
+		switch (RendererAPI::get_api())
 		{
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLShader>(path);
+			return create_ref<OpenGLShader>(path);
 		}
 		default:
 			ENGINE_ERROR("Unknown RenderAPI!");
 			return nullptr;
 		}
-		return nullptr;
 	}
 
 	OpenGLShader::OpenGLShader(const std::string& path)
@@ -56,7 +55,7 @@ namespace Sapfire
 		return result;
 	}
 
-	std::unordered_map<GLenum, std::string> OpenGLShader::Process(const std::string& source)
+	std::unordered_map<GLenum, std::string> OpenGLShader::Process(const std::string& source) const
 	{
 		PROFILE_FUNCTION();
 		std::unordered_map<GLenum, std::string> shaderSources;
@@ -107,7 +106,7 @@ namespace Sapfire
 			GLuint outShader = glCreateShader(shaderType);
 			const GLchar* contensCstr = contents.c_str();
 			// Set the source characters and try to compile
-			glShaderSource(outShader, 1, &(contensCstr), nullptr);
+			glShaderSource(outShader, 1, &contensCstr, nullptr);
 			glCompileShader(outShader);
 			if (!IsCompiled(outShader))
 			{
@@ -142,36 +141,36 @@ namespace Sapfire
 		return true;
 	}
 
-	void OpenGLShader::Bind()
+	void OpenGLShader::bind()
 	{
 		// Set this program as the active one
 		glUseProgram(mShaderProgram);
 	}
 
-	void OpenGLShader::SetMatrixUniform(const std::string& name, const glm::mat4& matrix)
+	void OpenGLShader::set_matrix_uniform(const std::string& name, const glm::mat4& matrix)
 	{
 		PROFILE_FUNCTION();
 		// Find the uniform by this name
 		GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 		// Send the matrix data to the uniform
-		glUniformMatrix4fv(loc, 1, GL_TRUE, glm::value_ptr(matrix));
+		glUniformMatrix4fv(loc, 1, GL_TRUE, value_ptr(matrix));
 	}
 
-	void OpenGLShader::SetVectorUniform(const std::string& name, const glm::vec3& vec)
+	void OpenGLShader::set_vector_uniform(const std::string& name, const glm::vec3& vec)
 	{
 		PROFILE_FUNCTION();
 		GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
-		glUniform3fv(loc, 1, glm::value_ptr(vec));
+		glUniform3fv(loc, 1, value_ptr(vec));
 	}
 
-	void OpenGLShader::SetFloatUniform(const std::string& name, float val)
+	void OpenGLShader::set_float_uniform(const std::string& name, float val)
 	{
 		PROFILE_FUNCTION();
 		GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 		glUniform1f(loc, val);
 	}
 
-	void OpenGLShader::SetIntUniform(const std::string& name, int val)
+	void OpenGLShader::set_int_uniform(const std::string& name, int val)
 	{
 		PROFILE_FUNCTION();
 		GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
@@ -195,7 +194,7 @@ namespace Sapfire
 		return true;
 	}
 
-	bool OpenGLShader::IsValidProgram()
+	bool OpenGLShader::IsValidProgram() const
 	{
 		GLint status;
 		// Query the link status

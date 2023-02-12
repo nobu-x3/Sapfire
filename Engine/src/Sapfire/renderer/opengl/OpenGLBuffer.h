@@ -10,13 +10,13 @@ namespace Sapfire
 	public:
 		OpenGLVertexBuffer();
 		~OpenGLVertexBuffer();
-		virtual void SetData(void* buffer, size_t size) override;
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		inline virtual uint32_t GetCount() const override { return mCount; }
+		virtual void set_data(void* buffer, size_t size) override;
+		virtual void bind() const override;
+		virtual void unbind() const override;
+		virtual uint32_t get_count() const override { return mCount; }
 
-		inline virtual void SetLayout(const BufferLayout& layout) override { mLayout = layout; }
-		inline virtual const BufferLayout& GetLayout() const override { return mLayout; }
+		virtual void set_layout(const BufferLayout& layout) override { mLayout = layout; }
+		virtual const BufferLayout& get_layout() const override { return mLayout; }
 
 	private:
 		RendererID mRendererID;
@@ -29,10 +29,10 @@ namespace Sapfire
 	public:
 		OpenGLIndexBuffer();
 		~OpenGLIndexBuffer();
-		virtual void SetData(void* buffer, size_t size) override;
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		inline virtual uint32_t GetCount() const override { return mCount; }
+		virtual void set_data(void* buffer, size_t size) override;
+		virtual void bind() const override;
+		virtual void unbind() const override;
+		virtual uint32_t get_count() const override { return mCount; }
 
 	private:
 		RendererID mRendererID;

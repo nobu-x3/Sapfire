@@ -7,22 +7,22 @@ namespace Sapfire
 	class WindowResizeEvent : public Event
 	{
 	public:
-		WindowResizeEvent(unsigned int width, unsigned int height) : m_Width(width), m_Height(height) {}
+		WindowResizeEvent(unsigned int width, unsigned int height) : mWidth(width), mHeight(height) {}
 
-		inline unsigned int GetWidth() const { return m_Width; }
-		inline unsigned int GetHeight() const { return m_Height; }
+		unsigned int get_width() const { return mWidth; }
+		unsigned int get_height() const { return mHeight; }
 
-		std::string ToString() const override
+		std::string to_string() const override
 		{
 			std::stringstream ss;
-			ss << "WindowResizeEvent: " << m_Width << ", " << m_Height;
+			ss << "WindowResizeEvent: " << mWidth << ", " << mHeight;
 			return ss.str();
 		}
 
 		EVENT_CLASS_TYPE(WindowResize)
 			EVENT_CLASS_CATEGORY(EventCategoryApplication)
 	private:
-		unsigned int m_Width, m_Height;
+		unsigned int mWidth, mHeight;
 	};
 
 	class WindowCloseEvent : public Event

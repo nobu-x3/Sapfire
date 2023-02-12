@@ -7,13 +7,13 @@ namespace Sapfire
 	class RenderCommands
 	{
 	public:
-		inline static void Init() { sRendererAPI->Init(); }
-		inline static void SetViewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height) { sRendererAPI->SetViewport(x, y, width, height); }
-		inline static void Draw(const Ref<VertexArray>& vertexArray) { sRendererAPI->Draw(vertexArray); }
-		inline static void Draw(size_t count) { sRendererAPI->Draw(count); }
-		inline static void DrawMesh() { sRendererAPI->DrawMesh(); }
-		inline static void SetClearColor(glm::vec4& color) { sRendererAPI->SetClearColor(color); }
-		inline static void ClearScreen() { sRendererAPI->ClearScreen(); }
+		static void init() { sRendererAPI->init(); }
+		static void set_viewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height) { sRendererAPI->set_viewport(x, y, width, height); }
+		static void draw(const Ref<VertexArray>& vertexArray) { sRendererAPI->draw(vertexArray); }
+		static void draw(size_t count) { sRendererAPI->draw(count); }
+		static void draw_mesh() { sRendererAPI->draw_mesh(); }
+		static void set_clear_color(glm::vec4& color) { sRendererAPI->set_clear_color(color); }
+		static void clear_screen() { sRendererAPI->clear_screen(); }
 
 	private:
 		static RendererAPI* sRendererAPI;

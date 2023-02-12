@@ -20,7 +20,7 @@ namespace Sapfire
 		Bool
 	};
 
-	static uint32_t ShaderDataTypeSize(ShaderDataType type)
+	static uint32_t shader_data_type_size(ShaderDataType type)
 	{
 		switch (type)
 		{
@@ -49,8 +49,6 @@ namespace Sapfire
 		default:
 			return 0;
 		}
-		ENGINE_ERROR("Unknown shader data type");
-		return 0;
 	}
 
 	struct BufferElement
@@ -62,11 +60,11 @@ namespace Sapfire
 		bool Normalized;
 		BufferElement() {}
 		BufferElement(const std::string& name, ShaderDataType type, bool normalized = false)
-			: Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized)
+			: Name(name), Type(type), Size(shader_data_type_size(type)), Offset(0), Normalized(normalized)
 		{
 		}
 
-		uint32_t GetComponentCount() const
+		uint32_t get_component_count() const
 		{
 			if (Type == ShaderDataType::Bool)
 				return 1;
@@ -77,13 +75,13 @@ namespace Sapfire
 	class BufferLayout
 	{
 	public:
-		BufferLayout() {}
-		BufferLayout(const std::initializer_list<BufferElement>& layout) : mElements(layout) { CalculateOffsets(); }
-		inline const std::vector<BufferElement>& GetElements() const { return mElements; }
-		inline uint32_t GetStride() const { return mStride; }
+		BufferLayout() = default;
+		BufferLayout(const std::initializer_list<BufferElement>& layout) : mElements(layout) { calculate_offsets(); }
+		const std::vector<BufferElement>& get_elements() const { return mElements; }
+		uint32_t get_stride() const { return mStride; }
 
 	private:
-		void CalculateOffsets();
+		void calculate_offsets();
 
 	private:
 		std::vector<BufferElement> mElements;
@@ -93,14 +91,14 @@ namespace Sapfire
 	class VertexBuffer
 	{
 	public:
-		virtual ~VertexBuffer() {}
-		virtual void SetData(void* buffer, size_t size) = 0;
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
-		virtual uint32_t GetCount() const = 0;
-		virtual void SetLayout(const BufferLayout& layout) = 0;
-		virtual const BufferLayout& GetLayout() const = 0;
-		static Ref<VertexBuffer> Create();
+		virtual ~VertexBuffer() = default;
+		virtual void set_data(void* buffer, size_t size) = 0;
+		virtual void bind() const = 0;
+		virtual void unbind() const = 0;
+		virtual uint32_t get_count() const = 0;
+		virtual void set_layout(const BufferLayout& layout) = 0;
+		virtual const BufferLayout& get_layout() const = 0;
+		static Ref<VertexBuffer> create();
 
 	private:
 		RendererID mRendererID;
@@ -109,12 +107,12 @@ namespace Sapfire
 	class IndexBuffer
 	{
 	public:
-		virtual ~IndexBuffer() {}
-		virtual void SetData(void* buffer, size_t size) = 0;
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
-		virtual uint32_t GetCount() const = 0;
-		static Ref<IndexBuffer> Create();
+		virtual ~IndexBuffer() = default;
+		virtual void set_data(void* buffer, size_t size) = 0;
+		virtual void bind() const = 0;
+		virtual void unbind() const = 0;
+		virtual uint32_t get_count() const = 0;
+		static Ref<IndexBuffer> create();
 
 	private:
 		RendererID mRendererID;

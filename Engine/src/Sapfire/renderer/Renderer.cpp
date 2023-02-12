@@ -7,42 +7,42 @@
 
 namespace Sapfire
 {
-	Renderer::SceneData* Renderer::sSceneData = new Renderer::SceneData;
+	Renderer::SceneData* Renderer::sSceneData = new SceneData;
 
 	WindowAPI Renderer::sWindowAPI = WindowAPI::GLFW;
 
-	void Renderer::BeginScene(Camera& camera)
+	void Renderer::begin_scene(Camera& camera)
 	{
 		PROFILE_FUNCTION();
-		sSceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
+		sSceneData->ViewProjectionMatrix = camera.get_view_projection_matrix();
 	}
 
-	void Renderer::EndScene()
+	void Renderer::end_scene()
 	{
 		PROFILE_FUNCTION();
 	}
 
-	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader)
+	void Renderer::submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader)
 	{
 		PROFILE_FUNCTION();
-		shader->Bind();
-		shader->SetMatrixUniform("uViewProjection", sSceneData->ViewProjectionMatrix);
-		vertexArray->Bind();
-		RenderCommands::Draw(vertexArray);
+		shader->bind();
+		shader->set_matrix_uniform("uViewProjection", sSceneData->ViewProjectionMatrix);
+		vertexArray->bind();
+		RenderCommands::draw(vertexArray);
 	}
 
-	void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<Shader>& shader)
+	void Renderer::submit_mesh(const Ref<Mesh>& mesh, const Ref<Shader>& shader)
 	{
 		PROFILE_FUNCTION();
-		shader->Bind();
-		shader->SetMatrixUniform("uViewProj", sSceneData->ViewProjectionMatrix);
-		shader->SetMatrixUniform("uWorldTransform", mesh->GetWorldTransform());
-		mesh->Render();
+		shader->bind();
+		shader->set_matrix_uniform("uViewProj", sSceneData->ViewProjectionMatrix);
+		shader->set_matrix_uniform("uWorldTransform", mesh->get_world_transform());
+		mesh->render();
 	}
 
-	void Renderer::OnWindowResize(uint16_t width, uint16_t height)
+	void Renderer::on_window_resize(uint16_t width, uint16_t height)
 	{
 		PROFILE_FUNCTION();
-		RenderCommands::SetViewport(0, 0, width, height);
+		RenderCommands::set_viewport(0, 0, width, height);
 	}
 }

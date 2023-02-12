@@ -5,7 +5,7 @@
 
 namespace Sapfire
 {
-	void OpenGLRendererAPI::Init()
+	void OpenGLRendererAPI::init()
 	{
 		PROFILE_FUNCTION();
 		glEnable(GL_BLEND);
@@ -15,40 +15,40 @@ namespace Sapfire
 		glDepthFunc(GL_LESS);
 	}
 
-	void OpenGLRendererAPI::ClearScreen()
+	void OpenGLRendererAPI::clear_screen()
 	{
 		PROFILE_FUNCTION();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
-	void OpenGLRendererAPI::SetClearColor(glm::vec4& color)
+	void OpenGLRendererAPI::set_clear_color(glm::vec4& color)
 	{
 		PROFILE_FUNCTION();
 		glClearColor(color.x, color.y, color.z, color.w);
 	}
 
-	void OpenGLRendererAPI::Draw(const Ref<VertexArray>& vertexArray)
+	void OpenGLRendererAPI::draw(const Ref<VertexArray>& vertexArray)
 	{
 		PROFILE_FUNCTION();
-		for (auto buffer : vertexArray->GetIndexBuffers())
+		for (auto buffer : vertexArray->get_index_buffers())
 		{
-			glDrawElements(GL_TRIANGLES, buffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, buffer->get_count(), GL_UNSIGNED_INT, nullptr);
 		}
 	}
 
-	void OpenGLRendererAPI::Draw(size_t count)
+	void OpenGLRendererAPI::draw(size_t count)
 	{
 		PROFILE_FUNCTION();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 	}
 
-	void OpenGLRendererAPI::SetViewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
+	void OpenGLRendererAPI::set_viewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
 	{
 		PROFILE_FUNCTION();
 		glViewport(x, y, width, height);
 	}
 
-	void OpenGLRendererAPI::DrawMesh()
+	void OpenGLRendererAPI::draw_mesh()
 	{
 		PROFILE_FUNCTION();
 		glEnableVertexAttribArray(0);

@@ -25,27 +25,30 @@ namespace Sapfire
 
 		Mesh(const std::string& fileName);
 		~Mesh();
-		virtual void Render();
-		inline void SetPosition(const glm::vec3& pos)
+		virtual void render();
+
+		void set_position(const glm::vec3& pos)
 		{
 			mWorldPosition = -pos;
-			CalculateWorldTransform();
+			calculate_world_transform();
 		}
-		inline void SetRotation(const glm::quat& quat)
+
+		void set_rotation(const glm::quat& quat)
 		{
 			mRotation = quat;
-			CalculateWorldTransform();
+			calculate_world_transform();
 		}
-		inline void SetScale(const glm::vec3& scale)
+
+		void set_scale(const glm::vec3& scale)
 		{
 			mScale = scale;
-			CalculateWorldTransform();
+			calculate_world_transform();
 		}
-		void SetTexture(const std::string& path);
-		inline const std::string& GetName() const { return mName; }
-		inline const glm::mat4& GetWorldTransform() const { return mWorldTransform; }
-		inline const glm::quat& GetRotation() const { return mRotation; }
-		void CalculateWorldTransform();
+		void set_texture(const std::string& path);
+		const std::string& get_name() const { return mName; }
+		const glm::mat4& get_world_transform() const { return mWorldTransform; }
+		const glm::quat& get_rotation() const { return mRotation; }
+		void calculate_world_transform();
 
 	private:
 		std::string mName;

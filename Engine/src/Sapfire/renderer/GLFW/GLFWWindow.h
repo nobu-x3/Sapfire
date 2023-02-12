@@ -12,12 +12,12 @@ namespace Sapfire
 		GLFWWindow(const WindowProperties& props);
 		virtual ~GLFWWindow();
 		// Inherited via Window
-		virtual void OnUpdate() override;
-		inline virtual unsigned int GetWidth() const override { return mData.Width; }
-		inline virtual unsigned int GetHeight() const override { return mData.Height; }
-		inline virtual void SetEventCallback(const EventCallback& callback) override { mData.EventCallback = callback; }
-		virtual float GetTime() const override;
-		void* GetNativeWindow() const override { return mWindow; }
+		virtual void on_update() override;
+		virtual unsigned int get_width() const override { return mData.Width; }
+		virtual unsigned int get_height() const override { return mData.Height; }
+		virtual void set_event_callback(const EventCallback& callback) override { mData.EventCallback = callback; }
+		virtual float get_time() const override;
+		void* get_native_window() const override { return mWindow; }
 
 	private:
 		GLFWwindow* mWindow;

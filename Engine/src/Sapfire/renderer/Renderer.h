@@ -13,14 +13,14 @@ namespace Sapfire
 	class Renderer
 	{
 	public:
-		static void BeginScene(class Camera& camera);
-		static void EndScene();
-		static void Submit(const Ref<VertexArray>& vertexArray, const Ref<class Shader>& shader);
-		static void SubmitMesh(const Ref<class Mesh>& mesh, const Ref<Shader>& shader);
-		static WindowAPI GetWindowAPI() { return sWindowAPI; }
+		static void begin_scene(class Camera& camera);
+		static void end_scene();
+		static void submit(const Ref<VertexArray>& vertexArray, const Ref<class Shader>& shader);
+		static void submit_mesh(const Ref<class Mesh>& mesh, const Ref<Shader>& shader);
+		static WindowAPI get_window_api() { return sWindowAPI; }
 		
 		// EVENTS	///////////
-		static void OnWindowResize(uint16_t width, uint16_t height);
+		static void on_window_resize(uint16_t width, uint16_t height);
 
 	private:
 		struct SceneData

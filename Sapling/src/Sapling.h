@@ -9,10 +9,10 @@ namespace Sapfire
 	{
 	public:
 		SaplingLayer();
-		virtual void OnAttach() override;
-		virtual void OnUpdate(float deltaTime) override;
-		virtual void OnImguiRender() override;
-		virtual void OnEvent(Event& event) override;
+		virtual void on_attach() override;
+		virtual void on_update(float deltaTime) override;
+		virtual void on_imgui_render() override;
+		virtual void on_event(Event& event) override;
 		bool OnMouseMoved(MouseMovedEvent& e);
 
 	private:

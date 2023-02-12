@@ -6,7 +6,7 @@
 
 namespace Sapfire
 {
-	void BufferLayout::CalculateOffsets()
+	void BufferLayout::calculate_offsets()
 	{
 		PROFILE_FUNCTION();
 		uint32_t offset = 0;
@@ -18,35 +18,29 @@ namespace Sapfire
 			mStride += element.Size;
 		}
 	}
-	Ref<VertexBuffer> VertexBuffer::Create()
+	Ref<VertexBuffer> VertexBuffer::create()
 	{
 		PROFILE_FUNCTION();
-		auto api = RendererAPI::GetAPI();
-		switch (api)
+		switch (auto api = RendererAPI::get_api())
 		{
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLVertexBuffer>();
+			return create_ref<OpenGLVertexBuffer>();
 		}
 		default:
 			return nullptr;
 		}
-		ENGINE_ERROR("Given rendering API is not supported yet.");
-		return nullptr;
 	}
 
-	Ref<IndexBuffer> IndexBuffer::Create()
+	Ref<IndexBuffer> IndexBuffer::create()
 	{
 		PROFILE_FUNCTION();
-		auto api = RendererAPI::GetAPI();
-		switch (api)
+		switch (auto api = RendererAPI::get_api())
 		{
 		case RendererAPI::API::OpenGL: {
-			return CreateRef<OpenGLIndexBuffer>();
+			return create_ref<OpenGLIndexBuffer>();
 		}
 		default:
 			return nullptr;
 		}
-		ENGINE_ERROR("Given rendering API is not supported yet.");
-		return nullptr;
 	}
 }

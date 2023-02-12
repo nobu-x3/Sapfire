@@ -2,6 +2,7 @@ bin/
 bin-int/
 .vs/
 .vscode/
+.idea/
 *.sln
 *.vcxproj*
 obj/

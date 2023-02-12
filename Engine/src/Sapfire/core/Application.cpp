@@ -2,11 +2,7 @@
 #include "Application.h"
 #include "Log.h"
 #include "Sapfire/events/WindowEvent.h"
-#include "Sapfire/renderer/Buffer.h"
-#include "Sapfire/renderer/RenderCommands.h"
 #include "Sapfire/renderer/Renderer.h"
-#include "Sapfire/renderer/Shader.h"
-#include "Sapfire/renderer/VertexArray.h"
 #include "Sapfire/renderer/Window.h"
 #include "Input.h"
 
@@ -17,38 +13,38 @@ namespace Sapfire
 	Application::Application(const std::string& name) : mRunning(true), mMinimized(false)
 	{
 		PROFILE_FUNCTION();
-		Log::Init();
+		Log::init();
 		sInstance = this;
-		mWindow = std::unique_ptr<Window>(Window::Create(WindowProperties(name)));
-		mWindow->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		mWindow = std::unique_ptr<Window>(Window::create(WindowProperties(name)));
+		mWindow->set_event_callback(BIND_EVENT_FN(Application::on_event));
 		mImguiLayer = new ImguiLayer();
-		PushOverlay(mImguiLayer);
+		push_overlay(mImguiLayer);
 	}
 
 	Application::~Application()
 	{
 	}
 
-	void Application::OnEvent(Event& event)
+	void Application::on_event(Event& event)
 	{
 		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
-		dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+		dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::on_window_close));
+		dispatcher.dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::on_window_resize));
 
 		for (auto it = mLayerStack.end(); it != mLayerStack.begin();)
 		{
-			(*--it)->OnEvent(event);
+			(*--it)->on_event(event);
 			if (event.Handled)
 				break;
 		}
 	}
 
-	void Application::Run()
+	void Application::run()
 	{
 		PROFILE_FUNCTION();
 		while (mRunning)
 		{
-			float timestamp = mWindow->GetTime();
+			float timestamp = mWindow->get_time();
 			float deltaTime = timestamp - mLastFrameTime;
 			mLastFrameTime = timestamp;
 			if (!mMinimized)
@@ -56,35 +52,35 @@ namespace Sapfire
 				{
 					PROFILE_SCOPE("Application: LayerStack OnUpdate");
 					for (Layer* layer : mLayerStack)
-						layer->OnUpdate(deltaTime);
+						layer->on_update(deltaTime);
 				}
 			}
 
 			{
 				PROFILE_SCOPE("Application: ImGui OnRender");
-				mImguiLayer->Begin();
+				mImguiLayer->begin();
 				for (Layer* layer : mLayerStack)
 				{
-					layer->OnImguiRender();
+					layer->on_imgui_render();
 				}
-				mImguiLayer->End();
+				mImguiLayer->end();
 			}
-			mWindow->OnUpdate();
+			mWindow->on_update();
 		}
 	}
 
-	bool Application::OnWindowClose(WindowCloseEvent& e)
+	bool Application::on_window_close(WindowCloseEvent& e)
 	{
 		mRunning = false;
 		return true;
 	}
 
-	bool Application::OnWindowResize(class WindowResizeEvent& e)
+	bool Application::on_window_resize(WindowResizeEvent& e)
 	{
 		PROFILE_FUNCTION();
-		if (e.GetWidth() == 0 || e.GetHeight() == 0) { mMinimized = true; return false; }
+		if (e.get_width() == 0 || e.get_height() == 0) { mMinimized = true; return false; }
 		mMinimized = false;
-		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		Renderer::on_window_resize(e.get_width(), e.get_height());
 
 		return false;
 	}

@@ -9,15 +9,17 @@ namespace Sapfire
 	public:
 		OpenGLFramebuffer(const FramebufferProperties& props);
 		virtual ~OpenGLFramebuffer();
-		inline virtual const
-			FramebufferProperties& GetPropeties() const override { return mProperties; }
-		inline virtual const RendererID& GetColorAttachmentRendererID() const override { return mColorAttachment; }
-		inline virtual const RendererID& GetDepthAttachmentRendererID() const override { return mDepthAttachment; }
-		inline virtual const RendererID& GetRendererID() const override { return mRendererID; }
-		virtual void Invalidate() override;
-		virtual void Bind() override;
-		virtual void Unbind() override;
-		virtual void Resize(uint16_t width, uint16_t height) override;
+
+		virtual const
+			FramebufferProperties& get_propeties() const override { return mProperties; }
+
+		virtual const RendererID& get_color_attachment_renderer_id() const override { return mColorAttachment; }
+		virtual const RendererID& get_depth_attachment_renderer_id() const override { return mDepthAttachment; }
+		virtual const RendererID& get_renderer_id() const override { return mRendererID; }
+		virtual void invalidate() override;
+		virtual void bind() override;
+		virtual void unbind() override;
+		virtual void resize(uint16_t width, uint16_t height) override;
 
 	private:
 		RendererID mRendererID = 0;

@@ -6,9 +6,9 @@
 
 namespace Sapfire
 {
-	Window* Window::Create(const WindowProperties& props)
+	Window* Window::create(const WindowProperties& props)
 	{
-		auto api = Renderer::GetWindowAPI();
+		auto api = Renderer::get_window_api();
 		switch (api)
 		{
 			/*case WindowAPI::SDL:
@@ -18,6 +18,5 @@ namespace Sapfire
 		default:
 			return nullptr;
 		}
-		return nullptr;
 	}
 }

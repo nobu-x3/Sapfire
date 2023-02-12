@@ -9,14 +9,14 @@ namespace Sapfire
 	public:
 		ImguiLayer();
 		~ImguiLayer();
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
-		virtual void OnEvent(Event& event) override;
-		inline void SetBlockEvents(bool val) { mBlockEvents = val; }
-		void Begin();
-		void End();
+		virtual void on_attach() override;
+		virtual void on_detach() override;
+		virtual void on_event(Event& event) override;
+		void SetBlockEvents(bool val) { mBlockEvents = val; }
+		void begin();
+		void end();
 	private:
-		void SetDarkTheme();
+		static void set_dark_theme();
 
 	private:
 		bool mBlockEvents = true;
