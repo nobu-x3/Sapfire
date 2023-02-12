@@ -122,13 +122,13 @@ namespace Sapfire
 				{
 					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-			MouseScrolledEvent event((xOffset), (yOffset));
+			MouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
 			data.EventCallback(event);
 				});
 			glfwSetCursorPosCallback(mWindow, [](GLFWwindow* window, double xPos, double yPos)
 				{
 					WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-			MouseMovedEvent event((xPos), (yPos));
+			MouseMovedEvent event(static_cast<float>(xPos), static_cast<float>(yPos));
 			data.EventCallback(event);
 				});
 		}
@@ -155,6 +155,6 @@ namespace Sapfire
 
 	float GLFWWindow::get_time() const
 	{
-		return glfwGetTime();
+		return static_cast<float>(glfwGetTime());
 	}
 }

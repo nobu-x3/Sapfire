@@ -9,7 +9,7 @@ const std::string SHADER_NAME = "Sprite";
 
 SandboxLayer::SandboxLayer()
 	: /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-	mCamera(70.f, 1280, 720, 0.01, 100), mDirection(glm::vec3(0))
+	mCamera(70.f, 1280.f, 720.f, 0.01f, 100.f), mDirection(glm::vec3(0.f))
 {
 }
 

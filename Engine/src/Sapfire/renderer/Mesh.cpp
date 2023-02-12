@@ -30,7 +30,7 @@ namespace Sapfire
 		aiMesh* mesh = scene->mMeshes[0];
 		// Vertex buffer
 		mVertices.reserve(mesh->mNumVertices);
-		for (int i = 0; i < mesh->mNumVertices; ++i)
+		for (uint32_t i = 0; i < mesh->mNumVertices; ++i)
 		{
 			Vertex vertex;
 			vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
@@ -51,7 +51,7 @@ namespace Sapfire
 		mVertexBuffer->set_data(mVertices.data(), mVertices.size() * sizeof(Vertex));
 		// Index buffer
 		mIndices.reserve(mesh->mNumFaces);
-		for (int i = 0; i < mesh->mNumFaces; ++i)
+		for (uint32_t i = 0; i < mesh->mNumFaces; ++i)
 		{
 			if (mesh->mFaces[i].mNumIndices != 3)
 			{

@@ -39,7 +39,7 @@ namespace Sapfire
 	void OpenGLRendererAPI::draw(size_t count)
 	{
 		PROFILE_FUNCTION();
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
 	}
 
 	void OpenGLRendererAPI::set_viewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height)

@@ -13,7 +13,7 @@ namespace Sapfire
 {
 	SaplingLayer::SaplingLayer()
 		: /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-		mCamera(70.f, 1280, 720, 0.01, 100), mDirection(glm::vec3(0)), mViewportSize(0)
+		mCamera(70.f, 1280.f, 720.f, 0.01f, 100.f), mDirection(glm::vec3(0.f)), mViewportSize(0.f)
 	{
 	}
 
@@ -140,7 +140,7 @@ namespace Sapfire
 				auto sceneViewportSize = ImGui::GetContentRegionAvail();
 				if (mViewportSize.x != sceneViewportSize.x || mViewportSize.y != sceneViewportSize.y)
 				{
-					mFramebuffer->resize(sceneViewportSize.x, sceneViewportSize.y);
+					mFramebuffer->resize(static_cast<uint32_t>(sceneViewportSize.x), static_cast<uint32_t>(sceneViewportSize.y));
 					mViewportSize = { sceneViewportSize.x, sceneViewportSize.y };
 				}
 				ImGui::Image((void*)textureID, { mViewportSize.x, mViewportSize.y }, { 0, 1 }, { 1, 0 });

@@ -21,7 +21,7 @@ namespace Sapfire
 	void OpenGLVertexBuffer::set_data(void* buffer, size_t size)
 	{
 		PROFILE_FUNCTION();
-		mCount = size;
+		mCount = static_cast<uint32_t>(size);
 		glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
 		glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
 	}
@@ -53,7 +53,7 @@ namespace Sapfire
 	void OpenGLIndexBuffer::set_data(void* buffer, size_t size)
 	{
 		PROFILE_FUNCTION();
-		mCount = size;
+		mCount = static_cast<uint32_t>(size);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
 	}
