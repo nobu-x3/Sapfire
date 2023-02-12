@@ -8,6 +8,7 @@ IncludeDir["Glad"] = "%{wks.location}/Engine/deps/Glad/include"
 IncludeDir["GLFW"] = "%{wks.location}/Engine/deps/GLFW/include"
 IncludeDir["stb_image"] = "%{wks.location}/Engine/deps/stb_image"
 IncludeDir["imgui"] = "%{wks.location}/Engine/deps/imgui"
+IncludeDir["entt"] = "%{wks.location}/Engine/deps/entt/single_include"
 
 Libs = {}
 Libs["SDL2"] = "%{wks.location}/Engine/deps/SDL/VisualC/x64/Release/SDL2.lib"
