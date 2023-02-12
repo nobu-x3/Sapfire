@@ -7,3 +7,6 @@
 [submodule "Engine/deps/imgui"]
 	path = Engine/deps/imgui
 	url = https://github.com/TheCherno/imgui.git
+[submodule "Engine/deps/entt"]
+	path = Engine/deps/entt
+	url = https://github.com/skypjack/entt.git
