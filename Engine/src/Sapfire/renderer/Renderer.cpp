@@ -13,15 +13,18 @@ namespace Sapfire
 
 	void Renderer::BeginScene(Camera& camera)
 	{
+		PROFILE_FUNCTION();
 		sSceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 	}
 
 	void Renderer::EndScene()
 	{
+		PROFILE_FUNCTION();
 	}
 
 	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader)
 	{
+		PROFILE_FUNCTION();
 		shader->Bind();
 		shader->SetMatrixUniform("uViewProjection", sSceneData->ViewProjectionMatrix);
 		vertexArray->Bind();
@@ -30,6 +33,7 @@ namespace Sapfire
 
 	void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<Shader>& shader)
 	{
+		PROFILE_FUNCTION();
 		shader->Bind();
 		shader->SetMatrixUniform("uViewProj", sSceneData->ViewProjectionMatrix);
 		shader->SetMatrixUniform("uWorldTransform", mesh->GetWorldTransform());
@@ -38,6 +42,7 @@ namespace Sapfire
 
 	void Renderer::OnWindowResize(uint16_t width, uint16_t height)
 	{
+		PROFILE_FUNCTION();
 		RenderCommands::SetViewport(0, 0, width, height);
 	}
 }

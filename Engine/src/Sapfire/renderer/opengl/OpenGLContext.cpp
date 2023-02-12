@@ -22,6 +22,7 @@ namespace Sapfire
 
 	void OpenGLContext::Init()
 	{
+		PROFILE_FUNCTION();
 		//#if defined(USE_SDL)
 		//	// Set profile to core
 		//	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -57,6 +58,7 @@ namespace Sapfire
 
 	void OpenGLContext::SwapBuffers()
 	{
+		PROFILE_FUNCTION();
 		//#if defined(USE_SDL)
 		//	/* glClearColor(0.83f, 0.83f, 0.83f, 1.0f); */
 		//	/* // clear color and depth buffers */
@@ -69,6 +71,7 @@ namespace Sapfire
 
 	void OpenGLContext::Shutdown()
 	{
+		PROFILE_FUNCTION();
 		//#if defined(USE_SDL)
 		//	SDL_GL_DeleteContext(mGlContext);
 		//#endif

@@ -6,6 +6,7 @@ namespace Sapfire
 {
 	OpenGLTexture::OpenGLTexture(const std::string& fileName)
 	{
+		PROFILE_FUNCTION();
 		/*int channels = 0;
 		unsigned char *image = SOIL_load_image(fileName.c_str(), &mWidth, &mHeight, &channels, SOIL_LOAD_AUTO);
 		if (image == nullptr)

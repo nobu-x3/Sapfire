@@ -13,7 +13,7 @@ namespace Sapfire
 		virtual void OnDetach() {}
 		virtual void OnUpdate(float deltaTime) {}
 		virtual void OnEvent(Event& event) {}
-		virtual void OnImguiRender() {}
+		virtual void OnImguiRender() { PROFILE_FUNCTION(); }
 		inline const std::string& GetName() const { return mName; }
 
 	private:

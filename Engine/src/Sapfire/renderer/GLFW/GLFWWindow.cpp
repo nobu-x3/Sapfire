@@ -16,6 +16,7 @@ namespace Sapfire
 
 	GLFWWindow::GLFWWindow(const WindowProperties& props)
 	{
+		PROFILE_FUNCTION();
 		mData.Title = props.Title;
 		mData.Width = props.Width;
 		mData.Height = props.Height;
@@ -136,6 +137,7 @@ namespace Sapfire
 
 	GLFWWindow::~GLFWWindow()
 	{
+		PROFILE_FUNCTION();
 		glfwDestroyWindow(mWindow);
 		--sGLFWWindowCount;
 
@@ -147,6 +149,7 @@ namespace Sapfire
 
 	void GLFWWindow::OnUpdate()
 	{
+		PROFILE_FUNCTION();
 		glfwPollEvents();
 		mContext->SwapBuffers();
 	}

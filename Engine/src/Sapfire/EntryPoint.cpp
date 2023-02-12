@@ -1,6 +1,5 @@
 #include "engpch.h"
 #include "Sapfire/core/Application.h"
-#include "Sapfire/tools/Profiling.h"
 
 int main(int argc, char* argv[])
 {

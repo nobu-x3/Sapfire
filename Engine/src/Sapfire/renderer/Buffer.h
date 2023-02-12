@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Sapfire/core/Core.h"
-#include "Sapfire/core/Log.h"
 
 namespace Sapfire
 {

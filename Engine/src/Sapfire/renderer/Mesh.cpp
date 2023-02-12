@@ -6,7 +6,6 @@
 #include <assimp/LogStream.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include "Sapfire/core/Log.h"
 #include <filesystem>
 
 namespace Sapfire
@@ -17,6 +16,7 @@ namespace Sapfire
 
 	Mesh::Mesh(const std::string& fileName) : mWorldTransform(1.f)
 	{
+		PROFILE_FUNCTION();
 		std::filesystem::path p = fileName;
 		mName = p.stem().string();
 		ENGINE_INFO("Parsing mesh: {0}", fileName);
@@ -70,11 +70,13 @@ namespace Sapfire
 
 	void Mesh::SetTexture(const std::string& path)
 	{
+		PROFILE_FUNCTION();
 		mTexture = Texture::Create(path);
 	}
 
 	void Mesh::Render()
 	{
+		PROFILE_FUNCTION();
 		mVertexBuffer->Bind();
 		mIndexBuffer->Bind();
 		mTexture->Bind();
@@ -84,6 +86,7 @@ namespace Sapfire
 
 	void Mesh::CalculateWorldTransform()
 	{
+		PROFILE_FUNCTION();
 		mWorldTransform = glm::translate(glm::mat4(1.f), mWorldPosition);
 		mWorldTransform *= glm::mat4_cast(mRotation);
 		mWorldTransform *= glm::scale(glm::mat4(1.f), mScale);

@@ -38,16 +38,19 @@ namespace Sapfire
 
 	OpenGLVertexArray::OpenGLVertexArray()
 	{
+		PROFILE_FUNCTION();
 		glCreateVertexArrays(1, &mRendererID);
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
 	{
+		PROFILE_FUNCTION();
 		glDeleteVertexArrays(1, &mRendererID);
 	}
 
 	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	{
+		PROFILE_FUNCTION();
 		glBindVertexArray(mRendererID);
 		vertexBuffer->Bind();
 		uint32_t index = 0;
@@ -66,6 +69,7 @@ namespace Sapfire
 
 	void OpenGLVertexArray::AddIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 	{
+		PROFILE_FUNCTION();
 		glBindVertexArray(mRendererID);
 		indexBuffer->Bind();
 		mIndexBuffers.push_back(indexBuffer);

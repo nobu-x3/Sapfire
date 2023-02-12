@@ -22,3 +22,5 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <Sapfire/tools/Profiling.h>
+#include <Sapfire/core/Log.h>

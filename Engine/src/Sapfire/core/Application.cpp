@@ -16,6 +16,7 @@ namespace Sapfire
 
 	Application::Application(const std::string& name) : mRunning(true), mMinimized(false)
 	{
+		PROFILE_FUNCTION();
 		Log::Init();
 		sInstance = this;
 		mWindow = std::unique_ptr<Window>(Window::Create(WindowProperties(name)));
@@ -44,6 +45,7 @@ namespace Sapfire
 
 	void Application::Run()
 	{
+		PROFILE_FUNCTION();
 		while (mRunning)
 		{
 			float timestamp = mWindow->GetTime();
@@ -51,15 +53,22 @@ namespace Sapfire
 			mLastFrameTime = timestamp;
 			if (!mMinimized)
 			{
-				for (Layer* layer : mLayerStack)
-					layer->OnUpdate(deltaTime);
+				{
+					PROFILE_SCOPE("Application: LayerStack OnUpdate");
+					for (Layer* layer : mLayerStack)
+						layer->OnUpdate(deltaTime);
+				}
 			}
-			mImguiLayer->Begin();
-			for (Layer* layer : mLayerStack)
+
 			{
-				layer->OnImguiRender();
+				PROFILE_SCOPE("Application: ImGui OnRender");
+				mImguiLayer->Begin();
+				for (Layer* layer : mLayerStack)
+				{
+					layer->OnImguiRender();
+				}
+				mImguiLayer->End();
 			}
-			mImguiLayer->End();
 			mWindow->OnUpdate();
 		}
 	}
@@ -72,6 +81,7 @@ namespace Sapfire
 
 	bool Application::OnWindowResize(class WindowResizeEvent& e)
 	{
+		PROFILE_FUNCTION();
 		if (e.GetWidth() == 0 || e.GetHeight() == 0) { mMinimized = true; return false; }
 		mMinimized = false;
 		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());

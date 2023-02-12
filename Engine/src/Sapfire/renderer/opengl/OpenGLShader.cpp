@@ -3,7 +3,6 @@
 #include "Sapfire/renderer/Renderer.h"
 #include <filesystem>
 #include <fstream>
-#include "Sapfire/core/Log.h"
 
 namespace Sapfire
 {
@@ -23,6 +22,7 @@ namespace Sapfire
 
 	OpenGLShader::OpenGLShader(const std::string& path)
 	{
+		PROFILE_FUNCTION();
 		std::string source = ParseFile(path);
 		auto shaderSources = Process(source);
 		CompileShader(shaderSources);
@@ -32,11 +32,13 @@ namespace Sapfire
 
 	OpenGLShader::~OpenGLShader()
 	{
+		PROFILE_FUNCTION();
 		glDeleteProgram(mShaderProgram);
 	}
 
 	std::string OpenGLShader::ParseFile(const std::string& path)
 	{
+		PROFILE_FUNCTION();
 		std::string result;
 		std::ifstream in(path, std::ios::in | std::ios::binary);
 		if (in)
@@ -56,8 +58,8 @@ namespace Sapfire
 
 	std::unordered_map<GLenum, std::string> OpenGLShader::Process(const std::string& source)
 	{
+		PROFILE_FUNCTION();
 		std::unordered_map<GLenum, std::string> shaderSources;
-
 		const char* typeToken = "#type";
 		size_t typeTokenLen = strlen(typeToken);
 		size_t pos = source.find(typeToken, 0);
@@ -93,6 +95,7 @@ namespace Sapfire
 
 	bool OpenGLShader::CompileShader(const std::unordered_map<GLenum, std::string>& sources)
 	{
+		PROFILE_FUNCTION();
 		// TODO: in case of failures, most likely leaks memory due to not keeping track of specific shader ids
 		RendererID program = glCreateProgram();
 		std::vector<GLuint> shaderIds;
@@ -147,6 +150,7 @@ namespace Sapfire
 
 	void OpenGLShader::SetMatrixUniform(const std::string& name, const glm::mat4& matrix)
 	{
+		PROFILE_FUNCTION();
 		// Find the uniform by this name
 		GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 		// Send the matrix data to the uniform
@@ -155,24 +159,28 @@ namespace Sapfire
 
 	void OpenGLShader::SetVectorUniform(const std::string& name, const glm::vec3& vec)
 	{
+		PROFILE_FUNCTION();
 		GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 		glUniform3fv(loc, 1, glm::value_ptr(vec));
 	}
 
 	void OpenGLShader::SetFloatUniform(const std::string& name, float val)
 	{
+		PROFILE_FUNCTION();
 		GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 		glUniform1f(loc, val);
 	}
 
 	void OpenGLShader::SetIntUniform(const std::string& name, int val)
 	{
+		PROFILE_FUNCTION();
 		GLuint loc = glGetUniformLocation(mShaderProgram, name.c_str());
 		glUniform1i(loc, val);
 	}
 
 	bool OpenGLShader::IsCompiled(GLuint shader)
 	{
+		PROFILE_FUNCTION();
 		GLint status;
 		// Query the compile status
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &status);

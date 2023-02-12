@@ -8,6 +8,7 @@ namespace Sapfire
 {
 	void BufferLayout::CalculateOffsets()
 	{
+		PROFILE_FUNCTION();
 		uint32_t offset = 0;
 		mStride = 0;
 		for (auto& element : mElements)
@@ -19,6 +20,7 @@ namespace Sapfire
 	}
 	Ref<VertexBuffer> VertexBuffer::Create()
 	{
+		PROFILE_FUNCTION();
 		auto api = RendererAPI::GetAPI();
 		switch (api)
 		{
@@ -34,6 +36,7 @@ namespace Sapfire
 
 	Ref<IndexBuffer> IndexBuffer::Create()
 	{
+		PROFILE_FUNCTION();
 		auto api = RendererAPI::GetAPI();
 		switch (api)
 		{

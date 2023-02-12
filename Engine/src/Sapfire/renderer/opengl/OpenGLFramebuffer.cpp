@@ -1,18 +1,19 @@
 #include "engpch.h"
 #include "OpenGLFramebuffer.h"
 #include "glad/glad.h"
-#include <Sapfire/core/Log.h>
 
 namespace Sapfire
 {
 
 	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferProperties& props) : mProperties(props)
 	{
+		PROFILE_FUNCTION();
 		Invalidate();
 	}
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{
+		PROFILE_FUNCTION();
 		glDeleteFramebuffers(1, &mRendererID);
 		glDeleteTextures(1, &mColorAttachment);
 		glDeleteTextures(1, &mDepthAttachment);
@@ -20,6 +21,7 @@ namespace Sapfire
 
 	void OpenGLFramebuffer::Invalidate()
 	{
+		PROFILE_FUNCTION();
 		if(mRendererID)
 		{
 			glDeleteFramebuffers(1, &mRendererID);

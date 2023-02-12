@@ -13,8 +13,10 @@ namespace Sapfire
 		~Application();
 		void Run();
 		inline const class Window& GetWindow() const { return *mWindow; }
-		inline void PushLayer(Layer* layer) { mLayerStack.PushLayer(layer); }
-		inline void PushOverlay(Layer* layer) { mLayerStack.PushOverlay(layer); }
+		inline void PushLayer(Layer* layer) { mLayerStack.PushLayer(layer); layer->OnAttach(); }
+		inline void PushOverlay(Layer* layer) { mLayerStack.PushOverlay(layer); layer->OnAttach(); }
+		inline void PopLayer(Layer* layer) { mLayerStack.PopLayer(layer); layer->OnDetach(); }
+		inline void PopOverlay(Layer* layer) { mLayerStack.PopOverlay(layer); layer->OnDetach(); }
 		inline static Application& GetInstance() { return *sInstance; }
 		inline const ImguiLayer& GetImguiLayer() const { return *mImguiLayer; }
 		inline ImguiLayer* GetImguiLayer() { return mImguiLayer; }

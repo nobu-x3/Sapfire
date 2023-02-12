@@ -1,11 +1,12 @@
 #include "engpch.h"
 #include "ShaderLibrary.h"
-#include "Sapfire/core/Log.h"
+
 
 namespace Sapfire
 {
 	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
+		PROFILE_FUNCTION();
 		if (mShaders.find(shader->GetName()) == mShaders.end())
 		{
 			mShaders[shader->GetName()] = shader;
@@ -14,6 +15,7 @@ namespace Sapfire
 
 	Ref<Shader> ShaderLibrary::Load(const std::string& filePath)
 	{
+		PROFILE_FUNCTION();
 		auto shader = Shader::Create(filePath);
 		Add(shader);
 		return shader;
@@ -21,6 +23,7 @@ namespace Sapfire
 
 	Ref<Shader> ShaderLibrary::Get(const std::string& name)
 	{
+		PROFILE_FUNCTION();
 		auto iter = mShaders.find(name);
 		if (iter != mShaders.end())
 		{
