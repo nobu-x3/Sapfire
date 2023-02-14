@@ -32,7 +32,7 @@ namespace Sapfire
 		PROFILE_FUNCTION();
 		for (auto buffer : vertexArray->get_index_buffers())
 		{
-			glDrawElements(GL_TRIANGLES, buffer->get_count(), GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, buffer->get_size(), GL_UNSIGNED_INT, nullptr);
 		}
 	}
 

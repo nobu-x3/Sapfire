@@ -9,7 +9,7 @@ namespace Sapfire
 	OpenGLVertexBuffer::OpenGLVertexBuffer()
 	{
 		PROFILE_FUNCTION();
-		glGenBuffers(1, &mRendererID);
+		glCreateBuffers(1, &mRendererID);
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
@@ -21,9 +21,8 @@ namespace Sapfire
 	void OpenGLVertexBuffer::set_data(void* buffer, size_t size)
 	{
 		PROFILE_FUNCTION();
-		mCount = static_cast<uint32_t>(size);
-		glBindBuffer(GL_ARRAY_BUFFER, mRendererID);
-		glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
+		mSize = static_cast<uint32_t>(size);
+		glNamedBufferStorage(mRendererID, size, buffer, 0);
 	}
 
 	void OpenGLVertexBuffer::bind() const
@@ -41,7 +40,7 @@ namespace Sapfire
 	OpenGLIndexBuffer::OpenGLIndexBuffer()
 	{
 		PROFILE_FUNCTION();
-		glGenBuffers(1, &mRendererID);
+		glCreateBuffers(1, &mRendererID);
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
@@ -53,9 +52,8 @@ namespace Sapfire
 	void OpenGLIndexBuffer::set_data(void* buffer, size_t size)
 	{
 		PROFILE_FUNCTION();
-		mCount = static_cast<uint32_t>(size);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW);
+		mSize = static_cast<uint32_t>(size);
+		glNamedBufferStorage(mRendererID, size, buffer, 0);
 	}
 
 	void OpenGLIndexBuffer::bind() const

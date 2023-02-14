@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VertexArray.h"
 #include "Sapfire/renderer/Buffer.h"
 
 namespace Sapfire
@@ -56,6 +57,7 @@ namespace Sapfire
 		std::vector<Index> mIndices;
 		Ref<VertexBuffer> mVertexBuffer;
 		Ref<IndexBuffer> mIndexBuffer;
+		Ref<VertexArray> mVertexArray;
 		glm::vec3 mWorldPosition;
 		glm::quat mRotation;
 		glm::vec3 mScale = glm::vec3(1.f);

@@ -15,7 +15,7 @@ SandboxLayer::SandboxLayer()
 
 void SandboxLayer::on_attach()
 {
-	mVA.reset(VertexArray::create());
+	mVA = VertexArray::create();
 	float vertices[7 * 4] = {
 		-0.5f, 0.5f,  0.f, 0.f, 1.f, // top left
 		0.5f,  0.5f,  0.f, 1.f, 1.f, // top right
@@ -32,7 +32,7 @@ void SandboxLayer::on_attach()
 	Ref<IndexBuffer> ib;
 	ib = IndexBuffer::create();
 	ib->set_data(indices, sizeof indices);
-	mVA->add_index_buffer(ib);
+	// mVA->add_index_buffer(ib);
 	mSpriteShader = mShaderLibrary.load(SHADER_PATH);
 	mTexture = Texture::create("Assets/Asteroid.png");
 	mSpriteShader->set_int_uniform("uTexture", mTexture->get_id());

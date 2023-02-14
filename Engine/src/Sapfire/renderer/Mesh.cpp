@@ -62,6 +62,9 @@ namespace Sapfire
 		}
 		mIndexBuffer = IndexBuffer::create();
 		mIndexBuffer->set_data(mIndices.data(), mIndices.size() * sizeof(Index));
+		mVertexArray = VertexArray::create();
+		mVertexArray->add_vertex_buffer(mVertexBuffer);
+		mVertexArray->add_index_buffer(mIndexBuffer);
 		ENGINE_INFO("Done parsing mesh: {0}", fileName);
 	}
 	Mesh::~Mesh()
@@ -77,11 +80,12 @@ namespace Sapfire
 	void Mesh::render()
 	{
 		PROFILE_FUNCTION();
-		mVertexBuffer->bind();
-		mIndexBuffer->bind();
+		// mVertexBuffer->bind();
+		// mIndexBuffer->bind();
+		mVertexArray->bind();
 		mTexture->bind();
 		RenderCommands::draw_mesh();
-		RenderCommands::draw(mIndexBuffer->get_count());
+		RenderCommands::draw(mIndexBuffer->get_size());
 	}
 
 	void Mesh::calculate_world_transform()

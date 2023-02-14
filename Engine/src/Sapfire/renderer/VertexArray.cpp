@@ -5,12 +5,12 @@
 
 namespace Sapfire
 {
-	VertexArray* VertexArray::create()
+	Ref<VertexArray> VertexArray::create()
 	{
 		switch (auto api = RendererAPI::get_api())
 		{
 		case RendererAPI::API::OpenGL: {
-			return new OpenGLVertexArray();
+			return create_ref<OpenGLVertexArray>();
 		}
 		default:
 			return nullptr;

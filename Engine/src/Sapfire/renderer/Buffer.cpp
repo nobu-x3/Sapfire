@@ -18,6 +18,7 @@ namespace Sapfire
 			mStride += element.Size;
 		}
 	}
+	
 	Ref<VertexBuffer> VertexBuffer::create()
 	{
 		PROFILE_FUNCTION();

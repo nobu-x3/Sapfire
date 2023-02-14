@@ -13,6 +13,6 @@ namespace Sapfire
 		virtual void unbind() const = 0;
 		virtual const std::vector<Ref<VertexBuffer>>& get_vertex_buffers() const = 0;
 		virtual const std::vector<Ref<IndexBuffer>>& get_index_buffers() const = 0;
-		static VertexArray* create();
+		static Ref<VertexArray> create();
 	};
 }

@@ -57,10 +57,17 @@ namespace Sapfire
 		auto elements = layout.get_elements();
 		for (const auto& element : elements)
 		{
-			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(index, element.get_component_count(), ConvertShaderDataTypeToGLenum(element.Type),
-				element.Normalized ? GL_TRUE : GL_FALSE, layout.get_stride(),
-				(const void*)element.Offset);
+			glVertexArrayVertexBuffer(mRendererID, index, vertexBuffer->get_renderer_id(), element.Offset,
+			                          layout.get_stride());
+			glEnableVertexArrayAttrib(mRendererID, index);
+			// Note: I'll leave this for now, might use it as a reference for when I add lighting and we use more than just position
+			// glVertexAttribPointer(index, element.get_component_count(), ConvertShaderDataTypeToGLenum(element.Type),
+			// 	element.Normalized ? GL_TRUE : GL_FALSE, layout.get_stride(),
+			// 	(const void*)element.Offset);
+			glVertexArrayAttribFormat(mRendererID, index, element.get_component_count(),
+			                          ConvertShaderDataTypeToGLenum(element.Type),
+			                          element.Normalized ? GL_TRUE : GL_FALSE, layout.get_stride());
+			glVertexArrayAttribBinding(mRendererID, index, index);
 			index++;
 		}
 		mVertexBuffers.push_back(vertexBuffer);

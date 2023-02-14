@@ -13,14 +13,14 @@ namespace Sapfire
 		virtual void set_data(void* buffer, size_t size) override;
 		virtual void bind() const override;
 		virtual void unbind() const override;
-		virtual uint32_t get_count() const override { return mCount; }
+		virtual uint32_t get_size() const override { return mSize; }
 
 		virtual void set_layout(const BufferLayout& layout) override { mLayout = layout; }
 		virtual const BufferLayout& get_layout() const override { return mLayout; }
 
 	private:
 		RendererID mRendererID;
-		uint32_t mCount;
+		uint32_t mSize;
 		BufferLayout mLayout;
 	};
 
@@ -32,10 +32,10 @@ namespace Sapfire
 		virtual void set_data(void* buffer, size_t size) override;
 		virtual void bind() const override;
 		virtual void unbind() const override;
-		virtual uint32_t get_count() const override { return mCount; }
+		virtual uint32_t get_size() const override { return mSize; }
 
 	private:
 		RendererID mRendererID;
-		uint32_t mCount;
+		uint32_t mSize;
 	};
 }
