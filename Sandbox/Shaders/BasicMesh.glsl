@@ -1,5 +1,5 @@
 #type vertex
-#version 330
+#version 460 core
 
 out vec2 fragTexCoord;
 
@@ -20,7 +20,7 @@ void main()
 }
 
 #type fragment
-#version 330
+#version 460 core
 
 out vec4 outColor;
 
