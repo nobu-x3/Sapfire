@@ -17,6 +17,7 @@ namespace Sapfire
 
 	private:
 		Ref<VertexArray> mVA;
+		Ref<UniformBuffer> mUniformBuffer;
 		ShaderLibrary mShaderLibrary;
 		Ref<Mesh> mSphereMesh;
 		Ref<Shader> mSpriteShader;

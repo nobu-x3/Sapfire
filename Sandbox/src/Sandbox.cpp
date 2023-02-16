@@ -43,6 +43,8 @@ void SandboxLayer::on_attach()
 	mSphereMesh->set_position(glm::vec3({ 0.f, 0.f, 0.4f }));
 	mSphereMesh->set_scale(glm::vec3(1.f));
 	mCameraRotation = 0.f;
+	BufferLayout matrixUniBufLayout = { {"mat", ShaderDataType::Mat4}};
+	mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
 	RenderCommands::init();
 }
 
@@ -67,7 +69,7 @@ void SandboxLayer::on_update(float deltaTime)
 	mSphereMesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
 	RenderCommands::set_clear_color(clearColor);
 	RenderCommands::clear_screen();
-	Renderer::begin_scene(mCamera);
+	Renderer::begin_scene(mCamera, mUniformBuffer);
 	/* mTexture->Bind(); */
 	//Renderer::Submit(mVA, mSpriteShader);
 	Renderer::submit_mesh(mSphereMesh, mMeshShader);

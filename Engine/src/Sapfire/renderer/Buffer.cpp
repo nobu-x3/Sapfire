@@ -44,4 +44,17 @@ namespace Sapfire
 			return nullptr;
 		}
 	}
+
+	Ref<UniformBuffer> UniformBuffer::create(uint32_t index, const BufferLayout& layout)
+	{
+		PROFILE_FUNCTION();
+		switch (auto api = RendererAPI::get_api())
+		{
+		case RendererAPI::API::OpenGL: {
+				return create_ref<OpenGLUniformBuffer>(index, layout);
+		}
+		default:
+			return nullptr;
+		}
+	}
 }

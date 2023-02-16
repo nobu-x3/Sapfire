@@ -9,33 +9,39 @@ namespace Sapfire
 	{
 	public:
 		OpenGLVertexBuffer();
-		~OpenGLVertexBuffer();
+		~OpenGLVertexBuffer() override;
 		virtual void set_data(void* buffer, size_t size) override;
 		virtual void bind() const override;
 		virtual void unbind() const override;
 		virtual uint32_t get_size() const override { return mSize; }
 
-		virtual void set_layout(const BufferLayout& layout) override { mLayout = layout; }
-		virtual const BufferLayout& get_layout() const override { return mLayout; }
-
 	private:
-		RendererID mRendererID;
 		uint32_t mSize;
-		BufferLayout mLayout;
 	};
 
 	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
 		OpenGLIndexBuffer();
-		~OpenGLIndexBuffer();
+		~OpenGLIndexBuffer() override;
 		virtual void set_data(void* buffer, size_t size) override;
 		virtual void bind() const override;
 		virtual void unbind() const override;
 		virtual uint32_t get_size() const override { return mSize; }
 
 	private:
-		RendererID mRendererID;
 		uint32_t mSize;
+	};
+
+	class OpenGLUniformBuffer : public UniformBuffer
+	{
+	public:
+		OpenGLUniformBuffer(uint32_t index, const BufferLayout& layout);
+		~OpenGLUniformBuffer() override;
+		virtual void set_data(void* data) const override;
+	private:
+		RendererID mRendererID;
+		BufferLayout mLayout;
+		uint32_t mIndex;
 	};
 }

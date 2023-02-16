@@ -5,7 +5,9 @@ namespace Sapfire
 	class Camera
 	{
 	public:
-		virtual ~Camera() {};
+		virtual ~Camera()
+		{
+		};
 		virtual const glm::mat4& get_projection_matrix() const = 0;
 		virtual const glm::mat4& get_view_matrix() const = 0;
 		virtual const glm::mat4& get_view_projection_matrix() const = 0;
@@ -39,13 +41,15 @@ namespace Sapfire
 		virtual const glm::mat4& get_projection_matrix() const override { return mProjectionMatrix; }
 		virtual const glm::mat4& get_view_matrix() const override { return mViewMatrix; }
 		virtual const glm::mat4& get_view_projection_matrix() const override { return mViewProjectionMatrix; }
+		virtual glm::mat4& get_view_projection() { return mViewProjectionMatrix; }
+		virtual void* get_view_projection_matrix_ptr() { return glm::value_ptr(mViewProjectionMatrix); }
 
 	protected:
 		virtual void recalculate_view_matrix() override;
 
 	private:
-		glm::vec3 mPosition{ 0.f, 0.f, 0.f };
-		float mRotation{ 0.f };
+		glm::vec3 mPosition{0.f, 0.f, 0.f};
+		float mRotation{0.f};
 		glm::mat4 mProjectionMatrix;
 		glm::mat4 mViewMatrix;
 		glm::mat4 mViewProjectionMatrix;
@@ -79,7 +83,7 @@ namespace Sapfire
 		virtual void recalculate_view_matrix() override;
 
 	private:
-		glm::vec3 mPosition{ 0.f, 0.f, 0.f };
+		glm::vec3 mPosition{0.f, 0.f, 0.f};
 		float mRotation;
 		glm::mat4 mProjectionMatrix;
 		glm::mat4 mViewMatrix;

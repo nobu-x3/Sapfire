@@ -58,9 +58,13 @@ namespace Sapfire
 		uint32_t Size;
 		uint32_t Offset;
 		bool Normalized;
-		BufferElement() {}
-		BufferElement(const std::string& name, ShaderDataType type, bool normalized = false)
-			: Name(name), Type(type), Size(shader_data_type_size(type)), Offset(0), Normalized(normalized)
+
+		BufferElement()
+		{
+		}
+
+		BufferElement(const std::string& name, ShaderDataType type, bool normalized = false) : Name(name), Type(type),
+			Size(shader_data_type_size(type)), Offset(0), Normalized(normalized)
 		{
 		}
 
@@ -97,12 +101,13 @@ namespace Sapfire
 		virtual void unbind() const = 0;
 		virtual uint32_t get_size() const = 0;
 		inline RendererID get_renderer_id() const { return mRendererID; }
-		virtual void set_layout(const BufferLayout& layout) = 0;
-		virtual const BufferLayout& get_layout() const = 0;
+		virtual void set_layout(const BufferLayout& layout) { mLayout = layout; }
+		virtual const BufferLayout& get_layout() const { return mLayout; }
 		static Ref<VertexBuffer> create();
 
-	private:
+	protected:
 		RendererID mRendererID;
+		BufferLayout mLayout;
 	};
 
 	class IndexBuffer
@@ -115,7 +120,18 @@ namespace Sapfire
 		virtual uint32_t get_size() const = 0;
 		static Ref<IndexBuffer> create();
 
-	private:
+	protected:
 		RendererID mRendererID;
+	};
+
+	class UniformBuffer
+	{
+	public:
+		virtual ~UniformBuffer() = default;
+		virtual void set_data(void* data) const = 0;
+		static Ref<UniformBuffer> create(uint32_t index, const BufferLayout& layout);
+	protected:
+		RendererID mRendererID;
+		BufferLayout mLayout;
 	};
 }

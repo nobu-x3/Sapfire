@@ -20,7 +20,7 @@ namespace Sapfire
 	void SaplingLayer::on_attach()
 	{
 		PROFILE_FUNCTION();
-		mVA.reset(VertexArray::create());
+		mVA = VertexArray::create();
 		float vertices[7 * 4] = {
 			-0.5f, 0.5f,  0.f, 0.f, 1.f, // top left
 			0.5f,  0.5f,  0.f, 1.f, 1.f, // top right
@@ -52,6 +52,8 @@ namespace Sapfire
 		mViewportSize = { 1280, 720 };
 		FramebufferProperties fbProps = { 1280, 720, FramebufferFormat::RGBA8 };
 		mFramebuffer = Framebuffer::create(fbProps);
+		BufferLayout mvpLayout = { {"vp", ShaderDataType::Mat4}/*, {"projection", ShaderDataType::Mat4}*/};
+		mUniformBuffer = UniformBuffer::create(0, mvpLayout);
 	}
 
 	static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
@@ -91,7 +93,7 @@ namespace Sapfire
 			RenderCommands::set_clear_color(clearColor);
 			mFramebuffer->bind();
 			RenderCommands::clear_screen();
-			Renderer::begin_scene(mCamera);
+			Renderer::begin_scene(mCamera, mUniformBuffer);
 			/* mTexture->Bind(); */
 			//Renderer::Submit(mVA, mSpriteShader);
 			Renderer::submit_mesh(mSphereMesh, mMeshShader);

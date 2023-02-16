@@ -9,6 +9,11 @@ layout(location=2) in vec3 inTangent;
 layout(location=3) in vec3 inBinormal;
 layout(location=4) in vec2 inTexCoord;
 
+layout(std140, binding = 8) uniform Matrices
+{
+	uniform mat4 VP;
+};
+
 uniform mat4 uWorldTransform;
 uniform mat4 uViewProj;
 

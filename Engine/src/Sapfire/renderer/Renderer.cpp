@@ -11,17 +11,18 @@ namespace Sapfire
 
 	WindowAPI Renderer::sWindowAPI = WindowAPI::GLFW;
 
-	void Renderer::begin_scene(Camera& camera)
+	void Renderer::begin_scene(Camera& camera, const Ref<UniformBuffer>& uniformBuffer)
 	{
 		PROFILE_FUNCTION();
 		sSceneData->ViewProjectionMatrix = camera.get_view_projection_matrix();
+		uniformBuffer->set_data(&sSceneData->ViewProjectionMatrix);
 	}
 
 	void Renderer::end_scene()
 	{
 		PROFILE_FUNCTION();
 	}
-
+	
 	void Renderer::submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader)
 	{
 		PROFILE_FUNCTION();
@@ -39,6 +40,8 @@ namespace Sapfire
 		shader->set_matrix_uniform("uWorldTransform", mesh->get_world_transform());
 		mesh->render();
 	}
+
+	
 
 	void Renderer::on_window_resize(uint16_t width, uint16_t height)
 	{

@@ -13,7 +13,7 @@ namespace Sapfire
 	class Renderer
 	{
 	public:
-		static void begin_scene(class Camera& camera);
+		static void begin_scene(class Camera& camera, const Ref<class UniformBuffer>& uniformBuffer);
 		static void end_scene();
 		static void submit(const Ref<VertexArray>& vertexArray, const Ref<class Shader>& shader);
 		static void submit_mesh(const Ref<class Mesh>& mesh, const Ref<Shader>& shader);
