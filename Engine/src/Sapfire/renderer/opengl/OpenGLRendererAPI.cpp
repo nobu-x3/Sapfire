@@ -13,6 +13,7 @@ namespace Sapfire
 		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
 	}
 
 	void OpenGLRendererAPI::clear_screen()
