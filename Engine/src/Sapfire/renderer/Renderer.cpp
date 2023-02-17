@@ -15,10 +15,7 @@ namespace Sapfire
 	{
 		PROFILE_FUNCTION();
 		sSceneData->ViewProjectionMatrix = camera.get_view_projection_matrix();
-		sSceneData->ProjectionMatrix = camera.get_projection_matrix();
-		sSceneData->ViewMatrix = camera.get_view_matrix();
-		uniformBuffer->append_data(0,value_ptr(sSceneData->ViewMatrix));
-		uniformBuffer->append_data(1,value_ptr(sSceneData->ProjectionMatrix));
+		uniformBuffer->set_data(sSceneData);
 	}
 
 	void Renderer::end_scene()
@@ -30,7 +27,6 @@ namespace Sapfire
 	{
 		PROFILE_FUNCTION();
 		shader->bind();
-		shader->set_matrix_uniform("uViewProjection", sSceneData->ViewProjectionMatrix);
 		vertexArray->bind();
 		RenderCommands::draw(vertexArray);
 	}
@@ -39,7 +35,6 @@ namespace Sapfire
 	{
 		PROFILE_FUNCTION();
 		shader->bind();
-		shader->set_matrix_uniform("uViewProj", sSceneData->ViewProjectionMatrix);
 		shader->set_matrix_uniform("uWorldTransform", mesh->get_world_transform());
 		mesh->render();
 	}
