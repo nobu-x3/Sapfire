@@ -77,13 +77,14 @@ namespace Sapfire
 		mTexture = Texture::create(path);
 	}
 
-	void Mesh::render()
+	void Mesh::render(bool bindTexture)
 	{
 		PROFILE_FUNCTION();
 		// mVertexBuffer->bind();
 		// mIndexBuffer->bind();
 		mVertexArray->bind();
-		mTexture->bind();
+		if(bindTexture)
+			mTexture->bind();
 		RenderCommands::draw_mesh();
 		RenderCommands::draw(mIndexBuffer->get_size());
 	}

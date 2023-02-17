@@ -14,6 +14,9 @@ namespace Sapfire
 		virtual void draw_mesh() override;
 		virtual void draw(size_t count) override;
 		virtual void set_viewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height) override;
-
+		virtual void disable_depth() override;
+		virtual void disable_culling() override;
+		virtual void enable_culling() override;
+		virtual void enable_depth() override;
 	};
 }

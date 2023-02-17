@@ -10,6 +10,7 @@
 #include "Sapfire/renderer/VertexArray.h"
 #include "Sapfire/renderer/Window.h"
 #include "Sapfire/renderer/Framebuffer.h"
+#include "Sapfire/renderer/CubeMap.h"
 ///////////////////////////////////////////
 
 //    Events /////////////////////////////

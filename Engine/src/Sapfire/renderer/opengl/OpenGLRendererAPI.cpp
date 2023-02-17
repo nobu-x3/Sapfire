@@ -14,6 +14,7 @@ namespace Sapfire
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	}
 
 	void OpenGLRendererAPI::clear_screen()
@@ -47,6 +48,26 @@ namespace Sapfire
 	{
 		PROFILE_FUNCTION();
 		glViewport(x, y, width, height);
+	}
+
+	void OpenGLRendererAPI::disable_depth()
+	{
+		glDepthMask(GL_FALSE);
+	}
+
+	void OpenGLRendererAPI::disable_culling()
+	{
+		glDisable(GL_CULL_FACE);
+	}
+
+	void OpenGLRendererAPI::enable_culling()
+	{
+		glEnable(GL_CULL_FACE);
+	}
+
+	void OpenGLRendererAPI::enable_depth()
+	{
+		glDepthMask(GL_TRUE);
 	}
 
 	void OpenGLRendererAPI::draw_mesh()

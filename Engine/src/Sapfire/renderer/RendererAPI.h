@@ -1,4 +1,6 @@
 #pragma once
+
+#include "Sapfire/renderer/Skybox.h"
 #include "Sapfire/renderer/VertexArray.h"
 
 namespace Sapfire
@@ -16,6 +18,11 @@ namespace Sapfire
 		virtual void init() = 0;
 		virtual void clear_screen() = 0;
 		virtual void set_clear_color(glm::vec4& color) = 0;
+		virtual void disable_depth() = 0;
+		virtual void disable_culling() = 0;
+		virtual void enable_culling() = 0;
+		virtual void enable_depth() = 0;
+		
 		virtual void set_viewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height) = 0;
 		virtual void draw(const Ref<VertexArray>& vertexArray) = 0;
 		virtual void draw(size_t count) = 0;

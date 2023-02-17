@@ -26,7 +26,7 @@ namespace Sapfire
 
 		Mesh(const std::string& fileName);
 		~Mesh();
-		virtual void render();
+		virtual void render(bool bindTexture = true);
 
 		void set_position(const glm::vec3& pos)
 		{

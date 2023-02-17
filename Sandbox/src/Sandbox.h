@@ -20,6 +20,7 @@ private:
 	Ref<UniformBuffer> mUniformBuffer;
 	ShaderLibrary mShaderLibrary;
 	Ref<Mesh> mSphereMesh;
+	Ref<Skybox> mSkybox;
 	Ref<Shader> mSpriteShader;
 	Ref<Shader> mMeshShader;
 	Ref<Texture> mTexture;
