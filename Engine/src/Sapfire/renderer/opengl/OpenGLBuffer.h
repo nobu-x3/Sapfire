@@ -39,6 +39,7 @@ namespace Sapfire
 		OpenGLUniformBuffer(uint32_t index, const BufferLayout& layout);
 		~OpenGLUniformBuffer() override;
 		virtual void set_data(void* data) const override;
+		virtual void append_data(uint16_t elementIndex, void* data) override;
 	private:
 		RendererID mRendererID;
 		BufferLayout mLayout;

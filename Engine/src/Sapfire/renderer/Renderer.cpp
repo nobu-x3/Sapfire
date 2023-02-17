@@ -15,7 +15,10 @@ namespace Sapfire
 	{
 		PROFILE_FUNCTION();
 		sSceneData->ViewProjectionMatrix = camera.get_view_projection_matrix();
-		uniformBuffer->set_data(value_ptr(sSceneData->ViewProjectionMatrix));
+		sSceneData->ProjectionMatrix = camera.get_projection_matrix();
+		sSceneData->ViewMatrix = camera.get_view_matrix();
+		uniformBuffer->append_data(0,value_ptr(sSceneData->ViewMatrix));
+		uniformBuffer->append_data(1,value_ptr(sSceneData->ProjectionMatrix));
 	}
 
 	void Renderer::end_scene()

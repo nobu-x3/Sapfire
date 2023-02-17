@@ -9,9 +9,10 @@ layout(location=2) in vec3 inTangent;
 layout(location=3) in vec3 inBinormal;
 layout(location=4) in vec2 inTexCoord;
 
-layout(std140, row_major, binding = 5) uniform Matrices
+layout(std140, row_major, binding = 0) uniform Matrices
 {
-	mat4 VP;
+	mat4 view;
+	mat4 proj;
 } matrices;
 
 uniform mat4 uWorldTransform;
@@ -20,7 +21,7 @@ uniform mat4 uViewProj;
 void main()
 {
 	vec4 pos = vec4(inPosition, 1.0);
-	gl_Position = pos * uWorldTransform * matrices.VP;
+	gl_Position = pos * uWorldTransform * matrices.proj * matrices.view;
     fragTexCoord = inTexCoord;
 }
 

@@ -26,6 +26,8 @@ namespace Sapfire
 		struct SceneData
 		{
 			glm::mat4 ViewProjectionMatrix;
+			glm::mat4 ViewMatrix;
+			glm::mat4 ProjectionMatrix;
 		};
 		static SceneData* sSceneData;
 		static WindowAPI sWindowAPI;

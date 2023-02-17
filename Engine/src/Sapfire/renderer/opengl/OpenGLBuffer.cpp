@@ -82,4 +82,11 @@ namespace Sapfire
 		glBindBufferRange(GL_UNIFORM_BUFFER, mIndex, mRendererID, 0, mLayout.get_stride());
 		glNamedBufferSubData(mRendererID, 0, mLayout.get_stride(), data);
 	}
+
+	void OpenGLUniformBuffer::append_data(uint16_t elementIndex, void* data)
+	{
+		auto element = mLayout.get_elements()[elementIndex];
+		glBindBufferRange(GL_UNIFORM_BUFFER, mIndex, mRendererID, element.Offset, element.Size);
+		glNamedBufferSubData(mRendererID, element.Offset, element.Size, data);
+	}
 }

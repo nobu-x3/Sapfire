@@ -129,6 +129,8 @@ namespace Sapfire
 	public:
 		virtual ~UniformBuffer() = default;
 		virtual void set_data(void* data) const = 0;
+		virtual void append_data(uint16_t elementIndex, void* data) = 0;
+		virtual const BufferLayout& get_layout() const { return mLayout; }
 		static Ref<UniformBuffer> create(uint32_t index, const BufferLayout& layout);
 	protected:
 		RendererID mRendererID;
