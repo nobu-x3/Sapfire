@@ -69,7 +69,7 @@ namespace Sapfire
 	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t index, const BufferLayout& layout) : mLayout(layout), mIndex(index)
 	{
 		glCreateBuffers(1, &mRendererID);
-		glNamedBufferStorage(mRendererID, 64, nullptr, GL_DYNAMIC_STORAGE_BIT);
+		glNamedBufferStorage(mRendererID, layout.get_stride(), nullptr, GL_DYNAMIC_STORAGE_BIT);
 	}
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
@@ -79,7 +79,7 @@ namespace Sapfire
 
 	void OpenGLUniformBuffer::set_data(void* data) const
 	{
-		glBindBufferRange(GL_UNIFORM_BUFFER, 0, mRendererID, 0, 64);
-		glNamedBufferSubData(mRendererID, 0, 64, data);
+		glBindBufferRange(GL_UNIFORM_BUFFER, mIndex, mRendererID, 0, mLayout.get_stride());
+		glNamedBufferSubData(mRendererID, 0, mLayout.get_stride(), data);
 	}
 }

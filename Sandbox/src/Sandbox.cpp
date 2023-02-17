@@ -44,7 +44,7 @@ void SandboxLayer::on_attach()
 	mSphereMesh->set_scale(glm::vec3(1.f));
 	mCameraRotation = 0.f;
 	BufferLayout matrixUniBufLayout = { {"mat", ShaderDataType::Mat4}};
-	mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
+	mUniformBuffer = UniformBuffer::create(5, matrixUniBufLayout);
 	RenderCommands::init();
 }
 
