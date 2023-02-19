@@ -45,10 +45,12 @@ namespace Sapfire
 			mScale = scale;
 			calculate_world_transform();
 		}
+
 		void set_texture(const std::string& path);
 		const std::string& get_name() const { return mName; }
 		const glm::mat4& get_world_transform() const { return mWorldTransform; }
 		const glm::quat& get_rotation() const { return mRotation; }
+		const Ref<VertexArray>& get_vertex_array() const { return mVertexArray; }
 		void calculate_world_transform();
 
 	private:

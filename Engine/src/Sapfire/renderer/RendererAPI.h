@@ -22,11 +22,11 @@ namespace Sapfire
 		virtual void disable_culling() = 0;
 		virtual void enable_culling() = 0;
 		virtual void enable_depth() = 0;
-		
 		virtual void set_viewport(uint16_t x, uint16_t y, uint16_t width, uint16_t height) = 0;
 		virtual void draw(const Ref<VertexArray>& vertexArray) = 0;
 		virtual void draw(size_t count) = 0;
 		virtual void draw_mesh() = 0;
+		virtual void draw_skybox(const Ref<VertexBuffer>& VB, const Ref<CubeMap>& cubemap) = 0;
 		static API get_api() { return sAPI; }
 
 	private:

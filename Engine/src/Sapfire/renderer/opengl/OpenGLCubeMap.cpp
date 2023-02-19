@@ -7,8 +7,10 @@ namespace Sapfire
 	OpenGLCubeMap::OpenGLCubeMap(std::array<std::string, 6> textureFaces) : mWidth(0), mHeight(0)
 	{
 		PROFILE_FUNCTION();
-		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &mRendererID);
+		glGenTextures(1, &mRendererID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, mRendererID);
 		stbi_uc* data = nullptr;
+		stbi_set_flip_vertically_on_load(0);
 		for (int i = 0; i < 6; ++i)
 		{
 			int width, height, channels;
@@ -46,7 +48,7 @@ namespace Sapfire
 			mInternalFormat = internalFormat;
 			mDataFormat = dataFormat;
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-			             0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			             0, mInternalFormat, mWidth, mHeight, 0, mDataFormat, GL_UNSIGNED_BYTE, data);
 			stbi_image_free(data);
 		}
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -63,7 +65,8 @@ namespace Sapfire
 
 	void OpenGLCubeMap::bind()
 	{
-		glBindTextures(0, 1, &mRendererID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, mRendererID);
 	}
 
 	void OpenGLCubeMap::unbind()

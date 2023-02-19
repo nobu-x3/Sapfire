@@ -1,22 +1,28 @@
 #type vertex
-#version 450
+#version 440 core
 
 out vec3 textureDir;
 
 layout(location=0) in vec3 inPosition;
 
-uniform mat4 uViewMatrix;
-uniform mat4 uProjectionMatrix;
+layout(std140, row_major, binding = 0) uniform Matrices
+{
+    mat4 VP;
+} matrices;
 
+uniform mat4 uProjectionMatrix;
+uniform mat4 uViewMatrix;
 void main()
 {
-	vec4 pos = vec4(inPosition, 1.0);
-	gl_Position = pos * uViewMatrix * uProjectionMatrix;
     textureDir = inPosition;
+	vec4 pos = vec4(inPosition, 1.0) * uProjectionMatrix * uViewMatrix;
+	//vec4 pos = vec4(inPosition, 1.0) * matrices.VP;
+	//gl_Position = pos * uProjectionMatrix * uViewMatrix;
+	gl_Position = pos.xyww;
 }
 
 #type fragment
-#version 450
+#version 440 core
 
 out vec4 outColor;
 

@@ -17,6 +17,7 @@ namespace Sapfire
 		static void draw(const Ref<VertexArray>& vertexArray) { sRendererAPI->draw(vertexArray); }
 		static void draw(size_t count) { sRendererAPI->draw(count); }
 		static void draw_mesh() { sRendererAPI->draw_mesh(); }
+		static void draw_skybox(const Ref<VertexBuffer>& VB, const Ref<CubeMap>& cubemap) { sRendererAPI->draw_skybox(VB, cubemap); }
 		static void set_clear_color(glm::vec4& color) { sRendererAPI->set_clear_color(color); }
 		static void clear_screen() { sRendererAPI->clear_screen(); }
 		static void disable_culling() { sRendererAPI->disable_culling(); }

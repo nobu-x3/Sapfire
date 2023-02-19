@@ -38,23 +38,23 @@ void SandboxLayer::on_attach()
 	mMeshShader = mShaderLibrary.load("Shaders/BasicMesh.glsl");
 	mSphereMesh = create_ref<Mesh>("Assets/Cube.fbx");
 	mSphereMesh->set_texture("Assets/Farback01.png");
-	mSphereMesh->set_position(glm::vec3({0.f, 0.f, 0.4f}));
+	mSphereMesh->set_position(glm::vec3({0.f, 0.f, 100.f}));
 	mSphereMesh->set_scale(glm::vec3(0.3f));
 	mCameraRotation = 0.f;
 	BufferLayout matrixUniBufLayout = {{"viewproj", ShaderDataType::Mat4}};
 	mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
 	mSkybox = create_ref<Skybox>("Assets/Cube.fbx", "Shaders/Skybox.glsl", std::array<std::string, 6> {
-		"Assets/cubemap/px.png",
-		"Assets/cubemap/nx.png",
-		"Assets/cubemap/py.png",
-		"Assets/cubemap/ny.png",
-		"Assets/cubemap/pz.png",
-		"Assets/cubemap/nz.png"
+		"Assets/skybox/right.jpg",
+		"Assets/skybox/left.jpg",
+		"Assets/skybox/top.jpg",
+		"Assets/skybox/bottom.jpg",
+		"Assets/skybox/front.jpg",
+		"Assets/skybox/back.jpg"
 	});
 	RenderCommands::init();
 }
 
-static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
+static glm::vec4 clearColor(1.f, 1.f, 1.f, 1);
 static glm::vec3 scale(1.f);
 
 const float MOVE_SPEED = 50.f;
@@ -75,10 +75,10 @@ void SandboxLayer::on_update(float deltaTime)
 	mSphereMesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
 	RenderCommands::set_clear_color(clearColor);
 	RenderCommands::clear_screen();
+	mSkybox->draw(mCamera);
 	Renderer::begin_scene(mCamera, mUniformBuffer);
 	/* mTexture->Bind(); */
 	//Renderer::Submit(mVA, mSpriteShader);
-	mSkybox->draw(mCamera);
 	Renderer::submit_mesh(mSphereMesh, mMeshShader);
 	Renderer::end_scene();
 	mDirection = glm::vec3(0);

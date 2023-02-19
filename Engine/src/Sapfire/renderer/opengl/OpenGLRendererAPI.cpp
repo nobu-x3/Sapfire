@@ -70,6 +70,14 @@ namespace Sapfire
 		glDepthMask(GL_TRUE);
 	}
 
+	void OpenGLRendererAPI::draw_skybox(const Ref<VertexBuffer>& VB, const Ref<CubeMap>& cubemap)
+	{
+		PROFILE_FUNCTION();
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Mesh::Vertex),
+			(const void*)offsetof(Mesh::Vertex, Position));
+	}
+
 	void OpenGLRendererAPI::draw_mesh()
 	{
 		PROFILE_FUNCTION();
