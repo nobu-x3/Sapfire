@@ -14,6 +14,8 @@ namespace Sapfire
 	void Renderer::begin_scene(Camera& camera, const Ref<UniformBuffer>& uniformBuffer)
 	{
 		PROFILE_FUNCTION();
+		// RenderCommands::enable_culling();
+		// RenderCommands::enable_depth();
 		sSceneData->ViewProjectionMatrix = camera.get_view_projection_matrix();
 		uniformBuffer->set_data(sSceneData);
 	}

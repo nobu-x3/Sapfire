@@ -12,15 +12,20 @@ namespace Sapfire
 	Skybox::Skybox(const std::string& meshPath, const std::string& shaderPath, std::array<std::string, 6> textureFaces)
 	{
 		{
+			for (int i = 0; i < 36; ++i)
+			{
+				mIndices[i] = i;
+			}
 			mVertexArray = VertexArray::create();
+			mIndexBuffer = IndexBuffer::create();
+			mIndexBuffer->set_data(mIndices, sizeof mIndices);
 			BufferLayout layout = {{"inPosition", ShaderDataType::Vec3}};
 			mVertexBuffer = VertexBuffer::create();
 			mVertexBuffer->set_layout(layout);
 			mVertexBuffer->set_data(mVertexData, sizeof mVertexData);
 			mVertexArray->add_vertex_buffer(mVertexBuffer);
+			mVertexArray->add_index_buffer(mIndexBuffer);
 		}
-		mMesh = create_ref<Mesh>(meshPath);
-		mMesh->set_position({0.f, 0.f, 0.f});
 		mCubeMap = CubeMap::create(textureFaces);
 		mShader = Shader::create(shaderPath);
 	}
@@ -32,13 +37,11 @@ namespace Sapfire
 		mShader->bind();
 		mShader->set_matrix_uniform("uProjectionMatrix", camera.get_projection_matrix());
 		mShader->set_matrix_uniform("uViewMatrix", glm::mat4(glm::mat3(camera.get_view_matrix())));
-		// auto& vao = mMesh->get_vertex_array();
 		mVertexBuffer->bind();
 		mCubeMap->bind();
-		RenderCommands::draw_skybox(mVertexBuffer, mCubeMap);
-		RenderCommands::draw(108);
-		// mMesh->render(false);
-		RenderCommands::enable_culling();
+		RenderCommands::draw_skybox();
+		RenderCommands::draw(mIndexBuffer->get_size());
 		RenderCommands::enable_depth();
+		RenderCommands::enable_culling();
 	}
 }

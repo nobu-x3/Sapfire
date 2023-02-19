@@ -17,6 +17,10 @@ namespace Sapfire
 	private:
 		Ref<VertexArray> mVertexArray;
 		Ref<VertexBuffer> mVertexBuffer;
+		Ref<IndexBuffer> mIndexBuffer;
+		Ref<Mesh> mMesh;
+		Ref<CubeMap> mCubeMap;
+		Ref<Shader> mShader;
 		float mVertexData[108] = {
 			// positions          
 			-1.0f,  1.0f, -1.0f,
@@ -61,9 +65,7 @@ namespace Sapfire
 			-1.0f, -1.0f,  1.0f,
 			 1.0f, -1.0f,  1.0f
 		};
-		Ref<Mesh> mMesh;
-		Ref<CubeMap> mCubeMap;
-		Ref<Shader> mShader;
+		int mIndices[36];
 	};
 	
 }

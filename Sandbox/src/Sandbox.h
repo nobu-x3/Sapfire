@@ -16,7 +16,6 @@ public:
 	bool OnMouseMoved(MouseMovedEvent& e);
 
 private:
-	Ref<VertexArray> mVA;
 	Ref<UniformBuffer> mUniformBuffer;
 	ShaderLibrary mShaderLibrary;
 	Ref<Mesh> mSphereMesh;

@@ -14,7 +14,7 @@ namespace Sapfire
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
-		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		// glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	}
 
 	void OpenGLRendererAPI::clear_screen()
@@ -70,7 +70,7 @@ namespace Sapfire
 		glDepthMask(GL_TRUE);
 	}
 
-	void OpenGLRendererAPI::draw_skybox(const Ref<VertexBuffer>& VB, const Ref<CubeMap>& cubemap)
+	void OpenGLRendererAPI::init_skybox()
 	{
 		PROFILE_FUNCTION();
 		glEnableVertexAttribArray(0);

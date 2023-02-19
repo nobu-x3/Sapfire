@@ -13,27 +13,6 @@ SandboxLayer::SandboxLayer() : /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
 
 void SandboxLayer::on_attach()
 {
-	mVA = VertexArray::create();
-	float vertices[7 * 4] = {
-		-0.5f, 0.5f, 0.f, 0.f, 1.f, // top left
-		0.5f, 0.5f, 0.f, 1.f, 1.f, // top right
-		0.5f, -0.5f, 0.f, 1.f, 0.f, // bottom right
-		-0.5f, -0.5f, 0.f, 0.f, 0.f // bottom left
-	};
-	uint32_t indices[] = {0, 1, 2, 2, 3, 0};
-	BufferLayout layout = {{"inPosition", ShaderDataType::Vec3}, {"inTexCoord", ShaderDataType::Vec2}};
-	Ref<VertexBuffer> vb;
-	vb = VertexBuffer::create();
-	vb->set_layout(layout);
-	vb->set_data(vertices, sizeof vertices);
-	mVA->add_vertex_buffer(vb);
-	Ref<IndexBuffer> ib;
-	ib = IndexBuffer::create();
-	ib->set_data(indices, sizeof indices);
-	// mVA->add_index_buffer(ib);
-	mSpriteShader = mShaderLibrary.load(SHADER_PATH);
-	mTexture = Texture::create("Assets/Asteroid.png");
-	mSpriteShader->set_int_uniform("uTexture", mTexture->get_id());
 	mCamera.set_position(glm::vec3(0.f));
 	mMeshShader = mShaderLibrary.load("Shaders/BasicMesh.glsl");
 	mSphereMesh = create_ref<Mesh>("Assets/Cube.fbx");
@@ -75,8 +54,8 @@ void SandboxLayer::on_update(float deltaTime)
 	mSphereMesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
 	RenderCommands::set_clear_color(clearColor);
 	RenderCommands::clear_screen();
-	mSkybox->draw(mCamera);
 	Renderer::begin_scene(mCamera, mUniformBuffer);
+	mSkybox->draw(mCamera);
 	/* mTexture->Bind(); */
 	//Renderer::Submit(mVA, mSpriteShader);
 	Renderer::submit_mesh(mSphereMesh, mMeshShader);

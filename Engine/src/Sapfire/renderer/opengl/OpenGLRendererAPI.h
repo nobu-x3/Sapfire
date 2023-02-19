@@ -18,6 +18,6 @@ namespace Sapfire
 		virtual void disable_culling() override;
 		virtual void enable_culling() override;
 		virtual void enable_depth() override;
-		virtual void draw_skybox(const Ref<VertexBuffer>& VB, const Ref<CubeMap>& cubemap) override;
+		virtual void init_skybox() override;
 	};
 }

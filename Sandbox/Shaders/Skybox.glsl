@@ -16,8 +16,6 @@ void main()
 {
     textureDir = inPosition;
 	vec4 pos = vec4(inPosition, 1.0) * uProjectionMatrix * uViewMatrix;
-	//vec4 pos = vec4(inPosition, 1.0) * matrices.VP;
-	//gl_Position = pos * uProjectionMatrix * uViewMatrix;
 	gl_Position = pos.xyww;
 }
 
