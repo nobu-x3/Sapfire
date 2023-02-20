@@ -14,7 +14,7 @@ namespace Sapfire
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		glEnable(GL_CULL_FACE);
-		// glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	}
 
 	void OpenGLRendererAPI::clear_screen()

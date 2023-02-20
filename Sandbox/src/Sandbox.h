@@ -18,7 +18,7 @@ public:
 private:
 	Ref<UniformBuffer> mUniformBuffer;
 	ShaderLibrary mShaderLibrary;
-	Ref<Mesh> mSphereMesh;
+	std::vector<Ref<Mesh>> mMeshes;
 	Ref<Skybox> mSkybox;
 	Ref<Shader> mSpriteShader;
 	Ref<Shader> mMeshShader;

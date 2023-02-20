@@ -15,10 +15,14 @@ void SandboxLayer::on_attach()
 {
 	mCamera.set_position(glm::vec3(0.f));
 	mMeshShader = mShaderLibrary.load("Shaders/BasicMesh.glsl");
-	mSphereMesh = create_ref<Mesh>("Assets/Cube.fbx");
-	mSphereMesh->set_texture("Assets/Farback01.png");
-	mSphereMesh->set_position(glm::vec3({0.f, 0.f, 100.f}));
-	mSphereMesh->set_scale(glm::vec3(0.3f));
+	mMeshes.reserve(10);
+	for(int i = 0; i < 10; ++i)
+	{
+		mMeshes.emplace_back(create_ref<Mesh>("Assets/Cube.fbx"));
+		mMeshes[i]->set_texture("Assets/Farback01.png");
+		mMeshes[i]->set_position(glm::vec3({50.f * i, 0.f, 100.f}));
+		mMeshes[i]->set_scale(glm::vec3(0.3f));
+	}
 	mCameraRotation = 0.f;
 	BufferLayout matrixUniBufLayout = {{"viewproj", ShaderDataType::Mat4}};
 	mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
@@ -51,14 +55,20 @@ void SandboxLayer::on_update(float deltaTime)
 		mDirection += glm::vec3({0, 0, 1});
 	auto pos = mCamera.get_position();
 	mCamera.set_position(pos + mDirection * MOVE_SPEED * deltaTime);
-	mSphereMesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
+	for(auto& mesh : mMeshes)
+	{
+		mesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
+	}
 	RenderCommands::set_clear_color(clearColor);
 	RenderCommands::clear_screen();
 	Renderer::begin_scene(mCamera, mUniformBuffer);
 	mSkybox->draw(mCamera);
 	/* mTexture->Bind(); */
 	//Renderer::Submit(mVA, mSpriteShader);
-	Renderer::submit_mesh(mSphereMesh, mMeshShader);
+	for(auto& mesh : mMeshes)
+	{
+		Renderer::submit_mesh(mesh, mMeshShader);
+	}
 	Renderer::end_scene();
 	mDirection = glm::vec3(0);
 }
