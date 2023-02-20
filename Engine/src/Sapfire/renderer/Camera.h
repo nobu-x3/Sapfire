@@ -41,8 +41,6 @@ namespace Sapfire
 		virtual const glm::mat4& get_projection_matrix() const override { return mProjectionMatrix; }
 		virtual const glm::mat4& get_view_matrix() const override { return mViewMatrix; }
 		virtual const glm::mat4& get_view_projection_matrix() const override { return mViewProjectionMatrix; }
-		virtual glm::mat4& get_view_projection() { return mViewProjectionMatrix; }
-		virtual void* get_view_projection_matrix_ptr() { return glm::value_ptr(mViewProjectionMatrix); }
 
 	protected:
 		virtual void recalculate_view_matrix() override;

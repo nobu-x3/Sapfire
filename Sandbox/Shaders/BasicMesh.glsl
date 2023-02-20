@@ -11,7 +11,8 @@ layout(location=4) in vec2 inTexCoord;
 
 layout(std140, row_major, binding = 0) uniform Matrices
 {
-    mat4 VP;
+    mat4 View;
+    mat4 Proj;
 } matrices;
 
 uniform mat4 uWorldTransform;
@@ -19,7 +20,7 @@ uniform mat4 uWorldTransform;
 void main()
 {
 	vec4 pos = vec4(inPosition, 1.0);
-	gl_Position = pos * uWorldTransform * matrices.VP;
+	gl_Position = pos * uWorldTransform * matrices.View * matrices.Proj;
     fragTexCoord = inTexCoord;
 }
 

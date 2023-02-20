@@ -24,7 +24,7 @@ void SandboxLayer::on_attach()
 		mMeshes[i]->set_scale(glm::vec3(0.3f));
 	}
 	mCameraRotation = 0.f;
-	BufferLayout matrixUniBufLayout = {{"viewproj", ShaderDataType::Mat4}};
+	BufferLayout matrixUniBufLayout = {{"view", ShaderDataType::Mat4}, {"proj", ShaderDataType::Mat4}};
 	mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
 	mSkybox = create_ref<Skybox>("Assets/Cube.fbx", "Shaders/Skybox.glsl", std::array<std::string, 6> {
 		"Assets/skybox/right.jpg",

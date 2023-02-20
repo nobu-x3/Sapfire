@@ -22,6 +22,7 @@ namespace Sapfire
 		virtual void set_float_uniform(const std::string& name, float val) override;
 		virtual void set_int_uniform(const std::string& name, int val) override;
 		virtual const std::string& get_name() const override { return mName; }
+		virtual inline const RendererID get_program_id() const override { return mShaderProgram; }
 
 	private:
 		std::string ParseFile(const std::string& path);
@@ -32,6 +33,7 @@ namespace Sapfire
 		bool IsCompiled(GLuint shader);
 		// tests if linked
 		bool IsValidProgram() const;
+	private:
 		RendererID mShaderProgram;
 		std::string mName;
 	};

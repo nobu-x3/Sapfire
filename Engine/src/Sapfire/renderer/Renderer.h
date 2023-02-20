@@ -3,6 +3,29 @@
 #include "Sapfire/renderer/RendererAPI.h"
 namespace Sapfire
 {
+	struct DirectionalLight
+	{
+		glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 DiffuseColor = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 SpecColor = { 0.0f, 0.0f, 0.0f };
+		float Intensity = 0.f;
+	};
+
+	struct PointLight
+	{
+		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };;
+		glm::vec3 DiffuseColor = { 0.0f, 0.0f, 0.0f };;
+		glm::vec3 SpecColor = { 0.0f, 0.0f, 0.0f };;
+		float Intensity = 0.f;
+		float Radius = 0.f;
+	};
+
+	struct LightEnvironment
+	{
+		DirectionalLight DirectionalLights[4];
+		std::vector<PointLight> PointLights;
+	};
+
 	enum class WindowAPI
 	{
 		None = 0,
@@ -25,7 +48,9 @@ namespace Sapfire
 	private:
 		struct SceneData
 		{
-			glm::mat4 ViewProjectionMatrix;
+			glm::mat4 ViewMatrix;
+			glm::mat4 ProjectionMatrix;
+			LightEnvironment LightEnvironment;
 		};
 		static SceneData* sSceneData;
 		static WindowAPI sWindowAPI;

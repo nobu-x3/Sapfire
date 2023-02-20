@@ -10,13 +10,12 @@ namespace Sapfire
 	Renderer::SceneData* Renderer::sSceneData = new SceneData;
 
 	WindowAPI Renderer::sWindowAPI = WindowAPI::GLFW;
-
+	
 	void Renderer::begin_scene(Camera& camera, const Ref<UniformBuffer>& uniformBuffer)
 	{
 		PROFILE_FUNCTION();
-		// RenderCommands::enable_culling();
-		// RenderCommands::enable_depth();
-		sSceneData->ViewProjectionMatrix = camera.get_view_projection_matrix();
+		sSceneData->ViewMatrix = camera.get_view_matrix();
+		sSceneData->ProjectionMatrix = camera.get_projection_matrix();
 		uniformBuffer->set_data(sSceneData);
 	}
 
@@ -24,7 +23,7 @@ namespace Sapfire
 	{
 		PROFILE_FUNCTION();
 	}
-	
+
 	void Renderer::submit(const Ref<VertexArray>& vertexArray, const Ref<Shader>& shader)
 	{
 		PROFILE_FUNCTION();
@@ -41,7 +40,6 @@ namespace Sapfire
 		mesh->render();
 	}
 
-	
 
 	void Renderer::on_window_resize(uint16_t width, uint16_t height)
 	{
