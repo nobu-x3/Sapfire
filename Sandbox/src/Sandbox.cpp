@@ -62,13 +62,11 @@ void SandboxLayer::on_update(float deltaTime)
 	RenderCommands::set_clear_color(clearColor);
 	RenderCommands::clear_screen();
 	Renderer::begin_scene(mCamera, mUniformBuffer);
-	mSkybox->draw(mCamera);
-	/* mTexture->Bind(); */
-	//Renderer::Submit(mVA, mSpriteShader);
 	for(auto& mesh : mMeshes)
 	{
 		Renderer::submit_mesh(mesh, mMeshShader);
 	}
+	mSkybox->draw(mCamera);
 	Renderer::end_scene();
 	mDirection = glm::vec3(0);
 }

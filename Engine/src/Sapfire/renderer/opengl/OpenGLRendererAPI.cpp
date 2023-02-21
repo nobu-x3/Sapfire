@@ -52,7 +52,7 @@ namespace Sapfire
 
 	void OpenGLRendererAPI::disable_depth()
 	{
-		glDepthMask(GL_FALSE);
+		glDepthFunc(GL_LEQUAL);
 	}
 
 	void OpenGLRendererAPI::disable_culling()
@@ -67,7 +67,7 @@ namespace Sapfire
 
 	void OpenGLRendererAPI::enable_depth()
 	{
-		glDepthMask(GL_TRUE);
+		glDepthFunc(GL_LESS);
 	}
 
 	void OpenGLRendererAPI::init_skybox()
