@@ -66,7 +66,7 @@ void SandboxLayer::on_update(float deltaTime)
 	{
 		Renderer::submit_mesh(mesh, mMeshShader);
 	}
-	mSkybox->draw(mCamera);
+	mSkybox->draw();
 	Renderer::end_scene();
 	mDirection = glm::vec3(0);
 }

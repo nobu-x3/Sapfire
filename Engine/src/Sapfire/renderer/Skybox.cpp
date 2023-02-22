@@ -30,13 +30,11 @@ namespace Sapfire
 		mShader = Shader::create(shaderPath);
 	}
 
-	void Skybox::draw(const Camera& camera)
+	void Skybox::draw()
 	{
 		RenderCommands::disable_depth();
 		RenderCommands::disable_culling();
 		mShader->bind();
-		mShader->set_matrix_uniform("uProjectionMatrix", camera.get_projection_matrix());
-		mShader->set_matrix_uniform("uViewMatrix", glm::mat4(glm::mat3(camera.get_view_matrix())));
 		mVertexBuffer->bind();
 		mCubeMap->bind();
 		RenderCommands::draw_skybox();

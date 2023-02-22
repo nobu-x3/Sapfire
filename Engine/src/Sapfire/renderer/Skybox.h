@@ -13,7 +13,7 @@ namespace Sapfire
 	{
 	public:
 		Skybox(const std::string& meshPath, const std::string& shaderPath, std::array<std::string, 6> textureFaces);
-		void draw(const Camera& camera);
+		void draw();
 	private:
 		Ref<VertexArray> mVertexArray;
 		Ref<VertexBuffer> mVertexBuffer;
