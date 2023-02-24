@@ -55,6 +55,13 @@ struct PointLight
     float mIntensity;
 	float mRadius;
 };
+
+layout(std140, row_major, binding = 0) uniform Lights
+{
+    mat4 View;
+    mat4 Proj;
+} lights;
+
 uniform vec3 uCameraPos;
 uniform vec3 uAmbientLight;
 uniform float uSpecPower;

@@ -19,9 +19,10 @@ namespace Sapfire
 		Ref<VertexArray> mVA;
 		Ref<UniformBuffer> mUniformBuffer;
 		ShaderLibrary mShaderLibrary;
-		Ref<Mesh> mSphereMesh;
+		std::vector<Ref<Mesh>> mMeshes;
 		Ref<Shader> mSpriteShader;
 		Ref<Shader> mMeshShader;
+		Ref<Skybox> mSkybox;
 		Ref<Texture> mTexture;
 		Ref<Framebuffer> mFramebuffer;
 		PerspectiveCamera mCamera;

@@ -13,53 +13,43 @@ namespace Sapfire
 {
 	SaplingLayer::SaplingLayer()
 		: /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-		mCamera(70.f, 1280.f, 720.f, 0.01f, 100.f), mDirection(glm::vec3(0.f)), mViewportSize(0.f)
+		mCamera(70.f, 1280.f, 720.f, 0.01f, 10000.f), mDirection(glm::vec3(0.f)), mViewportSize(0.f)
 	{
 	}
 
 	void SaplingLayer::on_attach()
 	{
 		PROFILE_FUNCTION();
-		mVA = VertexArray::create();
-		float vertices[7 * 4] = {
-			-0.5f, 0.5f,  0.f, 0.f, 1.f, // top left
-			0.5f,  0.5f,  0.f, 1.f, 1.f, // top right
-			0.5f,  -0.5f, 0.f, 1.f, 0.f, // bottom right
-			-0.5f, -0.5f, 0.f, 0.f, 0.f	 // bottom left
-		};
-		uint32_t indices[] = { 0, 1, 2, 2, 3, 0 };
-		BufferLayout layout = { {"inPosition", ShaderDataType::Vec3}, {"inTexCoord", ShaderDataType::Vec2} };
-		Ref<VertexBuffer> vb;
-		vb = VertexBuffer::create();
-		vb->set_layout(layout);
-		vb->set_data(vertices, sizeof vertices);
-		mVA->add_vertex_buffer(vb);
-		Ref<IndexBuffer> ib;
-		ib = IndexBuffer::create();
-		ib->set_data(indices, sizeof indices);
-		mVA->add_index_buffer(ib);
-		mSpriteShader = mShaderLibrary.load(SHADER_PATH);
-		mTexture = Texture::create("../Sandbox/Assets/Asteroid.png");
-		mSpriteShader->set_int_uniform("uTexture", mTexture->get_id());
-		mCamera.set_position(glm::vec3(0.f));
-		mMeshShader = mShaderLibrary.load("../Sandbox/Shaders/BasicMesh.glsl");
-		mSphereMesh = create_ref<Mesh>("../Sandbox/Assets/Sphere.blend1");
-		mSphereMesh->set_texture("../Sandbox/Assets/Farback01.png");
-		mSphereMesh->set_position(glm::vec3({ 0.f, 0.f, 0.4f }));
-		mSphereMesh->set_scale(glm::vec3(1.f));
-		mCameraRotation = 0.f;
+	mCamera.set_position(glm::vec3(0.f));
+	mMeshShader = mShaderLibrary.load("../Sandbox/Shaders/BasicMesh.glsl");
+	mMeshes.reserve(10);
+	for(int i = 0; i < 10; ++i)
+	{
+		mMeshes.emplace_back(create_ref<Mesh>("../Sandbox/Assets/Cube.fbx"));
+		mMeshes[i]->set_texture("../Sandbox/Assets/Farback01.png");
+		mMeshes[i]->set_position(glm::vec3({50.f * i, 0.f, 100.f}));
+		mMeshes[i]->set_scale(glm::vec3(0.3f));
+	}
+	mCameraRotation = 0.f;
+	BufferLayout matrixUniBufLayout = {{"view", ShaderDataType::Mat4}, {"proj", ShaderDataType::Mat4}};
+	mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
+	mSkybox = create_ref<Skybox>("../Sandbox/Assets/Cube.fbx", "../Sandbox/Shaders/Skybox.glsl", std::array<std::string, 6> {
+		"../Sandbox/Assets/skybox/right.jpg",
+		"../Sandbox/Assets/skybox/left.jpg",
+		"../Sandbox/Assets/skybox/top.jpg",
+		"../Sandbox/Assets/skybox/bottom.jpg",
+		"../Sandbox/Assets/skybox/front.jpg",
+		"../Sandbox/Assets/skybox/back.jpg"
+	});
 		RenderCommands::init();
-		mViewportSize = { 1280, 720 };
 		FramebufferProperties fbProps = { 1280, 720, FramebufferFormat::RGBA8 };
 		mFramebuffer = Framebuffer::create(fbProps);
-		BufferLayout mvpLayout = { {"vp", ShaderDataType::Mat4}/*, {"projection", ShaderDataType::Mat4}*/};
-		mUniformBuffer = UniformBuffer::create(0, mvpLayout);
 	}
 
 	static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
 	static glm::vec3 scale(1.f);
 
-	const float MOVE_SPEED = 0.1f;
+	const float MOVE_SPEED = 50.f;
 
 	void SaplingLayer::on_update(float deltaTime)
 	{
@@ -81,22 +71,26 @@ namespace Sapfire
 
 		{
 			PROFILE_SCOPE("Gameplay");
-			//mCameraRotation += 30.f * deltaTime;
 			auto pos = mCamera.get_position();
 			mCamera.set_position(pos + mDirection * MOVE_SPEED * deltaTime);
-			mSphereMesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({ 0.f, 0.f, 1.f })));
+			for(auto& mesh : mMeshes)
+			{
+				mesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
+			}
 			mDirection = glm::vec3(0);
 		}
 
 		{
 			PROFILE_SCOPE("Rendering");
-			RenderCommands::set_clear_color(clearColor);
 			mFramebuffer->bind();
+			RenderCommands::set_clear_color(clearColor);
 			RenderCommands::clear_screen();
 			Renderer::begin_scene(mCamera, mUniformBuffer);
-			/* mTexture->Bind(); */
-			//Renderer::Submit(mVA, mSpriteShader);
-			Renderer::submit_mesh(mSphereMesh, mMeshShader);
+			for(auto& mesh : mMeshes)
+			{
+				Renderer::submit_mesh(mesh, mMeshShader);
+			}
+			mSkybox->draw();
 			Renderer::end_scene();
 			mFramebuffer->unbind();
 		}
