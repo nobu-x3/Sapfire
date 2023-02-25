@@ -6,12 +6,13 @@ namespace Sapfire
 {
 	class Scene
 	{
+		friend class Entity;
+
 	public:
 		Scene();
 		~Scene();
 		void on_update(float deltaTime);
-		entt::entity create_entity();
-		inline entt::registry& get_registry() { return mRegistry; }
+		Entity create_entity();
 
 	private:
 		entt::registry mRegistry;

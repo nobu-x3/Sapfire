@@ -8,6 +8,7 @@ namespace Sapfire
 	class Entity
 	{
 	public:
+		Entity() = default;
 		Entity(entt::entity id, Scene* scene);
 		Entity(const Entity& other) = default;
 
@@ -31,15 +32,17 @@ namespace Sapfire
 			if (!has_component<T>()) { ENGINE_ERROR("Entity {0} does not have component!", mEntityId); }
 			return mScene->mRegistry.remove<T>(mEntityId);
 		}
-		
+
 		template <typename T>
-		bool has_component()
+		bool has_component() const
 		{
 			return mScene->mRegistry.any_of<T>(mEntityId);
 		}
 
+		operator bool() const { return mEntityId != entt::null; }
+
 	private:
-		entt::entity mEntityId;
-		Scene* mScene; // 12 bytes so whatever
+		entt::entity mEntityId{entt::null};
+		Scene* mScene = nullptr; // 12 bytes so whatever
 	};
 }

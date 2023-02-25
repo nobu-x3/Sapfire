@@ -7,6 +7,7 @@
 #include "Sapfire/scene/Components.h"
 #include "Sapfire/tools/Profiling.h"
 #include "Sapfire/scene/Scene.h"
+#include "Sapfire/scene/Entity.h"
 
 const std::string SHADER_PATH = "../Sandbox/Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "../Sandbox/Sprite";
@@ -28,14 +29,13 @@ namespace Sapfire
 		for (int i = 0; i < 10; ++i)
 		{
 			auto cube = mActiveScene->create_entity();
-			mActiveScene->get_registry().emplace<TransformComponent>(cube);
-			mActiveScene->get_registry().emplace<MeshRendererComponent>(cube, "../Sandbox/Assets/Cube.fbx", mMeshShader);
+			auto& mesh = cube.add_component<MeshRendererComponent>("../Sandbox/Assets/Cube.fbx", mMeshShader);
+			mesh.Mesh3D.set_texture("../Sandbox/Assets/Farback01.png");
 			// mMeshes[i]->set_texture("../Sandbox/Assets/Farback01.png");
 			// mMeshes[i]->set_position(glm::vec3({50.f * i, 0.f, 100.f}));
 			// mMeshes[i]->set_scale(glm::vec3(0.3f));
 		}
 		mCameraRotation = 0.f;
-		mActiveScene = create_ref<Scene>();
 		BufferLayout matrixUniBufLayout = {{"view", ShaderDataType::Mat4}, {"proj", ShaderDataType::Mat4}};
 		mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
 		mSkybox = create_ref<Skybox>("../Sandbox/Shaders/Skybox.glsl",
@@ -83,7 +83,6 @@ namespace Sapfire
 				mesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
 			}
 			mDirection = glm::vec3(0);
-			mActiveScene->on_update(deltaTime);
 		}
 		{
 			PROFILE_SCOPE("Rendering");
@@ -91,10 +90,7 @@ namespace Sapfire
 			RenderCommands::set_clear_color(clearColor);
 			RenderCommands::clear_screen();
 			Renderer::begin_scene(mCamera, mUniformBuffer);
-			for (auto& mesh : mMeshes)
-			{
-				Renderer::submit_mesh(mesh, mMeshShader);
-			}
+			mActiveScene->on_update(deltaTime);
 			mSkybox->draw();
 			Renderer::end_scene();
 			mFramebuffer->unbind();
