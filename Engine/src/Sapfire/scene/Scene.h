@@ -2,8 +2,12 @@
 
 #include <entt/entt.hpp>
 
+#include "Sapfire/core/Core.h"
+
 namespace Sapfire
 {
+	class UniformBuffer;
+
 	class Scene
 	{
 		friend class Entity;
@@ -16,5 +20,6 @@ namespace Sapfire
 
 	private:
 		entt::registry mRegistry;
+		Ref<UniformBuffer> mUniformBuffer;
 	};
 }

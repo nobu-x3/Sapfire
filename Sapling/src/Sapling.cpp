@@ -15,29 +15,27 @@ const std::string SHADER_NAME = "../Sandbox/Sprite";
 namespace Sapfire
 {
 	SaplingLayer::SaplingLayer() : /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-		mCamera(70.f, 1280.f, 720.f, 0.01f, 10000.f), mDirection(glm::vec3(0.f)), mViewportSize(0.f)
+		mDirection(glm::vec3(0.f)), mViewportSize(0.f)
 	{
 	}
 
 	void SaplingLayer::on_attach()
 	{
 		PROFILE_FUNCTION();
-		mCamera.set_position(glm::vec3(0.f));
 		mMeshShader = mShaderLibrary.load("../Sandbox/Shaders/BasicMesh.glsl");
 		mActiveScene = create_ref<Scene>();
+		mCamera = mActiveScene->create_entity();
+		mCamera.add_component<CameraComponent>(70.f, 1280.f, 720.f, 0.01f, 10000.f);
 		mMeshes.reserve(10);
 		for (int i = 0; i < 10; ++i)
 		{
 			auto cube = mActiveScene->create_entity();
 			auto& mesh = cube.add_component<MeshRendererComponent>("../Sandbox/Assets/Cube.fbx", mMeshShader);
+			auto& transform = cube.get_component<TransformComponent>();
+			transform.Transform = glm::translate(transform.Transform, glm::vec3({50.f * i, 0.f, 100.f}));
 			mesh.Mesh3D.set_texture("../Sandbox/Assets/Farback01.png");
-			// mMeshes[i]->set_texture("../Sandbox/Assets/Farback01.png");
-			// mMeshes[i]->set_position(glm::vec3({50.f * i, 0.f, 100.f}));
-			// mMeshes[i]->set_scale(glm::vec3(0.3f));
 		}
 		mCameraRotation = 0.f;
-		BufferLayout matrixUniBufLayout = {{"view", ShaderDataType::Mat4}, {"proj", ShaderDataType::Mat4}};
-		mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
 		mSkybox = create_ref<Skybox>("../Sandbox/Shaders/Skybox.glsl",
 		                             std::array<std::string, 6>{
 			                             "../Sandbox/Assets/skybox/right.jpg",
@@ -76,12 +74,8 @@ namespace Sapfire
 		}
 		{
 			PROFILE_SCOPE("Gameplay");
-			auto pos = mCamera.get_position();
-			mCamera.set_position(pos + mDirection * MOVE_SPEED * deltaTime);
-			for (auto& mesh : mMeshes)
-			{
-				mesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
-			}
+			auto& transform = mCamera.get_component<TransformComponent>();
+			transform.Transform = (translate(transform.Transform, mDirection * MOVE_SPEED * deltaTime));
 			mDirection = glm::vec3(0);
 		}
 		{
@@ -89,7 +83,7 @@ namespace Sapfire
 			mFramebuffer->bind();
 			RenderCommands::set_clear_color(clearColor);
 			RenderCommands::clear_screen();
-			Renderer::begin_scene(mCamera, mUniformBuffer);
+			// Renderer::begin_scene(mCamera, mUniformBuffer);
 			mActiveScene->on_update(deltaTime);
 			mSkybox->draw();
 			Renderer::end_scene();

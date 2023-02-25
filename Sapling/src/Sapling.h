@@ -2,6 +2,7 @@
 
 #include "Engine.h"
 #include "Sapfire/renderer/ShaderLibrary.h"
+#include "Sapfire/scene/Entity.h"
 
 namespace Sapfire
 {
@@ -18,7 +19,6 @@ namespace Sapfire
 		bool OnMouseMoved(MouseMovedEvent& e);
 
 	private:
-		Ref<UniformBuffer> mUniformBuffer;
 		ShaderLibrary mShaderLibrary;
 		Ref<Shader> mSpriteShader;
 		Ref<Shader> mMeshShader;
@@ -27,7 +27,7 @@ namespace Sapfire
 		Ref<Framebuffer> mFramebuffer;
 		std::vector<Ref<Mesh>> mMeshes;
 		Ref<Scene> mActiveScene;
-		PerspectiveCamera mCamera;
+		Entity mCamera;
 		glm::vec2 mViewportSize;
 		glm::vec3 mDirection;
 		float mCameraRotation;

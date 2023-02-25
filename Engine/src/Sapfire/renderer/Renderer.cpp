@@ -10,11 +10,12 @@ namespace Sapfire
 	Renderer::SceneData* Renderer::sSceneData = new SceneData;
 
 	WindowAPI Renderer::sWindowAPI = WindowAPI::GLFW;
-	
-	void Renderer::begin_scene(Camera& camera, const Ref<UniformBuffer>& uniformBuffer)
+
+	void Renderer::begin_scene(const Camera& camera, const glm::mat4& cameraTransform,
+	                           const Ref<UniformBuffer>& uniformBuffer)
 	{
 		PROFILE_FUNCTION();
-		sSceneData->ViewMatrix = camera.get_view_matrix();
+		sSceneData->ViewMatrix = glm::inverse(cameraTransform);
 		sSceneData->ProjectionMatrix = camera.get_projection_matrix();
 		uniformBuffer->set_data(sSceneData);
 	}
