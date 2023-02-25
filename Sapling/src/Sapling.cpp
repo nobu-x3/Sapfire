@@ -146,6 +146,7 @@ namespace Sapfire
 			ImGui::Begin("Some other panel");
 			{
 				ImGui::Text("Some other text");
+				ImGui::DragFloat3("Camera Transform", glm::value_ptr(mCamera.get_component<TransformComponent>().Transform[3]));
 			}
 			ImGui::End();
 		}
