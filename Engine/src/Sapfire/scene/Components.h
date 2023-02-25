@@ -1,6 +1,7 @@
 #pragma once
 #include "glm/glm.hpp"
 #include "Sapfire/renderer/Mesh.h"
+#include "Sapfire/renderer/Shader.h"
 
 namespace Sapfire
 {
@@ -19,6 +20,6 @@ namespace Sapfire
 
 		MeshRendererComponent() = default;
 		MeshRendererComponent(const Mesh& mesh) : Mesh3D(mesh) {}
-		MeshRendererComponent(const std::string& path) : Mesh3D(path) {}
+		MeshRendererComponent(const std::string& meshPath, const Ref<Shader>& shader) : Mesh3D(meshPath, shader) {}
 	};
 }

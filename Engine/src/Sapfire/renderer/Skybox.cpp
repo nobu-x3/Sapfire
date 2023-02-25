@@ -9,7 +9,7 @@
 
 namespace Sapfire
 {
-	Skybox::Skybox(const std::string& meshPath, const std::string& shaderPath, std::array<std::string, 6> textureFaces)
+	Skybox::Skybox(const std::string& shaderPath, std::array<std::string, 6> textureFaces)
 	{
 		{
 			for (int i = 0; i < 36; ++i)

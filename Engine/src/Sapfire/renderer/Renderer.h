@@ -40,6 +40,8 @@ namespace Sapfire
 		static void end_scene();
 		static void submit(const Ref<VertexArray>& vertexArray, const Ref<class Shader>& shader);
 		static void submit_mesh(const Ref<class Mesh>& mesh, const Ref<Shader>& shader);
+		static void submit_mesh(const Ref<class Mesh>& mesh, const glm::mat4& transform);
+		static void submit_mesh(Mesh& mesh, const glm::mat4& transform);
 		static WindowAPI get_window_api() { return sWindowAPI; }
 		
 		// EVENTS	///////////

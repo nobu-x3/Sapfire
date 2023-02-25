@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include "Sapfire/renderer/RenderCommands.h"
 #include "Sapfire/renderer/Texture.h"
+#include "Sapfire/renderer/Shader.h"
 #include <assimp/Importer.hpp>
 #include <assimp/LogStream.hpp>
 #include <assimp/postprocess.h>
@@ -14,7 +15,7 @@ namespace Sapfire
 		aiProcess_PreTransformVertices | aiProcess_GenNormals | aiProcess_GenUVCoords |
 		aiProcess_OptimizeMeshes | aiProcess_Debone | aiProcess_ValidateDataStructure;
 
-	Mesh::Mesh(const std::string& fileName) : mWorldTransform(1.f)
+	Mesh::Mesh(const std::string& fileName, const Ref<Shader>& shader) : mWorldTransform(1.f)
 	{
 		PROFILE_FUNCTION();
 		std::filesystem::path p = fileName;
@@ -66,6 +67,7 @@ namespace Sapfire
 		mVertexArray->add_vertex_buffer(mVertexBuffer);
 		mVertexArray->add_index_buffer(mIndexBuffer);
 		ENGINE_INFO("Done parsing mesh: {0}", fileName);
+		mShader = shader;
 	}
 	Mesh::~Mesh()
 	{

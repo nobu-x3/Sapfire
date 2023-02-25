@@ -40,6 +40,23 @@ namespace Sapfire
 		mesh->render();
 	}
 
+	void Renderer::submit_mesh(const Ref<Mesh>& mesh, const glm::mat4& transform)
+	{
+		PROFILE_FUNCTION();
+		auto& shader = mesh->get_shader();
+		shader->bind();
+		shader->set_matrix_uniform("uWorldTransform", transform);
+		mesh->render();
+	}
+
+	void Renderer::submit_mesh(Mesh& mesh, const glm::mat4& transform)
+	{
+		auto& shader = mesh.get_shader();
+		shader->bind();
+		shader->set_matrix_uniform("uWorldTransform", transform);
+		mesh.render();
+	}
+
 
 	void Renderer::on_window_resize(uint16_t width, uint16_t height)
 	{

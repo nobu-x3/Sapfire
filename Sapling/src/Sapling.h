@@ -5,6 +5,8 @@
 
 namespace Sapfire
 {
+	class Scene;
+
 	class SaplingLayer : public Layer
 	{
 	public:
@@ -16,19 +18,18 @@ namespace Sapfire
 		bool OnMouseMoved(MouseMovedEvent& e);
 
 	private:
-		Ref<VertexArray> mVA;
 		Ref<UniformBuffer> mUniformBuffer;
 		ShaderLibrary mShaderLibrary;
-		std::vector<Ref<Mesh>> mMeshes;
 		Ref<Shader> mSpriteShader;
 		Ref<Shader> mMeshShader;
 		Ref<Skybox> mSkybox;
 		Ref<Texture> mTexture;
 		Ref<Framebuffer> mFramebuffer;
+		std::vector<Ref<Mesh>> mMeshes;
+		Ref<Scene> mActiveScene;
 		PerspectiveCamera mCamera;
 		glm::vec2 mViewportSize;
 		glm::vec3 mDirection;
-
 		float mCameraRotation;
 		bool mViewportPanelFocused;
 		bool mViewportPanelHovered;

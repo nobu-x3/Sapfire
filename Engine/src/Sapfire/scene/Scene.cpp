@@ -1,24 +1,31 @@
 #include "engpch.h"
 #include "Scene.h"
+#include "Sapfire/scene/Components.h"
 #include "entt/entt.hpp"
+#include "Sapfire/renderer/Renderer.h"
 
 namespace Sapfire
 {
 	Scene::Scene()
 	{
-		struct TransformComponent
-		{
-			glm::mat4 Transform;
-
-			TransformComponent() = default;
-			TransformComponent(const TransformComponent&) = default;
-			TransformComponent(const glm::mat4& transform) : Transform(transform) {}
-		};
-		entt::entity entity = mRegistry.create();
-		mRegistry.emplace<TransformComponent>(entity, glm::mat4(1.f));
 	}
 
 	Scene::~Scene()
 	{
+	}
+
+	void Scene::on_update(float deltaTime)
+	{
+		auto group = mRegistry.group<TransformComponent>(entt::get<MeshRendererComponent>);
+		for(auto entity : group)
+		{
+			auto [transform, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
+			Renderer::submit_mesh(mesh.Mesh3D, transform.Transform);
+		}
+	}
+
+	entt::entity Scene::create_entity()
+	{
+		return mRegistry.create();
 	}
 }

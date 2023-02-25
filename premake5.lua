@@ -115,7 +115,8 @@ project "Sapling"
             "%{wks.location}/Engine/deps",
             "%{IncludeDir.glm}",
             "%{IncludeDir.glew}",
-            "%{IncludeDir.imgui}"
+            "%{IncludeDir.imgui}",
+            "%{IncludeDir.entt}"
         }
     
         links
@@ -175,7 +176,8 @@ project "Sandbox"
         "%{wks.location}/Engine/deps",
         "%{IncludeDir.glm}",
         "%{IncludeDir.glew}",
-        "%{IncludeDir.imgui}"
+        "%{IncludeDir.imgui}",
+        "%{IncludeDir.entt}"
     }
 
     links

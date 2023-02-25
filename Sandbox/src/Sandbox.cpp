@@ -16,9 +16,9 @@ void SandboxLayer::on_attach()
 	mCamera.set_position(glm::vec3(0.f));
 	mMeshShader = mShaderLibrary.load("Shaders/BasicMesh.glsl");
 	mMeshes.reserve(10);
-	for(int i = 0; i < 10; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
-		mMeshes.emplace_back(create_ref<Mesh>("Assets/Cube.fbx"));
+		mMeshes.emplace_back(create_ref<Mesh>("Assets/Cube.fbx", mMeshShader));
 		mMeshes[i]->set_texture("Assets/Farback01.png");
 		mMeshes[i]->set_position(glm::vec3({50.f * i, 0.f, 100.f}));
 		mMeshes[i]->set_scale(glm::vec3(0.3f));
@@ -26,14 +26,14 @@ void SandboxLayer::on_attach()
 	mCameraRotation = 0.f;
 	BufferLayout matrixUniBufLayout = {{"view", ShaderDataType::Mat4}, {"proj", ShaderDataType::Mat4}};
 	mUniformBuffer = UniformBuffer::create(0, matrixUniBufLayout);
-	mSkybox = create_ref<Skybox>("Assets/Cube.fbx", "Shaders/Skybox.glsl", std::array<std::string, 6> {
-		"Assets/skybox/right.jpg",
-		"Assets/skybox/left.jpg",
-		"Assets/skybox/top.jpg",
-		"Assets/skybox/bottom.jpg",
-		"Assets/skybox/front.jpg",
-		"Assets/skybox/back.jpg"
-	});
+	mSkybox = create_ref<Skybox>("Shaders/Skybox.glsl", std::array<std::string, 6>{
+		                             "Assets/skybox/right.jpg",
+		                             "Assets/skybox/left.jpg",
+		                             "Assets/skybox/top.jpg",
+		                             "Assets/skybox/bottom.jpg",
+		                             "Assets/skybox/front.jpg",
+		                             "Assets/skybox/back.jpg"
+	                             });
 	RenderCommands::init();
 }
 
@@ -55,14 +55,14 @@ void SandboxLayer::on_update(float deltaTime)
 		mDirection += glm::vec3({0, 0, 1});
 	auto pos = mCamera.get_position();
 	mCamera.set_position(pos + mDirection * MOVE_SPEED * deltaTime);
-	for(auto& mesh : mMeshes)
+	for (auto& mesh : mMeshes)
 	{
 		mesh->set_rotation(angleAxis(glm::radians(mCameraRotation), glm::vec3({0.f, 0.f, 1.f})));
 	}
 	RenderCommands::set_clear_color(clearColor);
 	RenderCommands::clear_screen();
 	Renderer::begin_scene(mCamera, mUniformBuffer);
-	for(auto& mesh : mMeshes)
+	for (auto& mesh : mMeshes)
 	{
 		Renderer::submit_mesh(mesh, mMeshShader);
 	}

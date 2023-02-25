@@ -5,6 +5,7 @@
 
 namespace Sapfire
 {
+	class Shader;
 #define VERTEX_NUM_ATTRIBUTES 5
 
 	class Mesh
@@ -24,7 +25,7 @@ namespace Sapfire
 			uint32_t V1, V2, V3;
 		};
 
-		Mesh(const std::string& fileName);
+		Mesh(const std::string& fileName, const Ref<Shader>& shader);
 		~Mesh();
 		virtual void render(bool bindTexture = true);
 
@@ -52,6 +53,7 @@ namespace Sapfire
 		const glm::quat& get_rotation() const { return mRotation; }
 		const Ref<VertexArray>& get_vertex_array() const { return mVertexArray; }
 		void calculate_world_transform();
+		const Ref<Shader>& get_shader() const { return mShader; }
 
 	private:
 		std::string mName;
@@ -60,6 +62,7 @@ namespace Sapfire
 		Ref<VertexBuffer> mVertexBuffer;
 		Ref<IndexBuffer> mIndexBuffer;
 		Ref<VertexArray> mVertexArray;
+		Ref<Shader> mShader;
 		glm::vec3 mWorldPosition;
 		glm::quat mRotation;
 		glm::vec3 mScale = glm::vec3(1.f);
