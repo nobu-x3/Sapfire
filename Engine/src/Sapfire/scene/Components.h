@@ -1,7 +1,6 @@
 #pragma once
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
-#include "glm/gtx/rotate_normalized_axis.hpp"
 #include "Sapfire/renderer/Camera.h"
 #include "Sapfire/renderer/Mesh.h"
 #include "Sapfire/renderer/Shader.h"
@@ -11,8 +10,13 @@ namespace Sapfire
 	struct TransformComponent
 	{
 		glm::vec3 Translation = {0.0f, 0.0f, 0.0f};
-		glm::vec3 Rotation = {0.0f, 0.0f, 0.0f};
 		glm::vec3 Scale = {1.0f, 1.0f, 1.0f};
+		
+	private:
+		glm::vec3 EulerRotation = {0.0f, 0.0f, 0.0f};
+		glm::quat Rotation{1.f, 0.f, 0.f, 0.f};
+		
+	public:
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent &) = default;
@@ -24,7 +28,7 @@ namespace Sapfire
 
 		glm::mat4 get_transform() const
 		{
-			return glm::translate(glm::mat4(1.f), -Translation) * glm::mat4_cast(glm::quat(glm::radians(Rotation))) *
+			return glm::translate(glm::mat4(1.f), -Translation) * glm::mat4_cast(Rotation) *
 				glm::scale(glm::mat4(1.f), Scale);
 		}
 
@@ -33,9 +37,25 @@ namespace Sapfire
 			return {glm::vec3(-Rotation.x, -Rotation.y, Rotation.z)};
 		}
 
+		glm::vec3 get_euler_rotation() const { return EulerRotation; }
+
+		void set_euler_rotation(const glm::vec3& euler)
+		{
+			EulerRotation = euler;
+			Rotation = glm::quat(EulerRotation);
+		}
+
+		glm::quat get_rotation() const { return Rotation; }
+
+		void set_rotation(const glm::quat& quat)
+		{
+			Rotation = quat;
+			EulerRotation = glm::eulerAngles(quat);
+		}
+
 		glm::vec3 get_forward_vector() const
 		{
-			return {glm::rotate(get_orientation(), {1.f, 0.f, 0.f})};
+			return {glm::rotate(Rotation, {0.f, 0.f, -1.f})};
 		}
 	};
 
