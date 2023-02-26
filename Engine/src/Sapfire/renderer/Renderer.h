@@ -14,9 +14,9 @@ namespace Sapfire
 
 	struct PointLight
 	{
-		glm::vec3 Position = {0.0f, 0.0f, 0.0f};;
-		glm::vec3 DiffuseColor = {0.0f, 0.0f, 0.0f};;
-		glm::vec3 SpecColor = {0.0f, 0.0f, 0.0f};;
+		glm::vec3 Position = {0.0f, 0.0f, 0.0f};
+		glm::vec3 DiffuseColor = {0.0f, 0.0f, 0.0f};
+		glm::vec3 SpecColor = {0.0f, 0.0f, 0.0f};
 		float Intensity = 0.f;
 		float Radius = 0.f;
 	};

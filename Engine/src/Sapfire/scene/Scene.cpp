@@ -52,7 +52,8 @@ namespace Sapfire
 	Entity Scene::create_entity()
 	{
 		Entity entity = {mRegistry.create(), this};
-		entity.add_component<TransformComponent>();
+		auto& transform = entity.add_component<TransformComponent>();
+		entity.set_tranform(&transform.Transform);
 		return entity;
 	}
 }

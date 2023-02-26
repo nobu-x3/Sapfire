@@ -37,7 +37,7 @@ namespace Sapfire
 	{
 		PROFILE_FUNCTION();
 		shader->bind();
-		shader->set_matrix_uniform("uWorldTransform", mesh->get_world_transform());
+		// shader->set_matrix_uniform("uWorldTransform", mesh->get_world_transform());
 		mesh->render();
 	}
 

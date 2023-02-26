@@ -28,31 +28,9 @@ namespace Sapfire
 		Mesh(const std::string& fileName, const Ref<Shader>& shader);
 		~Mesh();
 		virtual void render(bool bindTexture = true);
-
-		void set_position(const glm::vec3& pos)
-		{
-			mWorldPosition = -pos;
-			calculate_world_transform();
-		}
-
-		void set_rotation(const glm::quat& quat)
-		{
-			mRotation = quat;
-			calculate_world_transform();
-		}
-
-		void set_scale(const glm::vec3& scale)
-		{
-			mScale = scale;
-			calculate_world_transform();
-		}
-
 		void set_texture(const std::string& path);
 		const std::string& get_name() const { return mName; }
-		const glm::mat4& get_world_transform() const { return mWorldTransform; }
-		const glm::quat& get_rotation() const { return mRotation; }
 		const Ref<VertexArray>& get_vertex_array() const { return mVertexArray; }
-		void calculate_world_transform();
 		const Ref<Shader>& get_shader() const { return mShader; }
 
 	private:
@@ -63,10 +41,6 @@ namespace Sapfire
 		Ref<IndexBuffer> mIndexBuffer;
 		Ref<VertexArray> mVertexArray;
 		Ref<Shader> mShader;
-		glm::vec3 mWorldPosition;
-		glm::quat mRotation;
-		glm::vec3 mScale = glm::vec3(1.f);
-		glm::mat4 mWorldTransform;
 		Ref<class Texture> mTexture;
 	};
 }

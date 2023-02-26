@@ -31,9 +31,9 @@ namespace Sapfire
 		{
 			auto cube = mActiveScene->create_entity();
 			auto& mesh = cube.add_component<MeshRendererComponent>("../Sandbox/Assets/Cube.fbx", mMeshShader);
-			auto& transform = cube.get_component<TransformComponent>();
-			transform.Transform = glm::translate(transform.Transform, glm::vec3({50.f * i, 0.f, 100.f}));
 			mesh.Mesh3D.set_texture("../Sandbox/Assets/Farback01.png");
+			cube.set_position(glm::vec3({100.f * i, 0.f, 100.f}));
+			cube.set_scale(glm::vec3(0.3f));
 		}
 		mCameraRotation = 0.f;
 		mSkybox = create_ref<Skybox>("../Sandbox/Shaders/Skybox.glsl",
@@ -74,8 +74,9 @@ namespace Sapfire
 		}
 		{
 			PROFILE_SCOPE("Gameplay");
-			auto& transform = mCamera.get_component<TransformComponent>();
-			transform.Transform = (translate(transform.Transform, mDirection * MOVE_SPEED * deltaTime));
+			// auto& transform = mCamera.get_component<TransformComponent>();
+			// transform.Transform = (translate(transform.Transform, mDirection * MOVE_SPEED * deltaTime));
+			mCamera.translate(mDirection * MOVE_SPEED * deltaTime);
 			mDirection = glm::vec3(0);
 		}
 		{
@@ -83,7 +84,6 @@ namespace Sapfire
 			mFramebuffer->bind();
 			RenderCommands::set_clear_color(clearColor);
 			RenderCommands::clear_screen();
-			// Renderer::begin_scene(mCamera, mUniformBuffer);
 			mActiveScene->on_update(deltaTime);
 			mSkybox->draw();
 			Renderer::end_scene();
@@ -146,7 +146,8 @@ namespace Sapfire
 			ImGui::Begin("Some other panel");
 			{
 				ImGui::Text("Some other text");
-				ImGui::DragFloat3("Camera Transform", glm::value_ptr(mCamera.get_component<TransformComponent>().Transform[3]));
+				ImGui::DragFloat3("Camera Transform",
+				                  glm::value_ptr(mCamera.get_component<TransformComponent>().Transform[3]));
 			}
 			ImGui::End();
 		}
