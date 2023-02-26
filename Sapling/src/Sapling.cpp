@@ -55,14 +55,14 @@ namespace Sapfire
 	static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
 	static glm::vec3 scale(1.f);
 
-	const float MOVE_SPEED = 50.f;
+	const float MOVE_SPEED = 150.f;
 
 	void SaplingLayer::on_update(float deltaTime)
 	{
 		PROFILE_FUNCTION();
 		{
 			PROFILE_SCOPE("Inputs");
-			if (mViewportPanelFocused)
+			if (mViewportPanelFocused && Input::mouse_button_down(MouseButton::Right))
 			{
 				if (Input::key_pressed(KeyCode::A))
 					mDirection += glm::vec3({-1, 0, 0});
@@ -76,9 +76,15 @@ namespace Sapfire
 		}
 		{
 			PROFILE_SCOPE("Gameplay");
-			mCamera.transform().Translation -= mDirection != glm::vec3(0) ? mCamera.transform().get_forward_vector() * MOVE_SPEED *
-				deltaTime : glm::vec3(0);
-			mCamera.transform().set_euler_rotation(mCamera.transform().get_euler_rotation() + mCameraRotation * deltaTime);
+			mCamera.transform().Translation -= mDirection != glm::vec3(0)
+				? mCamera.transform().get_forward_vector() * MOVE_SPEED *
+				deltaTime
+				: glm::vec3(0);
+			if (Input::mouse_button_down(MouseButton::Right))
+			{
+				mCamera.transform().set_euler_rotation(
+					mCamera.transform().get_euler_rotation() + mCameraRotation * deltaTime);
+			}
 			mCameraRotation = glm::vec3(0);
 			mDirection = glm::vec3(0);
 		}
@@ -171,8 +177,8 @@ namespace Sapfire
 	{
 		if (!mViewportPanelFocused)
 			return true;
-		mCameraRotation -= glm::vec3(e.get_y(), -e.get_x(), 0.f) - prevVal;
-		prevVal = {e.get_y(), -e.get_x(), 0.f};
+		mCameraRotation -= glm::vec3(e.get_y(), e.get_x(), 0.f) - prevVal;
+		prevVal = {e.get_y(), e.get_x(), 0.f};
 		return true;
 	}
 
