@@ -16,7 +16,7 @@ void main()
 {
     mat4 viewTr = mat4(mat3(matrices.view));
     textureDir = inPosition;
-	vec4 pos = vec4(inPosition, 1.0) * matrices.proj * viewTr;
+	vec4 pos = vec4(inPosition, 1.0) * matrices.proj * mat4(1.0);
 	gl_Position = pos.xyww;
 }
 

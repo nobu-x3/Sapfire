@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "Components.h"
 #include "Sapfire/scene/Scene.h"
 #include "entt/entt.hpp"
 
@@ -39,17 +40,12 @@ namespace Sapfire
 			return mScene->mRegistry.any_of<T>(mEntityId);
 		}
 
-		void set_tranform(glm::mat4* transform) { mTransform = transform; }
-		void set_position(const glm::vec3& pos) const;
-		void set_rotation(const glm::quat& quat) const;
-		void set_scale(const glm::vec3& scale) const;
-		void translate(const glm::vec3& offset) const;
-
+		TransformComponent& transform() { return get_component<TransformComponent>(); }
+		const glm::mat4& transform_matrix() const { return get_component<TransformComponent>().get_transform(); }
 		operator bool() const { return mEntityId != entt::null; }
 
 	private:
 		entt::entity mEntityId{entt::null};
 		Scene* mScene = nullptr; // 12 bytes so whatever
-		glm::mat4* mTransform = nullptr;
 	};
 }

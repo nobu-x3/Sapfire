@@ -2,6 +2,8 @@
 #include "Sapfire/renderer/Mesh.h"
 #include <imgui.h>
 #include <glfw/include/GLFW/glfw3.h>
+
+#include "glm/gtx/matrix_interpolation.hpp"
 #include "Sapfire/core/Input.h"
 #include "Sapfire/imgui/ImguiLayer.h"
 #include "Sapfire/scene/Components.h"
@@ -30,12 +32,12 @@ namespace Sapfire
 		for (int i = 0; i < 10; ++i)
 		{
 			auto cube = mActiveScene->create_entity();
-			auto& mesh = cube.add_component<MeshRendererComponent>("../Sandbox/Assets/Cube.fbx", mMeshShader);
+			auto &mesh = cube.add_component<MeshRendererComponent>("../Sandbox/Assets/Cube.fbx", mMeshShader);
 			mesh.Mesh3D.set_texture("../Sandbox/Assets/Farback01.png");
-			cube.set_position(glm::vec3({100.f * i, 0.f, 100.f}));
-			cube.set_scale(glm::vec3(0.3f));
+			cube.transform().Translation = {100.f * i, 0.f, 400.f};
+			cube.transform().Scale = {0.3f, 0.3f, 0.3f};
 		}
-		mCameraRotation = 0.f;
+		mCameraRotation = {0.f, 0.f, 0.f};
 		mSkybox = create_ref<Skybox>("../Sandbox/Shaders/Skybox.glsl",
 		                             std::array<std::string, 6>{
 			                             "../Sandbox/Assets/skybox/right.jpg",
@@ -74,9 +76,10 @@ namespace Sapfire
 		}
 		{
 			PROFILE_SCOPE("Gameplay");
-			// auto& transform = mCamera.get_component<TransformComponent>();
-			// transform.Transform = (translate(transform.Transform, mDirection * MOVE_SPEED * deltaTime));
-			mCamera.translate(mDirection * MOVE_SPEED * deltaTime);
+			mCamera.transform().Translation -= mCamera.transform().get_forward_vector() * MOVE_SPEED *
+				deltaTime;
+			mCamera.transform().Rotation += mCameraRotation;
+			mCameraRotation = glm::vec3(0);
 			mDirection = glm::vec3(0);
 		}
 		{
@@ -98,7 +101,7 @@ namespace Sapfire
 		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
 		// because it would be confusing to have two docking targets within each others.
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGuiViewport *viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(viewport->GetWorkPos());
 		ImGui::SetNextWindowSize(viewport->GetWorkSize());
 		ImGui::SetNextWindowViewport(viewport->ID);
@@ -118,7 +121,7 @@ namespace Sapfire
 		ImGui::Begin("DockSpace Demo", &p_open, window_flags);
 		{
 			// DockSpace
-			ImGuiIO& io = ImGui::GetIO();
+			ImGuiIO &io = ImGui::GetIO();
 			RendererID textureID = mFramebuffer->get_color_attachment_renderer_id();
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id,
@@ -139,7 +142,7 @@ namespace Sapfire
 					                     static_cast<uint32_t>(sceneViewportSize.y));
 					mViewportSize = {sceneViewportSize.x, sceneViewportSize.y};
 				}
-				ImGui::Image((void*)textureID, {mViewportSize.x, mViewportSize.y}, {0, 1}, {1, 0});
+				ImGui::Image((void *)textureID, {mViewportSize.x, mViewportSize.y}, {0, 1}, {1, 0});
 				ImGui::PopStyleVar();
 			}
 			ImGui::End();
@@ -147,31 +150,34 @@ namespace Sapfire
 			{
 				ImGui::Text("Some other text");
 				ImGui::DragFloat3("Camera Transform",
-				                  glm::value_ptr(mCamera.get_component<TransformComponent>().Transform[3]));
+				                  glm::value_ptr(mCamera.get_component<TransformComponent>().Translation));
 			}
 			ImGui::End();
 		}
 		ImGui::End();
 	}
 
-	void SaplingLayer::on_event(Event& event)
+	void SaplingLayer::on_event(Event &event)
 	{
-		if (event.Handled) return;
+		if (event.Handled)
+			return;
 		EventDispatcher dispatcher(event);
 		dispatcher.dispatch<MouseMovedEvent>(BIND_EVENT_FN(SaplingLayer::OnMouseMoved));
 	}
 
-	static float prevVal = 0.f;
+	static glm::vec3 prevVal = {0.f, 0.f, 0.f};
 
-	bool SaplingLayer::OnMouseMoved(MouseMovedEvent& e)
+	bool SaplingLayer::OnMouseMoved(MouseMovedEvent &e)
 	{
-		if (!mViewportPanelFocused) return true;
-		mCameraRotation -= e.get_x() - prevVal;
-		prevVal = e.get_x();
+		if (!mViewportPanelFocused)
+			return true;
+		mCameraRotation -= glm::vec3(e.get_y(), e.get_x(), 0.f) - prevVal;
+		prevVal = {e.get_y(), e.get_x(), 0.f};
 		return true;
 	}
 
-	SaplingApp::SaplingApp() : Application("Sapling")
+	SaplingApp::SaplingApp() :
+		Application("Sapling")
 	{
 		push_layer(new SaplingLayer());
 	}
@@ -180,7 +186,7 @@ namespace Sapfire
 	{
 	}
 
-	Application* Sapfire::create_application()
+	Application *Sapfire::create_application()
 	{
 		return new SaplingApp();
 	}

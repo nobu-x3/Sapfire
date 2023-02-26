@@ -36,13 +36,13 @@ namespace Sapfire
 		}
 		if (mainCamera)
 		{
-			Renderer::begin_scene(mainCamera->Camera, cameraTransform->Transform, mUniformBuffer);
+			Renderer::begin_scene(mainCamera->Camera, cameraTransform->get_transform(), mUniformBuffer);
 			{
 				auto group = mRegistry.group<TransformComponent>(entt::get<MeshRendererComponent>);
 				for (auto entity : group)
 				{
 					auto [transform, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
-					Renderer::submit_mesh(mesh.Mesh3D, transform.Transform);
+					Renderer::submit_mesh(mesh.Mesh3D, transform.get_transform());
 				}
 			}
 			Renderer::end_scene();
@@ -52,8 +52,7 @@ namespace Sapfire
 	Entity Scene::create_entity()
 	{
 		Entity entity = {mRegistry.create(), this};
-		auto& transform = entity.add_component<TransformComponent>();
-		entity.set_tranform(&transform.Transform);
+		entity.add_component<TransformComponent>();
 		return entity;
 	}
 }
