@@ -76,7 +76,7 @@ namespace Sapfire
 		}
 		{
 			PROFILE_SCOPE("Gameplay");
-			mCamera.transform().Translation -= mDirection != glm::vec3(0) ? mCamera.transform().get_forward_vectoR() * MOVE_SPEED *
+			mCamera.transform().Translation -= mDirection != glm::vec3(0) ? mCamera.transform().get_forward_vector() * MOVE_SPEED *
 				deltaTime : glm::vec3(0);
 			mCamera.transform().set_euler_rotation(mCamera.transform().get_euler_rotation() + mCameraRotation * deltaTime);
 			mCameraRotation = glm::vec3(0);
