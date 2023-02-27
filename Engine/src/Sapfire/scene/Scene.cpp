@@ -20,8 +20,8 @@ namespace Sapfire
 
 	void Scene::on_update(float deltaTime)
 	{
-		CameraComponent* mainCamera = nullptr;
-		TransformComponent* cameraTransform = nullptr;
+		CameraComponent *mainCamera = nullptr;
+		TransformComponent *cameraTransform = nullptr;
 		{
 			auto group = mRegistry.group<CameraComponent>(entt::get<TransformComponent>);
 			for (auto entity : group)
@@ -36,6 +36,7 @@ namespace Sapfire
 		}
 		if (mainCamera)
 		{
+			mainCamera->Camera.set_viewport_size(mViewportWidth, mViewportHeight);
 			Renderer::begin_scene(mainCamera->Camera, cameraTransform->get_transform(), mUniformBuffer);
 			{
 				auto group = mRegistry.group<TransformComponent>(entt::get<MeshRendererComponent>);
@@ -47,6 +48,12 @@ namespace Sapfire
 			}
 			Renderer::end_scene();
 		}
+	}
+
+	void Scene::set_viewport_size(uint32_t width, uint32_t height)
+	{
+		mViewportWidth = width;
+		mViewportHeight = height;
 	}
 
 	Entity Scene::create_entity()

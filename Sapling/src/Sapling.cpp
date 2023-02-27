@@ -147,6 +147,7 @@ namespace Sapfire
 					mFramebuffer->resize(static_cast<uint32_t>(sceneViewportSize.x),
 					                     static_cast<uint32_t>(sceneViewportSize.y));
 					mViewportSize = {sceneViewportSize.x, sceneViewportSize.y};
+					mActiveScene->set_viewport_size((uint32_t)sceneViewportSize.x, (uint32_t)sceneViewportSize.y);
 				}
 				ImGui::Image((void *)textureID, {mViewportSize.x, mViewportSize.y}, {0, 1}, {1, 0});
 				ImGui::PopStyleVar();

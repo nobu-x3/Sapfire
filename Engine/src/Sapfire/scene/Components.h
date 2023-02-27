@@ -1,4 +1,5 @@
 #pragma once
+#include "SceneCamera.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "Sapfire/renderer/Camera.h"
@@ -11,13 +12,12 @@ namespace Sapfire
 	{
 		glm::vec3 Translation = {0.0f, 0.0f, 0.0f};
 		glm::vec3 Scale = {1.0f, 1.0f, 1.0f};
-		
+
 	private:
 		glm::vec3 EulerRotation = {0.0f, 0.0f, 0.0f};
 		glm::quat Rotation{1.f, 0.f, 0.f, 0.f};
-		
-	public:
 
+	public:
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent &) = default;
 
@@ -39,7 +39,7 @@ namespace Sapfire
 
 		glm::vec3 get_euler_rotation() const { return EulerRotation; }
 
-		void set_euler_rotation(const glm::vec3& euler)
+		void set_euler_rotation(const glm::vec3 &euler)
 		{
 			EulerRotation = euler;
 			Rotation = glm::quat(EulerRotation);
@@ -47,7 +47,7 @@ namespace Sapfire
 
 		glm::quat get_rotation() const { return Rotation; }
 
-		void set_rotation(const glm::quat& quat)
+		void set_rotation(const glm::quat &quat)
 		{
 			Rotation = quat;
 			EulerRotation = glm::eulerAngles(quat);
@@ -78,24 +78,14 @@ namespace Sapfire
 
 	struct CameraComponent
 	{
-		Sapfire::Camera Camera;
+		SceneCamera Camera;
 		bool IsActive = true;
 		CameraComponent() = default;
+		CameraComponent(const CameraComponent &cameraComponent) = default;
 
-		CameraComponent(const Sapfire::Camera &camera) :
-			Camera(camera)
+		CameraComponent(float degFov, float width, float height, float nearP, float farP)
 		{
-		}
-
-		CameraComponent(const glm::mat4 &projection) :
-			Camera(projection)
-		{
-		}
-
-		CameraComponent(float degFov, float width, float height, float nearP, float farP) :
-			Camera(
-				degFov, width, height, nearP, farP)
-		{
+			Camera.set_perspective_projection_matrix(glm::radians(degFov), width, height, nearP, farP);
 		}
 	};
 }
