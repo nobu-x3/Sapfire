@@ -1,7 +1,6 @@
 #pragma once
 
 #include <entt/entt.hpp>
-
 #include "Sapfire/core/Core.h"
 
 namespace Sapfire

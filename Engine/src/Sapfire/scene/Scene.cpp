@@ -20,6 +20,20 @@ namespace Sapfire
 
 	void Scene::on_update(float deltaTime)
 	{
+		// update scripts
+		{
+			mRegistry.view<ScriptComponent>().each([=](auto entity, auto& scriptComp)
+			{
+				// TODO: move this to on_scene_play() or smth
+				if(!scriptComp.Instance)
+				{
+					scriptComp.Instance = scriptComp.init_script();
+					scriptComp.Instance->mEntity = Entity {entity, this};
+					scriptComp.Instance->on_create();
+				}
+				scriptComp.Instance->on_update(deltaTime);
+			});
+		}
 		CameraComponent *mainCamera = nullptr;
 		TransformComponent *cameraTransform = nullptr;
 		{

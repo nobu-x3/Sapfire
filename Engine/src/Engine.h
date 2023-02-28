@@ -13,6 +13,15 @@
 #include "Sapfire/renderer/CubeMap.h"
 ///////////////////////////////////////////
 
+//    Scene /////////////////////////////
+#include "Sapfire/scene/Entity.h"
+#include "Sapfire/scene/Components.h"
+#include "Sapfire/scene/Scene.h"
+#include "Sapfire/scene/SceneCamera.h"
+#include "Sapfire/scene/ScriptableEntity.h"
+///////////////////////////////////////////
+
+
 //    Events /////////////////////////////
 #include "Sapfire/events/Event.h"
 #include "Sapfire/events/KeyEvent.h"

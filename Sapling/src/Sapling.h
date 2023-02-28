@@ -29,8 +29,6 @@ namespace Sapfire
 		Ref<Scene> mActiveScene;
 		Entity mCamera;
 		glm::vec2 mViewportSize;
-		glm::vec3 mDirection;
-		glm::vec3 mCameraRotation;
 		bool mViewportPanelFocused;
 		bool mViewportPanelHovered;
 	};

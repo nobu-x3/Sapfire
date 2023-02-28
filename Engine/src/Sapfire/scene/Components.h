@@ -1,10 +1,9 @@
 #pragma once
 #include "SceneCamera.h"
+#include "ScriptableEntity.h"
 #include "glm/glm.hpp"
 #include "glm/gtx/quaternion.hpp"
-#include "Sapfire/renderer/Camera.h"
 #include "Sapfire/renderer/Mesh.h"
-#include "Sapfire/renderer/Shader.h"
 
 namespace Sapfire
 {
@@ -86,6 +85,25 @@ namespace Sapfire
 		CameraComponent(float degFov, float width, float height, float nearP, float farP)
 		{
 			Camera.set_perspective_projection_matrix(glm::radians(degFov), width, height, nearP, farP);
+		}
+	};
+
+	struct ScriptComponent
+	{
+		ScriptableEntity *Instance = nullptr;
+
+		ScriptableEntity *(*init_script)();
+		void (*destroy_script)(ScriptComponent *);
+
+		template <typename T>
+		void bind()
+		{
+			init_script = []() { return static_cast<ScriptableEntity *>(new T()); };
+			destroy_script = [](ScriptComponent *comp)
+			{
+				delete comp->Instance;
+				comp->Instance = nullptr; // just to be sure
+			};
 		}
 	};
 }

@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "Components.h"
 #include "Sapfire/scene/Scene.h"
 #include "entt/entt.hpp"
 
@@ -21,7 +20,7 @@ namespace Sapfire
 		}
 
 		template <typename T>
-		T& get_component() const
+		T& get_component() 
 		{
 			if (!has_component<T>()) { ENGINE_ERROR("Entity {0} does not have component!", mEntityId); }
 			return mScene->mRegistry.get<T>(mEntityId);
@@ -35,13 +34,12 @@ namespace Sapfire
 		}
 
 		template <typename T>
-		bool has_component() const
+		bool has_component() 
 		{
 			return mScene->mRegistry.any_of<T>(mEntityId);
 		}
 
-		TransformComponent& transform() { return get_component<TransformComponent>(); }
-		const glm::mat4& transform_matrix() const { return get_component<TransformComponent>().get_transform(); }
+		struct TransformComponent& transform();
 		operator bool() const { return mEntityId != entt::null; }
 
 	private:

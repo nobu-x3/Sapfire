@@ -4,12 +4,12 @@
 #include <glfw/include/GLFW/glfw3.h>
 
 #include "glm/gtx/matrix_interpolation.hpp"
-#include "Sapfire/core/Input.h"
 #include "Sapfire/imgui/ImguiLayer.h"
 #include "Sapfire/scene/Components.h"
 #include "Sapfire/tools/Profiling.h"
 #include "Sapfire/scene/Scene.h"
 #include "Sapfire/scene/Entity.h"
+#include "Sapfire/scripts/CameraController.h"
 
 const std::string SHADER_PATH = "../Sandbox/Shaders/Sprite.glsl";
 const std::string SHADER_NAME = "../Sandbox/Sprite";
@@ -17,7 +17,7 @@ const std::string SHADER_NAME = "../Sandbox/Sprite";
 namespace Sapfire
 {
 	SaplingLayer::SaplingLayer() : /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
-		mDirection(glm::vec3(0.f)), mViewportSize(0.f)
+		 mViewportSize(0.f)
 	{
 	}
 
@@ -28,6 +28,7 @@ namespace Sapfire
 		mActiveScene = create_ref<Scene>();
 		mCamera = mActiveScene->create_entity();
 		mCamera.add_component<CameraComponent>(70.f, 1280.f, 720.f, 0.01f, 10000.f);
+		mCamera.add_component<ScriptComponent>().bind<CameraController>();
 		mMeshes.reserve(10);
 		for (int i = 0; i < 10; ++i)
 		{
@@ -37,7 +38,6 @@ namespace Sapfire
 			cube.transform().Translation = {100.f * i, 0.f, 400.f};
 			cube.transform().Scale = {0.3f, 0.3f, 0.3f};
 		}
-		mCameraRotation = {0.f, 0.f, 0.f};
 		mSkybox = create_ref<Skybox>("../Sandbox/Shaders/Skybox.glsl",
 		                             std::array<std::string, 6>{
 			                             "../Sandbox/Assets/skybox/right.jpg",
@@ -55,39 +55,10 @@ namespace Sapfire
 	static glm::vec4 clearColor(0.1f, 0.1f, 0.1f, 1);
 	static glm::vec3 scale(1.f);
 
-	const float MOVE_SPEED = 150.f;
 
 	void SaplingLayer::on_update(float deltaTime)
 	{
 		PROFILE_FUNCTION();
-		{
-			PROFILE_SCOPE("Inputs");
-			if (mViewportPanelFocused && Input::mouse_button_down(MouseButton::Right))
-			{
-				if (Input::key_pressed(KeyCode::A))
-					mDirection += glm::vec3({-1, 0, 0});
-				if (Input::key_pressed(KeyCode::D))
-					mDirection += glm::vec3({1, 0, 0});
-				if (Input::key_pressed(KeyCode::W))
-					mDirection += glm::vec3({0, 0, -1});
-				if (Input::key_pressed(KeyCode::S))
-					mDirection += glm::vec3({0, 0, 1});
-			}
-		}
-		{
-			PROFILE_SCOPE("Gameplay");
-			mCamera.transform().Translation -= mDirection != glm::vec3(0)
-				? mCamera.transform().get_forward_vector() * MOVE_SPEED *
-				deltaTime
-				: glm::vec3(0);
-			if (Input::mouse_button_down(MouseButton::Right))
-			{
-				mCamera.transform().set_euler_rotation(
-					mCamera.transform().get_euler_rotation() + mCameraRotation * deltaTime);
-			}
-			mCameraRotation = glm::vec3(0);
-			mDirection = glm::vec3(0);
-		}
 		{
 			PROFILE_SCOPE("Rendering");
 			mFramebuffer->bind();
@@ -172,14 +143,11 @@ namespace Sapfire
 		dispatcher.dispatch<MouseMovedEvent>(BIND_EVENT_FN(SaplingLayer::OnMouseMoved));
 	}
 
-	static glm::vec3 prevVal = {0.f, 0.f, 0.f};
 
 	bool SaplingLayer::OnMouseMoved(MouseMovedEvent &e)
 	{
 		if (!mViewportPanelFocused)
 			return true;
-		mCameraRotation -= glm::vec3(e.get_y(), e.get_x(), 0.f) - prevVal;
-		prevVal = {e.get_y(), e.get_x(), 0.f};
 		return true;
 	}
 
