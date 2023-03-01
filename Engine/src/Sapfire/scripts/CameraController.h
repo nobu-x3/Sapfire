@@ -27,9 +27,10 @@ namespace Sapfire
 			}
 			{
 				PROFILE_SCOPE("Gameplay");
-				get_component<TransformComponent>().Translation -= mDirection != glm::vec3(0)
-					? get_component<TransformComponent>().get_forward_vector() * MOVE_SPEED *
-					deltaTime
+				auto forwardVec = get_component<TransformComponent>().get_forward_vector();
+				get_component<TransformComponent>().Translation += mDirection != glm::vec3(0)
+					? forwardVec * MOVE_SPEED *
+					deltaTime * mDirection.Z
 					: glm::vec3(0);
 				if (Input::mouse_button_down(MouseButton::Right))
 				{
