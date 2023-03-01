@@ -30,7 +30,7 @@ namespace Sapfire
 				auto forwardVec = get_component<TransformComponent>().get_forward_vector();
 				get_component<TransformComponent>().Translation += mDirection != glm::vec3(0)
 					? forwardVec * MOVE_SPEED *
-					deltaTime * mDirection.Z
+					deltaTime * mDirection.z
 					: glm::vec3(0);
 				if (Input::mouse_button_down(MouseButton::Right))
 				{
