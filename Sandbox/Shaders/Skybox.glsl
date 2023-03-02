@@ -14,10 +14,9 @@ layout(std140, row_major, binding = 0) uniform Matrices
 uniform mat4 uViewMatrix;
 void main()
 {
-    mat4 viewTr = mat4(mat3(matrices.view));
-    textureDir = inPosition;
-	vec4 pos = vec4(inPosition, 1.0) * matrices.proj * mat4(1.0);
-	gl_Position = pos.xyww;
+    vec4 position = vec4(inPosition.xy, 1.0, 1.0);
+    textureDir = (position * inverse(matrices.view * matrices.proj)).xyz;
+	gl_Position = position;
 }
 
 #type fragment
