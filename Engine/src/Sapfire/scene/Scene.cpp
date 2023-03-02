@@ -70,9 +70,10 @@ namespace Sapfire
 		mViewportHeight = height;
 	}
 
-	Entity Scene::create_entity()
+	Entity Scene::create_entity(const std::string& name)
 	{
 		Entity entity = {mRegistry.create(), this};
+		entity.add_component<TagComponent>(name);
 		entity.add_component<TransformComponent>();
 		return entity;
 	}

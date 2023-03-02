@@ -16,7 +16,7 @@ const std::string SHADER_NAME = "../Sandbox/Sprite";
 
 namespace Sapfire
 {
-	SaplingLayer::SaplingLayer() : /* mCamera(1.6f, -1.6f, 0.9f, -0.9) */
+	SaplingLayer::SaplingLayer() : 
 		 mViewportSize(0.f)
 	{
 	}
@@ -26,13 +26,14 @@ namespace Sapfire
 		PROFILE_FUNCTION();
 		mMeshShader = mShaderLibrary.load("../Sandbox/Shaders/BasicMesh.glsl");
 		mActiveScene = create_ref<Scene>();
+		mSceneHierarchy.set_context(mActiveScene);
 		mCamera = mActiveScene->create_entity();
 		mCamera.add_component<CameraComponent>(70.f, 1280.f, 720.f, 0.01f, 10000.f);
 		mCamera.add_component<ScriptComponent>().bind<CameraController>();
 		mMeshes.reserve(10);
 		for (int i = 0; i < 10; ++i)
 		{
-			auto cube = mActiveScene->create_entity();
+			auto cube = mActiveScene->create_entity(std::format("cube{0}", i));
 			auto &mesh = cube.add_component<MeshRendererComponent>("../Sandbox/Assets/Cube.fbx", mMeshShader);
 			mesh.Mesh3D.set_texture("../Sandbox/Assets/Farback01.png");
 			cube.transform().Translation = {100.f * i, 0.f, 400.f};
@@ -124,6 +125,7 @@ namespace Sapfire
 				ImGui::PopStyleVar();
 			}
 			ImGui::End();
+			mSceneHierarchy.OnImguiRender();
 			ImGui::Begin("Some other panel");
 			{
 				ImGui::Text("Some other text");

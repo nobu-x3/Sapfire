@@ -10,13 +10,14 @@ namespace Sapfire
 	class Scene
 	{
 		friend class Entity;
+		friend class SceneHierarchyPanel;
 
 	public:
 		Scene();
 		~Scene();
 		void on_update(float deltaTime);
 		void set_viewport_size(uint32_t width, uint32_t height);
-		Entity create_entity();
+		Entity create_entity(const std::string& name = "");
 
 	private:
 		entt::registry mRegistry;

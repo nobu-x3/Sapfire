@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine.h"
+#include "Panels/SceneHierarchyPanel.h"
 #include "Sapfire/renderer/ShaderLibrary.h"
 #include "Sapfire/scene/Entity.h"
 
@@ -29,6 +30,7 @@ namespace Sapfire
 		Ref<Scene> mActiveScene;
 		Entity mCamera;
 		glm::vec2 mViewportSize;
+		SceneHierarchyPanel mSceneHierarchy;
 		bool mViewportPanelFocused;
 		bool mViewportPanelHovered;
 	};

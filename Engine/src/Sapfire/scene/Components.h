@@ -7,6 +7,22 @@
 
 namespace Sapfire
 {
+	struct TagComponent
+	{
+		std::string Tag;
+
+		TagComponent() = default;
+		TagComponent(const TagComponent &) = default;
+
+		TagComponent(const std::string &name) :
+			Tag(name)
+		{
+		}
+
+		operator std::string&() { return Tag; }
+		operator const std::string&() { return Tag; }
+	};
+
 	struct TransformComponent
 	{
 		glm::vec3 Translation = {0.0f, 0.0f, 0.0f};
