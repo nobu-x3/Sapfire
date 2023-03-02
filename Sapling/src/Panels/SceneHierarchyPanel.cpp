@@ -18,11 +18,26 @@ namespace Sapfire
 	void SceneHierarchyPanel::OnImguiRender()
 	{
 		ImGui::Begin("Scene Hierarchy");
-		mContext->mRegistry.each([&](auto entity)
+		mContext->mRegistry.each([&](auto entityId)
 		{
-			auto& tag = mContext->mRegistry.get<TagComponent>(entity);
-			ImGui::Text("%s", tag.Tag.c_str());
+			Entity entity = {entityId, mContext.get()};
+			draw_entity_tree(entity);
 		});
 		ImGui::End();
+	}
+
+	void SceneHierarchyPanel::draw_entity_tree(Entity entity)
+	{
+			auto& tag = entity.get_component<TagComponent>().Tag;
+		ImGuiTreeNodeFlags flags = ((mSelectionIndex == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		bool opened = ImGui::TreeNodeEx(reinterpret_cast<void *>(static_cast<uint64_t>(static_cast<uint32_t>(entity))), flags, tag.c_str());
+		if(ImGui::IsItemClicked())
+		{
+			mSelectionIndex = entity;
+		}
+		if(opened)
+		{
+			ImGui::TreePop();
+		}
 	}
 }

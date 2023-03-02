@@ -41,6 +41,8 @@ namespace Sapfire
 
 		struct TransformComponent& transform();
 		operator bool() const { return mEntityId != entt::null; }
+		bool operator==(const Entity& other) const { return mEntityId == other.mEntityId; } 
+		operator uint32_t() const { return static_cast<uint32_t>(mEntityId); }
 
 	private:
 		entt::entity mEntityId{entt::null};

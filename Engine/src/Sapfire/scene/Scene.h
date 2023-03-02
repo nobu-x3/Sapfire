@@ -17,7 +17,7 @@ namespace Sapfire
 		~Scene();
 		void on_update(float deltaTime);
 		void set_viewport_size(uint32_t width, uint32_t height);
-		Entity create_entity(const std::string& name = "");
+		Entity create_entity(const std::string& name = "Untitled");
 
 	private:
 		entt::registry mRegistry;
