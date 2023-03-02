@@ -126,13 +126,7 @@ namespace Sapfire
 			}
 			ImGui::End();
 			mSceneHierarchy.OnImguiRender();
-			ImGui::Begin("Some other panel");
-			{
-				ImGui::Text("Some other text");
-				ImGui::DragFloat3("Camera Transform",
-				                  glm::value_ptr(mCamera.get_component<TransformComponent>().Translation));
-			}
-			ImGui::End();
+			
 		}
 		ImGui::End();
 	}

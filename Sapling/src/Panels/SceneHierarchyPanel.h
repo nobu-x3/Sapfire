@@ -15,6 +15,7 @@ namespace Sapfire
 		void OnImguiRender();
 	private:
 		void draw_entity_tree(Entity entity);
+		void draw_components(Entity entity);
 	private:
 		Ref<Scene> mContext;
 		Entity mSelectionIndex;
