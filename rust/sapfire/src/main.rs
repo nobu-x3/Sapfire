@@ -1,31 +1,58 @@
 extern crate glfw;
-use glfw::{Action, Context, Key};
-use glium::glutin::event::Event;
+use glfw::{Action, Context, Key, WindowEvent};
+use std::sync::mpsc::Receiver;
 
-fn main() {
-    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
-    let (mut window, events) = glfw.create_window(800, 600, "Sapfire", glfw::WindowMode::Windowed)
-        .expect("Failed to open glfw window");
-    window.set_key_polling(true);
-    window.make_current();
-    while !window.should_close()
+
+struct Renderer
+{
+    window : glfw::Window,
+    glfw : glfw::Glfw,
+    events : Receiver<(f64, WindowEvent)>
+}
+
+impl Renderer
+{
+    fn new() -> Renderer
     {
-        glfw.poll_events();
-        for(_, event) in glfw::flush_messages(&events)
+        let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+        glfw.window_hint(glfw::WindowHint::OpenGlDebugContext(true));
+        let (mut window, events) = glfw.create_window(800, 600, "Sapfire", glfw::WindowMode::Windowed)
+            .expect("Failed to open glfw window");
+        window.set_key_polling(true);
+        window.make_current();
+        Renderer {
+            window : window,
+            glfw : glfw,
+            events : events
+        }
+    }
+    fn run(&mut self)
+    {
+        while !self.window.should_close()
         {
-            on_input(&mut window, event);
+            self.glfw.poll_events();
+            for(_, event) in glfw::flush_messages(&self.events)
+            {
+                Renderer::on_input(&mut self.window, event);
+            }
+        }
+    }
+
+    fn on_input(window : &mut glfw::Window,
+                event: glfw::WindowEvent)
+    {
+        match event
+        {
+            glfw::WindowEvent::Key(Key::Escape, _, glfw::Action::Press, _) =>
+            {
+                println!("Exiting...");
+               window.set_should_close(true)
+            }
+            _ => {}
         }
     }
 }
 
-fn on_input(window: &mut glfw::Window, event: glfw::WindowEvent)
-{
-    match event
-    {
-        glfw::WindowEvent::Key(Key::Escape, _, glfw::Action::Press, _) =>
-        {
-            window.set_should_close(true)
-        }
-        _ => {}
-    }
+fn main() {
+    Renderer::new().run();
 }
