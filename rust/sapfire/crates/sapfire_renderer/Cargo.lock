@@ -943,13 +943,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sapfire"
-version = "0.1.0"
-dependencies = [
- "sapfire_renderer",
-]
-
-[[package]]
 name = "sapfire_renderer"
 version = "0.1.0"
 dependencies = [
