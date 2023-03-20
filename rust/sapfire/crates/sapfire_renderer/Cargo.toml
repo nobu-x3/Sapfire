@@ -7,5 +7,7 @@ edition = "2021"
 
 [dependencies]
 glam = "0.23.0"
-glfw = "0.51.0"
-glium = "0.32.1"
+gl = "0.14.0"
+
+[dependencies.glfw]
+version = "*"
