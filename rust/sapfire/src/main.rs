@@ -1,4 +1,4 @@
-use sapfire_renderer::Renderer;
+use sapfire_renderer::renderer::*;
 fn main() {
-    Renderer::new().run();
+    Renderer::new(RenderingAPI::OpenGL).run();
 }
