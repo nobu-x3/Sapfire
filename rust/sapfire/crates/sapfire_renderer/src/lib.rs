@@ -3,7 +3,9 @@ use glfw::{Context, Key, WindowEvent};
 extern crate gl;
 extern crate glam;
 pub mod opengl_wrapper;
-use opengl_wrapper::{IRenderer, OpenGLRenderer};
+use opengl_wrapper::OpenGLRenderer;
+pub mod renderer;
+use renderer::Renderer;
 pub mod shader;
 use gl::*;
 use std::{
@@ -13,7 +15,8 @@ use std::{
 
 use crate::opengl_wrapper::OpenGLShader;
 
-pub struct Renderer {
+pub struct Window {
+    api: RenderingAPI,
     window: glfw::Window,
     window_handle: glfw::Glfw,
     events: Receiver<(f64, WindowEvent)>,
@@ -27,8 +30,8 @@ pub enum RenderingAPI {
     OpenGL,
 }
 
-impl Renderer {
-    pub fn new(api: RenderingAPI) -> Renderer {
+impl Window {
+    pub fn new(api: RenderingAPI) -> Window {
         let mut window_handle = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
         match api {
             RenderingAPI::OpenGL => {
@@ -38,10 +41,24 @@ impl Renderer {
                 let (mut window, events) = window_handle
                     .create_window(800, 600, "Sapfire", glfw::WindowMode::Windowed)
                     .expect("Failed to open glfw window");
-                load_with(|s| window.get_proc_address(s));
-                window_handle.set_swap_interval(glfw::SwapInterval::Sync(1));
-                window.set_key_polling(true);
-                window.make_current();
+                Window {
+                    window,
+                    window_handle,
+                    events,
+                    api,
+                }
+            }
+        }
+    }
+
+    pub fn create_context(&mut self) -> OpenGLRenderer {
+        match self.api {
+            RenderingAPI::OpenGL => {
+                load_with(|s| self.window.get_proc_address(s));
+                self.window_handle
+                    .set_swap_interval(glfw::SwapInterval::Sync(1));
+                self.window.set_key_polling(true);
+                self.window.make_current();
                 unsafe {
                     let mut vao = 0;
                     GenVertexArrays(1, &mut vao);
@@ -67,22 +84,11 @@ impl Renderer {
                     EnableVertexAttribArray(0);
                     let vertex_shader = CreateShader(VERTEX_SHADER);
                     assert_ne!(vertex_shader, 0);
-                    // let shader: Shader =
-                    //     Shader::new(RenderingAPI::OpenGL, "triangle.vert", "triangle.frag");
-                    // opengl_wrapper::OpenGLShader::new("triangle.vert", "triangle.frag");
-                    let renderer = match api {
-                        RenderingAPI::OpenGL => {
-                            let mut test: OpenGLRenderer = OpenGLRenderer {
-                                shader: OpenGLShader { shader_program: 0 },
-                            };
-                            test.add_shader("triangle.vert", "triangle.frag");
-                        }
+                    let mut test: OpenGLRenderer = OpenGLRenderer {
+                        shader: OpenGLShader { shader_program: 0 },
                     };
-                    Renderer {
-                        window,
-                        window_handle,
-                        events,
-                    }
+                    test.add_shader("triangle.vert", "triangle.frag");
+                    test
                 }
             }
         }
@@ -92,7 +98,7 @@ impl Renderer {
         while !self.window.should_close() {
             self.window_handle.poll_events();
             for (_, event) in glfw::flush_messages(&self.events) {
-                Renderer::on_input(&mut self.window, event);
+                Window::on_input(&mut self.window, event);
             }
             unsafe {
                 Clear(gl::COLOR_BUFFER_BIT);
