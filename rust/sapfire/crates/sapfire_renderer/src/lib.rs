@@ -3,12 +3,15 @@ use glfw::{Context, Key, WindowEvent};
 extern crate gl;
 extern crate glam;
 pub mod opengl_wrapper;
+use opengl_wrapper::{IRenderer, OpenGLRenderer};
 pub mod shader;
 use gl::*;
 use std::{
     mem::{size_of, size_of_val},
     sync::mpsc::Receiver,
 };
+
+use crate::opengl_wrapper::OpenGLShader;
 
 pub struct Renderer {
     window: glfw::Window,
@@ -17,7 +20,9 @@ pub struct Renderer {
 }
 
 type Vertex = [f32; 3];
+
 const VERTICES: [Vertex; 3] = [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]];
+
 pub enum RenderingAPI {
     OpenGL,
 }
@@ -62,7 +67,17 @@ impl Renderer {
                     EnableVertexAttribArray(0);
                     let vertex_shader = CreateShader(VERTEX_SHADER);
                     assert_ne!(vertex_shader, 0);
-                    let _ = opengl_wrapper::OpenGLShader::new("triangle.vert", "triangle.frag");
+                    // let shader: Shader =
+                    //     Shader::new(RenderingAPI::OpenGL, "triangle.vert", "triangle.frag");
+                    // opengl_wrapper::OpenGLShader::new("triangle.vert", "triangle.frag");
+                    let renderer = match api {
+                        RenderingAPI::OpenGL => {
+                            let mut test: OpenGLRenderer = OpenGLRenderer {
+                                shader: OpenGLShader { shader_program: 0 },
+                            };
+                            test.add_shader("triangle.vert", "triangle.frag");
+                        }
+                    };
                     Renderer {
                         window,
                         window_handle,

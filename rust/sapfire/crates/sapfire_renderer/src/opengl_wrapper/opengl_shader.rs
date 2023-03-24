@@ -1,8 +1,8 @@
-use crate::shader::Shader;
+use crate::shader::IShader;
 use gl::*;
 use std::{fs::File, io::Read};
 pub struct OpenGLShader {
-    shader_program: u32,
+    pub shader_program: u32,
 }
 
 impl OpenGLShader {
@@ -85,7 +85,7 @@ impl OpenGLShader {
     }
 }
 
-impl Shader for OpenGLShader {
+impl IShader for OpenGLShader {
     fn bind(&self) {
         unsafe {
             UseProgram(self.shader_program);
