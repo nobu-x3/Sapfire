@@ -1,11 +1,11 @@
-extern crate glfw;
-use glfw::{Context, Key, WindowEvent};
 extern crate gl;
 extern crate glam;
+extern crate glfw;
+use glfw::{Context, Key, WindowEvent};
 pub mod opengl_wrapper;
-use opengl_wrapper::OpenGLRenderer;
+use opengl_wrapper::OpenGLRenderContext;
 pub mod renderer;
-use renderer::Renderer;
+use renderer::{Renderer, RenderingContext};
 pub mod shader;
 use gl::*;
 use std::{
@@ -15,8 +15,8 @@ use std::{
 
 use crate::opengl_wrapper::OpenGLShader;
 
-pub struct Window {
-    api: RenderingAPI,
+pub struct SapfireRenderer {
+    context: RenderingContext,
     window: glfw::Window,
     window_handle: glfw::Glfw,
     events: Receiver<(f64, WindowEvent)>,
@@ -30,8 +30,8 @@ pub enum RenderingAPI {
     OpenGL,
 }
 
-impl Window {
-    pub fn new(api: RenderingAPI) -> Window {
+impl SapfireRenderer {
+    pub fn new(api: RenderingAPI) -> SapfireRenderer {
         let mut window_handle = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
         match api {
             RenderingAPI::OpenGL => {
@@ -41,24 +41,28 @@ impl Window {
                 let (mut window, events) = window_handle
                     .create_window(800, 600, "Sapfire", glfw::WindowMode::Windowed)
                     .expect("Failed to open glfw window");
-                Window {
+                let context = SapfireRenderer::create_context(api, &mut window, &mut window_handle);
+                SapfireRenderer {
                     window,
                     window_handle,
                     events,
-                    api,
+                    context: RenderingContext::OpenGL(context),
                 }
             }
         }
     }
 
-    pub fn create_context(&mut self) -> OpenGLRenderer {
-        match self.api {
+    pub fn create_context(
+        api: RenderingAPI,
+        window: &mut glfw::Window,
+        window_handle: &mut glfw::Glfw,
+    ) -> OpenGLRenderContext {
+        match api {
             RenderingAPI::OpenGL => {
-                load_with(|s| self.window.get_proc_address(s));
-                self.window_handle
-                    .set_swap_interval(glfw::SwapInterval::Sync(1));
-                self.window.set_key_polling(true);
-                self.window.make_current();
+                load_with(|s| window.get_proc_address(s));
+                window_handle.set_swap_interval(glfw::SwapInterval::Sync(1));
+                window.set_key_polling(true);
+                window.make_current();
                 unsafe {
                     let mut vao = 0;
                     GenVertexArrays(1, &mut vao);
@@ -84,11 +88,11 @@ impl Window {
                     EnableVertexAttribArray(0);
                     let vertex_shader = CreateShader(VERTEX_SHADER);
                     assert_ne!(vertex_shader, 0);
-                    let mut test: OpenGLRenderer = OpenGLRenderer {
+                    let mut context: OpenGLRenderContext = OpenGLRenderContext {
                         shader: OpenGLShader { shader_program: 0 },
                     };
-                    test.add_shader("triangle.vert", "triangle.frag");
-                    test
+                    context.add_shader("triangle.vert", "triangle.frag");
+                    context
                 }
             }
         }
@@ -98,7 +102,7 @@ impl Window {
         while !self.window.should_close() {
             self.window_handle.poll_events();
             for (_, event) in glfw::flush_messages(&self.events) {
-                Window::on_input(&mut self.window, event);
+                SapfireRenderer::on_input(&mut self.window, event);
             }
             unsafe {
                 Clear(gl::COLOR_BUFFER_BIT);

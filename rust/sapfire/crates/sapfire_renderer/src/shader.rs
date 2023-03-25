@@ -1,5 +1,3 @@
-use crate::opengl_wrapper::OpenGLShader;
-use crate::RenderingAPI;
 use glam;
 
 pub trait IShader {
