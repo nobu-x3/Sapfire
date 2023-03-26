@@ -2,6 +2,7 @@ extern crate gl;
 extern crate glam;
 use sdl2::render::Canvas;
 use sdl2::{event::*, keyboard::Keycode, video::*, EventPump, Sdl, VideoSubsystem};
+pub mod camera;
 pub mod opengl_wrapper;
 use opengl_wrapper::OpenGLRenderContext;
 pub mod renderer;
