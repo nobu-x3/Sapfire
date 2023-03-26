@@ -7,7 +7,7 @@ pub struct OpenGLRenderContext {
 }
 
 impl Renderer for OpenGLRenderContext {
-    fn add_shader(&mut self, vertex_path: &str, frag_path: &str) {
-        self.shader = OpenGLShader::new(vertex_path, frag_path);
+    fn add_shader(&mut self, path: &str) {
+        self.shader = OpenGLShader::new(path);
     }
 }

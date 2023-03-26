@@ -91,7 +91,7 @@ impl SapfireRenderer {
                     let mut context: OpenGLRenderContext = OpenGLRenderContext {
                         shader: OpenGLShader { shader_program: 0 },
                     };
-                    context.add_shader("triangle.vert", "triangle.frag");
+                    context.add_shader("triangle.glsl");
                     context
                 }
             }
