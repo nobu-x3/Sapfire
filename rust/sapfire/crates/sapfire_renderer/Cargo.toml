@@ -8,6 +8,4 @@ edition = "2021"
 [dependencies]
 glam = "0.23.0"
 gl = "0.14.0"
-
-[dependencies.glfw]
-version = "*"
+sdl2 = "0.35.2"

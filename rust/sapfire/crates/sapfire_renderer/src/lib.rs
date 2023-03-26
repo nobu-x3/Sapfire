@@ -1,25 +1,25 @@
 extern crate gl;
 extern crate glam;
-extern crate glfw;
-use glfw::{Context, Key, WindowEvent};
+use sdl2::{event::*, keyboard::Keycode, video::*, EventPump, Sdl, VideoSubsystem};
 pub mod opengl_wrapper;
 use opengl_wrapper::OpenGLRenderContext;
 pub mod renderer;
 use renderer::{Renderer, RenderingContext};
 pub mod shader;
 use gl::*;
-use std::{
-    mem::{size_of, size_of_val},
-    sync::mpsc::Receiver,
-};
+use shader::Shader;
+use std::mem::{size_of, size_of_val};
+use std::rc::Rc;
 
 use crate::opengl_wrapper::OpenGLShader;
 
 pub struct SapfireRenderer {
-    context: RenderingContext,
-    window: glfw::Window,
-    window_handle: glfw::Glfw,
-    events: Receiver<(f64, WindowEvent)>,
+    window: Window,
+    window_context: Rc<WindowContext>,
+    sdl_context: Sdl,
+    video_subsystem: VideoSubsystem,
+    event_pump: EventPump,
+    rendering_context: RenderingContext,
 }
 
 type Vertex = [f32; 3];
@@ -32,21 +32,43 @@ pub enum RenderingAPI {
 
 impl SapfireRenderer {
     pub fn new(api: RenderingAPI) -> SapfireRenderer {
-        let mut window_handle = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+        let sdl_context = sdl2::init().expect("Failed to initialize SDL2");
+        let mut video_subsystem = sdl_context
+            .video()
+            .expect("Failed to initialize video subsystem");
+        let event_pump = sdl_context
+            .event_pump()
+            .expect("Failed to initialize event pump");
         match api {
             RenderingAPI::OpenGL => {
-                window_handle.window_hint(glfw::WindowHint::OpenGlProfile(
-                    glfw::OpenGlProfileHint::Any,
-                ));
-                let (mut window, events) = window_handle
-                    .create_window(800, 600, "Sapfire", glfw::WindowMode::Windowed)
-                    .expect("Failed to open glfw window");
-                let context = SapfireRenderer::create_context(api, &mut window, &mut window_handle);
+                match video_subsystem.gl_load_library_default() {
+                    Err(x) => panic!("Failed to load default OpenGL library:\n{}", x),
+                    _ => {}
+                };
+                let gl_attr = video_subsystem.gl_attr();
+                gl_attr.set_context_profile(GLProfile::Core);
+                gl_attr.set_context_version(3, 3);
+                gl_attr.set_accelerated_visual(true);
+                // #[cfg(target_os = "macos")]
+                // {
+                //     sdl.set_gl_profile(video::GlProfile::Compatibility);
+                // }
+
+                let mut window = video_subsystem
+                    .window("Sapfire Engine", 800, 600)
+                    .opengl()
+                    .build()
+                    .expect("Failed to initialize window!");
+                let window_context = window.context();
+                let context =
+                    SapfireRenderer::create_context(api, &mut window, &mut video_subsystem);
                 SapfireRenderer {
                     window,
-                    window_handle,
-                    events,
-                    context: RenderingContext::OpenGL(context),
+                    window_context,
+                    sdl_context,
+                    event_pump,
+                    video_subsystem,
+                    rendering_context: RenderingContext::OpenGL(context),
                 }
             }
         }
@@ -54,15 +76,19 @@ impl SapfireRenderer {
 
     pub fn create_context(
         api: RenderingAPI,
-        window: &mut glfw::Window,
-        window_handle: &mut glfw::Glfw,
+        window: &mut Window,
+        video_subsystem: &VideoSubsystem,
     ) -> OpenGLRenderContext {
         match api {
             RenderingAPI::OpenGL => {
-                load_with(|s| window.get_proc_address(s));
-                window_handle.set_swap_interval(glfw::SwapInterval::Sync(1));
-                window.set_key_polling(true);
-                window.make_current();
+                let ctx = window
+                    .gl_create_context()
+                    .expect("Failed to initialize OpenGL context");
+                load_with(|s| video_subsystem.gl_get_proc_address(s) as *const _);
+                window.gl_make_current(&ctx).unwrap();
+                video_subsystem
+                    .gl_set_swap_interval(SwapInterval::VSync)
+                    .unwrap();
                 unsafe {
                     let mut vao = 0;
                     GenVertexArrays(1, &mut vao);
@@ -86,10 +112,9 @@ impl SapfireRenderer {
                         0 as *const _,
                     );
                     EnableVertexAttribArray(0);
-                    let vertex_shader = CreateShader(VERTEX_SHADER);
-                    assert_ne!(vertex_shader, 0);
                     let mut context: OpenGLRenderContext = OpenGLRenderContext {
                         shader: OpenGLShader { shader_program: 0 },
+                        context: ctx,
                     };
                     context.add_shader("triangle.glsl");
                     context
@@ -99,26 +124,30 @@ impl SapfireRenderer {
     }
 
     pub fn run(&mut self) {
-        while !self.window.should_close() {
-            self.window_handle.poll_events();
-            for (_, event) in glfw::flush_messages(&self.events) {
-                SapfireRenderer::on_input(&mut self.window, event);
+        let mut should_close = false;
+        while !should_close {
+            for event in self.event_pump.poll_iter() {
+                match event {
+                    Event::Quit { .. }
+                    | Event::KeyDown {
+                        keycode: Some(Keycode::Escape),
+                        ..
+                    } => {
+                        println!("Exiting...");
+                        should_close = true;
+                    }
+                    _ => {}
+                }
             }
             unsafe {
+                ClearColor(0.6, 0.0, 0.8, 1.0);
                 Clear(gl::COLOR_BUFFER_BIT);
+                if let RenderingContext::OpenGL(x) = &self.rendering_context {
+                    x.shader.bind();
+                }
                 DrawArrays(TRIANGLES, 0, 3);
-                self.window.swap_buffers();
+                self.window.gl_swap_window();
             }
-        }
-    }
-
-    fn on_input(window: &mut glfw::Window, event: glfw::WindowEvent) {
-        match event {
-            glfw::WindowEvent::Key(Key::Escape, _, glfw::Action::Press, _) => {
-                println!("Exiting...");
-                window.set_should_close(true)
-            }
-            _ => {}
         }
     }
 }
