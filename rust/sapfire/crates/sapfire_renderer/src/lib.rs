@@ -1,5 +1,6 @@
 extern crate gl;
 extern crate glam;
+use sdl2::render::Canvas;
 use sdl2::{event::*, keyboard::Keycode, video::*, EventPump, Sdl, VideoSubsystem};
 pub mod opengl_wrapper;
 use opengl_wrapper::OpenGLRenderContext;
@@ -7,15 +8,12 @@ pub mod renderer;
 use renderer::{Renderer, RenderingContext};
 pub mod shader;
 use gl::*;
-use shader::Shader;
 use std::mem::{size_of, size_of_val};
-use std::rc::Rc;
 
 use crate::opengl_wrapper::OpenGLShader;
 
 pub struct SapfireRenderer {
-    window: Window,
-    window_context: Rc<WindowContext>,
+    canvas: Canvas<Window>,
     sdl_context: Sdl,
     video_subsystem: VideoSubsystem,
     event_pump: EventPump,
@@ -54,17 +52,20 @@ impl SapfireRenderer {
                 //     sdl.set_gl_profile(video::GlProfile::Compatibility);
                 // }
 
-                let mut window = video_subsystem
+                let window = video_subsystem
                     .window("Sapfire Engine", 800, 600)
                     .opengl()
                     .build()
                     .expect("Failed to initialize window!");
-                let window_context = window.context();
+                let mut canvas = window
+                    .into_canvas()
+                    .index(SapfireRenderer::find_sdl_gl_driver().unwrap())
+                    .build()
+                    .expect("Failed to create canvas!");
                 let context =
-                    SapfireRenderer::create_context(api, &mut window, &mut video_subsystem);
+                    SapfireRenderer::create_context(api, &mut canvas, &mut video_subsystem);
                 SapfireRenderer {
-                    window,
-                    window_context,
+                    canvas,
                     sdl_context,
                     event_pump,
                     video_subsystem,
@@ -73,19 +74,24 @@ impl SapfireRenderer {
             }
         }
     }
-
+    fn find_sdl_gl_driver() -> Option<u32> {
+        for (index, item) in sdl2::render::drivers().enumerate() {
+            if item.name == "opengl" {
+                println!("{}", item.flags);
+                return Some(index as u32);
+            }
+        }
+        None
+    }
     pub fn create_context(
         api: RenderingAPI,
-        window: &mut Window,
+        canvas: &mut Canvas<Window>,
         video_subsystem: &VideoSubsystem,
     ) -> OpenGLRenderContext {
         match api {
             RenderingAPI::OpenGL => {
-                let ctx = window
-                    .gl_create_context()
-                    .expect("Failed to initialize OpenGL context");
                 load_with(|s| video_subsystem.gl_get_proc_address(s) as *const _);
-                window.gl_make_current(&ctx).unwrap();
+                canvas.window().gl_set_context_to_current().unwrap();
                 video_subsystem
                     .gl_set_swap_interval(SwapInterval::VSync)
                     .unwrap();
@@ -114,7 +120,6 @@ impl SapfireRenderer {
                     EnableVertexAttribArray(0);
                     let mut context: OpenGLRenderContext = OpenGLRenderContext {
                         shader: OpenGLShader { shader_program: 0 },
-                        context: ctx,
                     };
                     context.add_shader("triangle.glsl");
                     context
@@ -142,12 +147,9 @@ impl SapfireRenderer {
             unsafe {
                 ClearColor(0.6, 0.0, 0.8, 1.0);
                 Clear(gl::COLOR_BUFFER_BIT);
-                if let RenderingContext::OpenGL(x) = &self.rendering_context {
-                    x.shader.bind();
-                }
                 DrawArrays(TRIANGLES, 0, 3);
-                self.window.gl_swap_window();
             }
+            self.canvas.present();
         }
     }
 }
