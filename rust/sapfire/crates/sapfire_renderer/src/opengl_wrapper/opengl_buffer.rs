@@ -72,7 +72,7 @@ impl IndexBuffer for OpenGLIndexBuffer {
         }
     }
 
-    fn set_data(&mut self, buffer: &Vec<Vertex>, size: isize) {
+    fn set_data(&mut self, buffer: &Vec<u32>, size: isize) {
         unsafe { NamedBufferStorage(self.id, size, buffer.as_ptr() as *const c_void, 0) }
         self.size = size;
     }

@@ -15,7 +15,7 @@ pub enum ShaderDataType {
     Bool,
 }
 
-pub fn shader_data_type_size(data_type: &ShaderDataType) -> u32 {
+pub fn shader_data_type_size(data_type: &ShaderDataType) -> isize {
     match data_type {
         ShaderDataType::Float => 4,
         ShaderDataType::Int => 4,
@@ -41,6 +41,15 @@ pub struct BufferElement {
 }
 
 impl BufferElement {
+    pub fn new(name: String, data_type: ShaderDataType) -> BufferElement {
+        BufferElement {
+            name,
+            size: shader_data_type_size(&data_type),
+            data_type,
+            offset: 0,
+            normalized: false,
+        }
+    }
     pub fn get_component_count(&self) -> isize {
         match self.data_type {
             ShaderDataType::Bool => 1,
@@ -79,5 +88,5 @@ pub trait VertexBuffer {
 pub trait IndexBuffer {
     fn bind(&self);
     fn unbind(&self);
-    fn set_data(&mut self, buffer: &Vec<Vertex>, size: isize); // TODO: fix Vertex, should be index
+    fn set_data(&mut self, buffer: &Vec<u32>, size: isize); // TODO: fix Vertex, should be index
 }

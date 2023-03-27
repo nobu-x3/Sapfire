@@ -1,5 +1,5 @@
 #type vert
-#version 330 core
+#version 450 core
 layout (location = 0) in vec3 pos;
 
 void main() {
@@ -7,7 +7,7 @@ void main() {
 }
 
 #type frag
-#version 330 core
+#version 450 core
 out vec4 final_color;
 
 void main() {

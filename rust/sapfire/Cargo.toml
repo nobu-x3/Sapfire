@@ -10,3 +10,4 @@ members = [
 ]
 [dependencies]
 sapfire_renderer = {path = "crates/sapfire_renderer"}
+pollster = "0.2"

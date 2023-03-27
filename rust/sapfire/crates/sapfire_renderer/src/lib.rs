@@ -1,8 +1,8 @@
 extern crate gl;
 extern crate glam;
+extern crate wgpu;
 use camera::Camera;
-use sdl2::render::Canvas;
-use sdl2::{event::*, keyboard::Keycode, video::*, EventPump, Sdl, VideoSubsystem};
+use opengl_wrapper::opengl_buffer::buffer::IndexBuffer;
 pub mod buffer;
 pub mod camera;
 pub mod opengl_wrapper;
@@ -13,7 +13,10 @@ use renderer::{Renderer, RenderingContext};
 pub mod shader;
 use gl::*;
 use std::mem::{size_of, size_of_val};
-use vertex_array::VertexArray;
+use winit::dpi::PhysicalSize;
+use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
+use winit::event_loop::{ControlFlow, EventLoop};
+use winit::window::{Window, WindowBuilder};
 
 use crate::buffer::{BufferElement, BufferLayout, VertexBuffer};
 use crate::opengl_wrapper::opengl_buffer::{OpenGLIndexBuffer, OpenGLVertexBuffer};
@@ -21,10 +24,12 @@ use crate::opengl_wrapper::opengl_vertex_array::OpenGLVertexArray;
 use crate::opengl_wrapper::OpenGLShader;
 
 pub struct SapfireRenderer {
-    canvas: Canvas<Window>,
-    sdl_context: Sdl,
-    video_subsystem: VideoSubsystem,
-    event_pump: EventPump,
+    window: Window,
+    device: wgpu::Device,
+    surface: wgpu::Surface,
+    queue: wgpu::Queue,
+    config: wgpu::SurfaceConfiguration,
+    size: winit::dpi::PhysicalSize<u32>,
     rendering_context: RenderingContext,
     camera: Camera,
 }
@@ -35,127 +40,128 @@ const VERTICES: [Vertex; 3] = [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0
 
 pub enum RenderingAPI {
     OpenGL,
+    WGPU,
 }
 
 impl SapfireRenderer {
-    pub fn new(api: RenderingAPI) -> SapfireRenderer {
-        let sdl_context = sdl2::init().expect("Failed to initialize SDL2");
-        let mut video_subsystem = sdl_context
-            .video()
-            .expect("Failed to initialize video subsystem");
-        let event_pump = sdl_context
-            .event_pump()
-            .expect("Failed to initialize event pump");
-        match api {
-            RenderingAPI::OpenGL => {
-                match video_subsystem.gl_load_library_default() {
-                    Err(x) => panic!("Failed to load default OpenGL library:\n{}", x),
-                    _ => {}
-                };
-                let gl_attr = video_subsystem.gl_attr();
-                gl_attr.set_context_profile(GLProfile::Core);
-                gl_attr.set_context_version(3, 3);
-                gl_attr.set_accelerated_visual(true);
-                // #[cfg(target_os = "macos")]
-                // {
-                //     sdl.set_gl_profile(video::GlProfile::Compatibility);
-                // }
+    pub async fn new() -> SapfireRenderer {
+        env_logger::init();
+        let event_loop = EventLoop::new();
+        let window = WindowBuilder::new().build(&event_loop).unwrap();
+        window.set_resizable(true);
+        window.set_title("Sapfire Engine");
+        let size = PhysicalSize::new(800, 600);
+        window.set_inner_size(size);
+        let camera = Camera::new_ortho(800.0, 600.0, 1.0, -1.0);
+        let instance = wgpu::Instance::new(wgpu::InstanceDescriptor {
+            backends: wgpu::Backends::all(),
+            dx12_shader_compiler: Default::default(), // not sure what this is
+        });
+        let surface = unsafe { instance.create_surface(&window) }.unwrap();
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::HighPerformance,
+                compatible_surface: Some(&surface),
+                force_fallback_adapter: false,
+            })
+            .await
+            .unwrap();
 
-                let window = video_subsystem
-                    .window("Sapfire Engine", 800, 600)
-                    .opengl()
-                    .build()
-                    .expect("Failed to initialize window!");
-                let mut canvas = window
-                    .into_canvas()
-                    .index(SapfireRenderer::find_sdl_gl_driver().unwrap())
-                    .build()
-                    .expect("Failed to create canvas!");
-                let mut context =
-                    SapfireRenderer::create_context(api, &mut canvas, &mut video_subsystem);
-                let camera = Camera::new_ortho(800.0, 600.0, 1.0, -1.0);
-                SapfireRenderer {
-                    canvas,
-                    camera,
-                    sdl_context,
-                    event_pump,
-                    video_subsystem,
-                    rendering_context: RenderingContext::OpenGL(context),
-                }
-            }
-        }
-    }
-    fn find_sdl_gl_driver() -> Option<u32> {
-        for (index, item) in sdl2::render::drivers().enumerate() {
-            if item.name == "opengl" {
-                println!("{}", item.flags);
-                return Some(index as u32);
-            }
-        }
-        None
-    }
-    pub fn create_context(
-        api: RenderingAPI,
-        canvas: &mut Canvas<Window>,
-        video_subsystem: &VideoSubsystem,
-    ) -> OpenGLRenderContext {
-        match api {
-            RenderingAPI::OpenGL => {
-                load_with(|s| video_subsystem.gl_get_proc_address(s) as *const _);
-                canvas.window().gl_set_context_to_current().unwrap();
-                video_subsystem
-                    .gl_set_swap_interval(SwapInterval::VSync)
-                    .unwrap();
-                unsafe {
-                    let layout = BufferLayout::new(vec![BufferElement {
-                        name: String::from("pos"),
-                        data_type: buffer::ShaderDataType::Float,
-                        size: 3,
-                        offset: 0,
-                        normalized: false,
-                    }]);
-                    let mut vbo = OpenGLVertexBuffer::new(layout);
-                    vbo.set_data(&VERTICES.to_vec(), size_of_val(&VERTICES) as isize);
-                    let ibo = OpenGLIndexBuffer::new();
-                    let mut context: OpenGLRenderContext = OpenGLRenderContext {
-                        shader: OpenGLShader { shader_program: 0 },
-                        vao: OpenGLVertexArray::new(vbo, ibo),
-                    };
-                    context.add_shader("triangle.glsl");
-                    context
-                }
-            }
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    features: wgpu::Features::default(),
+                    limits: wgpu::Limits::default(),
+                    label: None,
+                },
+                None,
+            )
+            .await
+            .unwrap();
+
+        let surface_caps = surface.get_capabilities(&adapter);
+        let surface_format = surface_caps
+            .formats
+            .iter()
+            .copied()
+            .filter(|f| f.describe().srgb)
+            .next()
+            .unwrap_or(surface_caps.formats[0]);
+        let config = wgpu::SurfaceConfiguration {
+            usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+            format: surface_format,
+            width: size.width,
+            height: size.height,
+            present_mode: wgpu::PresentMode::Fifo,
+            alpha_mode: surface_caps.alpha_modes[0],
+            view_formats: vec![],
+        };
+        surface.configure(&device, &config);
+
+        SapfireRenderer {
+            window,
+            camera,
+            size,
+            device,
+            queue,
+            config,
+            surface,
+            rendering_context: RenderingContext::WGPU,
         }
     }
 
-    pub fn run(&mut self) {
-        let mut should_close = false;
-        while !should_close {
-            for event in self.event_pump.poll_iter() {
-                match event {
-                    Event::Quit { .. }
-                    | Event::KeyDown {
-                        keycode: Some(Keycode::Escape),
-                        ..
-                    } => {
-                        println!("Exiting...");
-                        should_close = true;
-                    }
-                    _ => {}
-                }
-            }
-            unsafe {
-                ClearColor(0.6, 0.0, 0.8, 1.0);
-                Clear(gl::COLOR_BUFFER_BIT);
-                match &self.rendering_context {
-                    RenderingContext::OpenGL(x) => {
-                        x.vao.bind();
-                    }
-                    _ => (),
-                }
-                DrawArrays(TRIANGLES, 0, 3);
-            }
-            self.canvas.present();
-        }
+    // pub fn create_context(
+    //     api: RenderingAPI,
+    //     canvas: &mut Canvas<Window>,
+    //     video_subsystem: &VideoSubsystem,
+    // ) -> OpenGLRenderContext {
+    //     match api {
+    //         RenderingAPI::OpenGL => {
+    //             load_with(|s| video_subsystem.gl_get_proc_address(s) as *const _);
+    //             canvas.window().gl_set_context_to_current().unwrap();
+    //             video_subsystem
+    //                 .gl_set_swap_interval(SwapInterval::VSync)
+    //                 .unwrap();
+    //             let layout = BufferLayout::new(vec![BufferElement::new(
+    //                 String::from("pos"),
+    //                 buffer::ShaderDataType::Vec3,
+    //             )]);
+    //             let mut vbo = OpenGLVertexBuffer::new(layout);
+    //             vbo.set_data(&VERTICES.to_vec(), size_of_val(&VERTICES) as isize);
+    //             let mut ibo = OpenGLIndexBuffer::new();
+    //             let indices = vec![0, 1, 2];
+    //             ibo.set_data(&indices, indices.len() as isize);
+    //             let mut context: OpenGLRenderContext = OpenGLRenderContext {
+    //                 shader: OpenGLShader { shader_program: 0 },
+    //                 vao: OpenGLVertexArray::new(vbo, ibo),
+    //             };
+    //             context.add_shader("triangle.glsl");
+    //             context
+    //         }
+    //     }
+    // }
+
+    pub fn run(&self) {
+        loop {}
+        // self.event_loop
+        //     .run(move |event, _, control_flow| match event {
+        //         Event::WindowEvent {
+        //             ref event,
+        //             window_id,
+        //         } if window_id == self.window.id() => match event {
+        //             WindowEvent::CloseRequested
+        //             | WindowEvent::KeyboardInput {
+        //                 input:
+        //                     KeyboardInput {
+        //                         state: ElementState::Pressed,
+        //                         virtual_keycode: Some(VirtualKeyCode::Escape),
+        //                         ..
+        //                     },
+        //                 ..
+        //             } => *control_flow = ControlFlow::Exit,
+        //             _ => {}
+        //         },
+        //         _ => {}
+        //     });
     }
 }

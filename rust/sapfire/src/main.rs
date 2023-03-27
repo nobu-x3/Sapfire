@@ -1,4 +1,4 @@
 use sapfire_renderer::*;
 fn main() {
-    SapfireRenderer::new(RenderingAPI::OpenGL).run();
+    pollster::block_on(SapfireRenderer::new()).run();
 }

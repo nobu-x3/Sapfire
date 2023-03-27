@@ -30,7 +30,6 @@ impl OpenGLVertexArray {
             let mut id: u32 = 0;
             CreateVertexArrays(1, &mut id as *mut u32);
             BindVertexArray(id);
-            println!("Here");
             vbo.bind();
             let mut index = 0;
             let layout = &vbo.layout;

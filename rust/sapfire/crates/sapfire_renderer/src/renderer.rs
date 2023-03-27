@@ -8,4 +8,6 @@ pub trait Renderer {
 
 pub enum RenderingContext {
     OpenGL(OpenGLRenderContext),
+    WGPU,
+    None,
 }
