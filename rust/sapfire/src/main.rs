@@ -1,4 +1,5 @@
 use sapfire_renderer::*;
 fn main() {
-    pollster::block_on(SapfireRenderer::new()).run();
+    let res = pollster::block_on(SapfireRenderer::new());
+    SapfireRenderer::run(res);
 }
