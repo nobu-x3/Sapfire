@@ -1,6 +1,5 @@
 use sapfire_renderer::*;
 fn main() {
-    let mut window = Window::new(RenderingAPI::OpenGL);
-    let context = window.create_context();
-    window.run();
+    let res = pollster::block_on(SapfireRenderer::new());
+    SapfireRenderer::run(res);
 }
