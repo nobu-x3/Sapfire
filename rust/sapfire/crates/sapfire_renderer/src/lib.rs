@@ -81,7 +81,7 @@ impl SapfireRenderer {
     // }
 
     pub fn run((renderer, event_loop): (SapfireRenderer, EventLoop<()>)) {
-        if let RenderingContext::WGPU(context) = renderer.rendering_context {
+        if let RenderingContext::WGPU(mut context) = renderer.rendering_context {
             event_loop.run(move |event, _, control_flow| match event {
                 Event::WindowEvent {
                     ref event,
@@ -97,8 +97,23 @@ impl SapfireRenderer {
                             },
                         ..
                     } => *control_flow = ControlFlow::Exit,
+                    WindowEvent::Resized(physical_size) => context.resize(*physical_size),
+                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                        context.resize(**new_inner_size);
+                    }
                     _ => {}
                 },
+                Event::RedrawRequested(window_id) if window_id == context.window().id() => {
+                    match context.render() {
+                        Ok(_) => {}
+                        Err(wgpu::SurfaceError::Lost) => context.resize(context.size),
+                        Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+                        Err(e) => eprintln!("{:?}", e),
+                    }
+                }
+                Event::MainEventsCleared => {
+                    context.window().request_redraw();
+                }
                 _ => {}
             });
         }
