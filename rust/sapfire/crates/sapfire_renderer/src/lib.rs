@@ -1,7 +1,9 @@
 extern crate gl;
 extern crate glam;
+use camera::Camera;
 use sdl2::render::Canvas;
 use sdl2::{event::*, keyboard::Keycode, video::*, EventPump, Sdl, VideoSubsystem};
+pub mod buffer;
 pub mod camera;
 pub mod opengl_wrapper;
 use opengl_wrapper::OpenGLRenderContext;
@@ -19,6 +21,7 @@ pub struct SapfireRenderer {
     video_subsystem: VideoSubsystem,
     event_pump: EventPump,
     rendering_context: RenderingContext,
+    camera: Camera,
 }
 
 type Vertex = [f32; 3];
@@ -63,10 +66,12 @@ impl SapfireRenderer {
                     .index(SapfireRenderer::find_sdl_gl_driver().unwrap())
                     .build()
                     .expect("Failed to create canvas!");
-                let context =
+                let mut context =
                     SapfireRenderer::create_context(api, &mut canvas, &mut video_subsystem);
+                let camera = Camera::new_ortho(800.0, 600.0, 1.0, -1.0);
                 SapfireRenderer {
                     canvas,
+                    camera,
                     sdl_context,
                     event_pump,
                     video_subsystem,

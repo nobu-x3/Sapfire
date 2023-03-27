@@ -1,3 +1,4 @@
+pub mod opengl_buffer;
 mod opengl_shader;
 use crate::renderer::Renderer;
 pub use opengl_shader::*;
