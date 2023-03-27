@@ -33,15 +33,15 @@ pub fn shader_data_type_size(data_type: &ShaderDataType) -> u32 {
 }
 
 pub struct BufferElement {
-    name: String,
-    data_type: ShaderDataType,
-    size: u32,
-    offset: u32,
-    normalized: bool,
+    pub name: String,
+    pub data_type: ShaderDataType,
+    pub size: isize,
+    pub offset: isize,
+    pub normalized: bool,
 }
 
 impl BufferElement {
-    pub fn get_component_count(&self) -> u32 {
+    pub fn get_component_count(&self) -> isize {
         match self.data_type {
             ShaderDataType::Bool => 1,
             _ => self.size / 4,
@@ -50,18 +50,18 @@ impl BufferElement {
 }
 
 pub struct BufferLayout {
-    elements: Vec<BufferElement>,
-    stride: u32,
+    pub elements: Vec<BufferElement>,
+    pub stride: i32,
 }
 
 impl BufferLayout {
     pub fn new(mut layout: Vec<BufferElement>) -> BufferLayout {
-        let mut stride: u32 = 0;
-        let mut offset: u32 = 0;
+        let mut stride: i32 = 0;
+        let mut offset: isize = 0;
         for mut element in &mut layout {
             element.offset = offset;
             offset += element.size;
-            stride += element.size;
+            stride += element.size as i32;
         }
         BufferLayout {
             elements: layout,

@@ -1,26 +1,26 @@
-use std::ffi::c_void;
-
+use self::buffer::{BufferLayout, IndexBuffer, VertexBuffer};
 pub use crate::buffer;
 use crate::Vertex;
 pub use gl::*;
+use std::ffi::c_void;
 
-use self::buffer::{BufferLayout, IndexBuffer, VertexBuffer};
 pub struct OpenGLVertexBuffer {
-    id: u32,
-    size: isize,
-    layout: buffer::BufferLayout,
+    pub id: u32,
+    pub size: isize,
+    pub layout: buffer::BufferLayout,
 }
 
 impl OpenGLVertexBuffer {
     pub fn new(layout: BufferLayout) -> OpenGLVertexBuffer {
-        let id = 0;
         unsafe {
-            CreateBuffers(1, id as *mut u32);
-        }
-        OpenGLVertexBuffer {
-            id,
-            layout,
-            size: 0,
+            // let id: *mut u32;
+            let mut id: u32 = 0;
+            CreateBuffers(1, &mut id as *mut u32);
+            OpenGLVertexBuffer {
+                id,
+                layout,
+                size: 0,
+            }
         }
     }
 }
@@ -51,11 +51,11 @@ pub struct OpenGLIndexBuffer {
 
 impl OpenGLIndexBuffer {
     pub fn new() -> OpenGLIndexBuffer {
-        let id: u32 = 0;
         unsafe {
-            CreateBuffers(1, id as *mut u32);
+            let mut id: u32 = 0;
+            CreateBuffers(1, &mut id as *mut u32);
+            OpenGLIndexBuffer { id, size: 0 }
         }
-        OpenGLIndexBuffer { id, size: 0 }
     }
 }
 

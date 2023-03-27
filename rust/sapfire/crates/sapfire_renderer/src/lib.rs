@@ -6,13 +6,18 @@ use sdl2::{event::*, keyboard::Keycode, video::*, EventPump, Sdl, VideoSubsystem
 pub mod buffer;
 pub mod camera;
 pub mod opengl_wrapper;
+pub mod vertex_array;
 use opengl_wrapper::OpenGLRenderContext;
 pub mod renderer;
 use renderer::{Renderer, RenderingContext};
 pub mod shader;
 use gl::*;
 use std::mem::{size_of, size_of_val};
+use vertex_array::VertexArray;
 
+use crate::buffer::{BufferElement, BufferLayout, VertexBuffer};
+use crate::opengl_wrapper::opengl_buffer::{OpenGLIndexBuffer, OpenGLVertexBuffer};
+use crate::opengl_wrapper::opengl_vertex_array::OpenGLVertexArray;
 use crate::opengl_wrapper::OpenGLShader;
 
 pub struct SapfireRenderer {
@@ -102,30 +107,19 @@ impl SapfireRenderer {
                     .gl_set_swap_interval(SwapInterval::VSync)
                     .unwrap();
                 unsafe {
-                    let mut vao = 0;
-                    GenVertexArrays(1, &mut vao);
-                    assert_ne!(vao, 0);
-                    let mut vbo = 0;
-                    GenBuffers(1, &mut vbo);
-                    assert_ne!(vbo, 0);
-                    BindBuffer(gl::ARRAY_BUFFER, vbo);
-                    BufferData(
-                        ARRAY_BUFFER,
-                        size_of_val(&VERTICES) as isize,
-                        VERTICES.as_ptr().cast(),
-                        STATIC_DRAW,
-                    );
-                    VertexAttribPointer(
-                        0,
-                        3,
-                        FLOAT,
-                        FALSE,
-                        size_of::<Vertex>().try_into().unwrap(),
-                        0 as *const _,
-                    );
-                    EnableVertexAttribArray(0);
+                    let layout = BufferLayout::new(vec![BufferElement {
+                        name: String::from("pos"),
+                        data_type: buffer::ShaderDataType::Float,
+                        size: 3,
+                        offset: 0,
+                        normalized: false,
+                    }]);
+                    let mut vbo = OpenGLVertexBuffer::new(layout);
+                    vbo.set_data(&VERTICES.to_vec(), size_of_val(&VERTICES) as isize);
+                    let ibo = OpenGLIndexBuffer::new();
                     let mut context: OpenGLRenderContext = OpenGLRenderContext {
                         shader: OpenGLShader { shader_program: 0 },
+                        vao: OpenGLVertexArray::new(vbo, ibo),
                     };
                     context.add_shader("triangle.glsl");
                     context
@@ -153,6 +147,12 @@ impl SapfireRenderer {
             unsafe {
                 ClearColor(0.6, 0.0, 0.8, 1.0);
                 Clear(gl::COLOR_BUFFER_BIT);
+                match &self.rendering_context {
+                    RenderingContext::OpenGL(x) => {
+                        x.vao.bind();
+                    }
+                    _ => (),
+                }
                 DrawArrays(TRIANGLES, 0, 3);
             }
             self.canvas.present();
