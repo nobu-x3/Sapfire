@@ -49,60 +49,33 @@ impl SapfireRenderer {
         )
     }
 
-    // pub fn create_context(
-    //     api: RenderingAPI,
-    //     canvas: &mut Canvas<Window>,
-    //     video_subsystem: &VideoSubsystem,
-    // ) -> OpenGLRenderContext {
-    //     match api {
-    //         RenderingAPI::OpenGL => {
-    //             load_with(|s| video_subsystem.gl_get_proc_address(s) as *const _);
-    //             canvas.window().gl_set_context_to_current().unwrap();
-    //             video_subsystem
-    //                 .gl_set_swap_interval(SwapInterval::VSync)
-    //                 .unwrap();
-    //             let layout = BufferLayout::new(vec![BufferElement::new(
-    //                 String::from("pos"),
-    //                 buffer::ShaderDataType::Vec3,
-    //             )]);
-    //             let mut vbo = OpenGLVertexBuffer::new(layout);
-    //             vbo.set_data(&VERTICES.to_vec(), size_of_val(&VERTICES) as isize);
-    //             let mut ibo = OpenGLIndexBuffer::new();
-    //             let indices = vec![0, 1, 2];
-    //             ibo.set_data(&indices, indices.len() as isize);
-    //             let mut context: OpenGLRenderContext = OpenGLRenderContext {
-    //                 shader: OpenGLShader { shader_program: 0 },
-    //                 vao: OpenGLVertexArray::new(vbo, ibo),
-    //             };
-    //             context.add_shader("triangle.glsl");
-    //             context
-    //         }
-    //     }
-    // }
-
     pub fn run((renderer, event_loop): (SapfireRenderer, EventLoop<()>)) {
         if let RenderingContext::WGPU(mut context) = renderer.rendering_context {
             event_loop.run(move |event, _, control_flow| match event {
                 Event::WindowEvent {
                     ref event,
                     window_id,
-                } if window_id == context.window().id() => match event {
-                    WindowEvent::CloseRequested
-                    | WindowEvent::KeyboardInput {
-                        input:
-                            KeyboardInput {
-                                state: ElementState::Pressed,
-                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                } if window_id == context.window().id() => {
+                    if !context.input(event) {
+                        match event {
+                            WindowEvent::CloseRequested
+                            | WindowEvent::KeyboardInput {
+                                input:
+                                    KeyboardInput {
+                                        state: ElementState::Pressed,
+                                        virtual_keycode: Some(VirtualKeyCode::Escape),
+                                        ..
+                                    },
                                 ..
-                            },
-                        ..
-                    } => *control_flow = ControlFlow::Exit,
-                    WindowEvent::Resized(physical_size) => context.resize(*physical_size),
-                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                        context.resize(**new_inner_size);
+                            } => *control_flow = ControlFlow::Exit,
+                            WindowEvent::Resized(physical_size) => context.resize(*physical_size),
+                            WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                                context.resize(**new_inner_size);
+                            }
+                            _ => {}
+                        }
                     }
-                    _ => {}
-                },
+                }
                 Event::RedrawRequested(window_id) if window_id == context.window().id() => {
                     match context.render() {
                         Ok(_) => {}

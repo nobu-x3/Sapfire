@@ -1,7 +1,10 @@
 use std::ops::Mul;
 
 use wgpu::*;
-use winit::{event::WindowEvent, window::Window};
+use winit::{
+    event::{ElementState, KeyboardInput, ScanCode, VirtualKeyCode, WindowEvent},
+    window::Window,
+};
 pub struct WGPURenderingContext {
     window: Window,
     device: Device,
@@ -9,7 +12,9 @@ pub struct WGPURenderingContext {
     queue: Queue,
     config: SurfaceConfiguration,
     pub size: winit::dpi::PhysicalSize<u32>,
+    color_pipeline: RenderPipeline,
     render_pipeline: RenderPipeline,
+    use_color: bool,
 }
 
 impl WGPURenderingContext {
@@ -61,7 +66,7 @@ impl WGPURenderingContext {
         surface.configure(&device, &config);
         let shader = device.create_shader_module(ShaderModuleDescriptor {
             label: Some("Shader"),
-            source: ShaderSource::Wgsl(include_str!("triangle.wgsl").into()),
+            source: ShaderSource::Wgsl(include_str!("color_triangle.wgsl").into()),
         });
         let render_pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
             label: Some("Pipeline layout"),
@@ -69,6 +74,44 @@ impl WGPURenderingContext {
             push_constant_ranges: &[],
         });
 
+        let color_pipeline = device.create_render_pipeline(&RenderPipelineDescriptor {
+            label: Some("Render Pipeline"),
+            layout: Some(&render_pipeline_layout),
+            vertex: VertexState {
+                module: &shader,
+                entry_point: "vs_main",
+                buffers: &[],
+            },
+            fragment: Some(FragmentState {
+                module: &shader,
+                entry_point: "fs_main",
+                targets: &[Some(ColorTargetState {
+                    format: config.format,
+                    blend: Some(BlendState::REPLACE),
+                    write_mask: ColorWrites::ALL,
+                })],
+            }),
+            primitive: PrimitiveState {
+                topology: PrimitiveTopology::TriangleList,
+                strip_index_format: None,
+                front_face: FrontFace::Ccw,
+                cull_mode: Some(Face::Back),
+                unclipped_depth: false,
+                polygon_mode: PolygonMode::Fill,
+                conservative: false,
+            },
+            depth_stencil: None,
+            multisample: MultisampleState {
+                count: 1,
+                mask: !0,
+                alpha_to_coverage_enabled: false,
+            },
+            multiview: None,
+        });
+        let shader = device.create_shader_module(ShaderModuleDescriptor {
+            label: Some("Shader"),
+            source: ShaderSource::Wgsl(include_str!("triangle.wgsl").into()),
+        });
         let render_pipeline = device.create_render_pipeline(&RenderPipelineDescriptor {
             label: Some("Render Pipeline"),
             layout: Some(&render_pipeline_layout),
@@ -111,6 +154,8 @@ impl WGPURenderingContext {
             config,
             surface,
             render_pipeline,
+            color_pipeline,
+            use_color: false,
         }
     }
 
@@ -127,7 +172,27 @@ impl WGPURenderingContext {
     }
 
     pub fn input(&mut self, event: &WindowEvent) -> bool {
-        false
+        match event {
+            WindowEvent::KeyboardInput {
+                input:
+                    KeyboardInput {
+                        virtual_keycode: Some(VirtualKeyCode::Space),
+                        state: ElementState::Pressed,
+                        ..
+                    },
+                ..
+            } => {
+                self.toggle_pipeline();
+                return true;
+            }
+            _ => {
+                return false;
+            }
+        }
+    }
+
+    pub fn toggle_pipeline(&mut self) {
+        self.use_color = !self.use_color;
     }
 
     pub fn render(&mut self) -> Result<(), SurfaceError> {
@@ -157,7 +222,11 @@ impl WGPURenderingContext {
             })],
             depth_stencil_attachment: None,
         });
-        render_pass.set_pipeline(&self.render_pipeline);
+        render_pass.set_pipeline(if self.use_color {
+            &self.color_pipeline
+        } else {
+            &self.render_pipeline
+        });
         render_pass.draw(0..3, 0..1);
         drop(render_pass);
         self.queue.submit(std::iter::once(encoder.finish()));
