@@ -1,6 +1,5 @@
 pub mod texture;
 pub mod vertex;
-use image::GenericImageView;
 pub use vertex::Vertex;
 use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
@@ -10,6 +9,8 @@ use winit::{
     event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent},
     window::Window,
 };
+
+use crate::camera;
 
 pub struct WGPURenderingContext {
     window: Window,
@@ -25,6 +26,10 @@ pub struct WGPURenderingContext {
     diffuse_bind_group: BindGroup,
     other_diffuse_bind_group: BindGroup,
     texture_toggle: bool,
+    camera: camera::Camera,
+    camera_uniform: camera::CameraUniform,
+    camera_buffer: wgpu::Buffer,
+    camera_bind_group: wgpu::BindGroup,
 }
 
 // Changed
@@ -156,9 +161,49 @@ impl WGPURenderingContext {
                 },
             ],
         });
+        let camera = camera::Camera {
+            eye: (0.0, 1.0, 2.0).into(),
+            // have it look at the origin
+            target: (0.0, 0.0, 0.0).into(),
+            // which way is "up"
+            up: glam::Vec3::Y,
+            aspect: config.width as f32 / config.height as f32,
+            fovy: 45.0,
+            znear: 0.1,
+            zfar: 100.0,
+        };
+        let mut camera_uniform = camera::CameraUniform::new();
+        camera_uniform.update_view_proj(&camera);
+        let camera_buffer = device.create_buffer_init(&BufferInitDescriptor {
+            label: Some("camera_buffer"),
+            contents: bytemuck::cast_slice(&[camera_uniform]),
+            usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+        });
+        let camera_bind_group_layout =
+            device.create_bind_group_layout(&BindGroupLayoutDescriptor {
+                label: Some("camera_buffer_layout"),
+                entries: &[BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: ShaderStages::VERTEX,
+                    ty: BindingType::Buffer {
+                        ty: BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                }],
+            });
+        let camera_bind_group = device.create_bind_group(&BindGroupDescriptor {
+            label: Some("camera_bind_group"),
+            layout: &camera_bind_group_layout,
+            entries: &[BindGroupEntry {
+                binding: 0,
+                resource: camera_buffer.as_entire_binding(),
+            }],
+        });
         let render_pipeline_layout = device.create_pipeline_layout(&PipelineLayoutDescriptor {
             label: Some("Pipeline layout"),
-            bind_group_layouts: &[&texture_bind_group_layout],
+            bind_group_layouts: &[&texture_bind_group_layout, &camera_bind_group_layout],
             push_constant_ranges: &[],
         });
         let shader = device.create_shader_module(ShaderModuleDescriptor {
@@ -216,6 +261,10 @@ impl WGPURenderingContext {
             queue,
             config,
             surface,
+            camera,
+            camera_bind_group,
+            camera_uniform,
+            camera_buffer,
             render_pipeline,
             vertex_buffer,
             index_buffer,
@@ -299,6 +348,7 @@ impl WGPURenderingContext {
             },
             &[],
         );
+        render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), IndexFormat::Uint16);
         render_pass.draw_indexed(0..self.num_vertices, 0, 0..1);
