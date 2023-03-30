@@ -1,5 +1,3 @@
-use crate::Vertex;
-
 pub enum ShaderDataType {
     None,
     Float,
@@ -79,14 +77,14 @@ impl BufferLayout {
     }
 }
 
-pub trait VertexBuffer {
-    fn bind(&self);
-    fn unbind(&self);
-    fn set_data(&mut self, buffer: &Vec<Vertex>, size: isize);
-}
+// pub trait VertexBuffer {
+//     fn bind(&self);
+//     fn unbind(&self);
+//     fn set_data(&mut self, buffer: &Vec<Vertex>, size: isize);
+// }
 
-pub trait IndexBuffer {
-    fn bind(&self);
-    fn unbind(&self);
-    fn set_data(&mut self, buffer: &Vec<u32>, size: isize); // TODO: fix Vertex, should be index
-}
+// pub trait IndexBuffer {
+//     fn bind(&self);
+//     fn unbind(&self);
+//     fn set_data(&mut self, buffer: &Vec<u32>, size: isize); // TODO: fix Vertex, should be index
+// }
