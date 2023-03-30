@@ -2,28 +2,20 @@ extern crate gl;
 extern crate glam;
 extern crate wgpu;
 use camera::Camera;
-pub mod buffer;
 pub mod camera;
-pub mod opengl_wrapper;
 pub mod renderer;
-pub mod vertex_array;
 pub mod wgpu_wrapper;
-use renderer::{Renderer, RenderingContext};
-pub mod shader;
+use renderer::RenderingContext;
 use wgpu_wrapper::WGPURenderingContext;
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::{Window, WindowBuilder};
+use winit::window::WindowBuilder;
 
 pub struct SapfireRenderer {
     rendering_context: RenderingContext,
     camera: Camera,
 }
-
-type Vertex = [f32; 3];
-
-const VERTICES: [Vertex; 3] = [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]];
 
 pub enum RenderingAPI {
     OpenGL,
