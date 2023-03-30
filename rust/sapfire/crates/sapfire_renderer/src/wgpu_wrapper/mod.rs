@@ -1,3 +1,4 @@
+pub mod texture;
 pub mod vertex;
 use image::GenericImageView;
 pub use vertex::Vertex;
@@ -22,6 +23,8 @@ pub struct WGPURenderingContext {
     index_buffer: Buffer,
     num_vertices: u32,
     diffuse_bind_group: BindGroup,
+    other_diffuse_bind_group: BindGroup,
+    texture_toggle: bool,
 }
 
 // Changed
@@ -52,7 +55,7 @@ const VERTICES: &[Vertex] = &[
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
 
 impl WGPURenderingContext {
-    pub async fn new(window: Window) -> Self {
+    pub async fn new(window: Window) -> WGPURenderingContext {
         let instance = Instance::new(InstanceDescriptor {
             backends: Backends::all(),
             dx12_shader_compiler: Default::default(), // not sure what this is
@@ -97,49 +100,9 @@ impl WGPURenderingContext {
         };
         surface.configure(&device, &config);
         let diffuse_bytes = include_bytes!("happy-tree.png");
-        let diffuse_image = image::load_from_memory(diffuse_bytes).unwrap();
-        let diffuse_rgba = diffuse_image.to_rgba8();
-        let dimensions = diffuse_image.dimensions();
-        let texture_size = Extent3d {
-            width: dimensions.0,
-            height: dimensions.1,
-            depth_or_array_layers: 1,
-        };
-        let diffuse_texture = device.create_texture(&TextureDescriptor {
-            label: Some("diffuse_texture"),
-            size: texture_size,
-            mip_level_count: 1,
-            sample_count: 1,
-            dimension: TextureDimension::D2,
-            format: TextureFormat::Rgba8UnormSrgb,
-            usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
-            view_formats: &[],
-        });
-        queue.write_texture(
-            ImageCopyTexture {
-                texture: &diffuse_texture,
-                mip_level: 0,
-                origin: Origin3d::ZERO,
-                aspect: TextureAspect::All,
-            },
-            &diffuse_rgba,
-            ImageDataLayout {
-                offset: 0,
-                bytes_per_row: std::num::NonZeroU32::new(4 * dimensions.0),
-                rows_per_image: std::num::NonZeroU32::new(dimensions.1),
-            },
-            texture_size,
-        );
-        let diffuse_texture_view = diffuse_texture.create_view(&TextureViewDescriptor::default());
-        let diffuse_sampler = device.create_sampler(&SamplerDescriptor {
-            address_mode_u: AddressMode::ClampToEdge,
-            address_mode_v: AddressMode::ClampToEdge,
-            address_mode_w: AddressMode::ClampToEdge,
-            mag_filter: FilterMode::Linear,
-            min_filter: FilterMode::Nearest,
-            mipmap_filter: FilterMode::Nearest,
-            ..Default::default()
-        });
+        let texture =
+            texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "diffuse_texture")
+                .unwrap();
         let texture_bind_group_layout =
             device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("texture_bind_group_layout"),
@@ -168,11 +131,28 @@ impl WGPURenderingContext {
             entries: &[
                 BindGroupEntry {
                     binding: 0,
-                    resource: BindingResource::TextureView(&diffuse_texture_view),
+                    resource: BindingResource::TextureView(&texture.view),
                 },
                 BindGroupEntry {
                     binding: 1,
-                    resource: BindingResource::Sampler(&diffuse_sampler),
+                    resource: BindingResource::Sampler(&texture.sampler),
+                },
+            ],
+        });
+        let diffuse_bytes = include_bytes!("sad_tree.png");
+        let texture =
+            texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "sad_tree").unwrap();
+        let other_diffuse_bind_group = device.create_bind_group(&BindGroupDescriptor {
+            label: Some("other_diffuse_bind_group"),
+            layout: &texture_bind_group_layout,
+            entries: &[
+                BindGroupEntry {
+                    binding: 0,
+                    resource: BindingResource::TextureView(&texture.view),
+                },
+                BindGroupEntry {
+                    binding: 1,
+                    resource: BindingResource::Sampler(&texture.sampler),
                 },
             ],
         });
@@ -229,7 +209,7 @@ impl WGPURenderingContext {
             contents: bytemuck::cast_slice(INDICES),
             usage: BufferUsages::INDEX,
         });
-        Self {
+        WGPURenderingContext {
             window,
             size,
             device,
@@ -241,6 +221,8 @@ impl WGPURenderingContext {
             index_buffer,
             num_vertices: INDICES.len() as u32,
             diffuse_bind_group,
+            other_diffuse_bind_group,
+            texture_toggle: false,
         }
     }
 
@@ -267,12 +249,17 @@ impl WGPURenderingContext {
                     },
                 ..
             } => {
+                self.toggle_texture();
                 return true;
             }
             _ => {
                 return false;
             }
         }
+    }
+
+    pub fn toggle_texture(&mut self) {
+        self.texture_toggle = !self.texture_toggle;
     }
 
     pub fn render(&mut self) -> Result<(), SurfaceError> {
@@ -303,7 +290,15 @@ impl WGPURenderingContext {
             depth_stencil_attachment: None,
         });
         render_pass.set_pipeline(&self.render_pipeline);
-        render_pass.set_bind_group(0, &self.diffuse_bind_group, &[]);
+        render_pass.set_bind_group(
+            0,
+            if self.texture_toggle {
+                &self.other_diffuse_bind_group
+            } else {
+                &self.diffuse_bind_group
+            },
+            &[],
+        );
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), IndexFormat::Uint16);
         render_pass.draw_indexed(0..self.num_vertices, 0, 0..1);
