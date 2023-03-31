@@ -1,3 +1,4 @@
+pub mod instance_buf;
 pub mod texture;
 pub mod vertex;
 pub use vertex::Vertex;
@@ -12,6 +13,8 @@ use winit::{
 
 use crate::camera;
 use crate::camera_controller;
+
+use self::instance_buf::InstanceRaw;
 
 pub struct WGPURenderingContext {
     window: Window,
@@ -32,6 +35,8 @@ pub struct WGPURenderingContext {
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
     camera_controller: camera_controller::CameraController,
+    instances: Vec<instance_buf::Instance>,
+    instance_buffer: Buffer,
 }
 
 // Changed
@@ -61,9 +66,17 @@ const VERTICES: &[Vertex] = &[
 
 const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
 
+const NUM_INSTANCES_PER_ROW: u32 = 10;
+
+const INSTANCE_DISPLACEMENT: glam::Vec3 = glam::Vec3::new(
+    NUM_INSTANCES_PER_ROW as f32 * 0.5,
+    0.0,
+    NUM_INSTANCES_PER_ROW as f32 * 0.5,
+);
+
 impl WGPURenderingContext {
     pub async fn new(window: Window) -> WGPURenderingContext {
-        let instance = Instance::new(InstanceDescriptor {
+        let instance = wgpu::Instance::new(InstanceDescriptor {
             backends: Backends::all(),
             dx12_shader_compiler: Default::default(), // not sure what this is
         });
@@ -218,7 +231,7 @@ impl WGPURenderingContext {
             vertex: VertexState {
                 module: &shader,
                 entry_point: "vs_main",
-                buffers: &[Vertex::desc()],
+                buffers: &[Vertex::desc(), InstanceRaw::desc()],
             },
             fragment: Some(FragmentState {
                 module: &shader,
@@ -257,6 +270,28 @@ impl WGPURenderingContext {
             usage: BufferUsages::INDEX,
         });
         let camera_controller = camera_controller::CameraController::new(0.5);
+        let instances = (0..NUM_INSTANCES_PER_ROW)
+            .flat_map(|z| {
+                (0..NUM_INSTANCES_PER_ROW).map(move |x| {
+                    let position = glam::Vec3::new(x as f32, 0.0, z as f32) - INSTANCE_DISPLACEMENT;
+                    let rotation = if position == glam::Vec3::ZERO {
+                        glam::Quat::from_axis_angle(glam::Vec3::Z, (0.0 as f32).to_radians())
+                    } else {
+                        glam::Quat::from_axis_angle(glam::Vec3::Z, (45.0 as f32).to_radians())
+                    };
+                    instance_buf::Instance { position, rotation }
+                })
+            })
+            .collect::<Vec<_>>();
+        let instance_data = instances
+            .iter()
+            .map(instance_buf::Instance::to_raw)
+            .collect::<Vec<_>>();
+        let instance_buffer = device.create_buffer_init(&BufferInitDescriptor {
+            label: Some("Instance Buffer"),
+            contents: bytemuck::cast_slice(&instance_data),
+            usage: BufferUsages::VERTEX,
+        });
         WGPURenderingContext {
             window,
             size,
@@ -276,6 +311,8 @@ impl WGPURenderingContext {
             other_diffuse_bind_group,
             texture_toggle: false,
             camera_controller,
+            instance_buffer,
+            instances,
         }
     }
 
@@ -356,8 +393,9 @@ impl WGPURenderingContext {
         );
         render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+        render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), IndexFormat::Uint16);
-        render_pass.draw_indexed(0..self.num_vertices, 0, 0..1);
+        render_pass.draw_indexed(0..self.num_vertices, 0, 0..self.instances.len() as _);
         drop(render_pass);
         self.queue.submit(std::iter::once(encoder.finish()));
         output.present();
