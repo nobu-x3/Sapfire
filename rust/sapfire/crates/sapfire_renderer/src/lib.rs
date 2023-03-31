@@ -1,8 +1,8 @@
 extern crate gl;
 extern crate glam;
 extern crate wgpu;
-use camera::Camera;
 pub mod camera;
+pub mod camera_controller;
 pub mod renderer;
 pub mod wgpu_wrapper;
 use renderer::RenderingContext;
@@ -14,7 +14,6 @@ use winit::window::WindowBuilder;
 
 pub struct SapfireRenderer {
     rendering_context: RenderingContext,
-    camera: Camera,
 }
 
 pub enum RenderingAPI {
@@ -31,11 +30,9 @@ impl SapfireRenderer {
         window.set_title("Sapfire Engine");
         window.set_inner_size(PhysicalSize::new(800, 600));
         let context = WGPURenderingContext::new(window).await;
-        let camera = Camera::new_ortho(800.0, 600.0, 1.0, -1.0);
         (
             SapfireRenderer {
                 rendering_context: RenderingContext::WGPU(context),
-                camera,
             },
             event_loop,
         )
@@ -69,6 +66,7 @@ impl SapfireRenderer {
                     }
                 }
                 Event::RedrawRequested(window_id) if window_id == context.window().id() => {
+                    context.update();
                     match context.render() {
                         Ok(_) => {}
                         Err(wgpu::SurfaceError::Lost) => context.resize(context.size),

@@ -1,4 +1,4 @@
-use crate::{camera::Camera, wgpu_wrapper::WGPURenderingContext};
+use crate::wgpu_wrapper::WGPURenderingContext;
 
 pub trait Renderer {
     // fn begin_scene(&mut self, camera: &Camera, cameraTransform: glam::Mat4);
