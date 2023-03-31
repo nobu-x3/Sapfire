@@ -11,6 +11,7 @@ use winit::{
 };
 
 use crate::camera;
+use crate::camera_controller;
 
 pub struct WGPURenderingContext {
     window: Window,
@@ -30,6 +31,7 @@ pub struct WGPURenderingContext {
     camera_uniform: camera::CameraUniform,
     camera_buffer: wgpu::Buffer,
     camera_bind_group: wgpu::BindGroup,
+    camera_controller: camera_controller::CameraController,
 }
 
 // Changed
@@ -254,6 +256,7 @@ impl WGPURenderingContext {
             contents: bytemuck::cast_slice(INDICES),
             usage: BufferUsages::INDEX,
         });
+        let camera_controller = camera_controller::CameraController::new(0.5);
         WGPURenderingContext {
             window,
             size,
@@ -272,12 +275,14 @@ impl WGPURenderingContext {
             diffuse_bind_group,
             other_diffuse_bind_group,
             texture_toggle: false,
+            camera_controller,
         }
     }
 
     pub fn window(&self) -> &Window {
         &self.window
     }
+
     pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
             self.size = new_size;
@@ -288,6 +293,7 @@ impl WGPURenderingContext {
     }
 
     pub fn input(&mut self, event: &WindowEvent) -> bool {
+        self.camera_controller.process_events(event);
         match event {
             WindowEvent::KeyboardInput {
                 input:
@@ -356,5 +362,15 @@ impl WGPURenderingContext {
         self.queue.submit(std::iter::once(encoder.finish()));
         output.present();
         Ok(())
+    }
+
+    pub fn update(&mut self) {
+        self.camera_controller.update_camera(&mut self.camera);
+        self.camera_uniform.update_view_proj(&self.camera);
+        self.queue.write_buffer(
+            &self.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[self.camera_uniform]),
+        );
     }
 }

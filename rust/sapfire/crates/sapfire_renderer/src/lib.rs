@@ -2,6 +2,7 @@ extern crate gl;
 extern crate glam;
 extern crate wgpu;
 pub mod camera;
+pub mod camera_controller;
 pub mod renderer;
 pub mod wgpu_wrapper;
 use renderer::RenderingContext;
@@ -65,6 +66,7 @@ impl SapfireRenderer {
                     }
                 }
                 Event::RedrawRequested(window_id) if window_id == context.window().id() => {
+                    context.update();
                     match context.render() {
                         Ok(_) => {}
                         Err(wgpu::SurfaceError::Lost) => context.resize(context.size),
