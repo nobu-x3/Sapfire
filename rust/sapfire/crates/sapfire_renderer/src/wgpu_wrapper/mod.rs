@@ -290,7 +290,7 @@ impl WGPURenderingContext {
         let instance_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: Some("Instance Buffer"),
             contents: bytemuck::cast_slice(&instance_data),
-            usage: BufferUsages::VERTEX,
+            usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
         });
         WGPURenderingContext {
             window,
@@ -409,6 +409,20 @@ impl WGPURenderingContext {
             &self.camera_buffer,
             0,
             bytemuck::cast_slice(&[self.camera_uniform]),
+        );
+        for inst in &mut self.instances {
+            let amount = glam::Quat::from_rotation_y((15.0 as f32).to_radians());
+            inst.rotation *= amount;
+        }
+        let instance_data = self
+            .instances
+            .iter()
+            .map(instance_buf::Instance::to_raw)
+            .collect::<Vec<_>>();
+        self.queue.write_buffer(
+            &self.instance_buffer,
+            0,
+            bytemuck::cast_slice(&instance_data),
         );
     }
 }
