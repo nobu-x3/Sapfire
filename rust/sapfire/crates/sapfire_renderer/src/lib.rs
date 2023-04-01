@@ -4,6 +4,7 @@ extern crate wgpu;
 pub mod camera;
 pub mod camera_controller;
 pub mod renderer;
+pub mod resources;
 pub mod wgpu_wrapper;
 use renderer::RenderingContext;
 use wgpu_wrapper::WGPURenderingContext;
