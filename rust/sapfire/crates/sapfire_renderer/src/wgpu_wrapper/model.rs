@@ -39,11 +39,11 @@ pub trait Vertex {
 }
 
 #[repr(C)]
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct ModelVertex {
-    pub position: glam::Vec3,
-    pub tex_coords: glam::Vec2,
-    pub normal: glam::Vec3,
+    pub position: [f32; 3],
+    pub tex_coords: [f32; 2],
+    pub normal: [f32; 3],
 }
 
 pub struct Model {
@@ -81,7 +81,7 @@ pub fn load_model(
             single_index: true,
             ..Default::default()
         },
-        |path| {
+        move |path| {
             let mat_src = resources::load_string_from_path(path).unwrap();
             tobj::load_mtl_buf(&mut BufReader::new(Cursor::new(mat_src)))
         },
@@ -114,17 +114,17 @@ pub fn load_model(
         .map(|m| {
             let vertices = (0..m.mesh.positions.len() / 3)
                 .map(|i| ModelVertex {
-                    position: glam::vec3(
+                    position: [
                         m.mesh.positions[i * 3],
                         m.mesh.positions[i * 3 + 1],
                         m.mesh.positions[i * 3 + 2],
-                    ),
-                    tex_coords: glam::vec2(m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]),
-                    normal: glam::vec3(
+                    ],
+                    tex_coords: [m.mesh.texcoords[i * 2], m.mesh.texcoords[i * 2 + 1]],
+                    normal: [
                         m.mesh.normals[i * 3],
                         m.mesh.normals[i * 3 + 1],
                         m.mesh.normals[i * 3 + 2],
-                    ),
+                    ],
                 })
                 .collect::<Vec<_>>();
             let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
@@ -161,13 +161,12 @@ impl Vertex for ModelVertex {
                     shader_location: 0,
                 },
                 VertexAttribute {
-                    offset: std::mem::size_of::<glam::Vec2>() as BufferAddress,
+                    offset: std::mem::size_of::<[f32; 3]>() as BufferAddress,
                     shader_location: 1,
                     format: VertexFormat::Float32x2,
                 },
                 VertexAttribute {
-                    offset: (std::mem::size_of::<glam::Vec3>() + std::mem::size_of::<glam::Vec2>())
-                        as BufferAddress,
+                    offset: (std::mem::size_of::<[f32; 5]>()) as BufferAddress,
                     format: VertexFormat::Float32x3,
                     shader_location: 2,
                 },
@@ -175,9 +174,6 @@ impl Vertex for ModelVertex {
         }
     }
 }
-
-unsafe impl bytemuck::Pod for ModelVertex {}
-unsafe impl bytemuck::Zeroable for ModelVertex {}
 
 impl<'a, 'b> DrawModel<'b> for RenderPass<'a>
 where

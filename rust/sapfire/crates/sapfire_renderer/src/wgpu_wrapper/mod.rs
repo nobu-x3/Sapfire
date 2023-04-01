@@ -39,14 +39,6 @@ pub struct WGPURenderingContext {
 }
 const NUM_INSTANCES_PER_ROW: u32 = 10;
 
-const INSTANCE_DISPLACEMENT: glam::Vec3 = glam::Vec3::new(
-    NUM_INSTANCES_PER_ROW as f32 * 0.5,
-    0.0,
-    NUM_INSTANCES_PER_ROW as f32 * 0.5,
-);
-
-const SPACE_BETWEEN: f32 = 3.0;
-
 impl WGPURenderingContext {
     pub async fn new(window: Window) -> WGPURenderingContext {
         let instance = wgpu::Instance::new(InstanceDescriptor {
@@ -215,9 +207,7 @@ impl WGPURenderingContext {
                 (0..NUM_INSTANCES_PER_ROW).map(move |x| {
                     let x = SPACE_BETWEEN * (x as f32 - NUM_INSTANCES_PER_ROW as f32 / 2.0);
                     let z = SPACE_BETWEEN * (z as f32 - NUM_INSTANCES_PER_ROW as f32 / 2.0);
-
                     let position = glam::Vec3::new(x, 0.0, z);
-
                     let rotation = if position == glam::Vec3::ZERO {
                         glam::Quat::from_axis_angle(glam::Vec3::Z, (0.0 as f32).to_radians())
                     } else {
@@ -227,7 +217,6 @@ impl WGPURenderingContext {
                 })
             })
             .collect::<Vec<_>>();
-
         let instance_data = instances
             .iter()
             .map(instance_buf::Instance::to_raw)
@@ -238,8 +227,7 @@ impl WGPURenderingContext {
             usage: wgpu::BufferUsages::VERTEX,
         });
         let obj_model =
-            model::load_model("cube.obj", &device, &queue, &texture_bind_group_layout).unwrap();
-
+            model::load_model("untitled.obj", &device, &queue, &texture_bind_group_layout).unwrap();
         WGPURenderingContext {
             window,
             size,
@@ -329,8 +317,8 @@ impl WGPURenderingContext {
                 stencil_ops: None,
             }),
         });
-        render_pass.set_pipeline(&self.render_pipeline);
         render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
+        render_pass.set_pipeline(&self.render_pipeline);
         render_pass.draw_model_instanced(
             &self.obj_model,
             0..self.instances.len() as u32,
