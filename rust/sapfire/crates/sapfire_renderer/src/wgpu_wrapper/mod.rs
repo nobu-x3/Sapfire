@@ -1,7 +1,7 @@
 pub mod instance_buf;
+pub mod model;
 pub mod texture;
-pub mod vertex;
-pub use vertex::Vertex;
+pub use model::Vertex;
 use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
     *,
@@ -11,10 +11,13 @@ use winit::{
     window::Window,
 };
 
-use crate::camera;
 use crate::camera_controller;
+use crate::{camera, resources};
 
-use self::instance_buf::InstanceRaw;
+use self::{
+    instance_buf::InstanceRaw,
+    model::{DrawModel, ModelVertex},
+};
 
 pub struct WGPURenderingContext {
     window: Window,
@@ -24,12 +27,6 @@ pub struct WGPURenderingContext {
     config: SurfaceConfiguration,
     pub size: winit::dpi::PhysicalSize<u32>,
     render_pipeline: RenderPipeline,
-    vertex_buffer: Buffer,
-    index_buffer: Buffer,
-    num_vertices: u32,
-    diffuse_bind_group: BindGroup,
-    other_diffuse_bind_group: BindGroup,
-    texture_toggle: bool,
     depth_texture: texture::Texture,
     camera: camera::Camera,
     camera_uniform: camera::CameraUniform,
@@ -38,42 +35,9 @@ pub struct WGPURenderingContext {
     camera_controller: camera_controller::CameraController,
     instances: Vec<instance_buf::Instance>,
     instance_buffer: Buffer,
+    obj_model: model::Model,
 }
-
-// Changed
-const VERTICES: &[Vertex] = &[
-    // Changed
-    Vertex {
-        position: [-0.0868241, 0.49240386, 0.0],
-        tex_coords: [0.4131759, 0.00759614],
-    }, // A
-    Vertex {
-        position: [-0.49513406, 0.06958647, 0.0],
-        tex_coords: [0.0048659444, 0.43041354],
-    }, // B
-    Vertex {
-        position: [-0.21918549, -0.44939706, 0.0],
-        tex_coords: [0.28081453, 0.949397],
-    }, // C
-    Vertex {
-        position: [0.35966998, -0.3473291, 0.0],
-        tex_coords: [0.85967, 0.84732914],
-    }, // D
-    Vertex {
-        position: [0.44147372, 0.2347359, 0.0],
-        tex_coords: [0.9414737, 0.2652641],
-    }, // E
-];
-
-const INDICES: &[u16] = &[0, 1, 4, 1, 2, 4, 2, 3, 4];
-
 const NUM_INSTANCES_PER_ROW: u32 = 10;
-
-const INSTANCE_DISPLACEMENT: glam::Vec3 = glam::Vec3::new(
-    NUM_INSTANCES_PER_ROW as f32 * 0.5,
-    0.0,
-    NUM_INSTANCES_PER_ROW as f32 * 0.5,
-);
 
 impl WGPURenderingContext {
     pub async fn new(window: Window) -> WGPURenderingContext {
@@ -120,10 +84,6 @@ impl WGPURenderingContext {
             view_formats: vec![],
         };
         surface.configure(&device, &config);
-        let diffuse_bytes = include_bytes!("happy-tree.png");
-        let texture =
-            texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "diffuse_texture")
-                .unwrap();
         let texture_bind_group_layout =
             device.create_bind_group_layout(&BindGroupLayoutDescriptor {
                 label: Some("texture_bind_group_layout"),
@@ -146,37 +106,6 @@ impl WGPURenderingContext {
                     },
                 ],
             });
-        let diffuse_bind_group = device.create_bind_group(&BindGroupDescriptor {
-            label: Some("diffuse_bind_group"),
-            layout: &texture_bind_group_layout,
-            entries: &[
-                BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(&texture.view),
-                },
-                BindGroupEntry {
-                    binding: 1,
-                    resource: BindingResource::Sampler(&texture.sampler),
-                },
-            ],
-        });
-        let diffuse_bytes = include_bytes!("sad_tree.png");
-        let texture =
-            texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "sad_tree").unwrap();
-        let other_diffuse_bind_group = device.create_bind_group(&BindGroupDescriptor {
-            label: Some("other_diffuse_bind_group"),
-            layout: &texture_bind_group_layout,
-            entries: &[
-                BindGroupEntry {
-                    binding: 0,
-                    resource: BindingResource::TextureView(&texture.view),
-                },
-                BindGroupEntry {
-                    binding: 1,
-                    resource: BindingResource::Sampler(&texture.sampler),
-                },
-            ],
-        });
         let depth_texture = texture::Texture::new_depth_texture(&device, &config, "depth_texture");
         let camera = camera::Camera {
             eye: (0.0, 1.0, 2.0).into(),
@@ -225,7 +154,11 @@ impl WGPURenderingContext {
         });
         let shader = device.create_shader_module(ShaderModuleDescriptor {
             label: Some("Shader"),
-            source: ShaderSource::Wgsl(include_str!("color_triangle.wgsl").into()),
+            source: ShaderSource::Wgsl(
+                resources::load_string("shaders/color_triangle.wgsl")
+                    .unwrap()
+                    .into(),
+            ),
         });
         let render_pipeline = device.create_render_pipeline(&RenderPipelineDescriptor {
             label: Some("Render Pipeline"),
@@ -233,7 +166,7 @@ impl WGPURenderingContext {
             vertex: VertexState {
                 module: &shader,
                 entry_point: "vs_main",
-                buffers: &[Vertex::desc(), InstanceRaw::desc()],
+                buffers: &[ModelVertex::desc(), InstanceRaw::desc()],
             },
             fragment: Some(FragmentState {
                 module: &shader,
@@ -248,8 +181,7 @@ impl WGPURenderingContext {
                 topology: PrimitiveTopology::TriangleList,
                 strip_index_format: None,
                 front_face: FrontFace::Ccw,
-                // cull_mode: Some(Face::Back),
-                cull_mode: None,
+                cull_mode: Some(Face::Back),
                 unclipped_depth: false,
                 polygon_mode: PolygonMode::Fill,
                 conservative: false,
@@ -268,21 +200,14 @@ impl WGPURenderingContext {
             },
             multiview: None,
         });
-        let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
-            label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(VERTICES),
-            usage: BufferUsages::VERTEX,
-        });
-        let index_buffer = device.create_buffer_init(&BufferInitDescriptor {
-            label: Some("Index Buffer"),
-            contents: bytemuck::cast_slice(INDICES),
-            usage: BufferUsages::INDEX,
-        });
         let camera_controller = camera_controller::CameraController::new(0.5);
+        const SPACE_BETWEEN: f32 = 3.0;
         let instances = (0..NUM_INSTANCES_PER_ROW)
             .flat_map(|z| {
                 (0..NUM_INSTANCES_PER_ROW).map(move |x| {
-                    let position = glam::Vec3::new(x as f32, 0.0, z as f32) - INSTANCE_DISPLACEMENT;
+                    let x = SPACE_BETWEEN * (x as f32 - NUM_INSTANCES_PER_ROW as f32 / 2.0);
+                    let z = SPACE_BETWEEN * (z as f32 - NUM_INSTANCES_PER_ROW as f32 / 2.0);
+                    let position = glam::Vec3::new(x, 0.0, z);
                     let rotation = if position == glam::Vec3::ZERO {
                         glam::Quat::from_axis_angle(glam::Vec3::Z, (0.0 as f32).to_radians())
                     } else {
@@ -296,11 +221,13 @@ impl WGPURenderingContext {
             .iter()
             .map(instance_buf::Instance::to_raw)
             .collect::<Vec<_>>();
-        let instance_buffer = device.create_buffer_init(&BufferInitDescriptor {
+        let instance_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Instance Buffer"),
             contents: bytemuck::cast_slice(&instance_data),
-            usage: BufferUsages::VERTEX | BufferUsages::COPY_DST,
+            usage: wgpu::BufferUsages::VERTEX,
         });
+        let obj_model =
+            model::load_model("untitled.obj", &device, &queue, &texture_bind_group_layout).unwrap();
         WGPURenderingContext {
             window,
             size,
@@ -314,15 +241,10 @@ impl WGPURenderingContext {
             camera_buffer,
             depth_texture,
             render_pipeline,
-            vertex_buffer,
-            index_buffer,
-            num_vertices: INDICES.len() as u32,
-            diffuse_bind_group,
-            other_diffuse_bind_group,
-            texture_toggle: false,
             camera_controller,
             instance_buffer,
             instances,
+            obj_model,
         }
     }
 
@@ -353,17 +275,12 @@ impl WGPURenderingContext {
                     },
                 ..
             } => {
-                self.toggle_texture();
                 return true;
             }
             _ => {
                 return false;
             }
         }
-    }
-
-    pub fn toggle_texture(&mut self) {
-        self.texture_toggle = !self.texture_toggle;
     }
 
     pub fn render(&mut self) -> Result<(), SurfaceError> {
@@ -383,9 +300,9 @@ impl WGPURenderingContext {
                 resolve_target: None,
                 ops: Operations {
                     load: LoadOp::Clear(Color {
-                        r: 0.0,
-                        g: 0.0,
-                        b: 0.0,
+                        r: 0.3,
+                        g: 0.3,
+                        b: 0.3,
                         a: 1.0,
                     }),
                     store: true,
@@ -400,21 +317,13 @@ impl WGPURenderingContext {
                 stencil_ops: None,
             }),
         });
-        render_pass.set_pipeline(&self.render_pipeline);
-        render_pass.set_bind_group(
-            0,
-            if self.texture_toggle {
-                &self.other_diffuse_bind_group
-            } else {
-                &self.diffuse_bind_group
-            },
-            &[],
-        );
-        render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
-        render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
-        render_pass.set_index_buffer(self.index_buffer.slice(..), IndexFormat::Uint16);
-        render_pass.draw_indexed(0..self.num_vertices, 0, 0..self.instances.len() as _);
+        render_pass.set_pipeline(&self.render_pipeline);
+        render_pass.draw_model_instanced(
+            &self.obj_model,
+            0..self.instances.len() as u32,
+            &self.camera_bind_group,
+        );
         drop(render_pass);
         self.queue.submit(std::iter::once(encoder.finish()));
         output.present();
@@ -433,15 +342,15 @@ impl WGPURenderingContext {
             let amount = glam::Quat::from_rotation_y((15.0 as f32).to_radians());
             inst.rotation *= amount;
         }
-        let instance_data = self
-            .instances
-            .iter()
-            .map(instance_buf::Instance::to_raw)
-            .collect::<Vec<_>>();
-        self.queue.write_buffer(
-            &self.instance_buffer,
-            0,
-            bytemuck::cast_slice(&instance_data),
-        );
+        // let instance_data = self
+        //     .instances
+        //     .iter()
+        //     .map(instance_buf::Instance::to_raw)
+        //     .collect::<Vec<_>>();
+        // self.queue.write_buffer(
+        //     &self.instance_buffer,
+        //     0,
+        //     bytemuck::cast_slice(&instance_data),
+        // );
     }
 }
