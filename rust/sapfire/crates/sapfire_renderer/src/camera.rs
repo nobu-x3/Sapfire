@@ -31,14 +31,6 @@ pub use glam::*;
 //     }
 // }
 
-// #[rustfmt::skip]
-// pub const OPENGL_TO_WGPU_MATRIX: glam::Mat4 = glam::Mat4::
-//     1.0, 0.0, 0.0, 0.0,
-//     0.0, 1.0, 0.0, 0.0,
-//     0.0, 0.0, 0.5, 0.0,
-//     0.0, 0.0, 0.5, 1.0,
-// );
-
 pub struct Camera {
     pub eye: glam::Vec3,
     pub target: glam::Vec3,
@@ -50,7 +42,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    fn build_view_projection_matrix(&self) -> glam::Mat4 {
+    fn build_view_projection_matrix(&self) -> (glam::Mat4, glam::Mat4) {
         let view = glam::Mat4::look_at_rh(self.eye, self.target, self.up);
         let proj = glam::Mat4::perspective_rh(
             f32::to_radians(self.fovy),
@@ -58,27 +50,32 @@ impl Camera {
             self.znear,
             self.zfar,
         );
-        return proj * view;
+        return (view, proj * view);
     }
 }
 
 #[repr(C)]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, bytemuck::Zeroable, bytemuck::Pod)]
 pub struct CameraUniform {
-    view_proj: glam::Mat4,
+    view_proj: [[f32; 4]; 4],
+    view: [[f32; 4]; 4],
+    position: [f32; 3],
+    _padding: u32,
 }
 
 impl CameraUniform {
     pub fn new() -> CameraUniform {
         CameraUniform {
-            view_proj: glam::Mat4::IDENTITY,
+            view_proj: glam::Mat4::IDENTITY.to_cols_array_2d(),
+            view: glam::Mat4::IDENTITY.to_cols_array_2d(),
+            position: glam::Vec3::ONE.to_array(),
+            _padding: 0,
         }
     }
 
     pub fn update_view_proj(&mut self, camera: &Camera) {
-        self.view_proj = camera.build_view_projection_matrix();
+        let (view, view_proj) = camera.build_view_projection_matrix();
+        (self.view, self.view_proj) = (view.to_cols_array_2d(), view_proj.to_cols_array_2d());
+        self.position = camera.eye.to_array();
     }
 }
-
-unsafe impl bytemuck::Pod for CameraUniform {}
-unsafe impl bytemuck::Zeroable for CameraUniform {}
