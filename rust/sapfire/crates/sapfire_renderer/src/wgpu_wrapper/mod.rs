@@ -194,9 +194,7 @@ impl WGPURenderingContext {
             let shader = ShaderModuleDescriptor {
                 label: Some("Default Shader"),
                 source: ShaderSource::Wgsl(
-                    resources::load_string("shaders/color_triangle.wgsl")
-                        .unwrap()
-                        .into(),
+                    resources::load_string("shaders/lit.wgsl").unwrap().into(),
                 ),
             };
             create_render_pipeline(
