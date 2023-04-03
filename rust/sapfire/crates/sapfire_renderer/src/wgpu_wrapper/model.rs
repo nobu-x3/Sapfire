@@ -17,6 +17,8 @@ pub struct ModelVertex {
     pub position: [f32; 3],
     pub tex_coords: [f32; 2],
     pub normal: [f32; 3],
+    pub tangent: [f32; 3],
+    pub bitangent: [f32; 3],
 }
 
 pub struct Model {
@@ -82,10 +84,10 @@ pub fn load_model(
             bind_group,
         });
     }
-    let meshes = models
+    let meshes: Vec<Mesh> = models
         .into_iter()
         .map(|m| {
-            let vertices = (0..m.mesh.positions.len() / 3)
+            let mut vertices = (0..m.mesh.positions.len() / 3)
                 .map(|i| ModelVertex {
                     position: [
                         m.mesh.positions[i * 3],
@@ -98,8 +100,56 @@ pub fn load_model(
                         m.mesh.normals[i * 3 + 1],
                         m.mesh.normals[i * 3 + 2],
                     ],
+                    tangent: [0.0; 3],
+                    bitangent: [0.0; 3],
                 })
                 .collect::<Vec<_>>();
+            let indices = &m.mesh.indices;
+            let mut triangles_included = vec![0; vertices.len()];
+            for c in indices.chunks(3) {
+                // I need to brush up on linear algebra
+                let v0 = vertices[c[0] as usize];
+                let v1 = vertices[c[1] as usize];
+                let v2 = vertices[c[2] as usize];
+                let pos0: glam::Vec3 = v0.position.into();
+                let pos1: glam::Vec3 = v1.position.into();
+                let pos2: glam::Vec3 = v2.position.into();
+                let uv0: glam::Vec2 = v0.tex_coords.into();
+                let uv1: glam::Vec2 = v1.tex_coords.into();
+                let uv2: glam::Vec2 = v2.tex_coords.into();
+                let pos_delta1 = pos1 - pos0;
+                let pos_delta2 = pos2 - pos0;
+                let uv_delta1 = uv1 - uv0;
+                let uv_delta2 = uv2 - uv0;
+                // I got this off LearnOpenGL
+                let denom = 1.0 / (uv_delta1.x * uv_delta2.y - uv_delta1.y * uv_delta2.x);
+                let tangent = (pos_delta1 * uv_delta2.y - pos_delta2 * uv_delta2.y) * denom;
+                let bitangent = (pos_delta2 * uv_delta1.x - pos_delta1 * uv_delta1.x) * -denom;
+                vertices[c[0] as usize].tangent =
+                    (tangent + glam::Vec3::from_array(vertices[c[0] as usize].tangent)).to_array();
+                vertices[c[1] as usize].tangent =
+                    (tangent + glam::Vec3::from_array(vertices[c[1] as usize].tangent)).to_array();
+                vertices[c[2] as usize].tangent =
+                    (tangent + glam::Vec3::from_array(vertices[c[2] as usize].tangent)).to_array();
+                vertices[c[0] as usize].bitangent = (bitangent
+                    + glam::Vec3::from_array(vertices[c[0] as usize].bitangent))
+                .to_array();
+                vertices[c[1] as usize].bitangent = (bitangent
+                    + glam::Vec3::from_array(vertices[c[1] as usize].bitangent))
+                .to_array();
+                vertices[c[2] as usize].bitangent = (bitangent
+                    + glam::Vec3::from_array(vertices[c[2] as usize].bitangent))
+                .to_array();
+                triangles_included[c[0] as usize] += 1;
+                triangles_included[c[1] as usize] += 1;
+                triangles_included[c[2] as usize] += 1;
+            }
+            for (i, n) in triangles_included.into_iter().enumerate() {
+                let denom = 1.0 / n as f32;
+                let mut v = &mut vertices[i];
+                v.tangent = (glam::Vec3::from_array(v.tangent) * denom).to_array();
+                v.bitangent = (glam::Vec3::from_array(v.tangent) * denom).to_array();
+            }
             let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
                 label: Some(&format!("{:?} VBO", file_name)),
                 contents: bytemuck::cast_slice(&vertices),
@@ -118,7 +168,7 @@ pub fn load_model(
                 material_index: m.mesh.material_id.unwrap_or(0),
             }
         })
-        .collect::<Vec<_>>();
+        .collect();
     Ok(Model { meshes, materials })
 }
 
@@ -209,6 +259,16 @@ impl Vertex for ModelVertex {
                     offset: (std::mem::size_of::<[f32; 5]>()) as BufferAddress,
                     format: VertexFormat::Float32x3,
                     shader_location: 2,
+                },
+                VertexAttribute {
+                    offset: (std::mem::size_of::<[f32; 8]>()) as BufferAddress,
+                    format: VertexFormat::Float32x3,
+                    shader_location: 3,
+                },
+                VertexAttribute {
+                    offset: (std::mem::size_of::<[f32; 11]>()) as BufferAddress,
+                    format: VertexFormat::Float32x3,
+                    shader_location: 4,
                 },
             ],
         }
