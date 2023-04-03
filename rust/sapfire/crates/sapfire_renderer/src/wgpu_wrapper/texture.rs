@@ -14,6 +14,8 @@ pub struct Texture {
 
 impl Texture {
     pub const DEPTH_FORMAT: TextureFormat = TextureFormat::Depth32Float;
+    pub const NORMAL_MAP_FORMAT: TextureFormat = TextureFormat::Rgba8Unorm;
+    pub const DEFAULT_MAP_FORMAT: TextureFormat = TextureFormat::Rgba8UnormSrgb;
 
     pub fn new_depth_texture(
         device: &Device,
@@ -62,6 +64,7 @@ pub fn from_image(
     queue: &wgpu::Queue,
     img: &image::DynamicImage,
     label: &str,
+    is_normal_map: bool,
 ) -> Result<Texture> {
     let diffuse_rgba = img.to_rgba8();
     let dimensions = img.dimensions();
@@ -76,7 +79,11 @@ pub fn from_image(
         mip_level_count: 1,
         sample_count: 1,
         dimension: TextureDimension::D2,
-        format: TextureFormat::Rgba8UnormSrgb,
+        format: if is_normal_map {
+            Texture::NORMAL_MAP_FORMAT
+        } else {
+            Texture::DEFAULT_MAP_FORMAT
+        },
         usage: TextureUsages::TEXTURE_BINDING | TextureUsages::COPY_DST,
         view_formats: &[],
     });
@@ -116,12 +123,18 @@ pub fn from_bytes(
     queue: &wgpu::Queue,
     diffuse_bytes: &[u8],
     label: &str,
+    is_normal_map: bool,
 ) -> Result<Texture> {
     let diffuse_image = image::load_from_memory(diffuse_bytes).unwrap();
-    from_image(device, queue, &diffuse_image, label)
+    from_image(device, queue, &diffuse_image, label, is_normal_map)
 }
 
-pub fn load_texture(file_name: &str, device: &Device, queue: &Queue) -> anyhow::Result<Texture> {
+pub fn load_texture(
+    file_name: &str,
+    device: &Device,
+    queue: &Queue,
+    is_normal_map: bool,
+) -> anyhow::Result<Texture> {
     let data = resources::load_binary(file_name)?;
-    from_bytes(device, queue, &data, file_name)
+    from_bytes(device, queue, &data, file_name, is_normal_map)
 }

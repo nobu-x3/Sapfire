@@ -107,6 +107,22 @@ impl WGPURenderingContext {
                         ty: BindingType::Sampler(SamplerBindingType::Filtering),
                         count: None,
                     },
+                    BindGroupLayoutEntry {
+                        binding: 2,
+                        visibility: ShaderStages::FRAGMENT,
+                        ty: BindingType::Texture {
+                            sample_type: TextureSampleType::Float { filterable: true },
+                            view_dimension: TextureViewDimension::D2,
+                            multisampled: false,
+                        },
+                        count: None,
+                    },
+                    BindGroupLayoutEntry {
+                        binding: 3,
+                        visibility: ShaderStages::FRAGMENT,
+                        ty: BindingType::Sampler(SamplerBindingType::Filtering),
+                        count: None,
+                    },
                 ],
             });
         let depth_texture = texture::Texture::new_depth_texture(&device, &config, "depth_texture");
@@ -450,7 +466,7 @@ pub fn create_render_pipeline(
             conservative: false,
         },
         depth_stencil: depth_format.map(|format| DepthStencilState {
-            format: format,
+            format,
             depth_write_enabled: true,
             depth_compare: CompareFunction::Less,
             stencil: StencilState::default(),

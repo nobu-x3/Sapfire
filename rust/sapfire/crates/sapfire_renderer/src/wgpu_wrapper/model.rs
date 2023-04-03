@@ -29,6 +29,7 @@ pub struct Model {
 pub struct Material {
     pub name: String,
     pub diffuse_texture: texture::Texture,
+    pub normal_texture: texture::Texture,
     pub bind_group: BindGroup,
 }
 
@@ -63,7 +64,8 @@ pub fn load_model(
     )?;
     let mut materials = Vec::new();
     for m in obj_materials? {
-        let diffuse_texture = texture::load_texture(&m.diffuse_texture, device, queue)?;
+        let diffuse_texture = texture::load_texture(&m.diffuse_texture, device, queue, false)?;
+        let normal_texture = texture::load_texture(&m.normal_texture, device, queue, true)?;
         let bind_group = device.create_bind_group(&BindGroupDescriptor {
             label: None,
             layout,
@@ -76,11 +78,20 @@ pub fn load_model(
                     binding: 1,
                     resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
                 },
+                BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::TextureView(&normal_texture.view),
+                },
+                BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::Sampler(&normal_texture.sampler),
+                },
             ],
         });
         materials.push(Material {
             name: m.name,
             diffuse_texture,
+            normal_texture,
             bind_group,
         });
     }

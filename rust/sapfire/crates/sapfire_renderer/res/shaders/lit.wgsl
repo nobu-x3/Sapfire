@@ -67,7 +67,7 @@ fn vs_main(
     ));
     var out: VertexOutput;
     out.tex_coords = model.tex_coords;
-    var world_position: vec4<f32> = model_matrix * vec4<f32>(model.position, 1.0);
+    let world_position: vec4<f32> = model_matrix * vec4<f32>(model.position, 1.0);
     out.clip_position = camera.view_proj * world_position;
     out.tangent_position = tangent_matrix * world_position.xyz;
     out.tangent_view_position = tangent_matrix * camera.position;
@@ -90,7 +90,7 @@ var s_normal: sampler;
 fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let object_color = textureSample(t_diffuse, s_diffuse, in.tex_coords);
     let object_normal = textureSample(t_normal, s_normal, in.tex_coords);
-    let ambient_strength = 0.0;
+    let ambient_strength = 0.1;
     let ambient_color = light.color * ambient_strength;
     let tangent_normal = object_normal.xyz * 2.0 - 1.0;
     let light_dir = normalize(in.tangent_light_position - in.tangent_position);
