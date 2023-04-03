@@ -18,5 +18,5 @@ Project/.cache
 Project/.ccls-cache
 Project/.vimspector.json
 Sapling/imgui.ini
-rust/sapfire/target/*
-rust/sapfire/crates/*/target/
+target/*
+crates/*/target/

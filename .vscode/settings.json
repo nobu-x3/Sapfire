@@ -1,8 +1,0 @@
-{
-    "files.exclude": {
-        "**/.git": false
-    },
-    "files.associations": {
-        "xiosbase": "cpp"
-    }
-}

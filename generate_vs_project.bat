@@ -1,1 +1,0 @@
-premake5 --os=windows vs2022
