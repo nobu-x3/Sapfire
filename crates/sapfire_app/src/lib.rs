@@ -1,3 +1,4 @@
+mod components;
 use legion::*;
 use sapfire_renderer::*;
 

@@ -1523,6 +1523,7 @@ dependencies = [
 name = "sapfire_app"
 version = "0.1.0"
 dependencies = [
+ "glam",
  "legion",
  "sapfire_renderer",
 ]
