@@ -124,21 +124,7 @@ impl WGPURenderingContext {
                 ],
             });
         let depth_texture = texture::Texture::new_depth_texture(&device, &config, "depth_texture");
-        // let camera = camera::Camera {
-        //     eye: (0.0, 1.0, 2.0).into(),
-        //     // have it look at the origin
-        //     target: (0.0, 0.0, 0.0).into(),
-        //     // which way is "up"
-        //     up: glam::Vec3::Y,
-        //     aspect: config.width as f32 / config.height as f32,
-        //     fovy: 45.0,
-        //     znear: 0.1,
-        //     zfar: 100.0,
-        // };
-        
-        let camera: camera::Camera = camera::Camera::new_perspective((45.0 as f32).to_radians(), config.width as f32, config.height as f32, 0.1, 100.0);
-        let mut camera_uniform = camera::CameraUniform::default();
-        // camera_uniform.update_view_proj(&camera);
+        let camera_uniform = camera::CameraUniform::default();
         let camera_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: Some("camera_buffer"),
             contents: bytemuck::cast_slice(&[camera_uniform]),
