@@ -16,22 +16,21 @@ pub fn input(
 ) {
     if let Some(key) = key {
         let mut delta_pos = glam::Vec3::ZERO;
-        println!("HALO");
         match key {
             VirtualKeyCode::W | VirtualKeyCode::Up => {
                 delta_pos += camera_speed.speed * glam::Vec3::NEG_Z
             }
             VirtualKeyCode::A | VirtualKeyCode::Left => {
-                delta_pos += camera_speed.speed * glam::Vec3::NEG_X
+                delta_pos += camera_speed.speed * glam::Vec3::X
             }
             VirtualKeyCode::S | VirtualKeyCode::Down => {
                 delta_pos += camera_speed.speed * glam::Vec3::Z
             }
             VirtualKeyCode::D | VirtualKeyCode::Right => {
-                delta_pos += camera_speed.speed * glam::Vec3::X
+                delta_pos += camera_speed.speed * glam::Vec3::NEG_X
             }
-            VirtualKeyCode::E => delta_pos += camera_speed.speed * glam::Vec3::Y,
-            VirtualKeyCode::Q => delta_pos += camera_speed.speed * glam::Vec3::NEG_Y,
+            VirtualKeyCode::E => delta_pos += camera_speed.speed * glam::Vec3::NEG_Y,
+            VirtualKeyCode::Q => delta_pos += camera_speed.speed * glam::Vec3::Y,
             _ => {}
         }
         if delta_pos != glam::Vec3::ZERO {

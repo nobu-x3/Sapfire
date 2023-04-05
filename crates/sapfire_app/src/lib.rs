@@ -34,7 +34,8 @@ impl App {
             },
             TransformComponent::new(),
         ));
-        resources.insert(CameraSpeed { speed: 300.0 });
+        resources.insert(CameraSpeed { speed: 0.5 });
+        resources.insert(None::<VirtualKeyCode>);
         let (renderer, event_loop) = SapfireRenderer::new().await;
         (
             App {
@@ -66,20 +67,19 @@ impl App {
                                 },
                             ..
                         } => *control_flow = ControlFlow::Exit,
-                        WindowEvent::KeyboardInput {
-                            input:
-                                KeyboardInput {
-                                    state: ElementState::Pressed,
-                                    virtual_keycode: Some(VirtualKeyCode::A),
-                                    ..
-                                },
-                            ..
-                        } => app.resources.insert(Some(VirtualKeyCode::A)),
                         WindowEvent::Resized(physical_size) => context.resize(*physical_size),
                         WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
                             context.resize(**new_inner_size);
                         }
-                        _ => app.resources.insert(None::<VirtualKeyCode>),
+                        WindowEvent::KeyboardInput {input,  .. } => {
+                            if input.state == ElementState::Pressed{
+                                app.resources.insert(input.virtual_keycode)
+                            }
+                            else {
+                                app.resources.insert(None::<VirtualKeyCode>)
+                            }
+                        }
+                        _ => {},
                     }
                 }
                 Event::RedrawRequested(window_id) if window_id == context.window().id() => {
