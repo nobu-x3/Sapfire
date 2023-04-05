@@ -8,13 +8,13 @@ pub mod resources;
 pub mod wgpu_wrapper;
 use renderer::RenderingContext;
 use wgpu_wrapper::WGPURenderingContext;
-use winit::dpi::PhysicalSize;
-use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
-use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::WindowBuilder;
+pub use winit::dpi::PhysicalSize;
+pub use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode, WindowEvent};
+pub use winit::event_loop::{ControlFlow, EventLoop};
+pub use winit::window::WindowBuilder;
 
 pub struct SapfireRenderer {
-    rendering_context: RenderingContext,
+    pub rendering_context: RenderingContext,
 }
 
 pub enum RenderingAPI {

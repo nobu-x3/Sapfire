@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 legion = "0.4.0"
 glam = "0.23.0"
+winit = "0.27"
 sapfire_renderer = {path = "../sapfire_renderer"}

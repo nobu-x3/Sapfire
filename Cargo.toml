@@ -9,5 +9,5 @@ members = [
     "crates/*",
 ]
 [dependencies]
-sapfire_renderer = {path = "crates/sapfire_renderer"}
+sapfire_app = {path = "crates/sapfire_app"}
 pollster = "0.3.0"

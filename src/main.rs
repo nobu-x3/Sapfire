@@ -1,5 +1,5 @@
-use sapfire_renderer::*;
+use sapfire_app::*;
 fn main() {
-    let res = pollster::block_on(SapfireRenderer::new());
-    SapfireRenderer::run(res);
+    let (app, renderer, event_loop) = pollster::block_on(App::new());
+    App::run(app, renderer, event_loop);
 }

@@ -4,17 +4,17 @@ pub mod model;
 pub mod texture;
 use glam::vec3;
 pub use model::Vertex;
-use wgpu::{
+pub use wgpu::{
     util::{BufferInitDescriptor, DeviceExt},
+    SurfaceError::*,
     *,
 };
-use winit::{
+pub use winit::{
     event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent},
     window::Window,
 };
 
-use crate::camera_controller;
-use crate::{camera, resources};
+use crate::{camera::{self, CameraUniform}, resources};
 
 use self::model::{DrawLight, DrawModel};
 
@@ -28,11 +28,9 @@ pub struct WGPURenderingContext {
     render_pipeline: RenderPipeline,
     light_render_pipeline: RenderPipeline,
     depth_texture: texture::Texture,
-    camera: camera::Camera,
-    camera_uniform: camera::CameraUniform,
     camera_buffer: Buffer,
     camera_bind_group: BindGroup,
-    camera_controller: camera_controller::CameraController,
+    // camera_controller: camera_controller::CameraController,
     instances: Vec<instance_buf::Instance>,
     instance_buffer: Buffer,
     obj_model: model::Model,
@@ -126,19 +124,21 @@ impl WGPURenderingContext {
                 ],
             });
         let depth_texture = texture::Texture::new_depth_texture(&device, &config, "depth_texture");
-        let camera = camera::Camera {
-            eye: (0.0, 1.0, 2.0).into(),
-            // have it look at the origin
-            target: (0.0, 0.0, 0.0).into(),
-            // which way is "up"
-            up: glam::Vec3::Y,
-            aspect: config.width as f32 / config.height as f32,
-            fovy: 45.0,
-            znear: 0.1,
-            zfar: 100.0,
-        };
-        let mut camera_uniform = camera::CameraUniform::new();
-        camera_uniform.update_view_proj(&camera);
+        // let camera = camera::Camera {
+        //     eye: (0.0, 1.0, 2.0).into(),
+        //     // have it look at the origin
+        //     target: (0.0, 0.0, 0.0).into(),
+        //     // which way is "up"
+        //     up: glam::Vec3::Y,
+        //     aspect: config.width as f32 / config.height as f32,
+        //     fovy: 45.0,
+        //     znear: 0.1,
+        //     zfar: 100.0,
+        // };
+        
+        let camera: camera::Camera = camera::Camera::new_perspective((45.0 as f32).to_radians(), config.width as f32, config.height as f32, 0.1, 100.0);
+        let mut camera_uniform = camera::CameraUniform::default();
+        // camera_uniform.update_view_proj(&camera);
         let camera_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: Some("camera_buffer"),
             contents: bytemuck::cast_slice(&[camera_uniform]),
@@ -247,7 +247,6 @@ impl WGPURenderingContext {
                 Some(texture::Texture::DEPTH_FORMAT),
             )
         };
-        let camera_controller = camera_controller::CameraController::new(0.5);
         const SPACE_BETWEEN: f32 = 3.0;
         let instances = (0..NUM_INSTANCES_PER_ROW)
             .flat_map(|z| {
@@ -283,14 +282,12 @@ impl WGPURenderingContext {
             queue,
             config,
             surface,
-            camera,
             camera_bind_group,
-            camera_uniform,
             camera_buffer,
             depth_texture,
             render_pipeline,
             light_render_pipeline,
-            camera_controller,
+            // camera_controller,
             instance_buffer,
             instances,
             obj_model,
@@ -316,7 +313,7 @@ impl WGPURenderingContext {
     }
 
     pub fn input(&mut self, event: &WindowEvent) -> bool {
-        self.camera_controller.process_events(event);
+        // self.camera_controller.process_events(event);
         match event {
             WindowEvent::KeyboardInput {
                 input:
@@ -389,14 +386,23 @@ impl WGPURenderingContext {
         Ok(())
     }
 
+    pub fn begin_scene(&mut self, camera_transform: glam::Mat4, camera_position: &glam::Vec3, projection: &glam::Mat4){
+        let camera_uniform = CameraUniform {
+            view_proj: (*projection * camera_transform).to_cols_array_2d(),
+            position: camera_position.to_array(),
+            ..CameraUniform::default()
+        };
+        self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[camera_uniform]));
+    }
+
     pub fn update(&mut self) {
-        self.camera_controller.update_camera(&mut self.camera);
-        self.camera_uniform.update_view_proj(&self.camera);
-        self.queue.write_buffer(
-            &self.camera_buffer,
-            0,
-            bytemuck::cast_slice(&[self.camera_uniform]),
-        );
+        // self.camera_controller.update_camera(&mut self.camera);
+        // self.camera_uniform.update_view_proj(&self.camera);
+        // self.queue.write_buffer(
+        //     &self.camera_buffer,
+        //     0,
+        //     bytemuck::cast_slice(&[self.camera_uniform]),
+        // );
         for inst in &mut self.instances {
             let amount = glam::Quat::from_rotation_y((15.0 as f32).to_radians());
             inst.rotation *= amount;

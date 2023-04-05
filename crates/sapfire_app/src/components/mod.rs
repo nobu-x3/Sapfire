@@ -1,16 +1,16 @@
 use glam::EulerRot;
 
 #[derive(Clone, Copy, Debug)]
-struct Transform {
+pub struct TransformComponent {
     pub translation: glam::Vec3,
     pub scale: glam::Vec3,
     rotation: glam::Quat,
     euler_rotation: glam::Vec3,
 }
 
-impl Transform {
-    pub fn new() -> Transform {
-        Transform {
+impl TransformComponent {
+    pub fn new() -> TransformComponent {
+        TransformComponent {
             translation: glam::Vec3::ZERO,
             scale: glam::Vec3::ONE,
             rotation: glam::Quat::IDENTITY,
@@ -34,4 +34,13 @@ impl Transform {
         self.euler_rotation = euler.clone();
         self.rotation = glam::Quat::from_euler(EulerRot::XYZ, euler.x, euler.y, euler.z);
     }
+}
+
+
+pub struct RenderComponent{
+    pub model: sapfire_renderer::wgpu_wrapper::model::Model
+}
+
+pub struct CameraComponent{
+    pub camera: sapfire_renderer::camera::Camera
 }
