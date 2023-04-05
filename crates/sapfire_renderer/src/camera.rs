@@ -31,51 +31,12 @@ impl Camera {
     }
 }
 
-// pub struct Camera {
-//     pub eye: glam::Vec3,
-//     pub target: glam::Vec3,
-//     pub up: glam::Vec3,
-//     pub aspect: f32,
-//     pub fovy: f32,
-//     pub znear: f32,
-//     pub zfar: f32,
-// }
-
-// impl Camera {
-//     fn build_view_projection_matrix(&self) -> (glam::Mat4, glam::Mat4) {
-//         let view = glam::Mat4::look_at_rh(self.eye, self.target, self.up);
-//         let proj = glam::Mat4::perspective_rh(
-//             f32::to_radians(self.fovy),
-//             self.aspect,
-//             self.znear,
-//             self.zfar,
-//         );
-//         return (view, proj * view);
-//     }
-// }
-
 #[repr(C)]
 #[derive(Debug, Copy, Clone, bytemuck::Zeroable, bytemuck::Pod)]
 pub struct CameraUniform {
     pub view_proj: [[f32; 4]; 4],
     pub position: [f32; 3],
     pub _padding: u32,
-}
-
-impl CameraUniform {
-    // pub fn new() -> CameraUniform {
-    //     CameraUniform {
-    //         view_proj: glam::Mat4::IDENTITY.to_cols_array_2d(),
-    //         position: glam::Vec3::ONE.to_array(),
-    //         _padding: 0,
-    //     }
-    // }
-
-    // pub fn update_view_proj(&mut self, camera: &Camera) {
-    //     let (view, view_proj) = camera.build_view_projection_matrix();
-    //     (self.view, self.view_proj) = (view.to_cols_array_2d(), view_proj.to_cols_array_2d());
-    //     self.position = camera.eye.to_array();
-    // }
 }
 
 impl Default for CameraUniform{

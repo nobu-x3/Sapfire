@@ -273,7 +273,6 @@ impl WGPURenderingContext {
             depth_texture,
             render_pipeline,
             light_render_pipeline,
-            // camera_controller,
             instance_buffer,
             instances,
             obj_model,
