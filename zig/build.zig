@@ -35,6 +35,7 @@ pub fn build(b: *std.Build) void {
     });
     zgpu_pkg.link(exe);
     zsdl_pkg.link(exe);
+    zglfw_pkg.link(exe);
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
