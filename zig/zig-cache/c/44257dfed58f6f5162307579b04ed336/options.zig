@@ -1,0 +1,11 @@
+pub const uniforms_buffer_size: u64 = 4194304;
+pub const dawn_skip_validation: bool = false;
+pub const buffer_pool_size: u32 = 256;
+pub const texture_pool_size: u32 = 256;
+pub const texture_view_pool_size: u32 = 256;
+pub const sampler_pool_size: u32 = 16;
+pub const render_pipeline_pool_size: u32 = 128;
+pub const compute_pipeline_pool_size: u32 = 128;
+pub const bind_group_pool_size: u32 = 32;
+pub const bind_group_layout_pool_size: u32 = 32;
+pub const pipeline_layout_pool_size: u32 = 32;
