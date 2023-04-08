@@ -1,5 +1,5 @@
 const std = @import("std");
-const zsdl = @import("libs/zsdl/build.zig");
+// const zsdl = @import("libs/zsdl/build.zig");
 const zgpu = @import("libs/zgpu/build.zig");
 const zpool = @import("libs/zpool/build.zig");
 const zglfw = @import("libs/zglfw/build.zig");
@@ -27,14 +27,14 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const zsdl_pkg = zsdl.package(b, target, optimize, .{});
+    // const zsdl_pkg = zsdl.package(b, target, optimize, .{});
     const zglfw_pkg = zglfw.package(b, target, optimize, .{});
     const zpool_pkg = zpool.package(b, target, optimize, .{});
     const zgpu_pkg = zgpu.package(b, target, optimize, .{
         .deps = .{ .zpool = zpool_pkg.zpool, .zglfw = zglfw_pkg.zglfw },
     });
     zgpu_pkg.link(exe);
-    zsdl_pkg.link(exe);
+    // zsdl_pkg.link(exe);
     zglfw_pkg.link(exe);
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

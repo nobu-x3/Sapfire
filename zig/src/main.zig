@@ -1,34 +1,77 @@
 const std = @import("std");
-const sdl = @import("zsdl");
+const glfw = @import("zglfw");
+const wgpu = @import("zgpu");
 
-pub fn main() !void {
-    try sdl.init(.{ .audio = true, .video = true });
-    defer sdl.quit();
+const Renderer = struct {
+    context: *wgpu.GraphicsContext,
+};
 
-    const window = try sdl.Window.create(
-        "zig-gamedev-window",
-        sdl.Window.pos_undefined,
-        sdl.Window.pos_undefined,
-        600,
-        600,
-        .{ .opengl = true, .allow_highdpi = true },
-    );
-    defer window.destroy();
-    mainloop: while (true) {
-        var event: ?*sdl.Event = null;
-        while (sdl.pollEvent(event)) {
-            if (event == null) continue;
-            switch (event.?.type) {
-                sdl.EventType.quit => break :mainloop,
-                else => {},
-            }
-        }
-    }
+pub fn init(allocator: std.mem.Allocator, window: *glfw.Window) !*wgpu.GraphicsContext {
+    return try wgpu.GraphicsContext.create(allocator, window);
 }
+pub fn main() !void {
+    glfw.init() catch {
+        std.log.err("Failed to initialize glfw", .{});
+        return;
+    };
+    defer glfw.terminate();
+    const window: *glfw.Window = glfw.Window.create(800, 600, "test", null) catch {
+        std.log.err("Failed to initialize the window", .{});
+        return;
+    };
+    defer window.destroy();
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+    const context = try init(allocator, window);
+    defer context.destroy(allocator);
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    while (!window.shouldClose() and window.getKey(.escape) != .press) {
+        const back_buffer_view = context.swapchain.getCurrentTextureView();
+        const commands = commands: {
+            const encoder = context.device.createCommandEncoder(null);
+            defer encoder.release();
+
+            {
+                const color_attachments = [_]wgpu.wgpu.RenderPassColorAttachment{.{
+                    .view = back_buffer_view,
+                    .load_op = .clear,
+                    .store_op = .store,
+                }};
+                const render_pass_info = wgpu.wgpu.RenderPassDescriptor{
+                    .color_attachment_count = color_attachments.len,
+                    .color_attachments = &color_attachments,
+                    .depth_stencil_attachment = null,
+                };
+                const pass = encoder.beginRenderPass(render_pass_info);
+                defer {
+                    pass.end();
+                    pass.release();
+                }
+            }
+            // {
+            //     const color_attachments = [_]wgpu.wgpu.RenderPassColorAttachment{.{
+            //         .view = back_buffer_view,
+            //         .load_op = .load,
+            //         .store_op = .store,
+            //     }};
+            //     const render_pass_info = wgpu.wgpu.RenderPassDescriptor{
+            //         .color_attachment_count = color_attachments.len,
+            //         .color_attachments = &color_attachments,
+            //     };
+            //     const pass = encoder.beginRenderPass(render_pass_info);
+            //     defer {
+            //         pass.end();
+            //         pass.release();
+            //     }
+
+            //     // zgui.backend.draw(pass);
+            // }
+
+            break :commands encoder.finish(null);
+        };
+        defer commands.release();
+
+        context.submit(&.{commands});
+    }
 }
