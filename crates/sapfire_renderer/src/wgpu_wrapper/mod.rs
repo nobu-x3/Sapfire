@@ -14,7 +14,10 @@ pub use winit::{
     window::Window,
 };
 
-use crate::{camera::{self, CameraUniform}, resources};
+use crate::{
+    camera::{self, CameraUniform},
+    resources,
+};
 
 use self::model::{DrawLight, DrawModel};
 
@@ -371,13 +374,22 @@ impl WGPURenderingContext {
         Ok(())
     }
 
-    pub fn begin_scene(&mut self, camera_transform: glam::Mat4, camera_position: &glam::Vec3, projection: &glam::Mat4){
+    pub fn begin_scene(
+        &mut self,
+        camera_transform: glam::Mat4,
+        camera_position: &glam::Vec3,
+        projection: &glam::Mat4,
+    ) {
         let camera_uniform = CameraUniform {
             view_proj: (*projection * camera_transform).to_cols_array_2d(),
             position: camera_position.to_array(),
             ..CameraUniform::default()
         };
-        self.queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[camera_uniform]));
+        self.queue.write_buffer(
+            &self.camera_buffer,
+            0,
+            bytemuck::cast_slice(&[camera_uniform]),
+        );
     }
 
     pub fn update(&mut self) {
@@ -450,7 +462,7 @@ pub fn create_render_pipeline(
         primitive: PrimitiveState {
             topology: PrimitiveTopology::TriangleList,
             strip_index_format: None,
-            front_face: FrontFace::Ccw,
+            front_face: FrontFace::Cw,
             cull_mode: Some(Face::Back),
             unclipped_depth: false,
             polygon_mode: PolygonMode::Fill,
