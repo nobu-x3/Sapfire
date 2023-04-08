@@ -2,3 +2,6 @@
 	path = zig/libs/zgpu/libs/dawn
 	url = https://github.com/michal-z/dawn-bin
 	branch = main
+[submodule "zig/libs/vulkan-zig"]
+	path = zig/libs/vulkan-zig
+	url = https://github.com/Snektron/vulkan-zig.git
