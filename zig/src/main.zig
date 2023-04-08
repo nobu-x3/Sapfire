@@ -1,77 +1,28 @@
 const std = @import("std");
-const glfw = @import("zglfw");
-const wgpu = @import("zgpu");
-
-const Renderer = struct {
-    context: *wgpu.GraphicsContext,
-};
-
-pub fn init(allocator: std.mem.Allocator, window: *glfw.Window) !*wgpu.GraphicsContext {
-    return try wgpu.GraphicsContext.create(allocator, window);
-}
+const sdl = @cImport({
+    @cInclude("SDL.h");
+});
 pub fn main() !void {
-    glfw.init() catch {
-        std.log.err("Failed to initialize glfw", .{});
-        return;
-    };
-    defer glfw.terminate();
-    const window: *glfw.Window = glfw.Window.create(800, 600, "test", null) catch {
-        std.log.err("Failed to initialize the window", .{});
-        return;
-    };
-    defer window.destroy();
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-    const context = try init(allocator, window);
-    defer context.destroy(allocator);
+    std.log.info("Ha", .{});
+    _ = sdl.SDL_Init(sdl.SDL_INIT_VIDEO);
+    defer sdl.SDL_Quit();
+    var window = sdl.SDL_CreateWindow("hello gamedev", sdl.SDL_WINDOWPOS_CENTERED, sdl.SDL_WINDOWPOS_CENTERED, 640, 400, 0);
+    defer sdl.SDL_DestroyWindow(window);
 
-    while (!window.shouldClose() and window.getKey(.escape) != .press) {
-        const back_buffer_view = context.swapchain.getCurrentTextureView();
-        const commands = commands: {
-            const encoder = context.device.createCommandEncoder(null);
-            defer encoder.release();
+    var renderer = sdl.SDL_CreateRenderer(window, 0, sdl.SDL_RENDERER_PRESENTVSYNC);
+    defer sdl.SDL_DestroyRenderer(renderer);
 
-            {
-                const color_attachments = [_]wgpu.wgpu.RenderPassColorAttachment{.{
-                    .view = back_buffer_view,
-                    .load_op = .clear,
-                    .store_op = .store,
-                }};
-                const render_pass_info = wgpu.wgpu.RenderPassDescriptor{
-                    .color_attachment_count = color_attachments.len,
-                    .color_attachments = &color_attachments,
-                    .depth_stencil_attachment = null,
-                };
-                const pass = encoder.beginRenderPass(render_pass_info);
-                defer {
-                    pass.end();
-                    pass.release();
-                }
+    mainloop: while (true) {
+        var sdl_event: sdl.SDL_Event = undefined;
+        while (sdl.SDL_PollEvent(&sdl_event) != 0) {
+            switch (sdl_event.type) {
+                sdl.SDL_QUIT => break :mainloop,
+                sdl.SDL_KEYDOWN => {
+                    if (sdl_event.key.keysym.sym == sdl.SDLK_ESCAPE)
+                        break :mainloop;
+                },
+                else => {},
             }
-            // {
-            //     const color_attachments = [_]wgpu.wgpu.RenderPassColorAttachment{.{
-            //         .view = back_buffer_view,
-            //         .load_op = .load,
-            //         .store_op = .store,
-            //     }};
-            //     const render_pass_info = wgpu.wgpu.RenderPassDescriptor{
-            //         .color_attachment_count = color_attachments.len,
-            //         .color_attachments = &color_attachments,
-            //     };
-            //     const pass = encoder.beginRenderPass(render_pass_info);
-            //     defer {
-            //         pass.end();
-            //         pass.release();
-            //     }
-
-            //     // zgui.backend.draw(pass);
-            // }
-
-            break :commands encoder.finish(null);
-        };
-        defer commands.release();
-
-        context.submit(&.{commands});
+        }
     }
 }

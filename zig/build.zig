@@ -1,8 +1,8 @@
 const std = @import("std");
-// const zsdl = @import("libs/zsdl/build.zig");
-const zgpu = @import("libs/zgpu/build.zig");
-const zpool = @import("libs/zpool/build.zig");
-const zglfw = @import("libs/zglfw/build.zig");
+// const zgpu = @import("libs/zgpu/build.zig");
+// const zpool = @import("libs/zpool/build.zig");
+// const zglfw = @import("libs/zglfw/build.zig");
+
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
@@ -12,7 +12,6 @@ pub fn build(b: *std.Build) void {
     // means any target is allowed, and the default is native. Other options
     // for restricting supported target set are available.
     const target = b.standardTargetOptions(.{});
-
     // Standard optimization options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall. Here we do not
     // set a preferred release mode, allowing the user to decide how to optimize.
@@ -27,15 +26,27 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // const zsdl_pkg = zsdl.package(b, target, optimize, .{});
-    const zglfw_pkg = zglfw.package(b, target, optimize, .{});
-    const zpool_pkg = zpool.package(b, target, optimize, .{});
-    const zgpu_pkg = zgpu.package(b, target, optimize, .{
-        .deps = .{ .zpool = zpool_pkg.zpool, .zglfw = zglfw_pkg.zglfw },
-    });
-    zgpu_pkg.link(exe);
-    // zsdl_pkg.link(exe);
-    zglfw_pkg.link(exe);
+    const targetOS = (std.zig.system.NativeTargetInfo.detect(exe.target) catch unreachable).target;
+
+    // const zglfw_pkg = zglfw.package(b, target, optimize, .{});
+    // const zpool_pkg = zpool.package(b, target, optimize, .{});
+    // const zgpu_pkg = zgpu.package(b, target, optimize, .{
+    //     .deps = .{ .zpool = zpool_pkg.zpool, .zglfw = zglfw_pkg.zglfw },
+    // });
+    // zgpu_pkg.link(exe);
+    // zglfw_pkg.link(exe);
+
+    const sdl_path_origin = "libs/SDL2/";
+    switch (targetOS.os.tag) {
+        .macos => {
+            const sdl_path = sdl_path_origin ++ "macos/";
+            exe.addIncludePath(sdl_path ++ "Headers/");
+            b.installBinFile(sdl_path ++ "SDL2", "SDL2");
+            exe.linkSystemLibrary("sdl2");
+            exe.linkLibC();
+        },
+        else => {},
+    }
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
