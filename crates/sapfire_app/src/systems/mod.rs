@@ -2,7 +2,7 @@ use legion::{world::SubWorld, *};
 use sapfire_renderer::VirtualKeyCode;
 
 use crate::{
-    components::{self, CameraComponent, TransformComponent},
+    components::{self, CameraComponent, RenderComponent, TransformComponent},
     CameraSpeed,
 };
 
@@ -42,4 +42,18 @@ pub fn input(
             }
         }
     };
+}
+
+#[system]
+#[read_component(components::RenderComponent)]
+#[read_component(components::TransformComponent)]
+pub fn render(
+    ecs: &mut SubWorld,
+    #[resource] render_pipeline: &sapfire_renderer::wgpu_wrapper::RenderPipeline,
+    #[resource] render_pass: &mut sapfire_renderer::wgpu_wrapper::RenderPass,
+) {
+    let mut query = <(&RenderComponent, &TransformComponent)>::query();
+    query.iter_mut(ecs).for_each(|res| {
+        render_pass.set_pipeline(render_pipeline);
+    })
 }
