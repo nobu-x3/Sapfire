@@ -10,11 +10,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-
     const targetOS = (std.zig.system.NativeTargetInfo.detect(exe.target) catch unreachable).target;
     // Create a step that generates vk.zig (stored in zig-cache) from the provided vulkan registry.
-    const gen = vkgen.VkGenerateStep.create(b, "libs/Vulkan/vk.xml");
-
+    // const gen = vkgen.VkGenerateStep.create(b, "libs/Vulkan/vk.xml");
     const sdl_path_origin = "libs/SDL2/";
     _ = sdl_path_origin;
     switch (targetOS.os.tag) {
@@ -28,7 +26,7 @@ pub fn build(b: *std.Build) void {
     }
 
     // Add the generated file as package to the final executable
-    exe.addModule("vulkan", gen.getModule());
+    // exe.addModule("vulkan", gen.getModule());
     exe.linkSystemLibrary("sdl2");
     exe.linkSystemLibrary("vulkan");
     exe.install();
