@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/sapfire.dir/src/core/logger.c.o"
+  "CMakeFiles/sapfire.dir/src/core/logger.c.o.d"
   "CMakeFiles/sapfire.dir/src/test.c.o"
   "CMakeFiles/sapfire.dir/src/test.c.o.d"
   "libsapfire.pdb"

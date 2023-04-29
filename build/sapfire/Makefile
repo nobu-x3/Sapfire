@@ -130,6 +130,30 @@ sapfire/fast:
 	cd /home/nobu/projects/Sapfire/build && $(MAKE) $(MAKESILENT) -f sapfire/CMakeFiles/sapfire.dir/build.make sapfire/CMakeFiles/sapfire.dir/build
 .PHONY : sapfire/fast
 
+src/core/logger.o: src/core/logger.c.o
+.PHONY : src/core/logger.o
+
+# target to build an object file
+src/core/logger.c.o:
+	cd /home/nobu/projects/Sapfire/build && $(MAKE) $(MAKESILENT) -f sapfire/CMakeFiles/sapfire.dir/build.make sapfire/CMakeFiles/sapfire.dir/src/core/logger.c.o
+.PHONY : src/core/logger.c.o
+
+src/core/logger.i: src/core/logger.c.i
+.PHONY : src/core/logger.i
+
+# target to preprocess a source file
+src/core/logger.c.i:
+	cd /home/nobu/projects/Sapfire/build && $(MAKE) $(MAKESILENT) -f sapfire/CMakeFiles/sapfire.dir/build.make sapfire/CMakeFiles/sapfire.dir/src/core/logger.c.i
+.PHONY : src/core/logger.c.i
+
+src/core/logger.s: src/core/logger.c.s
+.PHONY : src/core/logger.s
+
+# target to generate assembly for a file
+src/core/logger.c.s:
+	cd /home/nobu/projects/Sapfire/build && $(MAKE) $(MAKESILENT) -f sapfire/CMakeFiles/sapfire.dir/build.make sapfire/CMakeFiles/sapfire.dir/src/core/logger.c.s
+.PHONY : src/core/logger.c.s
+
 src/test.o: src/test.c.o
 .PHONY : src/test.o
 
@@ -163,6 +187,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... sapfire"
+	@echo "... src/core/logger.o"
+	@echo "... src/core/logger.i"
+	@echo "... src/core/logger.s"
 	@echo "... src/test.o"
 	@echo "... src/test.i"
 	@echo "... src/test.s"
