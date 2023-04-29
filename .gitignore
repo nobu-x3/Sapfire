@@ -20,3 +20,4 @@ Project/.vimspector.json
 Sapling/imgui.ini
 target/*
 crates/*/target/
+.cache/
