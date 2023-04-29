@@ -1,5 +1,5 @@
 #include "logger.h"
-
+#include "core/asserts.h"
 // NOTE: temp
 #include <stdarg.h>
 #include <stdio.h>
@@ -32,3 +32,8 @@ void log_output(log_level level, const char* message, ...){
 	// TODO: make platform specific
 	printf("%s", out_message);
 }
+
+void report_assertion_failure(const char* expression, const char* message, const char* file, i32 line){
+	log_output(LOG_LEVEL_FATAL, "Assertion Failure: %s, message: '%s', in file: %s, line %d\n", expression, message, file, line);	
+}
+
