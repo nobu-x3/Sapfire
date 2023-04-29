@@ -1,0 +1,11 @@
+cmake_minimum_required(VERSION 3.9)
+project(sapfire VERSION 0.0.1 DESCRIPTION "Sapfire Engine")
+add_library(sapfire SHARED
+src/test.c
+)
+# set_target_properties(sapfire PROPERTIES VERSION ${PROJECT_VERSION})
+# set_target_properties(sapfire PROPERTIES SOVERSION 1)
+set_target_properties(sapfire PROPERTIES PUBLIC_HEADER src/test.h)
+target_include_directories(sapfire PUBLIC src)
+# install(TARGETS sapfire LIBRARY DESTINATION lib
+# ARCHIVE DESTINATION lib)

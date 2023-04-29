@@ -1,0 +1,8 @@
+/home/nobu/projects/Sapfire/build/CMakeFiles/edit_cache.dir
+/home/nobu/projects/Sapfire/build/CMakeFiles/rebuild_cache.dir
+/home/nobu/projects/Sapfire/build/sapfire/CMakeFiles/sapfire.dir
+/home/nobu/projects/Sapfire/build/sapfire/CMakeFiles/edit_cache.dir
+/home/nobu/projects/Sapfire/build/sapfire/CMakeFiles/rebuild_cache.dir
+/home/nobu/projects/Sapfire/build/sandbox/CMakeFiles/sandbox.dir
+/home/nobu/projects/Sapfire/build/sandbox/CMakeFiles/edit_cache.dir
+/home/nobu/projects/Sapfire/build/sandbox/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,1 @@
+/usr/bin/clang -g CMakeFiles/sandbox.dir/src/main.c.o -o sandbox  -Wl,-rpath,/home/nobu/projects/Sapfire/build/sapfire ../sapfire/libsapfire.so 
