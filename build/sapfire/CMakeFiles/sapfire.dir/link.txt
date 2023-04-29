@@ -1,1 +1,0 @@
-/usr/bin/clang -fPIC -g -shared -Wl,-soname,libsapfire.so -o libsapfire.so CMakeFiles/sapfire.dir/src/test.c.o CMakeFiles/sapfire.dir/src/core/logger.c.o 
