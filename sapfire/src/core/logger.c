@@ -6,11 +6,11 @@
 #include <stdio.h>
 #include <string.h>
 
-b8 initialize_logging() {
+b8 logging_initialize() {
   // TODO: should open login file
   return TRUE;
 }
-void shutdown_logging() {
+void logging_shutdown() {
   // TODO: cleanup write queue
 }
 
