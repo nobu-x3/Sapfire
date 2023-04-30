@@ -2,3 +2,4 @@
 #include "test.h"
 #include "core/logger.h"
 #include "core/asserts.h"
+#include "platform/platform.h"
