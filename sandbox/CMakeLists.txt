@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.9)
 project(sandbox)
-add_executable(sandbox src/main.c)
+add_executable(sandbox src/entry.c src/game.c)
 include_directories(${CMAKE_SOURCE_DIR}/sapfire)
 target_link_libraries(sandbox PUBLIC sapfire)
 # install(TARGETS sandbox RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)

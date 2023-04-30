@@ -1,6 +1,9 @@
+#pragma once
 #include "defines.h"
 #include "logger.h"
 #include "platform/platform.h"
+
+struct game;
 
 typedef struct application_config{
 	i32 x,y,width,height;
@@ -12,6 +15,6 @@ typedef struct application_state{
 	b8 is_running;
 } application_state;
 
-SAPI application_state* application_create(application_config* config);
+SAPI application_state* application_create(struct game* game_instance);
 SAPI void application_run(application_state* state);
 SAPI void application_shutdown(application_state* state);
