@@ -47,20 +47,17 @@ void platform_shutdown(platform_state* plat_state) {
   SDL_Quit();
 }
 
-void platform_update_internal_state(platform_state* plat_state) {
+b8 platform_update_internal_state(platform_state* plat_state) {
   internal_state* state = (internal_state*)plat_state->internal_state;
-  b8 keep_open = TRUE;
-  while (keep_open) {
-    SDL_Event e;
-    while (SDL_PollEvent(&e) > 0) {
-      switch (e.type) {
-        case SDL_QUIT:
-          keep_open = FALSE;
-          break;
-      }
-      SDL_UpdateWindowSurface(state->window);
+  SDL_Event e;
+  while (SDL_PollEvent(&e) > 0) {
+    switch (e.type) {
+      case SDL_QUIT:
+        return FALSE;
     }
   }
+  SDL_UpdateWindowSurface(state->window);
+  return TRUE;
 }
 
 void* platform_allocate(u64 size, b8 aligned) { return malloc(size); }

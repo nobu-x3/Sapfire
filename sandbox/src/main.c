@@ -1,13 +1,11 @@
-#include <platform/platform.h>
-#include <test.h>
-
-#include "core/logger.h"
+#include <core/application.h>
 
 int main(void) {
-  platform_state state;
-  if (platform_init(&state, "Sapfire Engine Test", 100, 100, 800, 600, 0)) {
-    platform_update_internal_state(&state);
-  }
-  platform_shutdown(&state);
+  application_config cfg;
+  cfg.width = 800;
+  cfg.height = 600;
+  cfg.name = "Sapfire Sandbox";
+  application_state* app = application_create(&cfg);
+  application_run(app);
   return 0;
 }

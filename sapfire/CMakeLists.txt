@@ -3,6 +3,7 @@ project(sapfire VERSION 0.0.1 DESCRIPTION "Sapfire Engine")
 add_library(sapfire SHARED
 src/test.c
 src/core/logger.c
+src/core/application.c
 src/platform/platform_sdl.c
 )
 find_package(SDL2 REQUIRED)
