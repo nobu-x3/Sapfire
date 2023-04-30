@@ -1,4 +1,5 @@
 #include "core/logger.h"
+#include "core/sfmemory.h"
 #include "game.h"
 
 b8 game_init(game* game_instance) {

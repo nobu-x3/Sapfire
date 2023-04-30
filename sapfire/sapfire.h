@@ -4,3 +4,4 @@
 #include "core/asserts.h"
 #include "core/application.h"
 #include "platform/platform.h"
+#include "core/sfmemory.h"

@@ -3,7 +3,7 @@
 #include <game_definitions.h>
 
 typedef struct game_state{
-	u32 _placeholder;
+	u32 placeholder;
 } game_state;
 
 b8 game_init(game* game_instance);

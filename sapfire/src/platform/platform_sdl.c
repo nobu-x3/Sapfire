@@ -75,7 +75,7 @@ void* platform_copy_memory(void* dest, const void* source, u64 size) {
 void platform_console_write(const char* message, log_level level) {
   switch (level) {
     case LOG_LEVEL_DEBUG:
-      SDL_LogDebug(SDL_LOG_CATEGORY_APPLICATION, "%s", message);
+      SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s", message);
       break;
     case LOG_LEVEL_INFO:
       SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "%s", message);

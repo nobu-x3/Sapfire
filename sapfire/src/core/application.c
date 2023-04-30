@@ -1,12 +1,15 @@
 #include "application.h"
 #include "core/logger.h"
+#include "core/sfmemory.h"
 #include "game_definitions.h"
 #include "platform/platform.h"
 
 application_state* application_create(game* game_instance) {
+  // Init subsystems
+  logging_initialize();
+
   application_state* state =
       platform_allocate(sizeof(application_state), FALSE);
-  logging_initialize();
   if (!platform_init(&state->plat_state, game_instance->app_config.name,
                      game_instance->app_config.x, game_instance->app_config.y,
                      game_instance->app_config.width,
@@ -25,12 +28,15 @@ void application_run(application_state* state) {
     }
   }
   state->is_running = FALSE;
+
+  // Cleanup
   application_shutdown(state);
+  logging_shutdown();
+  memory_shutdown();
 }
 
 void application_shutdown(application_state* state) {
   if (state) {
-    logging_shutdown();
     platform_shutdown(&state->plat_state);
     platform_free(state, FALSE);
   }
