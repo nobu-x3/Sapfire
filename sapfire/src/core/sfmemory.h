@@ -5,6 +5,7 @@
 typedef enum memory_tag{
 	MEMORY_TAG_UNKNOWN,
 	MEMORY_TAG_GAME,
+	MEMORY_TAG_VECTOR,
 	
 	MEMORY_TAG_MAX
 } memory_tag;

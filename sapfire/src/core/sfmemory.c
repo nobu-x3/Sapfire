@@ -11,9 +11,7 @@ struct mem_stats {
 };
 
 static const char* tagged_strings[MEMORY_TAG_MAX] = {
-    "UNKNOWN    ",
-    "GAME       ",
-};
+    "UNKNOWN    ", "GAME       ", "VECTOR     "};
 static struct mem_stats stats;
 
 void memory_initialize() { platform_set_memory(&stats, 0, sizeof(stats)); }

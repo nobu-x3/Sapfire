@@ -5,3 +5,4 @@
 #include "core/application.h"
 #include "platform/platform.h"
 #include "core/sfmemory.h"
+#include "containers/vector.h"

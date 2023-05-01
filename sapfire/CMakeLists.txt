@@ -6,6 +6,7 @@ src/core/logger.c
 src/core/application.c
 src/platform/platform_sdl.c
 src/core/sfmemory.c
+src/containers/vector.c
 )
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
