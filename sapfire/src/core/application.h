@@ -12,9 +12,10 @@ typedef struct application_config{
 
 typedef struct application_state{
 	platform_state plat_state;
+	struct game* game_instance;
 	b8 is_running;
 } application_state;
 
-SAPI application_state* application_create(struct game* game_instance);
-SAPI void application_run(application_state* state);
-SAPI void application_shutdown(application_state* state);
+SAPI b8 application_create(struct game* game_instance);
+SAPI void application_run();
+SAPI void application_shutdown();

@@ -4,40 +4,45 @@
 #include "game_definitions.h"
 #include "platform/platform.h"
 
-application_state* application_create(game* game_instance) {
-  // Init subsystems
-  logging_initialize();
+static b8 is_initialized = FALSE;
+static application_state app_state;
 
-  application_state* state =
-      platform_allocate(sizeof(application_state), FALSE);
-  if (!platform_init(&state->plat_state, game_instance->app_config.name,
+b8 application_create(game* game_instance) {
+  if (is_initialized) {
+    SF_ERROR("applicated_create called more than once.");
+    return FALSE;
+  }
+  app_state.game_instance = game_instance;
+  if (!platform_init(&app_state.plat_state, game_instance->app_config.name,
                      game_instance->app_config.x, game_instance->app_config.y,
                      game_instance->app_config.width,
                      game_instance->app_config.height, 0)) {
     SF_FATAL("FAILED TO CREATE APP!");
     return FALSE;
   }
-  state->is_running = TRUE;
-  return state;
+  app_state.is_running = TRUE;
+  is_initialized = TRUE;
+  return TRUE;
 }
 
-void application_run(application_state* state) {
-  while (state->is_running) {
-    if (!platform_update_internal_state(&state->plat_state)) {
-      state->is_running = FALSE;
+void application_run() {
+  while (app_state.is_running) {
+    if (!platform_update_internal_state(&app_state.plat_state)) {
+      app_state.is_running = FALSE;
     }
   }
-  state->is_running = FALSE;
+  app_state.is_running = FALSE;
 
   // Cleanup
-  application_shutdown(state);
+  application_shutdown();
   logging_shutdown();
   memory_shutdown();
 }
 
-void application_shutdown(application_state* state) {
-  if (state) {
-    platform_shutdown(&state->plat_state);
-    platform_free(state, FALSE);
+void application_shutdown() {
+  if (is_initialized) {
+    platform_shutdown(&app_state.plat_state);
+    platform_free(&app_state, FALSE);
+    is_initialized = FALSE;
   }
 }

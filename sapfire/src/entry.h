@@ -21,14 +21,14 @@ int main(void) {
 		return -1;
 	}
 
-	application_state* app_state = application_create(&instance);
-	if(!app_state){
+
+	if(! application_create(&instance)){
 		SF_FATAL("Failed to create the application!")
 		return -1;
 	}
 	char* str = get_mem_usage_str();
   SF_DEBUG(str);
 	free(str);
-	application_run(app_state);
+	application_run();
   return 0;
 }
