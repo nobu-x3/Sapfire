@@ -6,3 +6,4 @@
 #include "platform/platform.h"
 #include "core/sfmemory.h"
 #include "containers/vector.h"
+#include "core/event.h"
