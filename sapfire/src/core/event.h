@@ -33,5 +33,18 @@ SAPI b8 event_fire(u16 code, void* sender, event_context context);
 typedef enum event_code{
 	EVENT_CODE_APPLICATION_QUIT = 0x01,
 
+	// u16[0] - key code from input.h
+	EVENT_CODE_KEY_PRESSED,
+	EVENT_CODE_KEY_RELEASED,
+
+	// u16[0] - button key from input.h
+	EVENT_CODE_MOUSE_BUTTON_PRESSED,
+	EVENT_CODE_MOUSE_BUTTON_RELEASED,
+
+	// u32[0] - new X, u32[1] - new Y
+	EVENT_CODE_MOUSE_MOVED,
+	// u32[2] - delta Z
+	EVENT_CODE_MOUSE_WHEEL,
+
 	MAX_EVENT_CODE = 0xFF
 } event_code;

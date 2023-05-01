@@ -2,11 +2,13 @@
 #include <SDL2/SDL_vulkan.h>
 #include <SDL_events.h>
 #include <SDL_log.h>
+#include <SDL_mouse.h>
 #include <SDL_timer.h>
 #include <SDL_video.h>
 #include <string.h>
 
 #include "core/event.h"
+#include "core/input.h"
 #include "core/logger.h"
 #include "defines.h"
 #include "platform.h"
@@ -55,6 +57,26 @@ b8 platform_update_internal_state(platform_state *plat_state) {
 				switch (e.type) {
 				case SDL_QUIT:
 						return FALSE;
+				case SDL_KEYDOWN:
+						input_process_key((keys)e.key.keysym.scancode, TRUE);
+						break;
+				case SDL_KEYUP:
+						input_process_key((keys)e.key.keysym.scancode, FALSE);
+						break;
+				case SDL_MOUSEBUTTONDOWN:
+						input_process_mouse_button(
+							(mouse_button)e.button.button, TRUE);
+						break;
+				case SDL_MOUSEBUTTONUP:
+						input_process_mouse_button(
+							(mouse_button)e.button.button, FALSE);
+						break;
+				case SDL_MOUSEMOTION:
+						input_process_mouse_move(e.motion.x, e.motion.y);
+						break;
+				case SDL_MOUSEWHEEL_NORMAL:
+						input_process_mouse_wheel(e.wheel.y);
+						break;
 				}
 		}
 		SDL_UpdateWindowSurface(state->window);

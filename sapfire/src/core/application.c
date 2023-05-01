@@ -1,5 +1,6 @@
 #include "application.h"
 #include "core/event.h"
+#include "core/input.h"
 #include "core/logger.h"
 #include "core/sfmemory.h"
 #include "game_definitions.h"
@@ -20,6 +21,7 @@ b8 application_create(game *game_instance) {
 				return FALSE;
 		}
 		logging_initialize();
+		input_initialize();
 
 		app_state.game_instance = game_instance;
 		if (!platform_init(
@@ -45,7 +47,9 @@ void application_run() {
 
 		// Cleanup
 		application_shutdown();
+		input_initialize();
 		logging_shutdown();
+		event_shutdown();
 		memory_shutdown();
 }
 

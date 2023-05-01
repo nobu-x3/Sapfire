@@ -7,3 +7,4 @@
 #include "core/sfmemory.h"
 #include "containers/vector.h"
 #include "core/event.h"
+#include "core/input.h"
