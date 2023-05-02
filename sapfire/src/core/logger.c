@@ -8,6 +8,7 @@
 
 b8 logging_initialize() {
 		// TODO: should open login file
+		SF_INFO("Logging subsystem initialized sucessfully.");
 		return TRUE;
 }
 void logging_shutdown() {
@@ -22,6 +23,24 @@ void log_output(log_level level, const char *message, ...) {
 		char formatted_message[32000];
 		memset(formatted_message, 0, sizeof(formatted_message));
 
+		char color_code[10];
+		switch (level) {
+		case LOG_LEVEL_DEBUG:
+		case LOG_LEVEL_TRACE:
+				strcpy(color_code, COLOR_BLUE);
+				break;
+		case LOG_LEVEL_INFO:
+				strcpy(color_code, COLOR_GREEN);
+				break;
+		case LOG_LEVEL_WARNING:
+				strcpy(color_code, COLOR_YELLOW);
+				break;
+		case LOG_LEVEL_ERROR:
+		case LOG_LEVEL_FATAL:
+				strcpy(color_code, COLOR_RED);
+				break;
+		}
+
 		// NOTE: apparently MS headers override Clang's va_list with <typedef
 		// char* va_list>, so this is a workaround
 		__builtin_va_list arg_ptr;
@@ -30,7 +49,8 @@ void log_output(log_level level, const char *message, ...) {
 		va_end(arg_ptr);
 
 		char out_message[32000];
-		sprintf(out_message, "%s%s\n", level_string[level], formatted_message);
+		sprintf(out_message, "%s%s%s\033[0m\n", color_code, level_string[level],
+				formatted_message);
 		platform_console_write(out_message, level);
 }
 

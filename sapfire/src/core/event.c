@@ -29,6 +29,7 @@ b8 event_initialize() {
 		}
 		sfmemset(&state, 0, sizeof(state));
 		is_initialized = TRUE;
+		SF_INFO("Event subsystem initialized successfully.");
 		return TRUE;
 }
 

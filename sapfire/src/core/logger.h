@@ -25,6 +25,11 @@ void logging_shutdown();
 
 SAPI void log_output(log_level level, const char* message, ...);
 
+#define COLOR_RED       "\033[0;31m"
+#define COLOR_GREEN     "\033[0;32m"
+#define COLOR_YELLOW    "\033[0;93m"
+#define COLOR_BLUE      "\033[0;94m"
+
 #define SF_FATAL(message, ...) log_output(LOG_LEVEL_FATAL,message, ##__VA_ARGS__);
 
 #ifndef SF_ERROR

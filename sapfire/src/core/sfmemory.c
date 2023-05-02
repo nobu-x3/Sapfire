@@ -14,7 +14,10 @@ static const char *tagged_strings[MEMORY_TAG_MAX] = {
 	"UNKNOWN    ", "GAME       ", "VECTOR     ", "RENDERER:  "};
 static struct mem_stats stats;
 
-void memory_initialize() { platform_set_memory(&stats, 0, sizeof(stats)); }
+void memory_initialize() {
+		platform_set_memory(&stats, 0, sizeof(stats));
+		SF_INFO("Memory subsystem initialized successfully.");
+}
 
 void memory_shutdown() {}
 

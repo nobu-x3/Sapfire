@@ -47,6 +47,7 @@ b8 application_create(game *game_instance) {
 		event_register(EVENT_CODE_KEY_PRESSED, &app_state, &escape_pressed);
 		app_state.is_running = TRUE;
 		is_initialized = TRUE;
+		SF_INFO("Application initialized sucessfully.")
 		return TRUE;
 }
 

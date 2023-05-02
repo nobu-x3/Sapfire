@@ -29,6 +29,7 @@ b8 input_initialize() {
 		}
 		sfmemset(&state, 0, sizeof(state));
 		is_initialized = TRUE;
+		SF_INFO("Input subsystem initialized successfully.");
 		return TRUE;
 }
 void input_shutdown() { is_initialized = FALSE; }
