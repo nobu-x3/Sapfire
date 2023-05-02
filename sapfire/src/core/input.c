@@ -153,12 +153,12 @@ void input_process_mouse_move(i32 x, i32 y) {
 				event_context context;
 				context.data.u32[0] = x;
 				context.data.u32[1] = y;
-				event_fire(EVENT_CODE_MOUSE_MOVED, (void *)0, context);
+				event_fire(EVENT_CODE_MOUSE_MOVED, SF_NULL, context);
 		}
 }
 
 void input_process_mouse_wheel(i32 z) {
 		event_context context;
 		context.data.u32[2] = z;
-		event_fire(EVENT_CODE_MOUSE_WHEEL, (void *)0, context);
+		event_fire(EVENT_CODE_MOUSE_WHEEL, SF_NULL, context);
 }
