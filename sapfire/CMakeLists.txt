@@ -10,6 +10,9 @@ src/containers/vector.c
 src/core/event.c
 src/core/input.c
 src/core/clock.c
+src/renderer/renderer.c
+src/renderer/renderer_provider.c
+src/renderer/vulkan/vulkan_provider.c
 )
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
