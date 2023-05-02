@@ -1,4 +1,5 @@
 #include "core/asserts.h"
+#include "core/sfmemory.h"
 #include "logger.h"
 #include "platform/platform.h"
 // NOTE: temp
@@ -23,11 +24,14 @@ void log_output(log_level level, const char *message, ...) {
 		char formatted_message[32000];
 		memset(formatted_message, 0, sizeof(formatted_message));
 
-		char color_code[10];
+		char color_code[11];
+		sfmemset(color_code, 0, sizeof(color_code));
 		switch (level) {
 		case LOG_LEVEL_DEBUG:
+				strcpy(color_code, COLOR_WHITE);
+				break;
 		case LOG_LEVEL_TRACE:
-				strcpy(color_code, COLOR_BLUE);
+				strcpy(color_code, COLOR_GREY);
 				break;
 		case LOG_LEVEL_INFO:
 				strcpy(color_code, COLOR_GREEN);
@@ -36,8 +40,10 @@ void log_output(log_level level, const char *message, ...) {
 				strcpy(color_code, COLOR_YELLOW);
 				break;
 		case LOG_LEVEL_ERROR:
-		case LOG_LEVEL_FATAL:
 				strcpy(color_code, COLOR_RED);
+				break;
+		case LOG_LEVEL_FATAL:
+				strcpy(color_code, COLOR_FATAL);
 				break;
 		}
 
