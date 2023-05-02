@@ -17,4 +17,5 @@ void* platform_copy_memory(void* dest, const void* source, u64 size);
 void platform_console_write(const char* message, log_level level);
 void platform_console_write_error(const char* message, b8 fatal);
 u64 platform_get_absolute_time();
+f64 platform_get_delta_time();
 void platform_sleep(u32 ms);

@@ -2,6 +2,7 @@
 #include "defines.h"
 #include "logger.h"
 #include "platform/platform.h"
+#include "core/clock.h"
 
 struct game;
 
@@ -13,6 +14,7 @@ typedef struct application_config{
 typedef struct application_state{
 	platform_state plat_state;
 	struct game* game_instance;
+	clock main_clock;
 	b8 is_running;
 } application_state;
 

@@ -1,4 +1,5 @@
 #include "application.h"
+#include "core/clock.h"
 #include "core/event.h"
 #include "core/input.h"
 #include "core/logger.h"
@@ -42,6 +43,7 @@ b8 application_create(game *game_instance) {
 				SF_FATAL("FAILED TO CREATE APP!");
 				return FALSE;
 		}
+		clock_tick(&app_state.main_clock);
 		event_register(EVENT_CODE_KEY_PRESSED, &app_state, &escape_pressed);
 		app_state.is_running = TRUE;
 		is_initialized = TRUE;
@@ -50,6 +52,7 @@ b8 application_create(game *game_instance) {
 
 void application_run() {
 		while (app_state.is_running) {
+				clock_tick(&app_state.main_clock);
 				if (!platform_update_internal_state(&app_state.plat_state)) {
 						app_state.is_running = FALSE;
 				}

@@ -9,6 +9,7 @@ src/core/sfmemory.c
 src/containers/vector.c
 src/core/event.c
 src/core/input.c
+src/core/clock.c
 )
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
