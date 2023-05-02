@@ -43,7 +43,6 @@ b8 application_create(game *game_instance) {
 				SF_FATAL("FAILED TO CREATE APP!");
 				return FALSE;
 		}
-		clock_tick(&app_state.main_clock);
 		event_register(EVENT_CODE_KEY_PRESSED, &app_state, &escape_pressed);
 		app_state.is_running = TRUE;
 		is_initialized = TRUE;
@@ -51,11 +50,33 @@ b8 application_create(game *game_instance) {
 }
 
 void application_run() {
+		clock_start(&app_state.main_clock);
+		clock_tick(&app_state.main_clock);
+		app_state.last_time = (float)app_state.main_clock.elapsed_ticks / 1000;
+		f64 running_time = 0;
+		u8 frame_count = 0;
+		const f64 target_frame_time = 1.0f / 60;
 		while (app_state.is_running) {
 				clock_tick(&app_state.main_clock);
+				f64 current_time =
+					(float)app_state.main_clock.elapsed_ticks / 1000;
+				f64 delta = current_time - app_state.last_time;
+				SF_DEBUG("cur time: %f", 1.0f / delta);
+				f64 frame_start_time =
+					(float)platform_get_absolute_time() / 1000;
 				if (!platform_update_internal_state(&app_state.plat_state)) {
 						app_state.is_running = FALSE;
 				}
+				f64 frame_end_time = (float)platform_get_absolute_time() / 1000;
+				f64 frame_elapsed_time = frame_end_time - frame_start_time;
+				running_time += frame_elapsed_time;
+				f64 remaining_seconds = target_frame_time - frame_elapsed_time;
+				if (remaining_seconds > 0) {
+						u32 remaining_ms = remaining_seconds * 1000;
+						platform_sleep(remaining_ms - 1);
+						frame_count += 1;
+				}
+				app_state.last_time = current_time;
 		}
 		app_state.is_running = FALSE;
 

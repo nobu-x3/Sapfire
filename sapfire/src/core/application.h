@@ -15,6 +15,7 @@ typedef struct application_state{
 	platform_state plat_state;
 	struct game* game_instance;
 	clock main_clock;
+	f64 last_time;
 	b8 is_running;
 } application_state;
 
