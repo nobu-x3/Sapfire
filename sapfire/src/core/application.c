@@ -9,6 +9,16 @@
 static b8 is_initialized = FALSE;
 static application_state app_state;
 
+b8 escape_pressed(u16 code, void *sender, void *listener_list,
+				  event_context data) {
+		if (data.data.u16[0] == KEY_ESCAPE) {
+				SF_INFO("Quitting app...");
+				app_state.is_running = FALSE;
+				return TRUE;
+		}
+		return FALSE;
+}
+
 b8 application_create(game *game_instance) {
 		if (is_initialized) {
 				SF_ERROR("applicated_create called more than once.");
@@ -32,6 +42,7 @@ b8 application_create(game *game_instance) {
 				SF_FATAL("FAILED TO CREATE APP!");
 				return FALSE;
 		}
+		event_register(EVENT_CODE_KEY_PRESSED, &app_state, &escape_pressed);
 		app_state.is_running = TRUE;
 		is_initialized = TRUE;
 		return TRUE;
