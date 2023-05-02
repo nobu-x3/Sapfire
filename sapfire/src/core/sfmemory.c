@@ -19,7 +19,7 @@ void memory_initialize() {
 		SF_INFO("Memory subsystem initialized successfully.");
 }
 
-void memory_shutdown() {}
+void memory_shutdown() { SF_DEBUG(get_mem_usage_str()); }
 
 void *sfalloc(u64 size, memory_tag tag) {
 		if (tag == MEMORY_TAG_UNKNOWN) {

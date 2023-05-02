@@ -7,6 +7,7 @@
 #include <SDL_video.h>
 #include <string.h>
 
+#include "containers/vector.h"
 #include "core/event.h"
 #include "core/input.h"
 #include "core/logger.h"
@@ -48,6 +49,24 @@ void platform_shutdown(platform_state *plat_state) {
 				SDL_DestroyWindow(state->window);
 		}
 		SDL_Quit();
+}
+
+// void platform_get_required_extension_names(struct platform_state *plat_state,
+// 										   u32 *count, const char **names) {
+// 		internal_state *state = (internal_state *)plat_state->internal_state;
+// 		SDL_Vulkan_GetInstanceExtensions(state->window, count, names);
+// }
+
+void platform_get_required_extension_names(struct platform_state *plat_state,
+										   const char ***names_vec) {
+
+		internal_state *state = (internal_state *)plat_state->internal_state;
+		u32 count = 0;
+		const char **ext_names;
+		SDL_Vulkan_GetInstanceExtensions(state->window, &count, ext_names);
+		for (u32 i = 0; i < count; ++i) {
+				vector_push(names_vec, ext_names[i]);
+		}
 }
 
 b8 platform_update_internal_state(platform_state *plat_state) {
