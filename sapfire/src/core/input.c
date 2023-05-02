@@ -147,7 +147,7 @@ void input_process_mouse_button(mouse_button button, b8 pressed) {
 
 void input_process_mouse_move(i32 x, i32 y) {
 		if (state.mouse_current.x != x || state.mouse_current.y != y) {
-				SF_DEBUG("Mouse X: %d, Mouse Y: %d", x, y);
+				// SF_DEBUG("Mouse X: %d, Mouse Y: %d", x, y);
 				state.mouse_current.x = x;
 				state.mouse_current.y = y;
 				event_context context;

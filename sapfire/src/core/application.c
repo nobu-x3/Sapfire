@@ -56,7 +56,6 @@ void application_run() {
 void application_shutdown() {
 		if (is_initialized) {
 				platform_shutdown(&app_state.plat_state);
-				platform_free(&app_state, FALSE);
 				is_initialized = FALSE;
 		}
 }
