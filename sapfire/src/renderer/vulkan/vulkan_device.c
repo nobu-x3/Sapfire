@@ -41,6 +41,33 @@ b8 vulkan_device_create(vulkan_context *context) {
 		return TRUE;
 }
 
+void vulkan_device_destroy(vulkan_context *context) {
+		if (context->device.swapchain_support.formats) {
+				sffree(context->device.swapchain_support.formats,
+					   sizeof(VkSurfaceFormatKHR) *
+						   context->device.swapchain_support.format_count,
+					   MEMORY_TAG_RENDERER);
+				context->device.swapchain_support.formats = SF_NULL;
+				context->device.swapchain_support.format_count = 0;
+		}
+		if (context->device.swapchain_support.present_modes) {
+				sffree(context->device.swapchain_support.present_modes,
+					   sizeof(VkPresentModeKHR) *
+						   context->device.swapchain_support.present_mode_count,
+					   MEMORY_TAG_RENDERER);
+				context->device.swapchain_support.present_modes = SF_NULL;
+				context->device.swapchain_support.present_mode_count = 0;
+		}
+
+		context->device.physical_device = SF_NULL;
+		sfmemset(&context->device.swapchain_support.capabilities, 0,
+				 sizeof(context->device.swapchain_support.capabilities));
+		context->device.graphics_queue_index = -1;
+		context->device.present_queue_index = -1;
+		context->device.transfer_queue_index = -1;
+		// NOTE: also compute if enabled
+}
+
 // NOTE: this stuff is copied from Kohi
 b8 select_physical_device(vulkan_context *context) {
 		u32 phys_device_count = 0;
@@ -416,5 +443,3 @@ b8 physical_device_meets_requirements(
 
 		return FALSE;
 }
-
-void vulkan_device_destroy(vulkan_context *context) {}

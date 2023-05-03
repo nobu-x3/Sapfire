@@ -103,7 +103,6 @@ b8 platform_update_internal_state(platform_state *plat_state) {
 						break;
 				}
 		}
-		SDL_UpdateWindowSurface(state->window);
 		return TRUE;
 }
 

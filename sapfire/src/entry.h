@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 extern b8 create_game(game* out_game);
+extern void game_shutdown(game* game);
 
 int main(void) {
   memory_initialize();

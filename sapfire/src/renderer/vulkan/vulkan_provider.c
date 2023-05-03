@@ -143,6 +143,8 @@ void vulkan_shutdown(renderer_provider *api) {
 		SF_DEBUG("Destroying vulkan surface");
 		vkDestroySurfaceKHR(context.instance, context.surface,
 							context.allocator);
+		SF_DEBUG("Destroying devices.");
+		vulkan_device_destroy(&context);
 		SF_DEBUG("Destroying vulkan instance.");
 		vkDestroyInstance(context.instance, context.allocator);
 }

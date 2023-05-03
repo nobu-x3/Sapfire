@@ -4,6 +4,7 @@
 #include "core/input.h"
 #include "core/logger.h"
 #include "core/sfmemory.h"
+#include "entry.h"
 #include "game_definitions.h"
 #include "platform/platform.h"
 #include "renderer/renderer.h"
@@ -86,6 +87,7 @@ void application_run() {
 		app_state.is_running = FALSE;
 
 		// Cleanup
+		game_shutdown(app_state.game_instance);
 		application_shutdown();
 		input_initialize();
 		logging_shutdown();

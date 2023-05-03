@@ -15,3 +15,7 @@ b8 create_game(game *out_game) {
 		state->placeholder = 19;
 		return TRUE;
 }
+
+void game_shutdown(game *game) {
+		sffree(game->state, sizeof(game_state), MEMORY_TAG_GAME);
+}
