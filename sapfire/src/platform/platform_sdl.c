@@ -27,7 +27,7 @@ b8 platform_init(platform_state *plat_state, const char *app_name, i32 x, i32 y,
 				SF_FATAL("Failed to initialize SDL!");
 				return FALSE;
 		}
-		SDL_Vulkan_LoadLibrary(NULL);
+		SDL_Vulkan_LoadLibrary(SF_NULL);
 		state->window = SDL_CreateWindow(app_name, SDL_WINDOWPOS_CENTERED,
 										 SDL_WINDOWPOS_CENTERED, width, height,
 										 SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
@@ -35,11 +35,11 @@ b8 platform_init(platform_state *plat_state, const char *app_name, i32 x, i32 y,
 				SF_FATAL("Failed to initialize window!");
 				return FALSE;
 		}
-		state->surface = SDL_GetWindowSurface(state->window);
-		if (!state->surface) {
-				SF_FATAL("Failed to get surface!");
-				return FALSE;
-		}
+		// state->surface = SDL_GetWindowSurface(state->window);
+		// if (!state->surface) {
+		// 		SF_FATAL("Failed to get surface!");
+		// 		return FALSE;
+		// }
 		return TRUE;
 }
 
@@ -51,21 +51,17 @@ void platform_shutdown(platform_state *plat_state) {
 		SDL_Quit();
 }
 
-// void platform_get_required_extension_names(struct platform_state *plat_state,
-// 										   u32 *count, const char **names) {
-// 		internal_state *state = (internal_state *)plat_state->internal_state;
-// 		SDL_Vulkan_GetInstanceExtensions(state->window, count, names);
-// }
-
 void platform_get_required_extension_names(struct platform_state *plat_state,
 										   const char ***names_vec) {
 
 		internal_state *state = (internal_state *)plat_state->internal_state;
-		u32 count = 0;
-		const char **ext_names;
-		SDL_Vulkan_GetInstanceExtensions(state->window, &count, ext_names);
-		for (u32 i = 0; i < count; ++i) {
-				vector_push(names_vec, ext_names[i]);
+		u32 ext_count = 0;
+		const char **ext_names = SF_NULL;
+		SDL_Vulkan_GetInstanceExtensions(state->window, &ext_count, SF_NULL);
+		ext_names = platform_allocate(sizeof(const char *) * ext_count, FALSE);
+		SDL_Vulkan_GetInstanceExtensions(state->window, &ext_count, ext_names);
+		for (u32 i = 0; i < ext_count; ++i) {
+				vector_push(*names_vec, ext_names[i]);
 		}
 }
 
