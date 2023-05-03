@@ -2,6 +2,7 @@
 #include "core/asserts.h"
 #include "core/logger.h"
 #include "core/sfstring.h"
+#include "renderer/vulkan/vulkan_device.h"
 #include "vulkan_platform.h"
 #include "vulkan_provider.h"
 #include "vulkan_types.h"
@@ -120,6 +121,10 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 				return FALSE;
 		}
 		SF_INFO("Vulkan surface created.");
+		if (!vulkan_device_create(&context)) {
+				SF_FATAL("Failed to create vulkan devices.");
+				return FALSE;
+		}
 		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
