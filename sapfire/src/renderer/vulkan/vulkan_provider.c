@@ -117,7 +117,20 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		return TRUE;
 }
 
-void vulkan_shutdown(renderer_provider *api) {}
+void vulkan_shutdown(renderer_provider *api) {
+#if defined(DEBUG)
+		SF_DEBUG("Destroying vulkan debugger.");
+		if (context.debug_messenger) {
+				PFN_vkDestroyDebugUtilsMessengerEXT func =
+					(PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+						context.instance, "vkDestroyDebugUtilsMessengerEXT");
+				func(context.instance, context.debug_messenger,
+					 context.allocator);
+		}
+#endif
+		SF_DEBUG("Destroying vulkan instance.");
+		vkDestroyInstance(context.instance, context.allocator);
+}
 
 b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
 		return TRUE;
