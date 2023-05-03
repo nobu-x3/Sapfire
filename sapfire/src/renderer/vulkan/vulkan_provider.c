@@ -1,13 +1,20 @@
 #include "containers/vector.h"
+#include "core/asserts.h"
 #include "core/logger.h"
 #include "vulkan_platform.h"
 #include "vulkan_provider.h"
 #include "vulkan_types.h"
 #include <string.h>
+#include <vulkan/vk_platform.h>
 #include <vulkan/vulkan_core.h>
 #define DEBUG
 // TODO: really think about singletons...
 static vulkan_context context;
+
+VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
+	VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+	VkDebugUtilsMessageTypeFlagBitsEXT message_types,
+	const VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data);
 
 b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 					 struct platform_state *plat_state) {
@@ -78,9 +85,35 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		VK_ASSERT_SUCCESS(vkCreateInstance(&create_info, context.allocator,
 										   &context.instance),
 						  "Failed to create vkInstance!");
-
+		SF_INFO("Vulkan instance created.");
 		vector_destroy(valid_names);
 		vector_destroy(ext_names);
+
+#if defined(DEBUG)
+		i32 log_severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+						   VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		// | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT // This feeds out ALL
+		// the info | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT // SUPER
+		// verbose, use at your own risk
+		VkDebugUtilsMessengerCreateInfoEXT debug_create_info = {
+			VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT};
+		debug_create_info.messageSeverity = log_severity;
+		debug_create_info.messageType =
+			VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+		debug_create_info.pfnUserCallback = vk_debug_callback;
+		PFN_vkCreateDebugUtilsMessengerEXT func =
+			(PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
+				context.instance, "vkCreateDebugUtilsMessengerEXT");
+		SF_ASSERT(func, "Failed to create debug messenger!");
+		VK_ASSERT_SUCCESS(func(context.instance, &debug_create_info,
+							   context.allocator, &context.debug_messenger),
+						  "Failed to create vulkan debugger!");
+		SF_DEBUG("Vulkan debugger created.");
+
+#endif
+		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
 
@@ -91,3 +124,27 @@ b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
 }
 
 b8 vulkan_end_frame(struct renderer_provider *api) { return TRUE; }
+
+VKAPI_ATTR VkBool32 VKAPI_CALL
+vk_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+				  VkDebugUtilsMessageTypeFlagBitsEXT message_types,
+				  const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
+				  void *user_data) {
+		switch (message_severity) {
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+				SF_ERROR(callback_data->pMessage);
+				break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+				SF_WARNING(callback_data->pMessage);
+				break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+				SF_INFO(callback_data->pMessage);
+				break;
+		case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+				SF_TRACE(callback_data->pMessage);
+				break;
+		default:
+				break;
+		}
+		return VK_FALSE;
+}
