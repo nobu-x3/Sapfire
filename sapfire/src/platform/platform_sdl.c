@@ -35,6 +35,7 @@ b8 platform_init(platform_state *plat_state, const char *app_name, i32 x, i32 y,
 				SF_FATAL("Failed to initialize window!");
 				return FALSE;
 		}
+		// TODO: add a separate function to create a vulkan surface
 		// state->surface = SDL_GetWindowSurface(state->window);
 		// if (!state->surface) {
 		// 		SF_FATAL("Failed to get surface!");
@@ -63,6 +64,7 @@ void platform_get_required_extension_names(struct platform_state *plat_state,
 		for (u32 i = 0; i < ext_count; ++i) {
 				vector_push(*names_vec, ext_names[i]);
 		}
+		platform_free(ext_names, FALSE);
 }
 
 b8 platform_update_internal_state(platform_state *plat_state) {

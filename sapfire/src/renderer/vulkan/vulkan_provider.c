@@ -78,8 +78,9 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		VK_ASSERT_SUCCESS(vkCreateInstance(&create_info, context.allocator,
 										   &context.instance),
 						  "Failed to create vkInstance!");
-		vector_clear(valid_names);
-		vector_clear(ext_names);
+
+		vector_destroy(valid_names);
+		vector_destroy(ext_names);
 		return TRUE;
 }
 
