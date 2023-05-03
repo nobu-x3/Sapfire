@@ -115,6 +115,11 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		SF_DEBUG("Vulkan debugger created.");
 
 #endif
+		if (!platform_create_vulkan_surface(plat_state, &context)) {
+				SF_FATAL("Failed to create vulkan surface.");
+				return FALSE;
+		}
+		SF_INFO("Vulkan surface created.");
 		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
@@ -130,6 +135,9 @@ void vulkan_shutdown(renderer_provider *api) {
 					 context.allocator);
 		}
 #endif
+		SF_DEBUG("Destroying vulkan surface");
+		vkDestroySurfaceKHR(context.instance, context.surface,
+							context.allocator);
 		SF_DEBUG("Destroying vulkan instance.");
 		vkDestroyInstance(context.instance, context.allocator);
 }

@@ -13,6 +13,7 @@
 #include "core/logger.h"
 #include "defines.h"
 #include "platform.h"
+#include "renderer/vulkan/vulkan_types.h"
 
 typedef struct internal_state {
 		SDL_Window *window;
@@ -54,7 +55,6 @@ void platform_shutdown(platform_state *plat_state) {
 
 void platform_get_required_extension_names(struct platform_state *plat_state,
 										   const char ***names_vec) {
-
 		internal_state *state = (internal_state *)plat_state->internal_state;
 		u32 ext_count = 0;
 		const char **ext_names = SF_NULL;
@@ -65,6 +65,13 @@ void platform_get_required_extension_names(struct platform_state *plat_state,
 				vector_push(*names_vec, ext_names[i]);
 		}
 		platform_free(ext_names, FALSE);
+}
+
+b8 platform_create_vulkan_surface(platform_state *plat_state,
+								  struct vulkan_context *context) {
+		internal_state *state = (internal_state *)plat_state->internal_state;
+		return SDL_Vulkan_CreateSurface(state->window, context->instance,
+										&context->surface);
 }
 
 b8 platform_update_internal_state(platform_state *plat_state) {
