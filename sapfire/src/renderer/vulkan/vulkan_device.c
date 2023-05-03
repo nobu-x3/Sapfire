@@ -25,23 +25,90 @@ typedef struct vulkan_physical_device_queue_family_info {
 
 b8 select_physical_device(vulkan_context *context);
 
-b8 physical_device_meets_requirements(
-	VkPhysicalDevice device, VkSurfaceKHR surface,
-	const VkPhysicalDeviceProperties *properties,
-	const VkPhysicalDeviceFeatures *features,
-	const vulkan_physical_device_requirements *requirements,
-	vulkan_physical_device_queue_family_info *out_queue_family_info,
-	vulkan_swapchain_support_info *out_swapchain_support);
-
 b8 vulkan_device_create(vulkan_context *context) {
 		if (!select_physical_device(context)) {
 				SF_FATAL("Failed to select physical device.");
 				return FALSE;
 		}
+
+		u32 index_count = 1;
+		b8 present_shares_graphics = context->device.graphics_queue_index ==
+									 context->device.present_queue_index;
+		b8 transfer_shares_graphics = context->device.graphics_queue_index ==
+									  context->device.transfer_queue_index;
+		b8 transfer_shares_present = context->device.transfer_queue_index ==
+									 context->device.present_queue_index;
+		if (!present_shares_graphics) {
+				index_count += 1;
+		}
+		if (!transfer_shares_graphics) {
+				index_count += 1;
+		}
+		u32 indices[index_count];
+		u8 index = 0;
+		indices[index] = context->device.graphics_queue_index;
+		if (!present_shares_graphics) {
+				indices[index += 1] = context->device.present_queue_index;
+		}
+		if (!transfer_shares_graphics) {
+				indices[index += 1] = context->device.transfer_queue_index;
+		}
+		VkDeviceQueueCreateInfo q_create_infos[index_count];
+		for (u32 i = 0; i < index_count; ++i) {
+				q_create_infos[i].sType =
+					VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+				q_create_infos[i].pNext = SF_NULL;
+				q_create_infos[i].queueCount = 1;
+				q_create_infos[i].queueFamilyIndex = indices[i];
+				SF_DEBUG("HAI");
+				f32 q_prio = 1.0f;
+				q_create_infos[i].pQueuePriorities = &q_prio;
+				q_create_infos[i].flags = 0;
+		}
+
+		// TODO: make this configurable
+		VkPhysicalDeviceFeatures device_features = {};
+		device_features.samplerAnisotropy = VK_TRUE;
+
+		VkDeviceCreateInfo device_create_info = {
+			VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
+		device_create_info.queueCreateInfoCount = index_count;
+		device_create_info.pQueueCreateInfos = q_create_infos;
+		const char *ext_names = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+		device_create_info.enabledExtensionCount = 1;
+		device_create_info.ppEnabledExtensionNames = &ext_names;
+		device_create_info.pEnabledFeatures = &device_features;
+
+		VK_ASSERT_SUCCESS(
+			vkCreateDevice(context->device.physical_device, &device_create_info,
+						   context->allocator, &context->device.logical_device),
+			"Failed to create logical device.");
+		SF_INFO("Logical device created.");
+
+		vkGetDeviceQueue(context->device.logical_device,
+						 context->device.graphics_queue_index, 0,
+						 &context->device.graphics_queue);
+		vkGetDeviceQueue(context->device.logical_device,
+						 context->device.present_queue_index, 0,
+						 &context->device.present_queue);
+		vkGetDeviceQueue(context->device.logical_device,
+						 context->device.transfer_queue_index, 0,
+						 &context->device.transfer_queue);
+		SF_INFO("Queues obtained.");
+
 		return TRUE;
 }
 
 void vulkan_device_destroy(vulkan_context *context) {
+
+		context->device.graphics_queue = SF_NULL;
+		context->device.present_queue = SF_NULL;
+		context->device.transfer_queue = SF_NULL;
+		if (context->device.logical_device) {
+				vkDestroyDevice(context->device.logical_device,
+								context->allocator);
+				context->device.logical_device = SF_NULL;
+		}
 		if (context->device.swapchain_support.formats) {
 				sffree(context->device.swapchain_support.formats,
 					   sizeof(VkSurfaceFormatKHR) *
@@ -67,6 +134,14 @@ void vulkan_device_destroy(vulkan_context *context) {
 		context->device.transfer_queue_index = -1;
 		// NOTE: also compute if enabled
 }
+
+b8 physical_device_meets_requirements(
+	VkPhysicalDevice device, VkSurfaceKHR surface,
+	const VkPhysicalDeviceProperties *properties,
+	const VkPhysicalDeviceFeatures *features,
+	const vulkan_physical_device_requirements *requirements,
+	vulkan_physical_device_queue_family_info *out_queue_family_info,
+	vulkan_swapchain_support_info *out_swapchain_support);
 
 // NOTE: this stuff is copied from Kohi
 b8 select_physical_device(vulkan_context *context) {
