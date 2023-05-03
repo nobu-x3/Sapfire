@@ -13,6 +13,7 @@ src/core/clock.c
 src/renderer/renderer.c
 src/renderer/renderer_provider.c
 src/renderer/vulkan/vulkan_provider.c
+src/core/sfstring.c
 )
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})

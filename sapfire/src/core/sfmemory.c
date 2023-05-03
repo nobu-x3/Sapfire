@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "core/logger.h"
+#include "core/sfstring.h"
 #include "platform/platform.h"
 #include "sfmemory.h"
 
@@ -56,7 +57,7 @@ char *get_mem_usage_str() {
 		const u64 kib = 1024;
 
 		char buffer[8000] = "Tagged memory usage:\n";
-		u64 offset = strlen(buffer);
+		u64 offset = sfstrlen(buffer);
 		for (u16 i = 0; i < MEMORY_TAG_MAX; ++i) {
 				char unit[4] = "XiB";
 				float amount = 1.0f;
@@ -77,6 +78,6 @@ char *get_mem_usage_str() {
 				offset += snprintf(buffer + offset, 8000, "  %s: %.2f%s\n",
 								   tagged_strings[i], amount, unit);
 		}
-		char *out_string = strdup(buffer);
+		char *out_string = sfstrdup(buffer);
 		return out_string;
 }

@@ -1,6 +1,7 @@
 #include "containers/vector.h"
 #include "core/asserts.h"
 #include "core/logger.h"
+#include "core/sfstring.h"
 #include "vulkan_platform.h"
 #include "vulkan_provider.h"
 #include "vulkan_types.h"
@@ -48,7 +49,7 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		// available validation layers
 		u32 available_count = 0;
 		VK_ASSERT_SUCCESS(
-			vkEnumerateInstanceLayerProperties(&available_count, 0),
+			vkEnumerateInstanceLayerProperties(&available_count, SF_NULL),
 			"Failed to enumerate instance layer properties!");
 		VkLayerProperties *available_properties =
 			vector_reserve(VkLayerProperties, available_count);
@@ -59,8 +60,8 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 				SF_DEBUG("Searching for layer %s.", valid_names[i]);
 				b8 found = FALSE;
 				for (u32 j = 0; j < available_count; ++j) {
-						if (strcmp(valid_names[i],
-								   available_properties[i].layerName)) {
+						if (sfstreq(valid_names[i],
+									available_properties[j].layerName)) {
 								found = TRUE;
 								SF_DEBUG("Success!");
 								break;
@@ -73,6 +74,7 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 						return FALSE;
 				}
 		}
+		vector_destroy(available_properties);
 #endif
 		VkInstanceCreateInfo create_info = {
 			VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO};
