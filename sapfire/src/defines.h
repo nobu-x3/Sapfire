@@ -45,6 +45,8 @@ STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 #define FALSE 0
 #define SF_NULL (void*)0
 
+#define CLAMP(value, min, max) (value <= min) ? min : (value >= max) ? max : value
+
 // Platform detection
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) 
   #define SPLATFORM_WINDOWS 1

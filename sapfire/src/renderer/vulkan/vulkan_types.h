@@ -14,6 +14,15 @@ typedef struct vulkan_swapchain_support_info {
     VkPresentModeKHR* present_modes;
 } vulkan_swapchain_support_info;
 
+typedef struct vulkan_swapchain{
+	VkSurfaceFormatKHR surface_format;
+	u8 max_frames_in_flight;
+	VkSwapchainKHR swapchain_handle;
+	u32 image_count;
+	VkImage* images;
+	VkImageView* image_views;
+} vulkan_swapchain;
+
 typedef struct vulkan_device{
 	VkPhysicalDevice physical_device;
 	VkDevice logical_device;
@@ -37,6 +46,11 @@ typedef struct vulkan_context{
 	VkAllocationCallbacks* allocator;
 	VkSurfaceKHR surface;
 	vulkan_device device;
+	vulkan_swapchain swapchain;
+	u32 image_index;
+	u32 current_frame;
+	b8 recreating_swapchain;
+	u32 framebuffer_width, framebuffer_height;
 
 	#if defined(DEBUG)
 	VkDebugUtilsMessengerEXT debug_messenger;
