@@ -60,7 +60,6 @@ b8 vulkan_device_create(vulkan_context *context) {
 				q_create_infos[i].pNext = SF_NULL;
 				q_create_infos[i].queueCount = 1;
 				q_create_infos[i].queueFamilyIndex = indices[i];
-				SF_DEBUG("HAI");
 				f32 q_prio = 1.0f;
 				q_create_infos[i].pQueuePriorities = &q_prio;
 				q_create_infos[i].flags = 0;

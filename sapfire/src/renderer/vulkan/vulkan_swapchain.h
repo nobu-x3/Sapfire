@@ -2,7 +2,8 @@
 
 #include "vulkan_types.h"
 
-b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
+// @param old_swapchain_handle Pass SF_NULL when not recreating the swapchain.
+void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
                              vulkan_swapchain *out_swapchain, VkSwapchainKHR old_swapchain_handle);
 
 void vulkan_swapchain_destroy(vulkan_context *context,

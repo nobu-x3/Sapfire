@@ -2,14 +2,16 @@
 #include "core/sfmemory.h"
 #include "defines.h"
 #include "renderer/vulkan/vulkan_device.h"
+#include "renderer/vulkan/vulkan_image.h"
 #include "renderer/vulkan/vulkan_types.h"
 #include "vulkan/vulkan_core.h"
 #include "vulkan_swapchain.h"
 #include <stdint.h>
 
-b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
-						   vulkan_swapchain *out_swapchain,
-						   VkSwapchainKHR old_swapchain_handle) {
+void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
+							 vulkan_swapchain *out_swapchain,
+							 VkSwapchainKHR old_swapchain_handle) {
+		SF_INFO("Creating swapchain...");
 		VkExtent2D swapchain_extent = {width, height};
 		// TODO: figure out if we want tripple buffering or make it configurable
 		out_swapchain->max_frames_in_flight = 2;
@@ -18,7 +20,7 @@ b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 			 ++i) {
 				VkSurfaceFormatKHR surface_format =
 					context->device.swapchain_support.formats[i];
-				if (surface_format.format == VK_FORMAT_R8G8B8A8_UNORM &&
+				if (surface_format.format == VK_FORMAT_B8G8R8A8_UNORM &&
 					surface_format.colorSpace ==
 						VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
 						out_swapchain->surface_format = surface_format;
@@ -28,12 +30,13 @@ b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 		}
 
 		if (!found) {
-				SF_WARNING("VK_FORMAT_R8G8B8A8_UNORM format not found, using "
+				SF_WARNING("VK_FORMAT_B8G8R8A8_UNORM format not found, using "
 						   "fallback.");
 				out_swapchain->surface_format =
 					context->device.swapchain_support
 						.formats[0]; // potentially unsafe :^)
 		}
+		SF_INFO("Surface format found.");
 		VkPresentModeKHR present_mode =
 			VK_PRESENT_MODE_FIFO_KHR; // this is guaranteed to exist.
 		// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPresentModeKHR.html
@@ -83,6 +86,7 @@ b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 		VkSwapchainCreateInfoKHR swapchain_create_info = {
 			VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR};
 		swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		swapchain_create_info.minImageCount = image_count;
 		swapchain_create_info.imageFormat =
 			out_swapchain->surface_format.format;
 		swapchain_create_info.imageColorSpace =
@@ -113,13 +117,13 @@ b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 			VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 		swapchain_create_info.presentMode = present_mode;
 		swapchain_create_info.clipped = VK_TRUE;
-		// TODO: pass old when recreating
 		swapchain_create_info.oldSwapchain = old_swapchain_handle;
 		VK_ASSERT_SUCCESS(
 			vkCreateSwapchainKHR(context->device.logical_device,
 								 &swapchain_create_info, context->allocator,
 								 &out_swapchain->swapchain_handle),
 			"Failed to create swapchain.");
+		SF_INFO("Swapchain handle created.");
 		context->current_frame = 0;
 		out_swapchain->image_count = 0;
 		VK_ASSERT_SUCCESS(
@@ -134,13 +138,15 @@ b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 		}
 		if (!out_swapchain->image_views) {
 				out_swapchain->image_views = (VkImageView *)sfalloc(
-					sizeof(VkImageView) * image_count, MEMORY_TAG_RENDERER);
+					sizeof(VkImageView) * out_swapchain->image_count,
+					MEMORY_TAG_RENDERER);
 		}
 		VK_ASSERT_SUCCESS(
 			vkGetSwapchainImagesKHR(
 				context->device.logical_device, out_swapchain->swapchain_handle,
 				&out_swapchain->image_count, out_swapchain->images),
 			"Failed to get swapchain images.");
+		SF_INFO("Obtained swapchain images.");
 		for (u32 i = 0; i < out_swapchain->image_count; ++i) {
 				VkImageViewCreateInfo view_create_info = {
 					VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
@@ -148,10 +154,9 @@ b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 				view_create_info.image = out_swapchain->images[i];
 				view_create_info.format = out_swapchain->surface_format.format;
 				view_create_info.subresourceRange.aspectMask =
-					VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+					VK_IMAGE_ASPECT_COLOR_BIT;
 				view_create_info.subresourceRange.baseMipLevel = 0;
 				view_create_info.subresourceRange.levelCount = 1;
-				;
 				view_create_info.subresourceRange.baseArrayLayer = 0;
 				view_create_info.subresourceRange.layerCount = 1;
 				VK_ASSERT_SUCCESS(
@@ -160,16 +165,43 @@ b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 									  &out_swapchain->image_views[i]),
 					"Failed to create image view.");
 		}
+		SF_INFO("Created image views for swapchain images.");
 		if (!vulkan_device_detect_depth_format(&context->device)) {
 				context->device.depth_format = VK_FORMAT_UNDEFINED;
 				SF_FATAL("Failed to find a supported depth format.");
-				return FALSE;
+				return;
 		}
-		return TRUE;
+
+		vulkan_image_info image_info = {VK_IMAGE_TYPE_2D};
+		image_info.width = swapchain_extent.width;
+		image_info.height = swapchain_extent.height;
+		image_info.format = context->device.depth_format;
+		image_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+		image_info.usage_flags = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		image_info.memory_flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+		image_info.create_view = TRUE;
+		image_info.view_aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
+		vulkan_image_create(context, &image_info,
+							&out_swapchain->depth_attachment);
+		SF_INFO("Swapchain created successfully.");
 }
 
 void vulkan_swapchain_destroy(vulkan_context *context,
 							  vulkan_swapchain *swapchain) {
+		vulkan_image_destroy(context, &swapchain->depth_attachment);
+		// NOTE: this is due to the fact that when swapchain is created, images
+		// are created with it and are automatically destroyed when the owning
+		// swapchain is destroyed. Views that we created are not destroyed with
+		// the owning swapchain.
+		for (u32 i = 0; i < swapchain->image_count; ++i) {
+				vkDestroyImageView(context->device.logical_device,
+								   swapchain->image_views[i],
+								   context->allocator);
+		}
+		vkDestroySwapchainKHR(context->device.logical_device,
+							  swapchain->swapchain_handle, context->allocator);
+
+		// NOTE: internal memory cleanup
 		sffree((void *)swapchain->images,
 			   sizeof(VkImage) * swapchain->image_count, MEMORY_TAG_RENDERER);
 		sffree((void *)swapchain->image_views,

@@ -3,6 +3,7 @@
 #include "core/logger.h"
 #include "core/sfstring.h"
 #include "renderer/vulkan/vulkan_device.h"
+#include "renderer/vulkan/vulkan_swapchain.h"
 #include "vulkan_platform.h"
 #include "vulkan_provider.h"
 #include "vulkan_types.h"
@@ -13,6 +14,8 @@
 // TODO: really think about singletons...
 static vulkan_context context;
 
+i32 find_memory_index(u32 type_filter, u32 property_flags);
+
 VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
 	VkDebugUtilsMessageTypeFlagBitsEXT message_types,
@@ -20,6 +23,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
 
 b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 					 struct platform_state *plat_state) {
+		context.find_memory_index = find_memory_index;
 		// TODO: implement custom allocators.
 		context.allocator = SF_NULL;
 		VkApplicationInfo app_info = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
@@ -125,6 +129,10 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 				SF_FATAL("Failed to create vulkan devices.");
 				return FALSE;
 		}
+
+		vulkan_swapchain_create(&context, context.framebuffer_width,
+								context.framebuffer_height, &context.swapchain,
+								SF_NULL);
 		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
@@ -140,6 +148,8 @@ void vulkan_shutdown(renderer_provider *api) {
 					 context.allocator);
 		}
 #endif
+		SF_DEBUG("Destroying vulkan swapchain");
+		vulkan_swapchain_destroy(&context, &context.swapchain);
 		SF_DEBUG("Destroying vulkan surface");
 		vkDestroySurfaceKHR(context.instance, context.surface,
 							context.allocator);
@@ -177,4 +187,19 @@ vk_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
 				break;
 		}
 		return VK_FALSE;
+}
+
+i32 find_memory_index(u32 type_filter, u32 property_flags) {
+		VkPhysicalDeviceMemoryProperties mem_props;
+		vkGetPhysicalDeviceMemoryProperties(context.device.physical_device,
+											&mem_props);
+		for (u32 i = 0; i < mem_props.memoryTypeCount; ++i) {
+				if (type_filter & (1 << i) &&
+					(mem_props.memoryTypes[i].propertyFlags & property_flags) ==
+						property_flags) {
+						return i;
+				}
+				SF_WARNING("Failed to find suitable memory type.");
+				return -1;
+		}
 }
