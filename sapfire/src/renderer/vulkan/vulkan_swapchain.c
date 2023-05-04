@@ -7,9 +7,9 @@
 #include "vulkan_swapchain.h"
 #include <stdint.h>
 
-void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
-							 vulkan_swapchain *out_swapchain,
-							 VkSwapchainKHR old_swapchain_handle) {
+b8 vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
+						   vulkan_swapchain *out_swapchain,
+						   VkSwapchainKHR old_swapchain_handle) {
 		VkExtent2D swapchain_extent = {width, height};
 		// TODO: figure out if we want tripple buffering or make it configurable
 		out_swapchain->max_frames_in_flight = 2;
@@ -160,6 +160,12 @@ void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 									  &out_swapchain->image_views[i]),
 					"Failed to create image view.");
 		}
+		if (!vulkan_device_detect_depth_format(&context->device)) {
+				context->device.depth_format = VK_FORMAT_UNDEFINED;
+				SF_FATAL("Failed to find a supported depth format.");
+				return FALSE;
+		}
+		return TRUE;
 }
 
 void vulkan_swapchain_destroy(vulkan_context *context,

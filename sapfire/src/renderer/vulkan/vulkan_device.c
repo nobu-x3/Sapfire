@@ -135,6 +135,28 @@ void vulkan_device_destroy(vulkan_context *context) {
 		// NOTE: also compute if enabled
 }
 
+b8 vulkan_device_detect_depth_format(vulkan_device *device) {
+		const u32 count = 3;
+		VkFormat priorities[3] = {
+			VK_FORMAT_D32_SFLOAT, // Don't really care about stencil, so
+								  // this is top 1 prio
+			VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
+		u32 flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		for (u32 i = 0; i < count; ++i) {
+				VkFormatProperties props;
+				vkGetPhysicalDeviceFormatProperties(device->physical_device,
+													priorities[i], &props);
+				if ((props.linearTilingFeatures & flags) == flags) {
+						device->depth_format = priorities[i];
+						return TRUE;
+				} else if ((props.optimalTilingFeatures & flags) == flags) {
+						device->depth_format = priorities[i];
+						return TRUE;
+				}
+		}
+		return FALSE;
+}
+
 b8 physical_device_meets_requirements(
 	VkPhysicalDevice device, VkSurfaceKHR surface,
 	const VkPhysicalDeviceProperties *properties,

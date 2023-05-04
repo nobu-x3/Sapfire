@@ -39,6 +39,8 @@ typedef struct vulkan_device{
   VkPhysicalDeviceProperties properties;
   VkPhysicalDeviceFeatures features;
   VkPhysicalDeviceMemoryProperties memory;
+
+	VkFormat depth_format;
 } vulkan_device;
 
 typedef struct vulkan_context{
