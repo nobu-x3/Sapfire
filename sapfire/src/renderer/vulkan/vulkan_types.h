@@ -60,6 +60,10 @@ typedef struct vulkan_render_pass {
   vulkan_render_pass_state state;
 } vulkan_render_pass;
 
+typedef struct vulkan_command_pool{
+  
+} vulkan_command_pool;
+
 typedef enum vulkan_command_buffer_state {
   COMMAND_BUFFER_STATE_IDLE,
   COMMAND_BUFFER_STATE_RECORDING,
@@ -87,6 +91,8 @@ typedef struct vulkan_device {
   VkQueue present_queue;
   VkQueue transfer_queue;
 
+  VkCommandPool graphics_command_pool;
+  
   VkPhysicalDeviceProperties properties;
   VkPhysicalDeviceFeatures features;
   VkPhysicalDeviceMemoryProperties memory;
@@ -101,6 +107,10 @@ typedef struct vulkan_context {
   vulkan_device device;
   vulkan_swapchain swapchain;
   vulkan_render_pass main_render_pass;
+
+  // vec
+  vulkan_command_buffer* graphics_command_buffers;
+
   u32 image_index;
   u32 current_frame;
   b8 recreating_swapchain;

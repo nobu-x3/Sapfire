@@ -1,8 +1,10 @@
 #include "containers/vector.h"
 #include "core/asserts.h"
 #include "core/logger.h"
+#include "core/sfmemory.h"
 #include "core/sfstring.h"
 #include "defines.h"
+#include "renderer/vulkan/vulkan_command_buffer.h"
 #include "renderer/vulkan/vulkan_device.h"
 #include "renderer/vulkan/vulkan_render_pass.h"
 #include "renderer/vulkan/vulkan_swapchain.h"
@@ -22,6 +24,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
 	VkDebugUtilsMessageTypeFlagBitsEXT message_types,
 	const VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data);
+
+void create_command_buffers(renderer_provider *api);
 
 b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 					 struct platform_state *plat_state) {
@@ -142,6 +146,9 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		vulkan_render_pass_create(&context, color, extent, 1.0f, 0,
 								  &context.main_render_pass);
 		SF_INFO("Vulkan renderer provider initialized successfully.");
+
+		create_command_buffers(api);
+
 		return TRUE;
 }
 
@@ -163,6 +170,13 @@ void vulkan_shutdown(renderer_provider *api) {
 		SF_DEBUG("Destroying vulkan surface");
 		vkDestroySurfaceKHR(context.instance, context.surface,
 							context.allocator);
+		vkQueueWaitIdle(context.device.graphics_queue);
+		for (u32 i = 0; i < context.swapchain.image_count; ++i) {
+				vulkan_command_buffer_free(
+					&context, context.device.graphics_command_pool,
+					&context.graphics_command_buffers[i]);
+		}
+		vector_destroy(context.graphics_command_buffers);
 		SF_DEBUG("Destroying devices.");
 		vulkan_device_destroy(&context);
 		SF_DEBUG("Destroying vulkan instance.");
@@ -209,7 +223,27 @@ i32 find_memory_index(u32 type_filter, u32 property_flags) {
 						property_flags) {
 						return i;
 				}
-				SF_WARNING("Failed to find suitable memory type.");
-				return -1;
 		}
+		SF_WARNING("Failed to find suitable memory type.");
+		return -1;
+}
+
+void create_command_buffers(renderer_provider *api) {
+		if (!context.graphics_command_buffers) {
+				context.graphics_command_buffers = vector_reserve(
+					vulkan_command_buffer, context.swapchain.image_count);
+		}
+		for (u32 i = 0; i < context.swapchain.image_count; ++i) {
+				if (context.graphics_command_buffers[i].handle) {
+						vulkan_command_buffer_free(
+							&context, context.device.graphics_command_pool,
+							&context.graphics_command_buffers[i]);
+				}
+				sfmemset(&context.graphics_command_buffers[i], 0,
+						 sizeof(vulkan_command_buffer));
+				vulkan_command_buffer_create(
+					&context, context.device.graphics_command_pool, TRUE,
+					&context.graphics_command_buffers[i]);
+		}
+		SF_INFO("Command buffers created.");
 }
