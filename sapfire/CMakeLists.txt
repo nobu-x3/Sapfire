@@ -19,6 +19,7 @@ src/renderer/vulkan/vulkan_image.c
 src/renderer/vulkan/vulkan_swapchain.c
 src/renderer/vulkan/vulkan_render_pass.c
 src/renderer/vulkan/vulkan_command_buffer.c
+src/renderer/vulkan/vulkan_framebuffer.c
 )
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})

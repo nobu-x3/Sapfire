@@ -6,6 +6,7 @@
 #include "defines.h"
 #include "renderer/vulkan/vulkan_command_buffer.h"
 #include "renderer/vulkan/vulkan_device.h"
+#include "renderer/vulkan/vulkan_framebuffer.h"
 #include "renderer/vulkan/vulkan_render_pass.h"
 #include "renderer/vulkan/vulkan_swapchain.h"
 #include "vulkan_platform.h"
@@ -20,6 +21,9 @@ static vulkan_context context;
 
 i32 find_memory_index(u32 type_filter, u32 property_flags);
 
+void recreate_frambuffers(renderer_provider *api, vulkan_swapchain *swapchain,
+						  vulkan_render_pass *render_pass);
+
 VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
 	VkDebugUtilsMessageTypeFlagBitsEXT message_types,
@@ -30,6 +34,9 @@ void create_command_buffers(renderer_provider *api);
 b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 					 struct platform_state *plat_state) {
 		context.find_memory_index = find_memory_index;
+		// TODO: config
+		context.framebuffer_width = 800;
+		context.framebuffer_height = 600;
 		// TODO: implement custom allocators.
 		context.allocator = SF_NULL;
 		VkApplicationInfo app_info = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
@@ -38,7 +45,6 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 		app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 		app_info.pEngineName = "Sapfire Engine";
-
 		const char **ext_names = vector_create(const char *);
 		platform_get_required_extension_names(plat_state, &ext_names);
 #if defined(DEBUG)
@@ -145,10 +151,15 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 						   context.framebuffer_height};
 		vulkan_render_pass_create(&context, color, extent, 1.0f, 0,
 								  &context.main_render_pass);
-		SF_INFO("Vulkan renderer provider initialized successfully.");
+
+		context.swapchain.framebuffers =
+			vector_reserve(vulkan_framebuffer, context.swapchain.image_count);
+		recreate_frambuffers(api, &context.swapchain,
+							 &context.main_render_pass);
 
 		create_command_buffers(api);
 
+		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
 
@@ -170,13 +181,21 @@ void vulkan_shutdown(renderer_provider *api) {
 		SF_DEBUG("Destroying vulkan surface");
 		vkDestroySurfaceKHR(context.instance, context.surface,
 							context.allocator);
+		SF_DEBUG("Waiting for idle...");
 		vkQueueWaitIdle(context.device.graphics_queue);
+		SF_DEBUG("Destroying graphics command pool.");
 		for (u32 i = 0; i < context.swapchain.image_count; ++i) {
 				vulkan_command_buffer_free(
 					&context, context.device.graphics_command_pool,
 					&context.graphics_command_buffers[i]);
 		}
 		vector_destroy(context.graphics_command_buffers);
+		SF_DEBUG("Destroying framebuffers.");
+		for (u32 i = 0; i < context.swapchain.image_count; ++i) {
+				vulkan_framebuffer_destroy(&context,
+										   &context.swapchain.framebuffers[i]);
+		}
+		vector_destroy(context.swapchain.framebuffers);
 		SF_DEBUG("Destroying devices.");
 		vulkan_device_destroy(&context);
 		SF_DEBUG("Destroying vulkan instance.");
@@ -246,4 +265,18 @@ void create_command_buffers(renderer_provider *api) {
 					&context.graphics_command_buffers[i]);
 		}
 		SF_INFO("Command buffers created.");
+}
+void recreate_frambuffers(renderer_provider *api, vulkan_swapchain *swapchain,
+						  vulkan_render_pass *render_pass) {
+		for (u32 i = 0; i < swapchain->image_count; ++i) {
+				// TODO: make this automatically adjust based on currently
+				// configured attachments
+				VkImageView attachments[] = {swapchain->image_views[i],
+											 swapchain->depth_attachment.view};
+				u32 attach_count = 2;
+				vulkan_framebuffer_create(
+					&context, render_pass, context.framebuffer_width,
+					context.framebuffer_height, attach_count, attachments,
+					&swapchain->framebuffers[i]);
+		}
 }

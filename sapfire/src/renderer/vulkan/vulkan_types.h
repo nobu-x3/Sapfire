@@ -24,24 +24,6 @@ typedef struct vulkan_image {
   u32 width, height;
 } vulkan_image;
 
-typedef struct vulkan_swapchain_support_info {
-  VkSurfaceCapabilitiesKHR capabilities;
-  u32 format_count;
-  VkSurfaceFormatKHR *formats;
-  u32 present_mode_count;
-  VkPresentModeKHR *present_modes;
-} vulkan_swapchain_support_info;
-
-typedef struct vulkan_swapchain {
-  VkSurfaceFormatKHR surface_format;
-  u8 max_frames_in_flight;
-  VkSwapchainKHR handle;
-  u32 image_count;
-  VkImage *images;
-  VkImageView *image_views;
-  vulkan_image depth_attachment;
-} vulkan_swapchain;
-
 typedef enum vulkan_render_pass_state {
   RENDER_PASS_STATE_IDLE,
   RENDER_PASS_STATE_RECORDING,
@@ -60,6 +42,32 @@ typedef struct vulkan_render_pass {
   vulkan_render_pass_state state;
 } vulkan_render_pass;
 
+typedef struct vulkan_framebuffer{
+  VkFramebuffer handle;
+  u32 attachment_count;
+  VkImageView* attachments;
+  vulkan_render_pass* render_pass;
+} vulkan_framebuffer;
+
+typedef struct vulkan_swapchain_support_info {
+  VkSurfaceCapabilitiesKHR capabilities;
+  u32 format_count;
+  VkSurfaceFormatKHR *formats;
+  u32 present_mode_count;
+  VkPresentModeKHR *present_modes;
+} vulkan_swapchain_support_info;
+
+typedef struct vulkan_swapchain {
+  VkSurfaceFormatKHR surface_format;
+  u8 max_frames_in_flight;
+  VkSwapchainKHR handle;
+  u32 image_count;
+  VkImage *images;
+  VkImageView *image_views;
+  vulkan_image depth_attachment;
+  vulkan_framebuffer* framebuffers;
+} vulkan_swapchain;
+
 typedef struct vulkan_command_pool{
   
 } vulkan_command_pool;
@@ -77,6 +85,7 @@ typedef struct vulkan_command_buffer {
   VkCommandBuffer handle;
   vulkan_command_buffer_state state;
 } vulkan_command_buffer;
+
 
 typedef struct vulkan_device {
   VkPhysicalDevice physical_device;
