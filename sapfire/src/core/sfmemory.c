@@ -41,6 +41,7 @@ void sffree(void *block, u64 size, memory_tag tag) {
 		stats.total -= size;
 		stats.tagged[tag] -= size;
 		platform_free(block, FALSE);
+		block = SF_NULL;
 }
 
 void *sfmemcpy(void *dest, const void *src, u64 size) {

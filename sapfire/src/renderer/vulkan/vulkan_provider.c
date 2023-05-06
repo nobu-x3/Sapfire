@@ -6,6 +6,7 @@
 #include "defines.h"
 #include "renderer/vulkan/vulkan_command_buffer.h"
 #include "renderer/vulkan/vulkan_device.h"
+#include "renderer/vulkan/vulkan_fence.h"
 #include "renderer/vulkan/vulkan_framebuffer.h"
 #include "renderer/vulkan/vulkan_render_pass.h"
 #include "renderer/vulkan/vulkan_swapchain.h"
@@ -159,11 +160,55 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 
 		create_command_buffers(api);
 
+		context.image_available_semaphores =
+			vector_reserve(VkSemaphore, context.swapchain.max_frames_in_flight);
+		context.queue_complete_semaphores =
+			vector_reserve(VkSemaphore, context.swapchain.max_frames_in_flight);
+		context.in_flight_fences =
+			vector_reserve(VkFence, context.swapchain.max_frames_in_flight);
+
+		for (u8 i = 0; i < context.swapchain.max_frames_in_flight; ++i) {
+				VkSemaphoreCreateInfo sem_create_info = {
+					VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO};
+				vkCreateSemaphore(context.device.logical_device,
+								  &sem_create_info, context.allocator,
+								  &context.image_available_semaphores[i]);
+				vkCreateSemaphore(context.device.logical_device,
+								  &sem_create_info, context.allocator,
+								  &context.queue_complete_semaphores[i]);
+				vulkan_fence_create(&context, TRUE,
+									&context.in_flight_fences[i]);
+		}
+
+		context.images_in_flight =
+			vector_reserve(VkFence, context.swapchain.image_count);
+		SF_INFO("Fences and semaphores created.");
 		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
 
 void vulkan_shutdown(renderer_provider *api) {
+		SF_DEBUG("Waiting for idle...");
+		vkDeviceWaitIdle(context.device.logical_device);
+		SF_DEBUG("Destroying sync objects.");
+		for (u32 i = 0; i < context.swapchain.max_frames_in_flight; ++i) {
+				if (context.image_available_semaphores[i]) {
+						vkDestroySemaphore(
+							context.device.logical_device,
+							context.image_available_semaphores[i],
+							context.allocator);
+				}
+				if (context.queue_complete_semaphores[i]) {
+						vkDestroySemaphore(context.device.logical_device,
+										   context.queue_complete_semaphores[i],
+										   context.allocator);
+				}
+				vulkan_fence_destroy(&context, &context.in_flight_fences[i]);
+		}
+		vector_destroy(context.image_available_semaphores);
+		vector_destroy(context.queue_complete_semaphores);
+		vector_destroy(context.in_flight_fences);
+		vector_destroy(context.images_in_flight);
 #if defined(DEBUG)
 		SF_DEBUG("Destroying vulkan debugger.");
 		if (context.debug_messenger) {
@@ -181,8 +226,6 @@ void vulkan_shutdown(renderer_provider *api) {
 		SF_DEBUG("Destroying vulkan surface");
 		vkDestroySurfaceKHR(context.instance, context.surface,
 							context.allocator);
-		SF_DEBUG("Waiting for idle...");
-		vkQueueWaitIdle(context.device.graphics_queue);
 		SF_DEBUG("Destroying graphics command pool.");
 		for (u32 i = 0; i < context.swapchain.image_count; ++i) {
 				vulkan_command_buffer_free(

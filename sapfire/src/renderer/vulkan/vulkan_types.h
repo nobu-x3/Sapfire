@@ -42,11 +42,11 @@ typedef struct vulkan_render_pass {
   vulkan_render_pass_state state;
 } vulkan_render_pass;
 
-typedef struct vulkan_framebuffer{
+typedef struct vulkan_framebuffer {
   VkFramebuffer handle;
   u32 attachment_count;
-  VkImageView* attachments;
-  vulkan_render_pass* render_pass;
+  VkImageView *attachments;
+  vulkan_render_pass *render_pass;
 } vulkan_framebuffer;
 
 typedef struct vulkan_swapchain_support_info {
@@ -65,11 +65,11 @@ typedef struct vulkan_swapchain {
   VkImage *images;
   VkImageView *image_views;
   vulkan_image depth_attachment;
-  vulkan_framebuffer* framebuffers;
+  vulkan_framebuffer *framebuffers;
 } vulkan_swapchain;
 
-typedef struct vulkan_command_pool{
-  
+typedef struct vulkan_command_pool {
+
 } vulkan_command_pool;
 
 typedef enum vulkan_command_buffer_state {
@@ -86,7 +86,6 @@ typedef struct vulkan_command_buffer {
   vulkan_command_buffer_state state;
 } vulkan_command_buffer;
 
-
 typedef struct vulkan_device {
   VkPhysicalDevice physical_device;
   VkDevice logical_device;
@@ -101,7 +100,7 @@ typedef struct vulkan_device {
   VkQueue transfer_queue;
 
   VkCommandPool graphics_command_pool;
-  
+
   VkPhysicalDeviceProperties properties;
   VkPhysicalDeviceFeatures features;
   VkPhysicalDeviceMemoryProperties memory;
@@ -118,7 +117,17 @@ typedef struct vulkan_context {
   vulkan_render_pass main_render_pass;
 
   // vec
-  vulkan_command_buffer* graphics_command_buffers;
+  vulkan_command_buffer *graphics_command_buffers;
+
+  // vec
+  VkSemaphore *image_available_semaphores;
+
+  // vec
+  VkSemaphore *queue_complete_semaphores;
+
+  u32 in_flight_fences_count;
+  VkFence *in_flight_fences;
+  VkFence **images_in_flight;
 
   u32 image_index;
   u32 current_frame;
