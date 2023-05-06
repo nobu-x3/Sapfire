@@ -28,11 +28,11 @@ void vulkan_image_create(vulkan_context *context,
 			VK_SHARING_MODE_EXCLUSIVE; // TODO: make this configurable
 		VK_ASSERT_SUCCESS(vkCreateImage(context->device.logical_device,
 										&image_create_info, context->allocator,
-										&out_image->image_handle),
+										&out_image->handle),
 						  "Failed to create an image.");
 		VkMemoryRequirements mem_reqs;
 		vkGetImageMemoryRequirements(context->device.logical_device,
-									 out_image->image_handle, &mem_reqs);
+									 out_image->handle, &mem_reqs);
 		i32 mem_type = context->find_memory_index(mem_reqs.memoryTypeBits,
 												  create_info->memory_flags);
 		if (mem_type == -1) {
@@ -50,7 +50,7 @@ void vulkan_image_create(vulkan_context *context,
 
 		// TODO: make this configurable for image pooling support
 		VK_ASSERT_SUCCESS(vkBindImageMemory(context->device.logical_device,
-											out_image->image_handle,
+											out_image->handle,
 											out_image->memory, 0),
 						  "Failed to bind image memory.");
 		if (create_info->create_view) {
@@ -74,10 +74,10 @@ void vulkan_image_destroy(vulkan_context *context, vulkan_image *image) {
 							 context->allocator);
 				image->memory = SF_NULL;
 		}
-		if (image->image_handle) {
-				vkDestroyImage(context->device.logical_device,
-							   image->image_handle, context->allocator);
-				image->image_handle = SF_NULL;
+		if (image->handle) {
+				vkDestroyImage(context->device.logical_device, image->handle,
+							   context->allocator);
+				image->handle = SF_NULL;
 		}
 }
 
@@ -86,7 +86,7 @@ void vulkan_image_view_create(vulkan_context *context, VkFormat format,
 							  vulkan_image *out_image) {
 		VkImageViewCreateInfo view_create_info = {
 			VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
-		view_create_info.image = out_image->image_handle;
+		view_create_info.image = out_image->handle;
 		view_create_info.viewType =
 			VK_IMAGE_VIEW_TYPE_2D; // TODO: make this configurable
 		view_create_info.format = format;

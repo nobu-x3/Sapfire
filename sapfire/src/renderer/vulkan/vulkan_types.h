@@ -18,7 +18,7 @@ typedef struct vulkan_image_info {
 } vulkan_image_info;
 
 typedef struct vulkan_image {
-  VkImage image_handle;
+  VkImage handle;
   VkDeviceMemory memory;
   VkImageView view;
   u32 width, height;
@@ -35,12 +35,44 @@ typedef struct vulkan_swapchain_support_info {
 typedef struct vulkan_swapchain {
   VkSurfaceFormatKHR surface_format;
   u8 max_frames_in_flight;
-  VkSwapchainKHR swapchain_handle;
+  VkSwapchainKHR handle;
   u32 image_count;
   VkImage *images;
   VkImageView *image_views;
   vulkan_image depth_attachment;
 } vulkan_swapchain;
+
+typedef enum vulkan_render_pass_state {
+  RENDER_PASS_STATE_IDLE,
+  RENDER_PASS_STATE_RECORDING,
+  RENDER_PASS_STATE_IN_RENDER_PASS,
+  RENDER_PASS_STATE_RECORDING_FINISHED,
+  RENDER_PASS_STATE_SUBMITTED,
+  RENDER_PASS_STATE_NOT_ALLOCATED
+} vulkan_render_pass_state;
+
+typedef struct vulkan_render_pass {
+  VkRenderPass handle;
+  f32 depth;
+  color color;
+  extent2d extent;
+  u32 stencil;
+  vulkan_render_pass_state state;
+} vulkan_render_pass;
+
+typedef enum vulkan_command_buffer_state {
+  COMMAND_BUFFER_STATE_IDLE,
+  COMMAND_BUFFER_STATE_RECORDING,
+  COMMAND_BUFFER_STATE_IN_RENDER_PASS,
+  COMMAND_BUFFER_STATE_RECORDING_FINISHED,
+  COMMAND_BUFFER_STATE_SUBMITTED,
+  COMMAND_BUFFER_STATE_NOT_ALLOCATED
+} vulkan_command_buffer_state;
+
+typedef struct vulkan_command_buffer {
+  VkCommandBuffer handle;
+  vulkan_command_buffer_state state;
+} vulkan_command_buffer;
 
 typedef struct vulkan_device {
   VkPhysicalDevice physical_device;
@@ -68,6 +100,7 @@ typedef struct vulkan_context {
   VkSurfaceKHR surface;
   vulkan_device device;
   vulkan_swapchain swapchain;
+  vulkan_render_pass main_render_pass;
   u32 image_index;
   u32 current_frame;
   b8 recreating_swapchain;
@@ -76,7 +109,7 @@ typedef struct vulkan_context {
 #if defined(DEBUG)
   VkDebugUtilsMessengerEXT debug_messenger;
 #endif
-  i32(*find_memory_index)(u32 type_filter, u32 memory_flags);
+  i32 (*find_memory_index)(u32 type_filter, u32 memory_flags);
 
 } vulkan_context;
 

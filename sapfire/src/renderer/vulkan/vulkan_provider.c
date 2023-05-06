@@ -2,7 +2,9 @@
 #include "core/asserts.h"
 #include "core/logger.h"
 #include "core/sfstring.h"
+#include "defines.h"
 #include "renderer/vulkan/vulkan_device.h"
+#include "renderer/vulkan/vulkan_render_pass.h"
 #include "renderer/vulkan/vulkan_swapchain.h"
 #include "vulkan_platform.h"
 #include "vulkan_provider.h"
@@ -133,6 +135,12 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		vulkan_swapchain_create(&context, context.framebuffer_width,
 								context.framebuffer_height, &context.swapchain,
 								SF_NULL);
+
+		color color = {0.0f, 0.3f, 0.5f, 1.0f};
+		extent2d extent = {0.0f, 0.0f, context.framebuffer_width,
+						   context.framebuffer_height};
+		vulkan_render_pass_create(&context, color, extent, 1.0f, 0,
+								  &context.main_render_pass);
 		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
@@ -148,6 +156,8 @@ void vulkan_shutdown(renderer_provider *api) {
 					 context.allocator);
 		}
 #endif
+		SF_DEBUG("Destroying main render pass");
+		vulkan_render_pass_destroy(&context, &context.main_render_pass);
 		SF_DEBUG("Destroying vulkan swapchain");
 		vulkan_swapchain_destroy(&context, &context.swapchain);
 		SF_DEBUG("Destroying vulkan surface");

@@ -118,17 +118,17 @@ void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 		swapchain_create_info.presentMode = present_mode;
 		swapchain_create_info.clipped = VK_TRUE;
 		swapchain_create_info.oldSwapchain = old_swapchain_handle;
-		VK_ASSERT_SUCCESS(
-			vkCreateSwapchainKHR(context->device.logical_device,
-								 &swapchain_create_info, context->allocator,
-								 &out_swapchain->swapchain_handle),
-			"Failed to create swapchain.");
+		VK_ASSERT_SUCCESS(vkCreateSwapchainKHR(context->device.logical_device,
+											   &swapchain_create_info,
+											   context->allocator,
+											   &out_swapchain->handle),
+						  "Failed to create swapchain.");
 		SF_INFO("Swapchain handle created.");
 		context->current_frame = 0;
 		out_swapchain->image_count = 0;
 		VK_ASSERT_SUCCESS(
 			vkGetSwapchainImagesKHR(context->device.logical_device,
-									out_swapchain->swapchain_handle,
+									out_swapchain->handle,
 									&out_swapchain->image_count, SF_NULL),
 			"Failed to get swapchain image count.");
 		if (!out_swapchain->images) {
@@ -143,7 +143,7 @@ void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 		}
 		VK_ASSERT_SUCCESS(
 			vkGetSwapchainImagesKHR(
-				context->device.logical_device, out_swapchain->swapchain_handle,
+				context->device.logical_device, out_swapchain->handle,
 				&out_swapchain->image_count, out_swapchain->images),
 			"Failed to get swapchain images.");
 		SF_INFO("Obtained swapchain images.");
@@ -198,8 +198,8 @@ void vulkan_swapchain_destroy(vulkan_context *context,
 								   swapchain->image_views[i],
 								   context->allocator);
 		}
-		vkDestroySwapchainKHR(context->device.logical_device,
-							  swapchain->swapchain_handle, context->allocator);
+		vkDestroySwapchainKHR(context->device.logical_device, swapchain->handle,
+							  context->allocator);
 
 		// NOTE: internal memory cleanup
 		sffree((void *)swapchain->images,
@@ -211,7 +211,7 @@ void vulkan_swapchain_destroy(vulkan_context *context,
 
 void vulkan_swapchain_recreate(vulkan_context *context, u32 width, u32 height,
 							   vulkan_swapchain *swapchain) {
-		VkSwapchainKHR old_handle = swapchain->swapchain_handle;
+		VkSwapchainKHR old_handle = swapchain->handle;
 		vulkan_swapchain_destroy(context, swapchain);
 		vulkan_swapchain_create(context, width, height, swapchain, old_handle);
 }
@@ -222,8 +222,8 @@ b8 vulkan_swapchain_get_next_image_index(vulkan_context *context,
 										 VkSemaphore img_available_sem,
 										 VkFence fence, u32 *out_image_index) {
 		VkResult result = vkAcquireNextImageKHR(
-			context->device.logical_device, swapchain->swapchain_handle,
-			timeout_ns, img_available_sem, fence, out_image_index);
+			context->device.logical_device, swapchain->handle, timeout_ns,
+			img_available_sem, fence, out_image_index);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 				vulkan_swapchain_recreate(context, context->framebuffer_width,
 										  context->framebuffer_height,
@@ -246,7 +246,7 @@ void vulkan_swapchain_present(vulkan_context *context,
 							  u32 present_image_index) {
 		// basically return the image to present to the swapchain
 		VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR};
-		present_info.pSwapchains = &swapchain->swapchain_handle;
+		present_info.pSwapchains = &swapchain->handle;
 		present_info.swapchainCount = 1;
 		present_info.pImageIndices = &present_image_index;
 		present_info.waitSemaphoreCount = 1;

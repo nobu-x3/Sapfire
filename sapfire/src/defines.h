@@ -20,6 +20,14 @@ typedef double f64;
 typedef char b8;
 typedef int b32;
 
+typedef struct color{
+  f32 r,g,b,a;
+} color;
+
+typedef struct extent2d{
+  f32 x,y,w,h;
+} extent2d;
+
 // Properly define static assertions.
 #if defined(__clang__) || defined(__gcc__)
 #define STATIC_ASSERT _Static_assert
