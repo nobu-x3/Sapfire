@@ -13,6 +13,7 @@
 #include "vulkan_platform.h"
 #include "vulkan_provider.h"
 #include "vulkan_types.h"
+#include <stdint.h>
 #include <string.h>
 #include <vulkan/vk_platform.h>
 #include <vulkan/vulkan_core.h>
@@ -147,7 +148,7 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 								context.framebuffer_height, &context.swapchain,
 								SF_NULL);
 
-		color color = {0.0f, 0.3f, 0.5f, 1.0f};
+		color color = {0.3f, 0.5f, 0.7f, 1.0f};
 		extent2d extent = {0.0f, 0.0f, context.framebuffer_width,
 						   context.framebuffer_height};
 		vulkan_render_pass_create(&context, color, extent, 1.0f, 0,
@@ -246,10 +247,114 @@ void vulkan_shutdown(renderer_provider *api) {
 }
 
 b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
+		// TODO: handle resizing from SDL side
+		if (context.recreating_swapchain) {
+				if (vkDeviceWaitIdle(context.device.logical_device) !=
+					VK_SUCCESS) {
+						SF_ERROR("Failed to wait for device idle.");
+						return FALSE;
+				}
+				SF_INFO("Recreating swapchain.")
+				return FALSE;
+		}
+
+		if (!vulkan_fence_wait(&context,
+							   &context.in_flight_fences[context.current_frame],
+							   UINT64_MAX)) {
+				SF_WARNING("Could not wait for in-flight fence.");
+				return FALSE;
+		}
+
+		if (!vulkan_swapchain_get_next_image_index(
+				&context, &context.swapchain, UINT64_MAX,
+				context.image_available_semaphores[context.current_frame],
+				SF_NULL, &context.image_index)) {
+				return FALSE;
+		}
+
+		vulkan_command_buffer *command_buffer =
+			&context.graphics_command_buffers[context.image_index];
+		vulkan_command_buffer_reset(command_buffer);
+		vulkan_command_buffer_begin(command_buffer, FALSE, FALSE, FALSE);
+
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = (f32)context.framebuffer_height;
+		viewport.width = (f32)context.framebuffer_width;
+		viewport.height = -(f32)context.framebuffer_height;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+
+		VkRect2D scissor = {};
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		scissor.extent.width = context.framebuffer_width;
+		scissor.extent.height = context.framebuffer_height;
+
+		vkCmdSetViewport(command_buffer->handle, 0, 1, &viewport);
+		vkCmdSetScissor(command_buffer->handle, 0, 1, &scissor);
+
+		context.main_render_pass.extent.w = context.framebuffer_width;
+		context.main_render_pass.extent.h = context.framebuffer_height;
+
+		vulkan_render_pass_begin(
+			&context.main_render_pass, command_buffer,
+			context.swapchain.framebuffers[context.image_index].handle);
+
 		return TRUE;
 }
 
-b8 vulkan_end_frame(struct renderer_provider *api) { return TRUE; }
+b8 vulkan_end_frame(struct renderer_provider *api) {
+		vulkan_render_pass_end(
+			&context.main_render_pass,
+			&context.graphics_command_buffers[context.image_index]);
+		vulkan_command_buffer_end(
+			&context.graphics_command_buffers[context.image_index]);
+		if (context.images_in_flight[context.image_index] != VK_NULL_HANDLE) {
+				vulkan_fence_wait(&context,
+								  context.images_in_flight[context.image_index],
+								  UINT64_MAX);
+		}
+
+		context.images_in_flight[context.image_index] =
+			&context.in_flight_fences[context.current_frame];
+		vulkan_fence_reset(&context,
+						   &context.in_flight_fences[context.current_frame]);
+
+		VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO};
+		submit_info.commandBufferCount = 1;
+		submit_info.pCommandBuffers =
+			&context.graphics_command_buffers[context.image_index].handle;
+		submit_info.signalSemaphoreCount = 1;
+		submit_info.pSignalSemaphores =
+			&context.queue_complete_semaphores[context.current_frame];
+		submit_info.waitSemaphoreCount = 1;
+		submit_info.pWaitSemaphores =
+			&context.image_available_semaphores[context.current_frame];
+
+		// prevents subsequent color attachment writes from executing until
+		// semaphore signals
+		VkPipelineStageFlags flags[] = {
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+		submit_info.pWaitDstStageMask = flags;
+		if (vkQueueSubmit(context.device.graphics_queue, 1, &submit_info,
+						  context.in_flight_fences[context.current_frame]) !=
+			VK_SUCCESS) {
+				SF_ERROR("vkQueueSubmit failed.");
+				return FALSE;
+		}
+
+		vulkan_command_buffer_update_submitted(
+			&context.graphics_command_buffers[context.image_index]);
+
+		vulkan_swapchain_present(
+			&context, &context.swapchain, context.device.graphics_queue,
+			context.device.present_queue,
+			context.queue_complete_semaphores[context.current_frame],
+			context.image_index);
+
+		return TRUE;
+}
 
 VKAPI_ATTR VkBool32 VKAPI_CALL
 vk_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
