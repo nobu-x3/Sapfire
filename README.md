@@ -16,8 +16,8 @@ The following is a non-exhaustive feature list that the engine supports or is pl
 
 ## Renderer progress
 After attempting to write a renderer so many times, I noticed that I get sidetracked mid-way and dig my self in a hole every time. This time I wanted to outline my plan clearly and use it as a guide to keep myself focused.
-- Stage 1: Scaffolfing, Vulkan instantiation, clear screen.
-- Stage 2: Static meshes, textures, materials, phong lighting
-- Stage 3: Renderable textures, terrain, skybox, water (features)
-- Stage 4: Post effects, configurable pipeline
-- Stage 5: PBR
+- [X] Stage 1: ~~Scaffolfing, Vulkan instantiation, clear screen.~~ 
+- [ ] Stage 2: Static meshes, textures, materials, phong lighting
+- [ ] Stage 3: Renderable textures, terrain, skybox, water (features)
+- [ ] Stage 4: Post effects, configurable pipeline
+- [ ] Stage 5: PBR
