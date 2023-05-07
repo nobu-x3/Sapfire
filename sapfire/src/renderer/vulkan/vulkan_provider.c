@@ -45,8 +45,6 @@ void create_command_buffers();
 b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 					 struct platform_state *plat_state) {
 		event_register(EVENT_CODE_WINDOW_RESIZED, &context, window_resized);
-		context.framebuffer_size_generation = 0;
-		context.framebuffer_last_size_generation = 0;
 		context.find_memory_index = find_memory_index;
 		// TODO: config
 		extent2d extent_window = platform_get_drawable_extent(plat_state);
@@ -271,21 +269,6 @@ b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
 				return FALSE;
 		}
 
-		if (context.framebuffer_size_generation !=
-			context.framebuffer_last_size_generation) {
-				if (vkDeviceWaitIdle(context.device.logical_device) !=
-					VK_SUCCESS) {
-						SF_ERROR(
-							"vulkan_begin_frame: failed to wait for idle.");
-						return FALSE;
-				}
-
-				if (!recreate_swapchain()) {
-						return FALSE;
-				}
-				return FALSE;
-		}
-
 		if (!vulkan_fence_wait(&context,
 							   &context.in_flight_fences[context.current_frame],
 							   UINT64_MAX)) {
@@ -462,9 +445,16 @@ void recreate_frambuffers(vulkan_swapchain *swapchain,
 
 b8 window_resized(u16 code, void *sender, void *listener_list,
 				  event_context data) {
-		context.framebuffer_size_generation++;
 		cached_window_width = data.data.u32[0];
 		cached_window_height = data.data.u32[1];
+		if (vkDeviceWaitIdle(context.device.logical_device) != VK_SUCCESS) {
+				SF_ERROR("vulkan_begin_frame: failed to wait for idle.");
+				return FALSE;
+		}
+
+		if (!recreate_swapchain()) {
+				return FALSE;
+		}
 		return TRUE;
 }
 
@@ -499,8 +489,6 @@ b8 recreate_swapchain() {
 		cached_window_width = 0;
 		cached_window_height = 0;
 
-		context.framebuffer_last_size_generation =
-			context.framebuffer_size_generation;
 		for (u32 i = 0; i < context.swapchain.image_count; ++i) {
 				vulkan_command_buffer_free(
 					&context, context.device.graphics_command_pool,
