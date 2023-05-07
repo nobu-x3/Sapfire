@@ -31,17 +31,12 @@ b8 platform_init(platform_state *plat_state, const char *app_name, i32 x, i32 y,
 		SDL_Vulkan_LoadLibrary(SF_NULL);
 		state->window = SDL_CreateWindow(app_name, SDL_WINDOWPOS_CENTERED,
 										 SDL_WINDOWPOS_CENTERED, width, height,
-										 SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
+										 SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN |
+											 SDL_WINDOW_RESIZABLE);
 		if (!state->window) {
 				SF_FATAL("Failed to initialize window!");
 				return FALSE;
 		}
-		// TODO: add a separate function to create a vulkan surface
-		// state->surface = SDL_GetWindowSurface(state->window);
-		// if (!state->surface) {
-		// 		SF_FATAL("Failed to get surface!");
-		// 		return FALSE;
-		// }
 		return TRUE;
 }
 
@@ -77,6 +72,7 @@ b8 platform_create_vulkan_surface(platform_state *plat_state,
 b8 platform_update_internal_state(platform_state *plat_state) {
 		internal_state *state = (internal_state *)plat_state->internal_state;
 		SDL_Event e;
+		event_context context;
 		while (SDL_PollEvent(&e) > 0) {
 				switch (e.type) {
 				case SDL_QUIT:
@@ -100,6 +96,18 @@ b8 platform_update_internal_state(platform_state *plat_state) {
 						break;
 				case SDL_MOUSEWHEEL_NORMAL:
 						input_process_mouse_wheel(e.wheel.y);
+						break;
+				case SDL_WINDOWEVENT:
+						switch (e.window.event) {
+						case SDL_WINDOWEVENT_RESIZED:
+								context.data.u32[0] = e.window.data1;
+								context.data.u32[1] = e.window.data2;
+								event_fire(EVENT_CODE_WINDOW_RESIZED, state,
+										   context);
+								break;
+						default:
+								break;
+						}
 						break;
 				}
 		}
@@ -152,3 +160,13 @@ void platform_console_write_error(const char *message, b8 fatal) {
 u64 platform_get_absolute_time() { return SDL_GetTicks64(); }
 
 void platform_sleep(u32 ms) { SDL_Delay(ms); }
+
+extent2d platform_get_drawable_extent(platform_state *plat_state) {
+		internal_state *state = (internal_state *)plat_state->internal_state;
+		int height, width = 0;
+		SDL_Vulkan_GetDrawableSize(state->window, &width, &height);
+		extent2d extent = {};
+		extent.w = (f32)width;
+		extent.h = (f32)height;
+		return extent;
+}

@@ -1,3 +1,4 @@
+#include "core/logger.h"
 #include "core/sfmemory.h"
 #include "renderer/vulkan/vulkan_types.h"
 #include "vulkan_render_pass.h"
@@ -118,8 +119,10 @@ void vulkan_render_pass_begin(vulkan_render_pass *render_pass,
 		begin_info.clearValueCount = 2;
 		begin_info.pClearValues = clear_vals;
 
+		// SF_DEBUG("HAI1");
 		vkCmdBeginRenderPass(command_buffer->handle, &begin_info,
 							 VK_SUBPASS_CONTENTS_INLINE);
+		// SF_DEBUG("HAI2");
 		command_buffer->state = COMMAND_BUFFER_STATE_IN_RENDER_PASS;
 }
 

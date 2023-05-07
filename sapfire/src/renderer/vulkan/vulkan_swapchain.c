@@ -188,6 +188,7 @@ void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 
 void vulkan_swapchain_destroy(vulkan_context *context,
 							  vulkan_swapchain *swapchain) {
+		vkDeviceWaitIdle(context->device.logical_device);
 		vulkan_image_destroy(context, &swapchain->depth_attachment);
 		// NOTE: this is due to the fact that when swapchain is created, images
 		// are created with it and are automatically destroyed when the owning
@@ -204,9 +205,11 @@ void vulkan_swapchain_destroy(vulkan_context *context,
 		// NOTE: internal memory cleanup
 		sffree((void *)swapchain->images,
 			   sizeof(VkImage) * swapchain->image_count, MEMORY_TAG_RENDERER);
+		swapchain->images = SF_NULL;
 		sffree((void *)swapchain->image_views,
 			   sizeof(VkImageView) * swapchain->image_count,
 			   MEMORY_TAG_RENDERER);
+		swapchain->image_views = SF_NULL;
 }
 
 void vulkan_swapchain_recreate(vulkan_context *context, u32 width, u32 height,

@@ -46,5 +46,8 @@ typedef enum event_code{
 	// u32[2] - delta Z
 	EVENT_CODE_MOUSE_WHEEL,
 
+	// u32[0] - width, u32[1] - height
+	EVENT_CODE_WINDOW_RESIZED,
+
 	MAX_EVENT_CODE = 0xFF
 } event_code;

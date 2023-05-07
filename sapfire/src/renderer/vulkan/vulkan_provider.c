@@ -1,9 +1,11 @@
 #include "containers/vector.h"
 #include "core/asserts.h"
+#include "core/event.h"
 #include "core/logger.h"
 #include "core/sfmemory.h"
 #include "core/sfstring.h"
 #include "defines.h"
+#include "platform/platform.h"
 #include "renderer/vulkan/vulkan_command_buffer.h"
 #include "renderer/vulkan/vulkan_device.h"
 #include "renderer/vulkan/vulkan_fence.h"
@@ -20,10 +22,12 @@
 #define DEBUG
 // TODO: really think about singletons...
 static vulkan_context context;
+static u32 cached_window_width = 0;
+static u32 cached_window_height = 0;
 
 i32 find_memory_index(u32 type_filter, u32 property_flags);
 
-void recreate_frambuffers(renderer_provider *api, vulkan_swapchain *swapchain,
+void recreate_frambuffers(vulkan_swapchain *swapchain,
 						  vulkan_render_pass *render_pass);
 
 VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
@@ -31,14 +35,23 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
 	VkDebugUtilsMessageTypeFlagBitsEXT message_types,
 	const VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data);
 
-void create_command_buffers(renderer_provider *api);
+b8 window_resized(u16 code, void *sender, void *listener_list,
+				  event_context data);
+
+b8 recreate_swapchain();
+
+void create_command_buffers();
 
 b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 					 struct platform_state *plat_state) {
+		event_register(EVENT_CODE_WINDOW_RESIZED, &context, window_resized);
+		context.framebuffer_size_generation = 0;
+		context.framebuffer_last_size_generation = 0;
 		context.find_memory_index = find_memory_index;
 		// TODO: config
-		context.framebuffer_width = 800;
-		context.framebuffer_height = 600;
+		extent2d extent_window = platform_get_drawable_extent(plat_state);
+		context.framebuffer_width = extent_window.w;
+		context.framebuffer_height = extent_window.h;
 		// TODO: implement custom allocators.
 		context.allocator = SF_NULL;
 		VkApplicationInfo app_info = {VK_STRUCTURE_TYPE_APPLICATION_INFO};
@@ -151,15 +164,14 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		color color = {0.3f, 0.5f, 0.7f, 1.0f};
 		extent2d extent = {0.0f, 0.0f, context.framebuffer_width,
 						   context.framebuffer_height};
-		vulkan_render_pass_create(&context, color, extent, 1.0f, 0,
+		vulkan_render_pass_create(&context, color, extent_window, 1.0f, 0,
 								  &context.main_render_pass);
 
 		context.swapchain.framebuffers =
 			vector_reserve(vulkan_framebuffer, context.swapchain.image_count);
-		recreate_frambuffers(api, &context.swapchain,
-							 &context.main_render_pass);
+		recreate_frambuffers(&context.swapchain, &context.main_render_pass);
 
-		create_command_buffers(api);
+		create_command_buffers();
 
 		context.image_available_semaphores =
 			vector_reserve(VkSemaphore, context.swapchain.max_frames_in_flight);
@@ -244,6 +256,7 @@ void vulkan_shutdown(renderer_provider *api) {
 		vulkan_device_destroy(&context);
 		SF_DEBUG("Destroying vulkan instance.");
 		vkDestroyInstance(context.instance, context.allocator);
+		event_unregister(EVENT_CODE_WINDOW_RESIZED, &context, window_resized);
 }
 
 b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
@@ -255,6 +268,21 @@ b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
 						return FALSE;
 				}
 				SF_INFO("Recreating swapchain.")
+				return FALSE;
+		}
+
+		if (context.framebuffer_size_generation !=
+			context.framebuffer_last_size_generation) {
+				if (vkDeviceWaitIdle(context.device.logical_device) !=
+					VK_SUCCESS) {
+						SF_ERROR(
+							"vulkan_begin_frame: failed to wait for idle.");
+						return FALSE;
+				}
+
+				if (!recreate_swapchain()) {
+						return FALSE;
+				}
 				return FALSE;
 		}
 
@@ -395,7 +423,7 @@ i32 find_memory_index(u32 type_filter, u32 property_flags) {
 		return -1;
 }
 
-void create_command_buffers(renderer_provider *api) {
+void create_command_buffers() {
 		if (!context.graphics_command_buffers) {
 				context.graphics_command_buffers = vector_reserve(
 					vulkan_command_buffer, context.swapchain.image_count);
@@ -414,7 +442,8 @@ void create_command_buffers(renderer_provider *api) {
 		}
 		SF_INFO("Command buffers created.");
 }
-void recreate_frambuffers(renderer_provider *api, vulkan_swapchain *swapchain,
+
+void recreate_frambuffers(vulkan_swapchain *swapchain,
 						  vulkan_render_pass *render_pass) {
 		for (u32 i = 0; i < swapchain->image_count; ++i) {
 				// TODO: make this automatically adjust based on currently
@@ -422,9 +451,70 @@ void recreate_frambuffers(renderer_provider *api, vulkan_swapchain *swapchain,
 				VkImageView attachments[] = {swapchain->image_views[i],
 											 swapchain->depth_attachment.view};
 				u32 attach_count = 2;
+				vulkan_framebuffer_destroy(&context,
+										   &swapchain->framebuffers[i]);
 				vulkan_framebuffer_create(
 					&context, render_pass, context.framebuffer_width,
 					context.framebuffer_height, attach_count, attachments,
 					&swapchain->framebuffers[i]);
 		}
+}
+
+b8 window_resized(u16 code, void *sender, void *listener_list,
+				  event_context data) {
+		context.framebuffer_size_generation++;
+		cached_window_width = data.data.u32[0];
+		cached_window_height = data.data.u32[1];
+		return TRUE;
+}
+
+b8 recreate_swapchain() {
+		if (context.recreating_swapchain) {
+				SF_DEBUG("Already recreating the swapchain.");
+				return FALSE;
+		}
+
+		if (context.framebuffer_width == 0 || context.framebuffer_height == 0) {
+				SF_DEBUG("Cannot recreate swapchain with framebuffer "
+						 "dimensions less than 1.");
+				return FALSE;
+		}
+
+		context.recreating_swapchain = TRUE;
+		vkDeviceWaitIdle(context.device.logical_device);
+		for (u32 i = 0; i < context.swapchain.image_count; ++i) {
+				context.images_in_flight[i] = SF_NULL;
+		}
+		vulkan_device_query_swapchain_support(
+			context.device.physical_device, context.surface,
+			&context.device.swapchain_support);
+		vulkan_device_detect_depth_format(&context.device);
+		vulkan_swapchain_recreate(&context, context.framebuffer_width,
+								  context.framebuffer_height,
+								  &context.swapchain);
+		context.framebuffer_width = cached_window_width;
+		context.framebuffer_height = cached_window_height;
+		context.main_render_pass.extent.w = context.framebuffer_height;
+		context.main_render_pass.extent.h = context.framebuffer_height;
+		cached_window_width = 0;
+		cached_window_height = 0;
+
+		context.framebuffer_last_size_generation =
+			context.framebuffer_size_generation;
+		for (u32 i = 0; i < context.swapchain.image_count; ++i) {
+				vulkan_command_buffer_free(
+					&context, context.device.graphics_command_pool,
+					&context.graphics_command_buffers[i]);
+				vulkan_framebuffer_destroy(&context,
+										   &context.swapchain.framebuffers[i]);
+		}
+
+		context.main_render_pass.extent.x = 0;
+		context.main_render_pass.extent.y = 0;
+		context.main_render_pass.extent.w = context.framebuffer_width;
+		context.main_render_pass.extent.h = context.framebuffer_height;
+		recreate_frambuffers(&context.swapchain, &context.main_render_pass);
+		create_command_buffers();
+		context.recreating_swapchain = FALSE;
+		return TRUE;
 }

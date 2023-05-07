@@ -133,6 +133,7 @@ typedef struct vulkan_context {
   u32 current_frame;
   b8 recreating_swapchain;
   u32 framebuffer_width, framebuffer_height;
+  u64 framebuffer_size_generation, framebuffer_last_size_generation;
 
 #if defined(DEBUG)
   VkDebugUtilsMessengerEXT debug_messenger;
