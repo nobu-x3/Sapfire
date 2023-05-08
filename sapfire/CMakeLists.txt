@@ -21,6 +21,7 @@ src/renderer/vulkan/vulkan_render_pass.c
 src/renderer/vulkan/vulkan_command_buffer.c
 src/renderer/vulkan/vulkan_framebuffer.c
 src/renderer/vulkan/vulkan_fence.c
+src/math/sfmath.c
 )
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})

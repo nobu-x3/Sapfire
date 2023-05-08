@@ -1,4 +1,5 @@
 #include "defines.h"
+#include "math/sfmath.h"
 #include "core/sfstring.h"
 #include "test.h"
 #include "core/logger.h"

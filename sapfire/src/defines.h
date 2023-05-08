@@ -88,3 +88,17 @@ STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
     #define SAPI
   #endif
 #endif
+
+#ifdef _MSC_VER
+  #define INLINE __forceinline
+  #define NOINLINE __declspec(noinline)
+#else
+  #define INLINE static inline
+  #define KNOINLINE
+#endif
+
+#ifdef _MSC_VER
+  #define ALIGN(x) __declspec(align(x))
+#else
+  #define ALIGN(x) __attribute__((aligned(x)))
+#endif
