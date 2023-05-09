@@ -13,8 +13,6 @@ void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 							 VkSwapchainKHR old_swapchain_handle) {
 		SF_INFO("Creating swapchain...");
 		VkExtent2D swapchain_extent = {width, height};
-		// TODO: figure out if we want tripple buffering or make it configurable
-		out_swapchain->max_frames_in_flight = 2;
 		b8 found = FALSE;
 		for (u32 i = 0; i < context->device.swapchain_support.format_count;
 			 ++i) {
@@ -82,7 +80,7 @@ void vulkan_swapchain_create(vulkan_context *context, u32 width, u32 height,
 				image_count = context->device.swapchain_support.capabilities
 								  .maxImageCount;
 		}
-
+		out_swapchain->max_frames_in_flight = image_count - 1;
 		VkSwapchainCreateInfoKHR swapchain_create_info = {
 			VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR};
 		swapchain_create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
