@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.9)
 project(sapfire VERSION 0.0.1 DESCRIPTION "Sapfire Engine")
+if(MSCV)
+# add msvc VAL errors
+else()
+  add_compile_options(-Werror=vla)
+endif()
 add_library(sapfire SHARED
 src/test.c
 src/core/logger.c

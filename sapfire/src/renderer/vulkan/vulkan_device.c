@@ -44,7 +44,7 @@ b8 vulkan_device_create(vulkan_context *context) {
 		if (!transfer_shares_graphics) {
 				index_count += 1;
 		}
-		u32 indices[index_count];
+		u32 indices[32];
 		u8 index = 0;
 		indices[index] = context->device.graphics_queue_index;
 		if (!present_shares_graphics) {
@@ -53,7 +53,7 @@ b8 vulkan_device_create(vulkan_context *context) {
 		if (!transfer_shares_graphics) {
 				indices[index += 1] = context->device.transfer_queue_index;
 		}
-		VkDeviceQueueCreateInfo q_create_infos[index_count];
+		VkDeviceQueueCreateInfo q_create_infos[32];
 		for (u32 i = 0; i < index_count; ++i) {
 				q_create_infos[i].sType =
 					VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -191,7 +191,7 @@ b8 select_physical_device(vulkan_context *context) {
 				SF_FATAL("No vulkan-capable physical devices found.");
 				return FALSE;
 		}
-		VkPhysicalDevice phys_devices[phys_device_count];
+		VkPhysicalDevice phys_devices[32];
 		VK_ASSERT_SUCCESS(vkEnumeratePhysicalDevices(context->instance,
 													 &phys_device_count,
 													 phys_devices),
@@ -381,7 +381,7 @@ b8 physical_device_meets_requirements(
 		u32 queue_family_count = 0;
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count,
 												 0);
-		VkQueueFamilyProperties queue_families[queue_family_count];
+		VkQueueFamilyProperties queue_families[32];
 		vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count,
 												 queue_families);
 
