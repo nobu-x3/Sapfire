@@ -1,3 +1,4 @@
+#include "expect.h"
 #include <core/logger.h>
 #include <core/sfmemory.h>
 #include <game_definitions.h>
@@ -31,6 +32,6 @@ void game_shutdown(game *game) {
 }
 
 int main(void) {
-		SF_INFO("HELLO");
+		expect(18, 18);
 		return 0;
 }
