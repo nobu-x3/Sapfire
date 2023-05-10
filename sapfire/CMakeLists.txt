@@ -6,7 +6,6 @@ else()
   add_compile_options(-Werror=vla)
 endif()
 add_library(sapfire SHARED
-src/test.c
 src/core/logger.c
 src/core/application.c
 src/platform/platform_sdl.c
