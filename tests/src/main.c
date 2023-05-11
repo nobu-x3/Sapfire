@@ -1,4 +1,5 @@
 #include "expect.h"
+#include "test_manager.h"
 #include <core/logger.h>
 #include <core/sfmemory.h>
 #include <game_definitions.h>
@@ -31,7 +32,11 @@ void game_shutdown(game *game) {
 		sffree(game->state, sizeof(game_state), MEMORY_TAG_GAME);
 }
 
+u8 test() { return FALSE; }
+
 int main(void) {
-		expect(18, 18);
+		test_manager_init();
+		test_manager_register_test(test, "test test");
+		test_manager_run_tests();
 		return 0;
 }
