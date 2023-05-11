@@ -21,11 +21,10 @@ void linear_allocator_destroy(linear_allocator *allocator) {
 				if (allocator->is_owner && allocator->mem_block) {
 						sffree(allocator->mem_block, allocator->total_size,
 							   MEMORY_TAG_LIN_ALLOC);
-				} else {
-						allocator->mem_block =
-							SF_NULL; // NOTE: responsibility of the owner to
-									 // clean up.
 				}
+
+				allocator->mem_block =
+					SF_NULL; // NOTE: responsibility of the owner to clean up.
 				allocator->total_size = 0;
 				allocator->allocated = 0;
 				allocator->is_owner = FALSE;
