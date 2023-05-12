@@ -4,7 +4,7 @@
 #include "platform/platform.h"
 #include "renderer/renderer_types.h"
 #include "core/clock.h"
-
+struct game;
 typedef struct application_config{
 	i32 x,y,width,height;
 	const char* name;
@@ -20,5 +20,5 @@ typedef struct application_state{
 } application_state;
 
 SAPI b8 application_create(struct game* game_instance);
-SAPI void application_run();
-SAPI void application_shutdown();
+SAPI void application_run(struct game* game_instance);
+SAPI void application_shutdown(struct game* game_instance);

@@ -1,5 +1,6 @@
 #include <entry.h>
 
+#include "core/application.h"
 #include "core/sfmemory.h"
 #include "game.h"
 

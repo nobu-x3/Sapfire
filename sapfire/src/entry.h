@@ -30,6 +30,6 @@ int main(void) {
 	char* str = get_mem_usage_str();
   SF_DEBUG(str);
 	free(str);
-	application_run();
+	application_run(&instance);
   return 0;
 }

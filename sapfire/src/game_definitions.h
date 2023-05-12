@@ -10,4 +10,6 @@ typedef struct game{
 	b8(*render)(struct game* instance, f32 deltaTime);
 
 	void* state;
+	
+	void* application_state;
 } game;
