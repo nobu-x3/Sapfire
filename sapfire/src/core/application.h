@@ -12,6 +12,8 @@ typedef struct application_config{
 
 typedef struct application_state{
 	platform_state plat_state;
+
+	// Application does not own game instance
 	struct game* game_instance;
 	renderer renderer;
 	clock main_clock;
