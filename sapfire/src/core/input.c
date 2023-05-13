@@ -16,68 +16,68 @@ typedef struct mouse_state {
 typedef struct input_state {
 		keyboard_state keyboard_current, keyboard_last;
 		mouse_state mouse_current, mouse_last;
+		b8 initialized;
 } input_state;
 
-static b8 is_initialized = FALSE;
-static input_state state;
+static input_state *pState;
 
-b8 input_initialize() {
-		if (is_initialized) {
-				SF_ERROR("Attempted to initialize the input subsystem when "
-						 "it's already initialized.");
+b8 input_initialize(u64 *mem_size, void *mem_block) {
+		*mem_size = sizeof(input_state);
+		if (mem_block == SF_NULL) {
 				return FALSE;
 		}
-		sfmemset(&state, 0, sizeof(state));
-		is_initialized = TRUE;
+		pState = mem_block;
+		pState->initialized = TRUE;
 		SF_INFO("Input subsystem initialized successfully.");
 		return TRUE;
 }
-void input_shutdown() { is_initialized = FALSE; }
+void input_shutdown(void *mem_block) { pState = SF_NULL; }
 void input_update(f64 deltaTime) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				SF_ERROR("Input update called when the input subsystem was not "
 						 "initialized.");
 				return;
 		}
 
-		sfmemcpy(&state.keyboard_last, &state.keyboard_current,
+		sfmemcpy(&pState->keyboard_last, &pState->keyboard_current,
 				 sizeof(keyboard_state));
-		sfmemcpy(&state.mouse_last, &state.mouse_current, sizeof(mouse_state));
+		sfmemcpy(&pState->mouse_last, &pState->mouse_current,
+				 sizeof(mouse_state));
 }
 
 // keyboard
 b8 input_is_key_down(keys key) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				return FALSE;
 		}
-		return state.keyboard_current.keys[key] == TRUE;
+		return pState->keyboard_current.keys[key] == TRUE;
 }
 
 b8 input_is_key_up(keys key) {
 
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				return FALSE;
 		}
-		return state.keyboard_current.keys[key] == FALSE;
+		return pState->keyboard_current.keys[key] == FALSE;
 }
 
 b8 input_was_key_down(keys key) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				return FALSE;
 		}
-		return state.keyboard_last.keys[key] == TRUE;
+		return pState->keyboard_last.keys[key] == TRUE;
 }
 
 b8 input_was_key_up(keys key) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				return FALSE;
 		}
-		return state.keyboard_last.keys[key] == FALSE;
+		return pState->keyboard_last.keys[key] == FALSE;
 }
 
 void input_process_key(keys key, b8 pressed) {
-		if (state.keyboard_current.keys[key] != pressed) {
-				state.keyboard_current.keys[key] = pressed;
+		if (pState->keyboard_current.keys[key] != pressed) {
+				pState->keyboard_current.keys[key] = pressed;
 				event_context context;
 				context.data.u16[0] = key;
 				event_fire(pressed ? EVENT_CODE_KEY_PRESSED
@@ -88,56 +88,56 @@ void input_process_key(keys key, b8 pressed) {
 
 // mouse
 b8 input_is_mouse_button_down(mouse_button button) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				return FALSE;
 		}
-		return state.mouse_current.buttons[button] == TRUE;
+		return pState->mouse_current.buttons[button] == TRUE;
 }
 
 b8 input_is_mouse_button_up(mouse_button button) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				return FALSE;
 		}
-		return state.mouse_current.buttons[button] == FALSE;
+		return pState->mouse_current.buttons[button] == FALSE;
 }
 
 b8 input_was_mouse_button_up(mouse_button button) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				return FALSE;
 		}
-		return state.mouse_last.buttons[button] == TRUE;
+		return pState->mouse_last.buttons[button] == TRUE;
 }
 
 b8 input_was_mouse_button_down(mouse_button button) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				return FALSE;
 		}
-		return state.mouse_last.buttons[button] == FALSE;
+		return pState->mouse_last.buttons[button] == FALSE;
 }
 
 void input_get_mouse_position(i32 *x, i32 *y) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				*x = 0;
 				*y = 0;
 				return;
 		}
-		*x = state.mouse_current.x;
-		*y = state.mouse_current.y;
+		*x = pState->mouse_current.x;
+		*y = pState->mouse_current.y;
 }
 
 void input_get_last_mouse_position(i32 *x, i32 *y) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				*x = 0;
 				*y = 0;
 				return;
 		}
-		*x = state.mouse_last.x;
-		*y = state.mouse_last.y;
+		*x = pState->mouse_last.x;
+		*y = pState->mouse_last.y;
 }
 
 void input_process_mouse_button(mouse_button button, b8 pressed) {
-		if (state.mouse_current.buttons[button] != pressed) {
-				state.mouse_current.buttons[button] = pressed;
+		if (pState->mouse_current.buttons[button] != pressed) {
+				pState->mouse_current.buttons[button] = pressed;
 				event_context context;
 				context.data.u16[0] = button;
 				event_fire(pressed ? EVENT_CODE_MOUSE_BUTTON_PRESSED
@@ -147,10 +147,10 @@ void input_process_mouse_button(mouse_button button, b8 pressed) {
 }
 
 void input_process_mouse_move(i32 x, i32 y) {
-		if (state.mouse_current.x != x || state.mouse_current.y != y) {
+		if (pState->mouse_current.x != x || pState->mouse_current.y != y) {
 				// SF_DEBUG("Mouse X: %d, Mouse Y: %d", x, y);
-				state.mouse_current.x = x;
-				state.mouse_current.y = y;
+				pState->mouse_current.x = x;
+				pState->mouse_current.y = y;
 				event_context context;
 				context.data.u32[0] = x;
 				context.data.u32[1] = y;

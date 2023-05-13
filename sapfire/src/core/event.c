@@ -17,33 +17,36 @@ typedef struct event_code_entry {
 
 typedef struct event_system_state {
 		event_code_entry registered[MAX_EVENT_CODES];
+		b8 initialized;
 } event_system_state;
 
-static b8 is_initialized = FALSE;
-static event_system_state state;
+static event_system_state *pState;
 
-b8 event_initialize() {
-		if (is_initialized) {
-				SF_ERROR("Event subsystem is already initialized.");
+b8 event_initialize(u64 *mem_size, void *mem_block) {
+		*mem_size = sizeof(event_system_state);
+		if (mem_block == SF_NULL) {
 				return FALSE;
 		}
-		sfmemset(&state, 0, sizeof(state));
-		is_initialized = TRUE;
+		pState = mem_block;
+		pState->initialized = TRUE;
+		// sfmemset(&pState, 0, sizeof(event_system_state));
 		SF_INFO("Event subsystem initialized successfully.");
 		return TRUE;
 }
 
-void event_shutdown() {
+void event_shutdown(void *memory) {
 		for (u32 i = 0; i < MAX_EVENT_CODES; ++i) {
-				if (state.registered[i].events) {
-						vector_destroy(state.registered[i].events);
-						state.registered[i].events = (void *)0; // long for NULL
+				if (pState->registered[i].events) {
+						vector_destroy(pState->registered[i].events);
+						pState->registered[i].events =
+							(void *)0; // long for NULL
 				}
 		}
+		pState = SF_NULL;
 }
 
 b8 event_register(u16 code, void *listener, PFN_on_event on_event) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				SF_ERROR("Attempted to register an event with code %d before "
 						 "the event "
 						 "subsystem is initialized.",
@@ -51,12 +54,13 @@ b8 event_register(u16 code, void *listener, PFN_on_event on_event) {
 				return FALSE;
 		}
 
-		if (!state.registered[code].events) {
-				state.registered[code].events = vector_create(registered_event);
+		if (!pState->registered[code].events) {
+				pState->registered[code].events =
+					vector_create(registered_event);
 		}
-		u64 registered_count = vector_len(state.registered[code].events);
+		u64 registered_count = vector_len(pState->registered[code].events);
 		for (u64 i = 0; i < registered_count; ++i) {
-				if (state.registered[code].events[i].listener == listener) {
+				if (pState->registered[code].events[i].listener == listener) {
 						SF_WARNING("Tried to register the same listener twice "
 								   "for event code %d",
 								   code);
@@ -67,28 +71,28 @@ b8 event_register(u16 code, void *listener, PFN_on_event on_event) {
 		registered_event event;
 		event.listener = listener;
 		event.callback = on_event;
-		vector_push(state.registered[code].events, event);
+		vector_push(pState->registered[code].events, event);
 		return TRUE;
 }
 
 b8 event_unregister(u16 code, void *listener, PFN_on_event on_event) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				SF_ERROR("Attempted to unregister an event with code %d before "
 						 "the event "
 						 "subsystem is initialized.",
 						 code);
 				return FALSE;
 		}
-		if (!state.registered[code].events) {
+		if (!pState->registered[code].events) {
 				SF_WARNING("There are no events registered with code %d", code);
 				return FALSE;
 		}
-		u64 registered_count = vector_len(state.registered[code].events);
+		u64 registered_count = vector_len(pState->registered[code].events);
 		for (u64 i = 0; i < registered_count; ++i) {
-				registered_event e = state.registered[code].events[i];
+				registered_event e = pState->registered[code].events[i];
 				if (e.listener == listener && e.callback == on_event) {
 						registered_event popped;
-						vector_pop_at(state.registered[code].events, i,
+						vector_pop_at(pState->registered[code].events, i,
 									  &popped);
 						return TRUE;
 				}
@@ -97,19 +101,19 @@ b8 event_unregister(u16 code, void *listener, PFN_on_event on_event) {
 }
 
 b8 event_fire(u16 code, void *sender, event_context context) {
-		if (!is_initialized) {
+		if (!pState->initialized) {
 				SF_ERROR(
 					"Attempted to fire an event with code %d before the event "
 					"subsystem is "
 					"initialized.");
 				return FALSE;
 		}
-		if (!state.registered[code].events) {
+		if (!pState->registered[code].events) {
 				return FALSE;
 		}
-		u64 registered_count = vector_len(state.registered[code].events);
+		u64 registered_count = vector_len(pState->registered[code].events);
 		for (u64 i = 0; i < registered_count; ++i) {
-				registered_event e = state.registered[code].events[i];
+				registered_event e = pState->registered[code].events[i];
 				if (e.callback(code, sender, e.listener, context)) {
 						// Event consumed, do not send to others.
 						return TRUE;

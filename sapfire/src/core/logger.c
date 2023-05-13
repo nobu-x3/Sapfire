@@ -7,13 +7,27 @@
 #include <stdio.h>
 #include <string.h>
 
-b8 logging_initialize() {
+typedef struct logger_state {
+		b8 initialized;
+} logger_state;
+
+static logger_state *pState;
+
+b8 logging_initialize(u64 *mem_size, void *memory) {
+		*mem_size = sizeof(logger_state);
+		if (memory == SF_NULL) {
+				return FALSE;
+		}
+		pState = memory;
+		pState->initialized = TRUE;
 		// TODO: should open login file
 		SF_INFO("Logging subsystem initialized sucessfully.");
 		return TRUE;
 }
-void logging_shutdown() {
+void logging_shutdown(void *memory) {
 		// TODO: cleanup write queue
+
+		pState = SF_NULL;
 }
 
 const char *level_string[6] = {"[FATAL]:	", "[ERROR]:	", "[WARNING]:	",

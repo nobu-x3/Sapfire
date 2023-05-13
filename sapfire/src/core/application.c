@@ -6,6 +6,7 @@
 #include "core/sfmemory.h"
 #include "entry.h"
 #include "game_definitions.h"
+#include "memory/lin_alloc.h"
 #include "platform/platform.h"
 #include "renderer/renderer.h"
 #include "renderer/renderer_types.h"
@@ -16,17 +17,43 @@ b8 application_create(game *game_instance) {
 				return FALSE;
 		}
 
-		// Init subsystems
-		if (!event_initialize()) {
-				SF_ERROR("Event system failed to initialize.");
-				return FALSE;
-		}
-		logging_initialize();
-		input_initialize();
-
 		game_instance->application_state =
 			sfalloc(sizeof(application_state), MEMORY_TAG_APPLICATION);
 		application_state *app_state = game_instance->application_state;
+
+		u64 systems_alloc_total_size = 64 * 1024 * 1024;
+		linear_allocator_create(systems_alloc_total_size, SF_NULL,
+								&app_state->systems_allocator);
+
+		// Init subsystems
+		event_initialize(&app_state->event_system_memory_size, SF_NULL);
+		app_state->event_system = linear_allocator_alloc(
+			&app_state->systems_allocator, app_state->event_system_memory_size);
+		if (!event_initialize(&app_state->event_system_memory_size,
+							  app_state->event_system)) {
+				SF_FATAL("Event system failed to initialize.");
+				return FALSE;
+		}
+
+		logging_initialize(&app_state->logging_system_memory_size, SF_NULL);
+		app_state->logging_system =
+			linear_allocator_alloc(&app_state->systems_allocator,
+								   app_state->logging_system_memory_size);
+		if (!logging_initialize(&app_state->logging_system_memory_size,
+								app_state->logging_system)) {
+				SF_FATAL("Failed to initialize logging.")
+				return FALSE;
+		}
+
+		input_initialize(&app_state->input_system_memory_size, SF_NULL);
+		app_state->input_system = linear_allocator_alloc(
+			&app_state->systems_allocator, app_state->input_system_memory_size);
+		if (!input_initialize(&app_state->input_system_memory_size,
+							  app_state->input_system)) {
+				SF_FATAL("Failed to initialize input system.");
+				return FALSE;
+		}
+
 		if (!platform_init(
 				&app_state->plat_state, game_instance->app_config.name,
 				game_instance->app_config.x, game_instance->app_config.y,
@@ -41,13 +68,13 @@ b8 application_create(game *game_instance) {
 				SF_FATAL("Failed to initialize renderer");
 				return FALSE;
 		}
-		app_state->is_running = TRUE;
 		SF_INFO("Application initialized sucessfully.")
 		return TRUE;
 }
 
 void application_run(game *game_instance) {
 		application_state *app_state = game_instance->application_state;
+		app_state->is_running = TRUE;
 		clock_start(&app_state->main_clock);
 		clock_tick(&app_state->main_clock);
 		app_state->last_time =
@@ -85,10 +112,11 @@ void application_run(game *game_instance) {
 		// Cleanup
 		game_shutdown(game_instance);
 		application_shutdown(game_instance);
-		input_initialize();
-		logging_shutdown();
+		input_shutdown(app_state->input_system);
+		logging_shutdown(app_state->logging_system);
 		renderer_shutdown(&app_state->renderer);
-		event_shutdown();
+		event_shutdown(app_state->event_system);
+		linear_allocator_destroy(&app_state->systems_allocator);
 		memory_shutdown();
 }
 

@@ -12,8 +12,8 @@ struct mem_stats {
 };
 
 static const char *tagged_strings[MEMORY_TAG_MAX] = {
-	"UNKNOWN:    ", "LIN_ALLOC:  ", "GAME:       ",		 "VECTOR:     ",
-	"RENDERER:   ", "STRING:     ", "APPLICATION:     ",
+	"UNKNOWN:    ", "LIN_ALLOC:  ", "GAME:       ", "VECTOR:     ",
+	"RENDERER:   ", "STRING:     ", "APP:        ",
 };
 static struct mem_stats stats;
 

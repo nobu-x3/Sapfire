@@ -20,8 +20,15 @@ typedef enum log_level {
 	LOG_LEVEL_TRACE = 5
 } log_level;
 
-b8 logging_initialize();
-void logging_shutdown();
+/**
+* @brief Initializes logging. If memory is NULL, will populate mem_size.
+*
+*	@param mem_size Holds the required memory size of the internal state.
+* @param memory NULL if requesting memory size, otherwise allocated block of memory.
+* @return TRUE on success; otherwise FALSE.
+*/
+b8 logging_initialize(u64 *mem_size, void *memory);
+void logging_shutdown(void* memory);
 
 SAPI void log_output(log_level level, const char* message, ...);
 
