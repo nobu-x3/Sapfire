@@ -68,10 +68,6 @@ typedef struct vulkan_swapchain {
   vulkan_framebuffer *framebuffers;
 } vulkan_swapchain;
 
-typedef struct vulkan_command_pool {
-
-} vulkan_command_pool;
-
 typedef enum vulkan_command_buffer_state {
   COMMAND_BUFFER_STATE_IDLE,
   COMMAND_BUFFER_STATE_RECORDING,
