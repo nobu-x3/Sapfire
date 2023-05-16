@@ -24,6 +24,7 @@ b8 logging_initialize(u64 *mem_size, void *memory) {
 		SF_INFO("Logging subsystem initialized sucessfully.");
 		return TRUE;
 }
+
 void logging_shutdown(void *memory) {
 		// TODO: cleanup write queue
 

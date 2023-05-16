@@ -31,10 +31,38 @@ typedef b8 (*PFN_on_event)(u16 code, void *sender, void *listener_list,
  * @return TRUE on success; otherwise FALSE.
  */
 b8 event_initialize(u64 *mem_size, void *memory);
+
+/**
+* @brief Shuts down the event system. This is called at shutdown time to clean up memory allocated for the event system
+* @param memory Pointer to the memory
+*/
 void event_shutdown(void* memory);
 
+/**
+* @brief Register an event handler. Registers a callback to be called when an event occurs. This is useful for event handling code to determine which event handler to call based on the event code.
+* @param code The event code that will be used to identify the event.
+* @param listener Pointer to the listener.
+* @param on_event The function pointer that will be called when the event occurs.
+* @return TRUE if the event was registered FALSE if it was already registered or if an error occurred during registration. Note that you can't register a listener twice
+*/
 SAPI b8 event_register(u16 code, void *listener, PFN_on_event on_event);
+
+/**
+* @brief Unregister an event with the event subsystem. This function unregisters a previously registered event with the event subsystem.
+* @param code The event code to unregister. This is used to identify the event in the event subsystem.
+* @param listener The pointer to the event listener.
+* @param on_event The callback function that will be called when the event occurs.
+* @return TRUE if the event was unregistered FALSE otherwise. Note that you can't unregister an event that wasn't registered
+*/
 SAPI b8 event_unregister(u16 code, void *listener, PFN_on_event on_event);
+
+/**
+* @brief Fires an event. This is called by the event subsystem to notify all registered events that a particular event has occurred.
+* @param code The event code of the event to fire.
+* @param sender The sender of the event. This can be NULL if there is no sender.
+* @param context The context to pass to the callback function.
+* @return TRUE if an event was fired FALSE otherwise. Note that the event may be consumed by another event subsystem
+*/
 SAPI b8 event_fire(u16 code, void *sender, event_context context);
 
 // Internal event codes. Application codes should use codes beyond 255.

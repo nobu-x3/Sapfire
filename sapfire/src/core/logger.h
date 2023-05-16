@@ -28,8 +28,18 @@ typedef enum log_level {
 * @return TRUE on success; otherwise FALSE.
 */
 b8 logging_initialize(u64 *mem_size, void *memory);
+
+/**
+* @brief Shutdown logging This function is called at shutdown. This function does not free passed memory, it is the owner's responsibility.
+* @param memory Pointer to the memory
+*/
 void logging_shutdown(void* memory);
 
+/**
+* @brief Logs a message to the log file. This is the entry point for the logging system. It takes care of coloring the message based on the level and message.
+* @param level The level of the message to be logged.
+* @param message The message to be logged. This is a C string
+*/
 SAPI void log_output(log_level level, const char* message, ...);
 
 #define COLOR_RED       "\033[0;31m"
