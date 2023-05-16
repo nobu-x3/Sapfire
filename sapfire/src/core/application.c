@@ -12,6 +12,7 @@
 #include "renderer/renderer_types.h"
 
 b8 application_create(game *game_instance) {
+		// Called more than once.
 		if (game_instance->application_state) {
 				SF_ERROR("applicated_create called more than once.");
 				return FALSE;
@@ -29,6 +30,7 @@ b8 application_create(game *game_instance) {
 		event_initialize(&app_state->event_system_memory_size, SF_NULL);
 		app_state->event_system = linear_allocator_alloc(
 			&app_state->systems_allocator, app_state->event_system_memory_size);
+		// Initialize the event system.
 		if (!event_initialize(&app_state->event_system_memory_size,
 							  app_state->event_system)) {
 				SF_FATAL("Event system failed to initialize.");
@@ -39,6 +41,7 @@ b8 application_create(game *game_instance) {
 		app_state->logging_system =
 			linear_allocator_alloc(&app_state->systems_allocator,
 								   app_state->logging_system_memory_size);
+		// Initialize logging system. If logging_initialize is called before the application is started.
 		if (!logging_initialize(&app_state->logging_system_memory_size,
 								app_state->logging_system)) {
 				SF_FATAL("Failed to initialize logging.")
@@ -48,12 +51,14 @@ b8 application_create(game *game_instance) {
 		input_initialize(&app_state->input_system_memory_size, SF_NULL);
 		app_state->input_system = linear_allocator_alloc(
 			&app_state->systems_allocator, app_state->input_system_memory_size);
+		// Initialize the input system.
 		if (!input_initialize(&app_state->input_system_memory_size,
 							  app_state->input_system)) {
 				SF_FATAL("Failed to initialize input system.");
 				return FALSE;
 		}
 
+		// Creates a new app.
 		if (!platform_init(
 				&app_state->plat_state, game_instance->app_config.name,
 				game_instance->app_config.x, game_instance->app_config.y,
@@ -62,6 +67,7 @@ b8 application_create(game *game_instance) {
 				SF_FATAL("FAILED TO CREATE APP!");
 				return FALSE;
 		}
+		// Initialize the renderer
 		if (!renderer_initialize(&app_state->renderer, RENDERER_API_VULKAN,
 								 game_instance->app_config.name,
 								 &app_state->plat_state)) {
