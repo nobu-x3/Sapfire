@@ -10,6 +10,7 @@ b8 renderer_initialize(renderer *renderer, renderer_api api,
 		renderer->renderer_provider =
 			sfalloc(sizeof(renderer_provider), MEMORY_TAG_RENDERER);
 		renderer_provider_create(api, plat_state, renderer->renderer_provider);
+		// Initialize the renderer provider.
 		if (!renderer->renderer_provider->initialize(
 				renderer->renderer_provider, application_name, plat_state)) {
 				SF_FATAL("Could not initialize renderer provider.");
@@ -26,9 +27,11 @@ void renderer_shutdown(renderer *renderer) {
 
 b8 renderer_draw_frame(renderer *renderer, render_bundle *bundle) {
 		// TODO and NOTE: use the actual data.
+		// Begin rendering the frame.
 		if (renderer->renderer_provider->begin_frame(
 				renderer->renderer_provider, 0)) {
 				// TODO: render render render
+				// End the renderer provider.
 				if (!renderer->renderer_provider->end_frame(
 						renderer->renderer_provider)) {
 						SF_FATAL("Could not end frame!");

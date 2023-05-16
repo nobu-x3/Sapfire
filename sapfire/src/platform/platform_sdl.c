@@ -33,6 +33,7 @@ b8 platform_init(platform_state *plat_state, const char *app_name, i32 x, i32 y,
 										 SDL_WINDOWPOS_CENTERED, width, height,
 										 SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN |
 											 SDL_WINDOW_RESIZABLE);
+		// Initialize the window. If the window is not initialized yet this method returns FALSE.
 		if (!state->window) {
 				SF_FATAL("Failed to initialize window!");
 				return FALSE;

@@ -4,6 +4,7 @@
 
 void linear_allocator_create(u64 total_size, void *memory,
 							 linear_allocator *out_allocator) {
+		// Allocate a new memory block.
 		if (out_allocator) {
 				out_allocator->total_size = total_size;
 				out_allocator->allocated = 0;
@@ -16,6 +17,7 @@ void linear_allocator_create(u64 total_size, void *memory,
 				}
 		}
 }
+
 void linear_allocator_destroy(linear_allocator *allocator) {
 		if (allocator) {
 				if (allocator->is_owner && allocator->mem_block) {
@@ -48,6 +50,7 @@ void *linear_allocator_alloc(linear_allocator *allocator, u64 size) {
 		SF_ERROR("LIN_ALLOC_ERROR: allocator uninitialized.");
 		return SF_NULL;
 }
+
 void linear_allocator_clear(linear_allocator *allocator) {
 		if (allocator && allocator->mem_block) {
 				allocator->allocated = 0;

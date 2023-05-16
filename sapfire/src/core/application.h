@@ -30,6 +30,21 @@ typedef struct application_state{
 	void* input_system;
 } application_state;
 
+/**
+* @brief Creates application and event subsystems. Must be called before game_start (). This is the entry point for application - specific code.
+* @param game_instance * Pointer to the game instance to be created.
+* @return TRUE on success FALSE on failure ( memory exhaustion ). Note that applications are created in a single thread
+*/
 SAPI b8 application_create(struct game* game_instance);
+
+/**
+* @brief The function called by the game loop to start the application. This is where the game logic is executed
+* @param game_instance * Pointer to the game
+*/
 SAPI void application_run(struct game* game_instance);
+
+/**
+* @brief Shut down the application. This is called at the end of each game to free memory allocated for the application state.
+* @param game Game state to be shut down.
+*/
 SAPI void application_shutdown(struct game* game_instance);
