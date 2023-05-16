@@ -35,7 +35,9 @@ b8 event_initialize(u64 *mem_size, void *mem_block) {
 }
 
 void event_shutdown(void *memory) {
+		// Release all registered events.
 		for (u32 i = 0; i < MAX_EVENT_CODES; ++i) {
+				// Destroy all registered events.
 				if (pState->registered[i].events) {
 						vector_destroy(pState->registered[i].events);
 						pState->registered[i].events =
@@ -46,6 +48,7 @@ void event_shutdown(void *memory) {
 }
 
 b8 event_register(u16 code, void *listener, PFN_on_event on_event) {
+		// Register an event with the subsystem.
 		if (!pState->initialized) {
 				SF_ERROR("Attempted to register an event with code %d before "
 						 "the event "
@@ -54,12 +57,14 @@ b8 event_register(u16 code, void *listener, PFN_on_event on_event) {
 				return FALSE;
 		}
 
+		// Register a new event vector for the registered code.
 		if (!pState->registered[code].events) {
 				pState->registered[code].events =
 					vector_create(registered_event);
 		}
 		u64 registered_count = vector_len(pState->registered[code].events);
 		for (u64 i = 0; i < registered_count; ++i) {
+				// Register the listener for the given event code.
 				if (pState->registered[code].events[i].listener == listener) {
 						SF_WARNING("Tried to register the same listener twice "
 								   "for event code %d",
@@ -76,6 +81,7 @@ b8 event_register(u16 code, void *listener, PFN_on_event on_event) {
 }
 
 b8 event_unregister(u16 code, void *listener, PFN_on_event on_event) {
+		// Unregister an event before the subsystem is initialized.
 		if (!pState->initialized) {
 				SF_ERROR("Attempted to unregister an event with code %d before "
 						 "the event "
@@ -83,11 +89,13 @@ b8 event_unregister(u16 code, void *listener, PFN_on_event on_event) {
 						 code);
 				return FALSE;
 		}
+		// Check if there are no events registered with the given code.
 		if (!pState->registered[code].events) {
 				SF_WARNING("There are no events registered with code %d", code);
 				return FALSE;
 		}
 		u64 registered_count = vector_len(pState->registered[code].events);
+		// Check if the listener and callback are registered.
 		for (u64 i = 0; i < registered_count; ++i) {
 				registered_event e = pState->registered[code].events[i];
 				if (e.listener == listener && e.callback == on_event) {
