@@ -27,7 +27,7 @@
 				report_assertion_failure(#expr, "", __FILE__, __LINE__);			\
 				debugBreak();																									\
 			}																																\
-		}																																	\
+		}																																	
 	#else
 		#define SF_DEBUG_ASSERT(expr)
 	#endif
@@ -35,5 +35,6 @@
 	#define SF_ASSERT(expr, message)
 	#define SF_DEBUG_ASSERT(expr)
 #endif
+
 
 
