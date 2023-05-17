@@ -29,10 +29,9 @@ src/math/sfmath.c
 src/memory/lin_alloc.c
 )
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIRS})
-target_link_libraries(sapfire ${SDL2_LIBRARIES})
 find_package(Vulkan REQUIRED)
-target_link_libraries(sapfire ${Vulkan_LIBRARIES})
+target_link_libraries(sapfire ${SDL2_LIBRARIES} ${Vulkan_LIBRARY})
+include_directories(${Vulkan_INCLUDE_DIR} ${SDL2_INCLUDE_DIRS})
 # set_target_properties(sapfire PROPERTIES VERSION ${PROJECT_VERSION})
 # set_target_properties(sapfire PROPERTIES SOVERSION 1)
 set_target_properties(sapfire PROPERTIES PUBLIC_HEADER src/sapfire.h)
