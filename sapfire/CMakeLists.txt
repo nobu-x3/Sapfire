@@ -9,6 +9,7 @@ add_library(sapfire SHARED
 src/core/logger.c
 src/core/application.c
 src/platform/platform_sdl.c
+src/platform/filesystem.c
 src/core/sfmemory.c
 src/containers/vector.c
 src/core/event.c
@@ -25,6 +26,8 @@ src/renderer/vulkan/vulkan_render_pass.c
 src/renderer/vulkan/vulkan_command_buffer.c
 src/renderer/vulkan/vulkan_framebuffer.c
 src/renderer/vulkan/vulkan_fence.c
+src/renderer/vulkan/vulkan_shader_module.c
+src/renderer/vulkan/vulkan_shader.c
 src/math/sfmath.c
 src/memory/lin_alloc.c
 )

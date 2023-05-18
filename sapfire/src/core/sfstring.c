@@ -20,7 +20,7 @@ i32 sfstrfmt(char *dest, const char *format, ...) {
 		char buffer[16000];
 		i32 written = vsnprintf(buffer, 16000, format, p_args);
 		buffer[written] = 0;
-		sfmemcpy(dest, format, written + 1);
+		sfmemcpy(dest, buffer, written + 1);
 		va_end(p_args);
 		return written;
 }

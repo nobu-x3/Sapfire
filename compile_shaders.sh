@@ -1,11 +1,9 @@
 #!/bin/bash
 
-mkdir build/assets
-
-cp -r assets build/assets
+cp -r assets build
 
 for shader in assets/shaders/* ; do
-	echo "$shader -> $shader.spv"
+	echo "$shader -> build/$shader.spv"
 	extension="${shader##*.}"
 	if [ $extension = "vert" ]; then
 		$VULKAN_SDK/bin/glslc -fshader-stage=vert $shader -o build/$shader.spv

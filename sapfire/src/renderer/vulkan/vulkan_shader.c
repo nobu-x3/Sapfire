@@ -13,7 +13,7 @@ b8 vulkan_shader_create(vulkan_context *context, vulkan_shader *out_shader) {
 				if (!create_shader_module(context, BUILTIN_SHADER_NAME,
 										  stage_type_strings[i], stage_types[i],
 										  i, out_shader->stages)) {
-						SF_ERROR("Failed to create shader module %s for %s.",
+						SF_FATAL("Failed to create shader module %s for %s.",
 								 stage_type_strings[i], BUILTIN_SHADER_NAME);
 						return FALSE;
 				}
