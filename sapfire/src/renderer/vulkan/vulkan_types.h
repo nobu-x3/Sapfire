@@ -24,6 +24,24 @@ typedef struct vulkan_image {
   u32 width, height;
 } vulkan_image;
 
+typedef struct vulkan_pipeline {
+  VkPipelineLayout layout;
+  VkPipeline handle;
+} vulkan_pipeline;
+
+#define SHADER_STAGE_COUNT 2
+
+typedef struct vulkan_shader_stage {
+  VkShaderModuleCreateInfo create_info;
+  VkShaderModule handle;
+  VkPipelineShaderStageCreateInfo shader_stage_create_info;
+} vulkan_shader_stage;
+
+typedef struct vulkan_shader {
+  vulkan_shader_stage stages[SHADER_STAGE_COUNT];
+  vulkan_pipeline pipeline;
+} vulkan_shader;
+
 typedef enum vulkan_render_pass_state {
   RENDER_PASS_STATE_IDLE,
   RENDER_PASS_STATE_RECORDING,
@@ -129,6 +147,8 @@ typedef struct vulkan_context {
   u32 current_frame;
   b8 recreating_swapchain;
   u32 framebuffer_width, framebuffer_height;
+
+  vulkan_shader shader; // temp
 
 #if defined(DEBUG)
   VkDebugUtilsMessengerEXT debug_messenger;

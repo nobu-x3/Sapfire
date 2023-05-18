@@ -11,6 +11,7 @@
 #include "renderer/vulkan/vulkan_fence.h"
 #include "renderer/vulkan/vulkan_framebuffer.h"
 #include "renderer/vulkan/vulkan_render_pass.h"
+#include "renderer/vulkan/vulkan_shader.h"
 #include "renderer/vulkan/vulkan_swapchain.h"
 #include "vulkan_platform.h"
 #include "vulkan_provider.h"
@@ -194,6 +195,11 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 		context.images_in_flight =
 			vector_reserve(VkFence, context.swapchain.image_count);
 		SF_INFO("Fences and semaphores created.");
+
+		if (!vulkan_shader_create(&context, &context.shader)) {
+				SF_ERROR("Failed to load built-in shader.");
+				return FALSE;
+		}
 		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
