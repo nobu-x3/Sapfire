@@ -236,6 +236,8 @@ void vulkan_shutdown(renderer_provider *api) {
 					 context.allocator);
 		}
 #endif
+		SF_DEBUG("Destroying shader modules");
+		vulkan_shader_destroy(&context, &context.shader);
 		SF_DEBUG("Destroying main render pass");
 		vulkan_render_pass_destroy(&context, &context.main_render_pass);
 		SF_DEBUG("Destroying vulkan swapchain");

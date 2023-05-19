@@ -21,6 +21,13 @@ b8 vulkan_shader_create(vulkan_context *context, vulkan_shader *out_shader) {
 		return TRUE;
 }
 
-void vulkan_shader_destroy(vulkan_context *context, vulkan_shader *shader) {}
+void vulkan_shader_destroy(vulkan_context *context, vulkan_shader *shader) {
+		for (int i = 0; i < SHADER_STAGE_COUNT; ++i) {
+				vkDestroyShaderModule(context->device.logical_device,
+									  shader->stages[i].handle,
+									  context->allocator);
+				shader->stages[i].handle = SF_NULL;
+		}
+}
 
 void vulkan_shader_bind(vulkan_context *context, vulkan_shader *shader) {}
