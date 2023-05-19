@@ -1,6 +1,8 @@
 #include "core/asserts.h"
 #include "core/sfmemory.h"
+#include "core/sfstring.h"
 #include "logger.h"
+#include "platform/filesystem.h"
 #include "platform/platform.h"
 // NOTE: temp
 #include <stdarg.h>
@@ -8,10 +10,22 @@
 #include <string.h>
 
 typedef struct logger_state {
-		b8 initialized;
+		file_handle file_handle;
 } logger_state;
 
 static logger_state *pState;
+
+void write_to_log_file(const char *msg) {
+		if (pState && pState->file_handle.is_valid) {
+				u64 len = sfstrlen(msg);
+				u64 written = 0;
+				if (!filesystem_write(&pState->file_handle, len, msg,
+									  &written)) {
+						platform_console_write_error(
+							"Unable to write to logs.log", TRUE);
+				}
+		}
+}
 
 b8 logging_initialize(u64 *mem_size, void *memory) {
 		*mem_size = sizeof(logger_state);
@@ -19,15 +33,19 @@ b8 logging_initialize(u64 *mem_size, void *memory) {
 				return FALSE;
 		}
 		pState = memory;
-		pState->initialized = TRUE;
-		// TODO: should open login file
+		if (!filesystem_open("logs.log", FILE_MODE_WRITE, FALSE,
+							 &pState->file_handle)) {
+				platform_console_write_error(
+					"Failed to open logs.log for writing", TRUE);
+				return FALSE;
+		}
 		SF_INFO("Logging subsystem initialized sucessfully.");
 		return TRUE;
 }
 
 void logging_shutdown(void *memory) {
 		// TODO: cleanup write queue
-
+		filesystem_close(&pState->file_handle);
 		pState = SF_NULL;
 }
 
@@ -37,7 +55,7 @@ const char *level_string[6] = {"[FATAL]:	", "[ERROR]:	", "[WARNING]:	",
 void log_output(log_level level, const char *message, ...) {
 		// NOTE: I hope nobody goes over 32k bytes
 		char formatted_message[32000];
-		memset(formatted_message, 0, sizeof(formatted_message));
+		sfmemset(formatted_message, 0, sizeof(formatted_message));
 
 		char color_code[11];
 		sfmemset(color_code, 0, sizeof(color_code));
@@ -73,6 +91,7 @@ void log_output(log_level level, const char *message, ...) {
 		sprintf(out_message, "%s%s%s\033[0m\n", color_code, level_string[level],
 				formatted_message);
 		platform_console_write(out_message, level);
+		write_to_log_file(out_message);
 }
 
 void report_assertion_failure(const char *expression, const char *message,
