@@ -55,3 +55,7 @@ typedef vec4 quat;
 typedef union mat4{
   f32 data[16];
 } mat4;
+
+typedef struct vertex{
+  vec3 position;
+} vertex;
