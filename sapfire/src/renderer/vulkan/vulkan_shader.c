@@ -74,4 +74,9 @@ void vulkan_shader_destroy(vulkan_context *context, vulkan_shader *shader) {
 		}
 }
 
-void vulkan_shader_bind(vulkan_context *context, vulkan_shader *shader) {}
+void vulkan_shader_bind(vulkan_context *context, vulkan_shader *shader) {
+		u32 img_index = context->image_index;
+		vulkan_pipeline_bind(&context->graphics_command_buffers[img_index],
+							 VK_PIPELINE_BIND_POINT_GRAPHICS,
+							 &shader->pipeline);
+}
