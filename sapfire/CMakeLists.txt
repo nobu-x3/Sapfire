@@ -29,6 +29,7 @@ src/renderer/vulkan/vulkan_fence.c
 src/renderer/vulkan/vulkan_shader_module.c
 src/renderer/vulkan/vulkan_shader.c
 src/renderer/vulkan/vulkan_pipeline.c
+src/renderer/vulkan/vulkan_buffer.c
 src/math/sfmath.c
 src/memory/lin_alloc.c
 )

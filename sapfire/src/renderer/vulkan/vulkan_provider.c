@@ -5,7 +5,9 @@
 #include "core/sfmemory.h"
 #include "core/sfstring.h"
 #include "defines.h"
+#include "math/math_types.h"
 #include "platform/platform.h"
+#include "renderer/vulkan/vulkan_buffer.h"
 #include "renderer/vulkan/vulkan_command_buffer.h"
 #include "renderer/vulkan/vulkan_device.h"
 #include "renderer/vulkan/vulkan_fence.h"
@@ -42,6 +44,8 @@ b8 window_resized(u16 code, void *sender, void *listener_list,
 b8 recreate_swapchain();
 
 void create_command_buffers();
+
+b8 create_buffers(vulkan_context *context); // TODO: remove this
 
 b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 					 struct platform_state *plat_state) {
@@ -200,6 +204,12 @@ b8 vulkan_initialize(renderer_provider *api, const char *app_name,
 				SF_ERROR("Failed to load built-in shader.");
 				return FALSE;
 		}
+
+		if (!create_buffers(&context)) {
+				SF_FATAL("Failed to create buffers.")
+				return FALSE;
+		}
+		SF_INFO("Successfully created buffers.");
 		SF_INFO("Vulkan renderer provider initialized successfully.");
 		return TRUE;
 }
@@ -236,6 +246,9 @@ void vulkan_shutdown(renderer_provider *api) {
 					 context.allocator);
 		}
 #endif
+		SF_DEBUG("Destroying buffers");
+		vulkan_buffer_destroy(&context, &context.VBO);
+		vulkan_buffer_destroy(&context, &context.IBO);
 		SF_DEBUG("Destroying shader modules");
 		vulkan_shader_destroy(&context, &context.shader);
 		SF_DEBUG("Destroying main render pass");
@@ -512,5 +525,33 @@ b8 recreate_swapchain() {
 		recreate_frambuffers(&context.swapchain, &context.main_render_pass);
 		create_command_buffers();
 		context.recreating_swapchain = FALSE;
+		return TRUE;
+}
+
+// NOTE: temporary
+b8 create_buffers(vulkan_context *context) {
+		VkMemoryPropertyFlagBits mem_prop_flags =
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+		const u64 VBO_len = sizeof(vertex) * 1024;
+		if (!vulkan_buffer_create(context, VBO_len,
+								  VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |
+									  VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+									  VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+								  mem_prop_flags, &context->VBO)) {
+				SF_FATAL("Failed to create vertex buffer");
+				return FALSE;
+		}
+		vulkan_buffer_bind(context, &context->VBO, 0);
+
+		const u64 IBO_len = sizeof(u32) * 1024;
+		if (!vulkan_buffer_create(context, IBO_len,
+								  VK_BUFFER_USAGE_INDEX_BUFFER_BIT |
+									  VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+									  VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+								  mem_prop_flags, &context->IBO)) {
+				SF_FATAL("Failed to create index buffer");
+				return FALSE;
+		}
+		vulkan_buffer_bind(context, &context->IBO, 0);
 		return TRUE;
 }

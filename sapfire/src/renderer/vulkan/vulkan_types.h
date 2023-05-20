@@ -6,6 +6,16 @@
 #include <vulkan/vulkan_core.h>
 #define DEBUG
 
+typedef struct vulkan_buffer {
+  u64 size;
+  b8 is_mapped;
+  i32 mem_index;
+  u32 mem_prop_flags;
+  VkBuffer handle;
+  VkBufferUsageFlags usage;
+  VkDeviceMemory device_mem;
+} vulkan_buffer;
+
 typedef struct vulkan_image_info {
   VkImageType image_type;
   u32 width, height;
@@ -149,6 +159,8 @@ typedef struct vulkan_context {
   u32 framebuffer_width, framebuffer_height;
 
   vulkan_shader shader; // temp
+  vulkan_buffer VBO;
+  vulkan_buffer IBO;
 
 #if defined(DEBUG)
   VkDebugUtilsMessengerEXT debug_messenger;
