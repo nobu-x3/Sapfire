@@ -1,0 +1,51 @@
+[0;32m[INFO]:	Logging subsystem initialized sucessfully.[0m
+[0;32m[INFO]:	Input subsystem initialized successfully.[0m
+[0;97m[DEBUG]:	Required extensions:[0m
+[0;97m[DEBUG]:	VK_KHR_surface[0m
+[0;97m[DEBUG]:	VK_KHR_xlib_surface[0m
+[0;97m[DEBUG]:	VK_EXT_debug_utils[0m
+[0;97m[DEBUG]:	Searching for layer VK_LAYER_KHRONOS_validation.[0m
+[0;97m[DEBUG]:	Success![0m
+[0;32m[INFO]:	Vulkan instance created.[0m
+[0;97m[DEBUG]:	Vulkan debugger created.[0m
+[0;32m[INFO]:	Vulkan surface created.[0m
+[0;32m[INFO]:	Graphics | Present | Compute | Transfer | Name[0m
+[0;32m[INFO]:	       1 |       1 |       1 |        1 | AMD Radeon RX 6900 XT[0m
+[0;32m[INFO]:	Device meets queue requirements.[0m
+[0;37m[TRACE]:	Graphics Family Index: 0[0m
+[0;37m[TRACE]:	Present Family Index:  2[0m
+[0;37m[TRACE]:	Transfer Family Index: 2[0m
+[0;37m[TRACE]:	Compute Family Index:  1[0m
+[0;32m[INFO]:	Selected device: 'AMD Radeon RX 6900 XT'.[0m
+[0;32m[INFO]:	GPU type is Descrete.[0m
+[0;32m[INFO]:	GPU Driver version: 2.0.262[0m
+[0;32m[INFO]:	Vulkan API version: 1.3.246[0m
+[0;32m[INFO]:	Local GPU memory: 15.73 GiB[0m
+[0;32m[INFO]:	Shared System memory: 15.62 GiB[0m
+[0;32m[INFO]:	Local GPU memory: 0.25 GiB[0m
+[0;32m[INFO]:	Physical device selected.[0m
+[0;31m[ERROR]:	Validation Error: [ VUID-VkDeviceCreateInfo-queueFamilyIndex-02802 ] Object 0: handle = 0x5555563dfca0, type = VK_OBJECT_TYPE_PHYSICAL_DEVICE; | MessageID = 0x29498778 | CreateDevice(): pCreateInfo->pQueueCreateInfos[2].queueFamilyIndex (=2) is not unique and was also used in pCreateInfo->pQueueCreateInfos[2]. The Vulkan spec states: The queueFamilyIndex member of each element of pQueueCreateInfos must be unique within pQueueCreateInfos, except that two members can share the same queueFamilyIndex if one describes protected-capable queues and one describes queues that are not protected-capable (https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkDeviceCreateInfo-queueFamilyIndex-02802)[0m
+[0;32m[INFO]:	Logical device created.[0m
+[0;32m[INFO]:	Queues obtained.[0m
+[0;32m[INFO]:	Graphics command pool created.[0m
+[0;32m[INFO]:	Creating swapchain...[0m
+[0;32m[INFO]:	Surface format found.[0m
+[0;32m[INFO]:	Swapchain handle created.[0m
+[0;32m[INFO]:	Obtained swapchain images.[0m
+[0;32m[INFO]:	Created image views for swapchain images.[0m
+[0;31m[ERROR]:	Validation Error: [ VUID-VkMemoryAllocateInfo-sType-sType ] Object 0: handle = 0x5555564f56b0, type = VK_OBJECT_TYPE_DEVICE; | MessageID = 0x5e66afb3 | vkAllocateMemory: parameter pAllocateInfo->sType must be VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO. The Vulkan spec states: sType must be VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO (https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkMemoryAllocateInfo-sType-sType)[0m
+[0;32m[INFO]:	Swapchain created successfully.[0m
+[0;32m[INFO]:	Framebuffer created.[0m
+[0;32m[INFO]:	Framebuffer created.[0m
+[0;32m[INFO]:	Framebuffer created.[0m
+[0;32m[INFO]:	Framebuffer created.[0m
+[0;32m[INFO]:	Framebuffer created.[0m
+[0;32m[INFO]:	Command buffers created.[0m
+[0;32m[INFO]:	Fences and semaphores created.[0m
+[0;31m[ERROR]:	Error opening file: assets/shaders/shader_builtin.vert.spv[0m
+[0;31m[ERROR]:	Unable to read shader module assets/shaders/shader_builtin.vert.spv[0m
+[0;41;30m[FATAL]:	Failed to create shader module vert for shader_builtin.[0m
+[0;31m[ERROR]:	Failed to load built-in shader.[0m
+[0;41;30m[FATAL]:	Could not initialize renderer provider.[0m
+[0;41;30m[FATAL]:	Failed to initialize renderer[0m
+[0;41;30m[FATAL]:	Failed to create the application![0m

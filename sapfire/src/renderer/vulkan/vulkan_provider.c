@@ -333,6 +333,15 @@ b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
 			&context.main_render_pass, command_buffer,
 			context.swapchain.framebuffers[context.image_index].handle);
 
+		// TODO: remove this temp code
+		vulkan_shader_bind(&context, &context.shader);
+		VkDeviceSize offsets[1] = {0};
+		vkCmdBindVertexBuffers(command_buffer->handle, 0, 1,
+							   &context.VBO.handle, (VkDeviceSize *)offsets);
+		vkCmdBindIndexBuffer(command_buffer->handle, context.IBO.handle, 0,
+							 VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(command_buffer->handle, 6, 1, 0, 0, 0);
+
 		return TRUE;
 }
 
@@ -528,6 +537,24 @@ b8 recreate_swapchain() {
 		return TRUE;
 }
 
+//
+// NOTE: temporary
+void upload_data(vulkan_context *context, VkCommandPool pool, VkQueue queue,
+				 vulkan_buffer *buffer, u64 size, u64 offset, void *data) {
+		VkBufferUsageFlags flags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+								   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+		vulkan_buffer staging;
+		vulkan_buffer_create(context, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+							 flags, &staging);
+		vulkan_buffer_bind(context, &staging, 0);
+
+		vulkan_buffer_load_data(context, &staging, size, 0, flags, data);
+
+		vulkan_buffer_copy(context, queue, pool, staging.handle, 0,
+						   buffer->handle, offset, size);
+		vulkan_buffer_destroy(context, &staging);
+}
+
 // NOTE: temporary
 b8 create_buffers(vulkan_context *context) {
 		VkMemoryPropertyFlagBits mem_prop_flags =
@@ -553,5 +580,31 @@ b8 create_buffers(vulkan_context *context) {
 				return FALSE;
 		}
 		vulkan_buffer_bind(context, &context->IBO, 0);
+
+		vertex verts[4];
+		sfmemset(verts, 0, sizeof(vertex) * 4);
+
+		verts[0].position.x = 0.0;
+		verts[0].position.y = -0.5;
+
+		verts[1].position.x = 0.5;
+		verts[1].position.y = 0.5;
+
+		verts[2].position.x = 0;
+		verts[2].position.y = 0.5;
+
+		verts[3].position.x = 0.5;
+		verts[3].position.y = -0.5;
+
+		u32 indices[6] = {0, 1, 2, 0, 3, 1};
+
+		upload_data(context, context->device.graphics_command_pool,
+					context->device.graphics_queue, &context->VBO,
+					sizeof(vertex) * 4, 0, verts);
+
+		upload_data(context, context->device.graphics_command_pool,
+					context->device.graphics_queue, &context->IBO,
+					sizeof(u32) * 6, 0, indices);
+
 		return TRUE;
 }
