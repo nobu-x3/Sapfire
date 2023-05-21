@@ -1,5 +1,6 @@
 #include "core/logger.h"
 #include "core/sfmemory.h"
+#include "math/sfmath.h"
 #include "renderer.h"
 #include "renderer/renderer_provider.h"
 #include "renderer/renderer_types.h"
@@ -31,6 +32,14 @@ b8 renderer_draw_frame(renderer *renderer, render_bundle *bundle) {
 		if (renderer->renderer_provider->begin_frame(
 				renderer->renderer_provider, 0)) {
 				// TODO: render render render
+				static f32 z = -1.0f;
+				z -= 0.01f;
+				mat4 projection = mat4_perspective(deg_to_rad(75.0f), 4.f / 3.f,
+												   0.1f, 1000.f);
+				mat4 view = mat4_translation((vec3){0, 0, z});
+				renderer->renderer_provider->update_scene_data(projection,
+															   view);
+
 				// End the renderer provider.
 				if (!renderer->renderer_provider->end_frame(
 						renderer->renderer_provider)) {

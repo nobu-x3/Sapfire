@@ -2,6 +2,7 @@
 
 #include "core/asserts.h"
 #include "defines.h"
+#include "renderer/renderer_types.h"
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 #define DEBUG
@@ -50,6 +51,10 @@ typedef struct vulkan_shader_stage {
 typedef struct vulkan_shader {
   vulkan_shader_stage stages[SHADER_STAGE_COUNT];
   vulkan_pipeline pipeline;
+  VkDescriptorPool descriptor_pool;
+  VkDescriptorSetLayout descriptor_set_layout;
+  VkDescriptorSet descriptor_sets[3];
+  vulkan_buffer uniform_buffer;
 } vulkan_shader;
 
 typedef enum vulkan_render_pass_state {
@@ -161,6 +166,7 @@ typedef struct vulkan_context {
   vulkan_shader shader; // temp
   vulkan_buffer VBO;
   vulkan_buffer IBO;
+  scene_data scene_data;
 
 #if defined(DEBUG)
   VkDebugUtilsMessengerEXT debug_messenger;

@@ -333,15 +333,6 @@ b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
 			&context.main_render_pass, command_buffer,
 			context.swapchain.framebuffers[context.image_index].handle);
 
-		// TODO: remove this temp code
-		vulkan_shader_bind(&context, &context.shader);
-		VkDeviceSize offsets[1] = {0};
-		vkCmdBindVertexBuffers(command_buffer->handle, 0, 1,
-							   &context.VBO.handle, (VkDeviceSize *)offsets);
-		vkCmdBindIndexBuffer(command_buffer->handle, context.IBO.handle, 0,
-							 VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(command_buffer->handle, 6, 1, 0, 0, 0);
-
 		return TRUE;
 }
 
@@ -584,13 +575,13 @@ b8 create_buffers(vulkan_context *context) {
 		vertex verts[4];
 		sfmemset(verts, 0, sizeof(vertex) * 4);
 
-		verts[0].position.x = 0.0;
+		verts[0].position.x = -0.5;
 		verts[0].position.y = -0.5;
 
 		verts[1].position.x = 0.5;
 		verts[1].position.y = 0.5;
 
-		verts[2].position.x = 0;
+		verts[2].position.x = -0.5;
 		verts[2].position.y = 0.5;
 
 		verts[3].position.x = 0.5;
@@ -607,4 +598,22 @@ b8 create_buffers(vulkan_context *context) {
 					sizeof(u32) * 6, 0, indices);
 
 		return TRUE;
+}
+
+void vulkan_update_scene_data(mat4 projection, mat4 view) {
+		vulkan_command_buffer *cmd_buffer =
+			&context.graphics_command_buffers[context.image_index];
+		vulkan_shader_bind(&context, &context.shader);
+		context.scene_data.projection = projection;
+		context.scene_data.view = view;
+		vulkan_shader_update_uniforms(&context, &context.shader,
+									  &context.scene_data);
+		// TODO: remove this temp code
+		vulkan_shader_bind(&context, &context.shader);
+		VkDeviceSize offsets[1] = {0};
+		vkCmdBindVertexBuffers(cmd_buffer->handle, 0, 1, &context.VBO.handle,
+							   (VkDeviceSize *)offsets);
+		vkCmdBindIndexBuffer(cmd_buffer->handle, context.IBO.handle, 0,
+							 VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(cmd_buffer->handle, 6, 1, 0, 0, 0);
 }
