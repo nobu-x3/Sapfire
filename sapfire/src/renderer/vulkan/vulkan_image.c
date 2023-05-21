@@ -40,7 +40,7 @@ void vulkan_image_create(vulkan_context *context,
 		}
 
 		VkMemoryAllocateInfo mem_alloc_info = {
-			VK_STRUCTURE_TYPE_EXPORT_MEMORY_ALLOCATE_INFO};
+			VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
 		mem_alloc_info.allocationSize = mem_reqs.size;
 		mem_alloc_info.memoryTypeIndex = mem_type;
 		VK_ASSERT_SUCCESS(vkAllocateMemory(context->device.logical_device,
