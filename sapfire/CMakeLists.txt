@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.9)
 project(sapfire VERSION 0.0.1 DESCRIPTION "Sapfire Engine")
-if(MSCV)
-# add msvc VAL errors
-else()
-  add_compile_options(-Werror=vla)
-endif()
+add_compile_options(-D_MD)
+add_definitions(-DSAPEXPORT=1)
+# if(MSCV)
+# # add msvc VAL errors
+# else()
+#   add_compile_options(-Werror=vla)
+# endif()
 add_library(sapfire SHARED
 src/core/logger.c
 src/core/application.c
@@ -33,6 +35,7 @@ src/renderer/vulkan/vulkan_buffer.c
 src/math/sfmath.c
 src/memory/lin_alloc.c
 )
+set_property(TARGET sapfire PROPERTY C_STANDARD 23)
 find_package(SDL2 REQUIRED)
 find_package(Vulkan REQUIRED)
 target_link_libraries(sapfire ${SDL2_LIBRARIES} ${Vulkan_LIBRARY})

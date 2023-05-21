@@ -35,7 +35,7 @@ void recreate_frambuffers(vulkan_swapchain *swapchain,
 
 VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-	VkDebugUtilsMessageTypeFlagBitsEXT message_types,
+	unsigned int message_types,
 	const VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data);
 
 b8 window_resized(u16 code, void *sender, void *listener_list,
@@ -309,7 +309,7 @@ b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
 		vulkan_command_buffer_reset(command_buffer);
 		vulkan_command_buffer_begin(command_buffer, FALSE, FALSE, FALSE);
 
-		VkViewport viewport = {};
+		VkViewport viewport;
 		viewport.x = 0.0f;
 		viewport.y = (f32)context.framebuffer_height;
 		viewport.width = (f32)context.framebuffer_width;
@@ -317,7 +317,7 @@ b8 vulkan_begin_frame(struct renderer_provider *api, f64 deltaTime) {
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 
-		VkRect2D scissor = {};
+		VkRect2D scissor;
 		scissor.offset.x = 0;
 		scissor.offset.y = 0;
 		scissor.extent.width = context.framebuffer_width;
@@ -390,7 +390,7 @@ b8 vulkan_end_frame(struct renderer_provider *api) {
 
 VKAPI_ATTR VkBool32 VKAPI_CALL
 vk_debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-				  VkDebugUtilsMessageTypeFlagBitsEXT message_types,
+				  unsigned int message_types,
 				  const VkDebugUtilsMessengerCallbackDataEXT *callback_data,
 				  void *user_data) {
 		switch (message_severity) {

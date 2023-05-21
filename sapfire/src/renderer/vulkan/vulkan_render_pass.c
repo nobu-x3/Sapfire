@@ -12,7 +12,7 @@ void vulkan_render_pass_create(vulkan_context *context, color color,
 		out_render_pass->color = color;
 		out_render_pass->extent = extent;
 
-		VkAttachmentDescription color_attachment = {};
+		VkAttachmentDescription color_attachment;
 		color_attachment.format =
 			context->swapchain.surface_format.format; // TODO: config
 		color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -26,7 +26,7 @@ void vulkan_render_pass_create(vulkan_context *context, color color,
 		color_attachment_ref.attachment = 0;
 		color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-		VkAttachmentDescription depth_attachment = {};
+		VkAttachmentDescription depth_attachment;
 		depth_attachment.format = context->device.depth_format;
 		depth_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
 		depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -46,7 +46,7 @@ void vulkan_render_pass_create(vulkan_context *context, color color,
 		VkAttachmentDescription attachments[] = {color_attachment,
 												 depth_attachment};
 
-		VkSubpassDescription subpass = {};
+		VkSubpassDescription subpass;
 		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 		subpass.colorAttachmentCount = 1;
 		subpass.pColorAttachments = &color_attachment_ref;
@@ -60,7 +60,7 @@ void vulkan_render_pass_create(vulkan_context *context, color color,
 		subpass.pResolveAttachments = SF_NULL;
 
 		// TODO: config
-		VkSubpassDependency dependency = {};
+		VkSubpassDependency dependency;
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass = 0;
 		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;

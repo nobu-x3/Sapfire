@@ -1,7 +1,12 @@
-mkdir build
-rm bin/*
-cd sapfire/deps/SDL2
-mkdir build
-cd build
-cmake .. -DCMAKE_MAKE_PROGRAM="make" -G "MinGW Makefiles" -DCMAKE_C_COMPILER="clang" -DCMAKE_CXX_COMPILER="clang" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=.. -DBUILD_SHARED_LIBS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
-make
+@REM mkdir build
+@REM cd build
+::cmake .. -DCMAKE_MAKE_PROGRAM="make" -G "MinGW Makefiles" -DCMAKE_C_COMPILER="clang" -DCMAKE_CXX_COMPILER="clang" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=.. -DBUILD_SHARED_LIBS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON 
+::make
+@REM cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=.. -DCMAKE_C_COMPILER="clang" -DCMAKE_CXX_COMPILER="clang" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DBUILD_SHARED_LIBS=TRUE
+REM Engine
+make -f "Makefile.sapfire.windows.mak" all
+IF %ERRORLEVEL% NEQ 0 (echo Error:%ERRORLEVEL% && exit)
+
+REM Testbed
+make -f "Makefile.sanbox.windows.mak" all
+IF %ERRORLEVEL% NEQ 0 (echo Error:%ERRORLEVEL% && exit)

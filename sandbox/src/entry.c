@@ -1,7 +1,7 @@
 #include <entry.h>
 
-#include "core/application.h"
-#include "core/sfmemory.h"
+#include <core/application.h>
+#include <core/sfmemory.h>
 #include "game.h"
 
 b8 create_game(game *out_game) {

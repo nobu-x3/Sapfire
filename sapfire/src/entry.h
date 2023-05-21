@@ -1,5 +1,3 @@
-#pragma once
-
 #include "core/application.h"
 #include "core/logger.h"
 #include "core/sfmemory.h"
@@ -23,12 +21,12 @@ int main(void) {
 	}
 
 
-	if(! application_create(&instance)){
+	if(!application_create(&instance)){
 		SF_FATAL("Failed to create the application!")
 		return -1;
 	}
 	char* str = get_mem_usage_str();
-  SF_DEBUG(str);
+  	SF_DEBUG(str);
 	free(str);
 	application_run(&instance);
   return 0;

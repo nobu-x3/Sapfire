@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
 typedef struct logger_state {
 		file_handle file_handle;
@@ -82,7 +83,7 @@ void log_output(log_level level, const char *message, ...) {
 
 		// NOTE: apparently MS headers override Clang's va_list with <typedef
 		// char* va_list>, so this is a workaround
-		__builtin_va_list arg_ptr;
+		va_list arg_ptr;
 		va_start(arg_ptr, message);
 		vsnprintf(formatted_message, 32000, message, arg_ptr);
 		va_end(arg_ptr);

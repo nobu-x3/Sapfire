@@ -43,7 +43,7 @@ void *linear_allocator_alloc(linear_allocator *allocator, u64 size) {
 								 remaining, size);
 						return SF_NULL;
 				}
-				void *block = allocator->mem_block + allocator->allocated;
+				void *block = (u64*)allocator->mem_block + allocator->allocated;
 				allocator->allocated += size;
 				return block;
 		}
