@@ -181,6 +181,15 @@ void vulkan_shader_update_uniforms(vulkan_context *context,
 								SF_NULL);
 }
 
+void vulkan_shader_update_model(vulkan_context *context, vulkan_shader *shader,
+								mat4 model) {
+		i32 img_index = context->image_index;
+		VkCommandBuffer cmd_bfr =
+			context->graphics_command_buffers[img_index].handle;
+		vkCmdPushConstants(cmd_bfr, shader->pipeline.layout,
+						   VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(mat4), &model);
+}
+
 void vulkan_shader_bind(vulkan_context *context, vulkan_shader *shader) {
 		u32 img_index = context->image_index;
 		vulkan_pipeline_bind(&context->graphics_command_buffers[img_index],

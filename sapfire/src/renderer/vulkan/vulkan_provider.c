@@ -608,6 +608,12 @@ void vulkan_update_scene_data(mat4 projection, mat4 view) {
 		context.scene_data.view = view;
 		vulkan_shader_update_uniforms(&context, &context.shader,
 									  &context.scene_data);
+}
+
+void vulkan_update_objects_data(mat4 model) {
+		vulkan_command_buffer *cmd_buffer =
+			&context.graphics_command_buffers[context.image_index];
+		vulkan_shader_update_model(&context, &context.shader, model);
 		// TODO: remove this temp code
 		vulkan_shader_bind(&context, &context.shader);
 		VkDeviceSize offsets[1] = {0};

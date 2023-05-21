@@ -32,13 +32,21 @@ b8 renderer_draw_frame(renderer *renderer, render_bundle *bundle) {
 		if (renderer->renderer_provider->begin_frame(
 				renderer->renderer_provider, 0)) {
 				// TODO: render render render
-				static f32 z = -1.0f;
-				z -= 0.01f;
+				static f32 z = 1.0f;
+				z += 0.01f;
 				mat4 projection = mat4_perspective(deg_to_rad(75.0f), 4.f / 3.f,
 												   0.1f, 1000.f);
 				mat4 view = mat4_translation((vec3){0, 0, z});
+				view = mat4_inverse(view);
+				static f32 angle = 0.f;
+				angle -= 0.001f;
+				quat model_rot =
+					quat_from_axis_angle(vec3_forward(), angle, FALSE);
+				mat4 model = quat_to_mat4(model_rot);
+
 				renderer->renderer_provider->update_scene_data(projection,
 															   view);
+				renderer->renderer_provider->update_objects_data(model);
 
 				// End the renderer provider.
 				if (!renderer->renderer_provider->end_frame(

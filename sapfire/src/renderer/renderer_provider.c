@@ -14,6 +14,8 @@ b8 renderer_provider_create(renderer_api api, struct platform_state *plat_state,
 				out_renderer_provider->begin_frame = vulkan_begin_frame;
 				out_renderer_provider->update_scene_data =
 					vulkan_update_scene_data;
+				out_renderer_provider->update_objects_data =
+					vulkan_update_objects_data;
 				out_renderer_provider->end_frame = vulkan_end_frame;
 				return TRUE;
 		default:
@@ -28,5 +30,6 @@ void renderer_provider_shutdown(renderer_provider *provider) {
 		provider->shutdown = SF_NULL;
 		provider->begin_frame = SF_NULL;
 		provider->update_scene_data = SF_NULL;
+		provider->update_objects_data = SF_NULL;
 		provider->end_frame = SF_NULL;
 }

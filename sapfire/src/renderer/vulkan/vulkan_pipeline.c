@@ -111,6 +111,14 @@ b8 vulkan_pipeline_create(vulkan_context *context,
 		pipeline_layout_ci.setLayoutCount = descriptor_set_layout_count;
 		pipeline_layout_ci.pSetLayouts = descriptor_set_layouts;
 
+		// Push constants
+		VkPushConstantRange push_const;
+		push_const.offset = 0;
+		push_const.size = sizeof(mat4) * 2; // 128 bytes min in most cards
+		push_const.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		pipeline_layout_ci.pushConstantRangeCount = 1;
+		pipeline_layout_ci.pPushConstantRanges = &push_const;
+
 		VK_ASSERT_SUCCESS(vkCreatePipelineLayout(context->device.logical_device,
 												 &pipeline_layout_ci,
 												 context->allocator,

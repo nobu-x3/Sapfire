@@ -21,6 +21,7 @@ typedef struct renderer_provider{
   void(*shutdown)(struct renderer_provider* api);
   b8(*begin_frame)(struct renderer_provider* api, f64 deltaTime);
   void(*update_scene_data)(mat4 projection, mat4 view);
+  void(*update_objects_data)(mat4 model);
   b8(*end_frame)(struct renderer_provider* api);
 } renderer_provider;
 
