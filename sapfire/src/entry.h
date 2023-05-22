@@ -4,6 +4,8 @@
 #include "game_definitions.h"
 #include <stdlib.h>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) 
+
 typedef b8(*PFN_create_game)(game* out_game);
 typedef void(*PFN_game_shutdown)(game* game);
 
@@ -30,7 +32,6 @@ void set_game_shutdown(PFN_game_shutdown fn){
 	instance.game_shutdown = fn;
 }
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) 
 int start() {
   memory_initialize();
 	game game_instance;
@@ -56,6 +57,10 @@ int start() {
   return 0;
 }
 #else
+
+extern b8 create_game(game* out_game);
+extern void game_shutdown(game* game);
+
 int main() {
   memory_initialize();
 	game game_instance;

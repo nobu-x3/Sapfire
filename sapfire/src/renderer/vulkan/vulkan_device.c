@@ -66,7 +66,12 @@ b8 vulkan_device_create(vulkan_context *context) {
 		}
 
 		// TODO: make this configurable
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 		VkPhysicalDeviceFeatures device_features;
+#else
+
+		VkPhysicalDeviceFeatures device_features = {};
+#endif
 		device_features.samplerAnisotropy = VK_TRUE;
 
 		VkDeviceCreateInfo device_create_info = {
@@ -204,7 +209,11 @@ b8 select_physical_device(vulkan_context *context) {
 				VkPhysicalDeviceFeatures features;
 				vkGetPhysicalDeviceFeatures(phys_devices[i], &features);
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 				VkPhysicalDeviceMemoryProperties memory;
+#else
+				VkPhysicalDeviceMemoryProperties memory = {};
+#endif
 				vkGetPhysicalDeviceMemoryProperties(phys_devices[i], &memory);
 
 				// TODO: make this configurable by the engine
@@ -221,7 +230,11 @@ b8 select_physical_device(vulkan_context *context) {
 				vector_push(requirements.device_extension_names,
 							&VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 				vulkan_physical_device_queue_family_info queue_info;
+#else
+				vulkan_physical_device_queue_family_info queue_info = {};
+#endif
 				b8 result = physical_device_meets_requirements(
 					phys_devices[i], context->surface, &properties, &features,
 					&requirements, &queue_info,
