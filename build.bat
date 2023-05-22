@@ -8,6 +8,7 @@ cd ..
 xcopy /h /i /c /k /e /r /y build\sandbox\sandbox.exe bin\sandbox.exe
 xcopy /h /i /c /k /e /r /y build\sapfire\sapfire.lib bin\sapfire.lib
 xcopy /h /i /c /k /e /r /y build\sapfire\sapfire.dll bin\sapfire.dll
+.\compile-shaders.bat
 cd bin
 .\sandbox.exe
 @REM REM Engine
