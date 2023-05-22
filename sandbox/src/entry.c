@@ -4,7 +4,7 @@
 #include <core/sfmemory.h>
 #include "game.h"
 
-b8 create_game(game *out_game) {
+b8 _create_game(game *out_game) {
 		out_game->app_config.name = "Sapfire Sandbox";
 		out_game->app_config.width = 800;
 		out_game->app_config.height = 600;
@@ -17,6 +17,12 @@ b8 create_game(game *out_game) {
 		return TRUE;
 }
 
-void game_shutdown(game *game) {
+void _game_shutdown(game *game) {
 		sffree(game->state, sizeof(game_state), MEMORY_TAG_GAME);
+}
+
+int main(){
+	set_create_game(_create_game);
+	set_game_shutdown(_game_shutdown);
+	start();
 }
