@@ -1,3 +1,3 @@
 #pragma once
 
-void lin_alloc_register_tests();
+void lin_alloc_register_tests ();

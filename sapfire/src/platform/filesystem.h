@@ -4,14 +4,14 @@
 
 // Holds a handle to a file.
 typedef struct file_handle {
-    // Opaque handle to internal file handle.
-    void* handle;
-    b8 is_valid;
+	// Opaque handle to internal file handle.
+	void* handle;
+	b8 is_valid;
 } file_handle;
 
 typedef enum file_modes {
-    FILE_MODE_READ = 0x1,
-    FILE_MODE_WRITE = 0x2
+	FILE_MODE_READ	= 0x1,
+	FILE_MODE_WRITE = 0x2
 } file_modes;
 
 /**
@@ -19,7 +19,7 @@ typedef enum file_modes {
  * @param path The path of the file to be checked.
  * @returns True if exists; otherwise false.
  */
-SAPI b8 filesystem_exists(const char* path);
+SAPI b8 filesystem_exists (const char* path);
 
 /** 
  * Attempt to open file located at path.
@@ -29,13 +29,14 @@ SAPI b8 filesystem_exists(const char* path);
  * @param out_handle A pointer to a file_handle structure which holds the handle information.
  * @returns True if opened successfully; otherwise false.
  */
-SAPI b8 filesystem_open(const char* path, file_modes mode, b8 binary, file_handle* out_handle);
+SAPI b8 filesystem_open (const char* path, file_modes mode, b8 binary,
+						 file_handle* out_handle);
 
 /** 
  * Closes the provided handle to a file.
  * @param handle A pointer to a file_handle structure which holds the handle to be closed.
  */
-SAPI void filesystem_close(file_handle* handle);
+SAPI void filesystem_close (file_handle* handle);
 
 /** 
  * Reads up to a newline or EOF. Allocates *line_buf, which must be freed by the caller.
@@ -43,7 +44,7 @@ SAPI void filesystem_close(file_handle* handle);
  * @param line_buf A pointer to a character array which will be allocated and populated by this method.
  * @returns True if successful; otherwise false.
  */
-SAPI b8 filesystem_read_line(file_handle* handle, char** line_buf);
+SAPI b8 filesystem_read_line (file_handle* handle, char** line_buf);
 
 /** 
  * Writes text to the provided file, appending a '\n' afterward.
@@ -51,7 +52,7 @@ SAPI b8 filesystem_read_line(file_handle* handle, char** line_buf);
  * @param text The text to be written.
  * @returns True if successful; otherwise false.
  */
-SAPI b8 filesystem_write_line(file_handle* handle, const char* text);
+SAPI b8 filesystem_write_line (file_handle* handle, const char* text);
 
 /** 
  * Reads up to data_size bytes of data into out_bytes_read. 
@@ -62,7 +63,8 @@ SAPI b8 filesystem_write_line(file_handle* handle, const char* text);
  * @param out_bytes_read A pointer to a number which will be populated with the number of bytes actually read from the file.
  * @returns True if successful; otherwise false.
  */
-SAPI b8 filesystem_read(file_handle* handle, u64 data_size, void* out_data, u64* out_bytes_read);
+SAPI b8 filesystem_read (file_handle* handle, u64 data_size, void* out_data,
+						 u64* out_bytes_read);
 
 /** 
  * Reads up to data_size bytes of data into out_bytes_read. 
@@ -72,7 +74,8 @@ SAPI b8 filesystem_read(file_handle* handle, u64 data_size, void* out_data, u64*
  * @param out_bytes_read A pointer to a number which will be populated with the number of bytes actually read from the file.
  * @returns True if successful; otherwise false.
  */
-SAPI b8 filesystem_read_all_bytes(file_handle* handle, u8** out_bytes, u64* out_bytes_read);
+SAPI b8 filesystem_read_all_bytes (file_handle* handle, u8** out_bytes,
+								   u64* out_bytes_read);
 
 /** 
  * Writes provided data to the file.
@@ -82,4 +85,5 @@ SAPI b8 filesystem_read_all_bytes(file_handle* handle, u8** out_bytes, u64* out_
  * @param out_bytes_written A pointer to a number which will be populated with the number of bytes actually written to the file.
  * @returns True if successful; otherwise false.
  */
-SAPI b8 filesystem_write(file_handle* handle, u64 data_size, const void* data, u64* out_bytes_written);
+SAPI b8 filesystem_write (file_handle* handle, u64 data_size, const void* data,
+						  u64* out_bytes_written);

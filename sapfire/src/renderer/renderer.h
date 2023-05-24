@@ -9,15 +9,15 @@
 * @param application_name The application name to use for the renderer. May be NULL in which case the renderer will default to the application name specified in the platform_
 * @param plat_state
 */
-b8 renderer_initialize(renderer *renderer, renderer_api api,
-					   const char *application_name,
-					   struct platform_state *plat_state);
+b8 renderer_initialize (renderer *renderer, renderer_api api,
+						const char *application_name,
+						struct platform_state *plat_state);
 
 /**
 * @brief Shut down a renderer. This is called when the renderer is no longer needed but should be called at some point in the meantime to free the memory allocated by renderer_init
 * @param renderer The renderer to shutdown
 */
-void renderer_shutdown(renderer *renderer);
+void renderer_shutdown (renderer *renderer);
 
 /**
 * @brief Draw a frame. This is the entry point for rendering and frame data. The renderer must be registered with the renderer_register_render () function before calling this function.
@@ -25,4 +25,4 @@ void renderer_shutdown(renderer *renderer);
 * @param bundle An optional bundle of data to be used for rendering.
 * @return TRUE on success FALSE on failure. If FALSE is returned you should check the return value to see what went wrong
 */
-b8 renderer_draw_frame(renderer* renderer, render_bundle* bundle);
+b8 renderer_draw_frame (renderer *renderer, render_bundle *bundle);
