@@ -35,6 +35,11 @@ typedef struct vulkan_image {
 	u32 width, height;
 } vulkan_image;
 
+typedef struct vulkan_texture_data{
+    vulkan_image image;
+    VkSampler sampler;
+} vulkan_texture_data;
+
 typedef struct vulkan_pipeline {
 	VkPipelineLayout layout;
 	VkPipeline handle;
