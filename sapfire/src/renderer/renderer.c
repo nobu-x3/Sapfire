@@ -55,3 +55,18 @@ b8 renderer_draw_frame (renderer *renderer, render_bundle *bundle) {
 	}
 	return TRUE;
 }
+
+void renderer_create_texture (renderer *renderer, const char *name, u32 width,
+							  u32 height, u32 channels, b8 opaque,
+							  const u8 *pixels, struct texture *out_texture) {
+	if (renderer && renderer->renderer_provider &&
+		renderer->renderer_provider->create_texture) {
+		renderer->renderer_provider->create_texture (
+			name, width, height, channels, opaque, pixels, out_texture);
+	}
+}
+void renderer_destroy_texture (renderer* renderer, struct texture *texture){
+    if(renderer && renderer->renderer_provider && renderer->renderer_provider->destroy_texture){
+        renderer->renderer_provider->destroy_texture(texture);
+    }
+}

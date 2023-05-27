@@ -10,6 +10,7 @@ typedef enum memory_tag {
 	MEMORY_TAG_RENDERER,
 	MEMORY_TAG_STRING,
 	MEMORY_TAG_APPLICATION,
+    MEMORY_TAG_TEXTURE,
 
 	MEMORY_TAG_MAX
 } memory_tag;

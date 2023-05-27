@@ -134,7 +134,7 @@ b8 vulkan_image_convert_layout(vulkan_context* context, vulkan_command_buffer * 
     return TRUE;
 }
 
-void vulkan_image_load_data(vulkan_context* context, vulkan_command_buffer* cmd_buffer, vulkan_image* image, VkBuffer buffer){
+void vulkan_image_copy_buffer_to_image(vulkan_context* context, vulkan_command_buffer* cmd_buffer, vulkan_image* image, VkBuffer buffer){
     VkBufferImageCopy copy;
     sfmemset(&copy, 0, sizeof(VkBufferImageCopy));
     copy.bufferOffset = 0;

@@ -8,6 +8,8 @@ typedef enum renderer_api {
 	RENDERER_API_DIRECTX,
 } renderer_api;
 
+struct texture;
+
 typedef struct scene_data {
 	mat4 projection;
 	mat4 view;
@@ -24,6 +26,8 @@ typedef struct renderer_provider {
 	void (*update_scene_data) (mat4 projection, mat4 view);
 	void (*update_objects_data) (mat4 model);
 	b8 (*end_frame) (struct renderer_provider* api);
+    void (*create_texture)(const char* name, u32 width, u32 height, u32 channels, b8 opaque, const u8* pixels, struct texture* out_texture);
+    void (*destroy_texture)(struct texture* texture);
 } renderer_provider;
 
 typedef struct render_bundle {

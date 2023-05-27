@@ -17,6 +17,10 @@ b8 renderer_provider_create (renderer_api api,
 			out_renderer_provider->update_objects_data =
 				vulkan_update_objects_data;
 			out_renderer_provider->end_frame = vulkan_end_frame;
+			out_renderer_provider->create_texture =
+				vulkan_create_texture;
+			out_renderer_provider->destroy_texture =
+				vulkan_destroy_texture;
 			return TRUE;
 		default: SF_FATAL ("The rendering API is not supported"); return FALSE;
 	}
@@ -30,4 +34,6 @@ void renderer_provider_shutdown (renderer_provider *provider) {
 	provider->update_scene_data	  = SF_NULL;
 	provider->update_objects_data = SF_NULL;
 	provider->end_frame			  = SF_NULL;
+	provider->create_texture	  = SF_NULL;
+	provider->destroy_texture	  = SF_NULL;
 }
