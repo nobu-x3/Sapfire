@@ -10,9 +10,13 @@ typedef enum renderer_api {
 
 struct texture;
 
+typedef struct scene_camera {
+    mat4 projection;
+    mat4 view;
+} scene_camera;
+
 typedef struct scene_data {
-	mat4 projection;
-	mat4 view;
+    scene_camera scene_camera;
 	mat4 _padding1;
 	mat4 _padding2;
 } scene_data;

@@ -592,8 +592,8 @@ void vulkan_update_scene_data (mat4 projection, mat4 view) {
 	vulkan_command_buffer *cmd_buffer =
 		&context.graphics_command_buffers[context.image_index];
 	vulkan_shader_bind (&context, &context.shader);
-	context.scene_data.projection = projection;
-	context.scene_data.view		  = view;
+	context.scene_data.scene_camera.projection = projection;
+	context.scene_data.scene_camera.view		  = view;
 	vulkan_shader_update_uniforms (&context, &context.shader,
 								   &context.scene_data);
 }

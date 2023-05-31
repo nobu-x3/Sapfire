@@ -1,4 +1,3 @@
-
 #pragma once
 
 // Unsigned int types.
@@ -21,12 +20,14 @@ typedef _Bool b8;
 typedef int b32;
 
 typedef struct color {
-	f32 r, g, b, a;
+  f32 r, g, b, a;
 } color;
 
 typedef struct extent2d {
-	f32 x, y, w, h;
+  f32 x, y, w, h;
 } extent2d;
+
+#define INVALID_ID 4294967295U
 
 // Properly define static assertions.
 #if defined(__clang__) || defined(__gcc__)
@@ -36,25 +37,25 @@ typedef struct extent2d {
 #endif
 
 // Ensure all types are of the correct size.
-STATIC_ASSERT (sizeof (u8) == 1, "Expected u8 to be 1 byte.");
-STATIC_ASSERT (sizeof (u16) == 2, "Expected u16 to be 2 bytes.");
-STATIC_ASSERT (sizeof (u32) == 4, "Expected u32 to be 4 bytes.");
-STATIC_ASSERT (sizeof (u64) == 8, "Expected u64 to be 8 bytes.");
+STATIC_ASSERT(sizeof(u8) == 1, "Expected u8 to be 1 byte.");
+STATIC_ASSERT(sizeof(u16) == 2, "Expected u16 to be 2 bytes.");
+STATIC_ASSERT(sizeof(u32) == 4, "Expected u32 to be 4 bytes.");
+STATIC_ASSERT(sizeof(u64) == 8, "Expected u64 to be 8 bytes.");
 
-STATIC_ASSERT (sizeof (i8) == 1, "Expected i8 to be 1 byte.");
-STATIC_ASSERT (sizeof (i16) == 2, "Expected i16 to be 2 bytes.");
-STATIC_ASSERT (sizeof (i32) == 4, "Expected i32 to be 4 bytes.");
-STATIC_ASSERT (sizeof (i64) == 8, "Expected i64 to be 8 bytes.");
+STATIC_ASSERT(sizeof(i8) == 1, "Expected i8 to be 1 byte.");
+STATIC_ASSERT(sizeof(i16) == 2, "Expected i16 to be 2 bytes.");
+STATIC_ASSERT(sizeof(i32) == 4, "Expected i32 to be 4 bytes.");
+STATIC_ASSERT(sizeof(i64) == 8, "Expected i64 to be 8 bytes.");
 
-STATIC_ASSERT (sizeof (f32) == 4, "Expected f32 to be 4 bytes.");
-STATIC_ASSERT (sizeof (f64) == 8, "Expected f64 to be 8 bytes.");
+STATIC_ASSERT(sizeof(f32) == 4, "Expected f32 to be 4 bytes.");
+STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 
-#define TRUE	1
-#define FALSE	0
-#define SF_NULL (void*)0
+#define TRUE 1
+#define FALSE 0
+#define SF_NULL (void *)0
 
 #define CLAMP(value, min, max)                                                 \
-	(value <= min) ? min : (value >= max) ? max : value
+  (value <= min) ? min : (value >= max) ? max : value
 
 // Platform detection
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
@@ -78,28 +79,28 @@ STATIC_ASSERT (sizeof (f64) == 8, "Expected f64 to be 8 bytes.");
 
 #ifdef SAPEXPORT
 #ifdef _MSC_VER
-#define SAPI __declspec (dllexport)
+#define SAPI __declspec(dllexport)
 #else
-#define SAPI __attribute__ ((visibility ("default")))
+#define SAPI __attribute__((visibility("default")))
 #endif
 #else
 #ifdef _MSC_VER
-#define SAPI __declspec (dllimport)
+#define SAPI __declspec(dllimport)
 #else
 #define SAPI
 #endif
 #endif
 
 #ifdef _MSC_VER
-#define INLINE	 __forceinline
-#define NOINLINE __declspec (noinline)
+#define INLINE __forceinline
+#define NOINLINE __declspec(noinline)
 #else
 #define INLINE static inline
 #define KNOINLINE
 #endif
 
 #ifdef _MSC_VER
-#define ALIGN(x) __declspec (align (x))
+#define ALIGN(x) __declspec(align(x))
 #else
-#define ALIGN(x) __attribute__ ((aligned (x)))
+#define ALIGN(x) __attribute__((aligned(x)))
 #endif
