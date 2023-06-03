@@ -46,6 +46,8 @@ typedef struct vulkan_pipeline {
 } vulkan_pipeline;
 
 #define SHADER_STAGE_COUNT 2
+#define VULKAN_SHADER_DESCRIPTOR_COUNT 2
+#define VULKAN_MAX_MESH_COUNT 1024
 
 typedef struct vulkan_shader_stage {
 	VkShaderModuleCreateInfo create_info;
@@ -53,13 +55,29 @@ typedef struct vulkan_shader_stage {
 	VkPipelineShaderStageCreateInfo shader_stage_create_info;
 } vulkan_shader_stage;
 
+typedef struct vulkan_descriptor_state {
+    u32 generations[5];
+} vulkan_descriptor_state;
+
+typedef struct vulkan_shader_mesh_state {
+    VkDescriptorSet descriptor_sets[5];
+    vulkan_descriptor_state descriptor_states[VULKAN_SHADER_DESCRIPTOR_COUNT];
+} vulkan_shader_mesh_state;
+
 typedef struct vulkan_shader {
 	vulkan_shader_stage stages[SHADER_STAGE_COUNT];
 	vulkan_pipeline pipeline;
-	VkDescriptorPool descriptor_pool;
-	VkDescriptorSetLayout descriptor_set_layout;
-	VkDescriptorSet descriptor_sets[3];
-	vulkan_buffer uniform_buffer;
+	VkDescriptorPool scene_descriptor_pool;
+	VkDescriptorSetLayout scene_descriptor_set_layout;
+	VkDescriptorSet scene_descriptor_sets[5];
+	vulkan_buffer scene_uniform_buffer;
+	VkDescriptorPool mesh_descriptor_pool;
+    VkDescriptorSetLayout mesh_descriptor_set_layout;
+    vulkan_buffer mesh_uniform_buffer;
+    // TODO: reference count instead
+    u32 mesh_uniform_buffer_index;
+    // TODO: make dynamic
+    vulkan_shader_mesh_state mesh_states[VULKAN_MAX_MESH_COUNT];
 } vulkan_shader;
 
 typedef enum vulkan_render_pass_state {
@@ -171,7 +189,7 @@ typedef struct vulkan_context {
 	vulkan_shader shader; // temp
 	vulkan_buffer VBO;
 	vulkan_buffer IBO;
-	scene_data scene_data;
+	scene_uniform scene_data;
 
 #if defined(DEBUG)
 	VkDebugUtilsMessengerEXT debug_messenger;

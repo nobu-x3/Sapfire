@@ -9,4 +9,5 @@ typedef struct texture {
     u8 channels;
     b8 opaque;
     void* data;
+    u32 generation;
 } texture;

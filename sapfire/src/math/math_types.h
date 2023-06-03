@@ -58,4 +58,5 @@ typedef union mat4 {
 
 typedef struct vertex {
 	vec3 position;
+    vec2 texcoord;
 } vertex;

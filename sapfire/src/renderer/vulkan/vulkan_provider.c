@@ -8,6 +8,7 @@
 #include "defines.h"
 #include "math/math_types.h"
 #include "platform/platform.h"
+#include "renderer/renderer_types.h"
 #include "renderer/vulkan/vulkan_buffer.h"
 #include "renderer/vulkan/vulkan_command_buffer.h"
 #include "renderer/vulkan/vulkan_device.h"
@@ -565,15 +566,23 @@ b8 create_buffers (vulkan_context *context) {
 
 	verts[0].position.x = -0.5;
 	verts[0].position.y = -0.5;
+    verts[0].texcoord.x = 0.0f;
+    verts[0].texcoord.y = 0.0f;
 
 	verts[1].position.x = 0.5;
 	verts[1].position.y = 0.5;
+    verts[1].texcoord.x = 1.0f;
+    verts[1].texcoord.y = 1.0f;
 
 	verts[2].position.x = -0.5;
 	verts[2].position.y = 0.5;
+    verts[2].texcoord.x = 0.0f;
+    verts[2].texcoord.y = 1.0f;
 
 	verts[3].position.x = 0.5;
 	verts[3].position.y = -0.5;
+    verts[3].texcoord.x = 1.0f;
+    verts[3].texcoord.y = 0.0f;
 
 	u32 indices[6] = {0, 1, 2, 0, 3, 1};
 
@@ -585,6 +594,11 @@ b8 create_buffers (vulkan_context *context) {
 				 context->device.graphics_queue, &context->IBO,
 				 sizeof (u32) * 6, 0, indices);
 
+    u32 mesh_id = 0;
+    if(!vulkan_shader_alloc(context, &context->shader, &mesh_id)){
+        SF_ERROR("Failed to allocate shader resource.");
+        return FALSE;
+    }
 	return TRUE;
 }
 
@@ -598,10 +612,10 @@ void vulkan_update_scene_data (mat4 projection, mat4 view) {
 								   &context.scene_data);
 }
 
-void vulkan_update_objects_data (mat4 model) {
+void vulkan_update_objects_data (mesh_data data) {
 	vulkan_command_buffer *cmd_buffer =
 		&context.graphics_command_buffers[context.image_index];
-	vulkan_shader_update_model (&context, &context.shader, model);
+	vulkan_shader_update_model (&context, &context.shader, data);
 	// TODO: remove this temp code
 	vulkan_shader_bind (&context, &context.shader);
 	VkDeviceSize offsets[1] = {0};
@@ -615,6 +629,7 @@ void vulkan_create_texture(const char* name, u32 width, u32 height, u32 channels
     out_texture->width = width;
     out_texture->height = height;
     out_texture->channels = channels;
+    out_texture->generation = INVALID_ID;
     // Internal data creation.
     // TODO: Use an allocator for this.
     out_texture->data = (vulkan_texture_data*)sfalloc(sizeof(vulkan_texture_data), MEMORY_TAG_TEXTURE);
@@ -641,7 +656,6 @@ void vulkan_create_texture(const char* name, u32 width, u32 height, u32 channels
     info.create_view = TRUE;
     info.view_aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT;
     info.image_type = VK_IMAGE_TYPE_2D;
-
     vulkan_image_create(
         &context,
         &info,
@@ -661,10 +675,10 @@ void vulkan_create_texture(const char* name, u32 width, u32 height, u32 channels
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         &data->image);
 
-    // Copy the data from the buffer.
     vulkan_image_copy_buffer_to_image(&context, &temp_buffer, &data->image, staging.handle);
 
-    // Transition from optimal for data reciept to shader-read-only optimal layout.
+
+    vulkan_buffer_destroy(&context, &staging);
     vulkan_image_convert_layout(
         &context,
         &temp_buffer,
@@ -702,6 +716,7 @@ void vulkan_create_texture(const char* name, u32 width, u32 height, u32 channels
 }
 
 void vulkan_destroy_texture(texture* texture){
+    vkDeviceWaitIdle(context.device.logical_device);
     vulkan_texture_data* data = (vulkan_texture_data*)texture->data;
     vulkan_image_destroy(&context, &data->image);
     sfmemset(&data->image, 0, sizeof(vulkan_image));
