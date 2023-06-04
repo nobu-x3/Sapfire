@@ -196,7 +196,6 @@ b8 select_physical_device (vulkan_context *context) {
 	for (u32 i = 0; i < phys_device_count; ++i) {
 		VkPhysicalDeviceProperties properties;
 		vkGetPhysicalDeviceProperties (phys_devices[i], &properties);
-
 		VkPhysicalDeviceFeatures features;
 		vkGetPhysicalDeviceFeatures (phys_devices[i], &features);
 
@@ -206,7 +205,16 @@ b8 select_physical_device (vulkan_context *context) {
 		VkPhysicalDeviceMemoryProperties memory				= {};
 #endif
 		vkGetPhysicalDeviceMemoryProperties (phys_devices[i], &memory);
-
+        b8 supports_device_local_host_visible = FALSE;
+        for (u32 i = 0; i < memory.memoryTypeCount; ++i) {
+            // Check each memory type to see if its bit is set to 1.
+            if (
+                ((memory.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0) &&
+                ((memory.memoryTypes[i].propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) != 0)) {
+                supports_device_local_host_visible = TRUE;
+                break;
+            }
+        }
 		// TODO: make this configurable by the engine
 		vulkan_physical_device_requirements requirements;
 		requirements.graphics = TRUE;
@@ -288,6 +296,7 @@ b8 select_physical_device (vulkan_context *context) {
 			context->device.properties = properties;
 			context->device.features   = features;
 			context->device.memory	   = memory;
+			context->device.supports_device_local_host_visible = supports_device_local_host_visible;
 			break;
 		}
 	}

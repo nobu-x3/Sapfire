@@ -157,7 +157,7 @@ typedef struct vulkan_device {
 	VkPhysicalDeviceProperties properties;
 	VkPhysicalDeviceFeatures features;
 	VkPhysicalDeviceMemoryProperties memory;
-
+	b8 supports_device_local_host_visible;
 	VkFormat depth_format;
 } vulkan_device;
 

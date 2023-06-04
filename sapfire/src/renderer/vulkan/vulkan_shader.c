@@ -172,14 +172,12 @@ b8 vulkan_shader_create (vulkan_context* context, texture* default_diffuse,
 		SF_ERROR ("Failed to load graphics pipeline for object shader.");
 		return FALSE;
 	}
-
+	u32 device_local_bits = context->device.supports_device_local_host_visible ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : 0;
 	// Create uniform buffer.
 	if (!vulkan_buffer_create (context, sizeof (scene_uniform),
 							   VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 								   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-							   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT |
-								   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-								   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+							   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | device_local_bits,
 							   &out_shader->scene_uniform_buffer)) {
 		SF_ERROR ("Vulkan buffer creation failed for object shader.");
 		return FALSE;
@@ -213,9 +211,7 @@ b8 vulkan_shader_create (vulkan_context* context, texture* default_diffuse,
 			sizeof (mesh_uniform), //* MAX_MATERIAL_INSTANCE_COUNT,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT |
-				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-				VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			&out_shader->mesh_uniform_buffer)) {
 		SF_ERROR ("Material instance buffer creation failed for shader.");
 		return FALSE;
