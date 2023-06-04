@@ -38,6 +38,7 @@ typedef struct mesh_data{
 
 typedef struct renderer_provider {
 	struct platform_state* plat_state;
+    struct texture* default_diffuse;
 	b8 (*initialize) (struct renderer_provider* api, const char* app_name,
 					  struct platform_state* plat_state);
 	void (*shutdown) (struct renderer_provider* api);
@@ -56,4 +57,5 @@ typedef struct render_bundle {
 typedef struct renderer {
 	struct renderer_provider* renderer_provider;
     texture default_texture;
+    texture test_diffuse;
 } renderer;

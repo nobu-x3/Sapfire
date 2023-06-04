@@ -198,7 +198,7 @@ b8 vulkan_initialize (renderer_provider *api, const char *app_name,
 		vector_reserve (VkFence, context.swapchain.image_count);
 	SF_INFO ("Fences and semaphores created.");
 
-	if (!vulkan_shader_create (&context, &context.shader)) {
+	if (!vulkan_shader_create (&context, api->default_diffuse, &context.shader)) {
 		SF_ERROR ("Failed to load built-in shader.");
 		return FALSE;
 	}
@@ -625,6 +625,7 @@ void vulkan_update_objects_data (mesh_data data) {
 						  VK_INDEX_TYPE_UINT32);
 	vkCmdDrawIndexed (cmd_buffer->handle, 6, 1, 0, 0, 0);
 }
+
 void vulkan_create_texture(const char* name, u32 width, u32 height, u32 channels, b8 opaque, const u8* pixels, texture* out_texture){
     out_texture->width = width;
     out_texture->height = height;
@@ -677,8 +678,6 @@ void vulkan_create_texture(const char* name, u32 width, u32 height, u32 channels
 
     vulkan_image_copy_buffer_to_image(&context, &temp_buffer, &data->image, staging.handle);
 
-
-    vulkan_buffer_destroy(&context, &staging);
     vulkan_image_convert_layout(
         &context,
         &temp_buffer,
@@ -689,6 +688,7 @@ void vulkan_create_texture(const char* name, u32 width, u32 height, u32 channels
 
     vulkan_command_buffer_end_single_use(&context, pool, &temp_buffer, queue);
 
+    vulkan_buffer_destroy(&context, &staging);
     // Create a sampler for the texture
     VkSamplerCreateInfo sampler_info = {VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO};
     // TODO: These filters should be configurable.
@@ -713,15 +713,18 @@ void vulkan_create_texture(const char* name, u32 width, u32 height, u32 channels
         return;
     }
     out_texture->opaque = opaque;
+    out_texture->generation++;
 }
 
 void vulkan_destroy_texture(texture* texture){
     vkDeviceWaitIdle(context.device.logical_device);
     vulkan_texture_data* data = (vulkan_texture_data*)texture->data;
-    vulkan_image_destroy(&context, &data->image);
-    sfmemset(&data->image, 0, sizeof(vulkan_image));
-    vkDestroySampler(context.device.logical_device, data->sampler, context.allocator);
-    data->sampler = SF_NULL;
-    sffree(texture->data, sizeof(vulkan_texture_data), MEMORY_TAG_TEXTURE);
+    if (data) {
+        vulkan_image_destroy(&context, &data->image);
+        sfmemset(&data->image, 0, sizeof(vulkan_image));
+        vkDestroySampler(context.device.logical_device, data->sampler, context.allocator);
+        data->sampler = SF_NULL;
+        sffree(texture->data, sizeof(vulkan_texture_data), MEMORY_TAG_TEXTURE);
+    }
     sfmemset(texture, 0, sizeof(struct texture));
 }

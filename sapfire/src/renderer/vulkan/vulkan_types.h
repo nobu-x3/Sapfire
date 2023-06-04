@@ -56,11 +56,11 @@ typedef struct vulkan_shader_stage {
 } vulkan_shader_stage;
 
 typedef struct vulkan_descriptor_state {
-    u32 generations[5];
+    u32 generations[8];
 } vulkan_descriptor_state;
 
 typedef struct vulkan_shader_mesh_state {
-    VkDescriptorSet descriptor_sets[5];
+    VkDescriptorSet descriptor_sets[8];
     vulkan_descriptor_state descriptor_states[VULKAN_SHADER_DESCRIPTOR_COUNT];
 } vulkan_shader_mesh_state;
 
@@ -69,7 +69,7 @@ typedef struct vulkan_shader {
 	vulkan_pipeline pipeline;
 	VkDescriptorPool scene_descriptor_pool;
 	VkDescriptorSetLayout scene_descriptor_set_layout;
-	VkDescriptorSet scene_descriptor_sets[5];
+	VkDescriptorSet scene_descriptor_sets[8];
 	vulkan_buffer scene_uniform_buffer;
 	VkDescriptorPool mesh_descriptor_pool;
     VkDescriptorSetLayout mesh_descriptor_set_layout;
@@ -78,6 +78,7 @@ typedef struct vulkan_shader {
     u32 mesh_uniform_buffer_index;
     // TODO: make dynamic
     vulkan_shader_mesh_state mesh_states[VULKAN_MAX_MESH_COUNT];
+    texture* default_diffuse;
 } vulkan_shader;
 
 typedef enum vulkan_render_pass_state {
