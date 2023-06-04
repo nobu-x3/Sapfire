@@ -1,5 +1,6 @@
 #include "core/logger.h"
 #include "core/sfmemory.h"
+#include "defines.h"
 #include "math/sfmath.h"
 #include "renderer.h"
 #include "renderer/renderer_provider.h"
@@ -76,21 +77,39 @@ b8 renderer_initialize (renderer *renderer, renderer_api api,
 	const u32 channels	  = 4;
 	const u32 pixel_count = dimensions * dimensions;
 	u8 pixels[pixel_count * channels];
-	sfmemset (pixels, 0, sizeof (u8) * pixel_count * channels);
-	for (u32 row = 0; row < dimensions; ++row) {
-		b8 black = TRUE;
-		for (u32 col = 0; col < dimensions; ++col) {
-			u32 index = ((row * dimensions) + col) * channels;
-			if (col % 64 == 0) { black = !black; }
-			if (!black) {
-				pixels[index]	  = 255;
-				pixels[index + 2] = 255;
+	sfmemset (pixels, 255, sizeof (u8) * pixel_count * channels);
+	/* for (u32 row = 0; row < dimensions; ++row) { */
+	/* 	b8 black = TRUE; */
+	/* 	for (u32 col = 0; col < dimensions; ++col) { */
+	/* 		u32 index = ((row * dimensions) + col) * channels; */
+	/* 		if (col % 64 == 0) { black = !black; } */
+	/* 		if (!black) { */
+	/* 			pixels[index]	  = 255; */
+	/* 			pixels[index + 2] = 255; */
+	/* 		} */
+	/* 		pixels[index + 3] = 1; */
+	/* 	} */
+	/* } */
+	for (u64 row = 0; row < dimensions; ++row) {
+		for (u64 col = 0; col < dimensions; ++col) {
+			u64 index	  = (row * dimensions) + col;
+			u64 index_bpp = index * channels;
+			if (row % 2) {
+				if (col % 2) {
+					pixels[index_bpp + 0] = 0;
+					pixels[index_bpp + 1] = 0;
+				}
+			} else {
+				if (!(col % 2)) {
+					pixels[index_bpp + 0] = 0;
+					pixels[index_bpp + 1] = 0;
+				}
 			}
-			pixels[index + 3] = 1;
 		}
 	}
-	renderer_create_texture (renderer, "default_texture", dimensions,
-							 dimensions, channels, FALSE, pixels,
+
+	renderer_create_texture (renderer, "default", dimensions, dimensions,
+							 channels, TRUE, pixels,
 							 &renderer->default_texture);
 	renderer->default_texture.generation = INVALID_ID;
 	SF_TRACE ("Default texture created.");
@@ -115,7 +134,7 @@ b8 renderer_draw_frame (renderer *renderer, render_bundle *bundle) {
 												  0)) {
 		// TODO: render render render
 		static f32 z = 1.0f;
-		z += 0.01f;
+		/* z += 0.01f; */
 		mat4 projection =
 			mat4_perspective (deg_to_rad (75.0f), 4.f / 3.f, 0.1f, 1000.f);
 		mat4 view		 = mat4_translation ((vec3){0, 0, z});
@@ -127,7 +146,7 @@ b8 renderer_draw_frame (renderer *renderer, render_bundle *bundle) {
 		mesh_data data	 = {};
 		data.id			 = 0; // TODO: actual id
 		data.model		 = model;
-		data.textures[0] = &renderer->test_diffuse;
+		data.textures[0] = &renderer->default_texture;
 
 		renderer->renderer_provider->update_scene_data (projection, view);
 		renderer->renderer_provider->update_objects_data (data);

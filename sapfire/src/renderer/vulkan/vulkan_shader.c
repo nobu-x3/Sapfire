@@ -172,12 +172,16 @@ b8 vulkan_shader_create (vulkan_context* context, texture* default_diffuse,
 		SF_ERROR ("Failed to load graphics pipeline for object shader.");
 		return FALSE;
 	}
-	u32 device_local_bits = context->device.supports_device_local_host_visible ? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : 0;
+	u32 device_local_bits = context->device.supports_device_local_host_visible
+								? VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+								: 0;
 	// Create uniform buffer.
 	if (!vulkan_buffer_create (context, sizeof (scene_uniform),
 							   VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 								   VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-							   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT | device_local_bits,
+							   VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+								   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
+								   device_local_bits,
 							   &out_shader->scene_uniform_buffer)) {
 		SF_ERROR ("Vulkan buffer creation failed for object shader.");
 		return FALSE;
@@ -211,7 +215,8 @@ b8 vulkan_shader_create (vulkan_context* context, texture* default_diffuse,
 			sizeof (mesh_uniform), //* MAX_MATERIAL_INSTANCE_COUNT,
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT |
 				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+				VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			&out_shader->mesh_uniform_buffer)) {
 		SF_ERROR ("Material instance buffer creation failed for shader.");
 		return FALSE;
@@ -667,10 +672,10 @@ void vulkan_shader_bind (vulkan_context* context, vulkan_shader* shader) {
 b8 vulkan_shader_alloc (vulkan_context* context, vulkan_shader* shader,
 						u32* out_id) {
 	// TODO: potentially ref count
-	*out_id		  = shader->mesh_uniform_buffer_index;
-	u32 id		  = *out_id;
-	u8 sets_count = context->swapchain.image_count;
+	*out_id = shader->mesh_uniform_buffer_index;
 	shader->mesh_uniform_buffer_index++;
+	u32 id							= *out_id;
+	u8 sets_count					= context->swapchain.image_count;
 	vulkan_shader_mesh_state* state = &shader->mesh_states[id];
 	for (u32 i = 0; i < VULKAN_SHADER_DESCRIPTOR_COUNT; ++i) {
 		for (u32 j = 0; j < sets_count; ++j) {
@@ -692,7 +697,6 @@ b8 vulkan_shader_alloc (vulkan_context* context, vulkan_shader* shader,
 												 &desc_set_ci,
 												 state->descriptor_sets),
 					   "Failed to allocate descriptor sets.");
-	SF_FATAL ("ellooo");
 	return TRUE;
 }
 
