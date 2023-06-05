@@ -5,7 +5,8 @@
       "filetypes": [ "c" ],
       "configuration": {
         "request": "launch",
-        "program": "${workspaceRoot}/bin/sandbox"
+        "program": "${workspaceRoot}/bin/sandbox",
+        "cwd": "${workspaceRoot}/bin"
       }
     }
   }

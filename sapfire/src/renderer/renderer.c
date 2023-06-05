@@ -115,7 +115,7 @@ b8 renderer_initialize (renderer *renderer, renderer_api api,
 	SF_TRACE ("Default texture created.");
 	prep_texture (&renderer->test_diffuse);
 	load_texture (renderer, "cobblestone.png", &renderer->test_diffuse);
-	SF_TRACE ("%d", renderer->test_diffuse);
+	SF_TRACE ("%d", renderer->test_diffuse.data);
 	return TRUE;
 }
 
