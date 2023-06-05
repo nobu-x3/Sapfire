@@ -2,10 +2,10 @@
   "configurations": {
     "launch": {
       "adapter": "CodeLLDB",
-      "filetypes": [ "rust" ],
+      "filetypes": [ "c" ],
       "configuration": {
         "request": "launch",
-        "program": "${workspaceRoot}/target/debug/sapfire"
+        "program": "${workspaceRoot}/bin/sandbox"
       }
     }
   }
