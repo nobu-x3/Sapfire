@@ -1,4 +1,3 @@
-#include "vulkan_provider.h"
 #include "containers/vector.h"
 #include "core/asserts.h"
 #include "core/event.h"
@@ -17,6 +16,7 @@
 #include "renderer/vulkan/vulkan_shader.h"
 #include "renderer/vulkan/vulkan_swapchain.h"
 #include "vulkan_platform.h"
+#include "vulkan_provider.h"
 #include "vulkan_types.h"
 #include <stdint.h>
 #include <string.h>
@@ -46,6 +46,9 @@ b8 recreate_swapchain ();
 void create_command_buffers ();
 
 b8 create_buffers (vulkan_context *context); // TODO: remove this
+
+void upload_data (vulkan_context *context, VkCommandPool pool, VkQueue queue,
+				  vulkan_buffer *buffer, u64 size, u64 offset, void *data);
 
 b8 vulkan_initialize (renderer_provider *api, const char *app_name,
 					  struct platform_state *plat_state) {
@@ -205,6 +208,31 @@ b8 vulkan_initialize (renderer_provider *api, const char *app_name,
 		SF_FATAL ("Failed to create buffers.")
 		return FALSE;
 	}
+	vertex verts[4];
+	sfmemset (verts, 0, sizeof (vertex) * 4);
+
+	verts[0].position.x = -0.5;
+	verts[0].position.y = -0.5;
+
+	verts[1].position.x = 0.5;
+	verts[1].position.y = 0.5;
+
+	verts[2].position.x = -0.5;
+	verts[2].position.y = 0.5;
+
+	verts[3].position.x = 0.5;
+	verts[3].position.y = -0.5;
+
+	u32 indices[6] = {0, 1, 2, 0, 3, 1};
+
+	upload_data (&context, context.device.graphics_command_pool,
+				 context.device.graphics_queue, &context.VBO,
+				 sizeof (vertex) * 4, 0, verts);
+
+	upload_data (&context, context.device.graphics_command_pool,
+				 context.device.graphics_queue, &context.IBO, sizeof (u32) * 6,
+				 0, indices);
+
 	SF_INFO ("Successfully created buffers.");
 	SF_INFO ("Vulkan renderer provider initialized successfully.");
 	return TRUE;
@@ -558,31 +586,6 @@ b8 create_buffers (vulkan_context *context) {
 		return FALSE;
 	}
 	vulkan_buffer_bind (context, &context->IBO, 0);
-
-	vertex verts[4];
-	sfmemset (verts, 0, sizeof (vertex) * 4);
-
-	verts[0].position.x = -0.5;
-	verts[0].position.y = -0.5;
-
-	verts[1].position.x = 0.5;
-	verts[1].position.y = 0.5;
-
-	verts[2].position.x = -0.5;
-	verts[2].position.y = 0.5;
-
-	verts[3].position.x = 0.5;
-	verts[3].position.y = -0.5;
-
-	u32 indices[6] = {0, 1, 2, 0, 3, 1};
-
-	upload_data (context, context->device.graphics_command_pool,
-				 context->device.graphics_queue, &context->VBO,
-				 sizeof (vertex) * 4, 0, verts);
-
-	upload_data (context, context->device.graphics_command_pool,
-				 context->device.graphics_queue, &context->IBO,
-				 sizeof (u32) * 6, 0, indices);
 
 	return TRUE;
 }

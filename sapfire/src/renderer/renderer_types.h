@@ -32,4 +32,8 @@ typedef struct render_bundle {
 
 typedef struct renderer {
 	struct renderer_provider* renderer_provider;
+	mat4 projection;
+	mat4 view;
+	f32 near_clip;
+	f32 far_clip;
 } renderer;
