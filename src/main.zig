@@ -274,6 +274,7 @@ pub fn main() !void {
         std.log.err("Failed to initialize renderer.", .{});
         return;
     };
+    defer destroy(allocator, renderer_state);
     while (!window.shouldClose() and window.getKey(.escape) != .press) {
         glfw.pollEvents();
         draw(renderer_state);
