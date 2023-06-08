@@ -1,0 +1,13 @@
+{
+  "configurations": {
+    "launch": {
+      "adapter": "CodeLLDB",
+      "filetypes": [ "zig" ],
+      "configuration": {
+        "request": "launch",
+        "program": "${workspaceRoot}/zig-out/bin/Sapfire",
+        "cwd": "${workspaceRoot}/zig-out/bin/"
+      }
+    }
+  }
+}
