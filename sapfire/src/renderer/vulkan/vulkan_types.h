@@ -51,10 +51,10 @@ typedef struct vulkan_shader_stage {
 typedef struct vulkan_shader {
 	vulkan_shader_stage stages[SHADER_STAGE_COUNT];
 	vulkan_pipeline pipeline;
-	VkDescriptorPool descriptor_pool;
-	VkDescriptorSetLayout descriptor_set_layout;
-	VkDescriptorSet descriptor_sets[3];
-	vulkan_buffer uniform_buffer;
+	VkDescriptorPool scene_descriptor_pool;
+	VkDescriptorSetLayout scene_descriptor_set_layout;
+	VkDescriptorSet scene_descriptor_sets[3];
+	vulkan_buffer scene_uniform_buffer;
 } vulkan_shader;
 
 typedef enum vulkan_render_pass_state {

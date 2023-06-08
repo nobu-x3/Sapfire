@@ -39,7 +39,7 @@ b8 game_init (game* game_instance) {
 	SF_DEBUG ("Game initialized");
 	game_state* state = (game_state*)game_instance->state;
 
-	state->camera_position = (vec3){0, 0, 30.0f};
+	state->camera_position = (vec3){0, 0, 0.0f};
 	state->camera_euler	   = vec3_zero ();
 
 	state->view				 = mat4_translation (state->camera_position);
@@ -48,7 +48,6 @@ b8 game_init (game* game_instance) {
 	return TRUE;
 }
 b8 game_update (game* game_instance, f32 delta_time) {
-
 	game_state* state = (game_state*)game_instance->state;
 	application_state* app =
 		(application_state*)game_instance->application_state;
@@ -67,10 +66,11 @@ b8 game_update (game* game_instance, f32 delta_time) {
 		camera_pitch (state, -1.0f * delta_time);
 	}
 
-	f32 temp_move_speed = 50.0f;
+	f32 temp_move_speed = 0.0f;
 	vec3 velocity		= vec3_zero ();
 
 	if (input_is_key_down (KEY_W)) {
+		SF_DEBUG ("FORWARD");
 		vec3 forward = mat4_forward (state->view);
 		velocity	 = vec3_add (velocity, forward);
 	}

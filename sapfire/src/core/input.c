@@ -1,7 +1,7 @@
-#include "input.h"
 #include "core/event.h"
 #include "core/logger.h"
 #include "core/sfmemory.h"
+#include "input.h"
 #include <string.h>
 
 typedef struct keyboard_state {

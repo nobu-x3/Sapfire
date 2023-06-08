@@ -596,8 +596,8 @@ void vulkan_update_scene_data (mat4 projection, mat4 view) {
 	vulkan_shader_bind (&context, &context.shader);
 	context.scene_data.projection = projection;
 	context.scene_data.view		  = view;
-	vulkan_shader_update_uniforms (&context, &context.shader,
-								   &context.scene_data);
+	vulkan_shader_update_scene_uniforms (&context, &context.shader,
+										 &context.scene_data);
 }
 
 void vulkan_update_objects_data (mat4 model) {

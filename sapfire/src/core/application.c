@@ -93,6 +93,7 @@ void application_run (game *game_instance) {
 		if (!platform_update_internal_state (&app_state->plat_state)) {
 			app_state->is_running = FALSE;
 		}
+		/* game_instance->update (game_instance, (f32)delta); */
 
 		// TODO: rework this awfulness
 		render_bundle bundle;

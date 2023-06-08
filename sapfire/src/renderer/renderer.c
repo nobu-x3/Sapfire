@@ -42,9 +42,8 @@ b8 renderer_draw_frame (renderer *renderer, render_bundle *bundle) {
 		renderer->renderer_provider->update_scene_data (renderer->projection,
 														renderer->view);
 		static f32 angle = 0.01f;
-		angle += 0.001f;
-		quat rotation = quat_from_axis_angle (vec3_forward (), angle, false);
-		mat4 model	  = quat_to_rotation_matrix (rotation, vec3_zero ());
+		quat rotation	 = quat_from_axis_angle (vec3_forward (), angle, false);
+		mat4 model		 = quat_to_rotation_matrix (rotation, vec3_zero ());
 		renderer->renderer_provider->update_objects_data (model);
 		// End the renderer provider.
 		if (!renderer->renderer_provider->end_frame (
