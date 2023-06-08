@@ -71,6 +71,7 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
     });
+    defer gctx.releaseResource(bind_group_layout);
     // Create a vertex buffer.
     const vertex_data = [_]Vertex{
         .{ .position = [2]f32{ -0.9, 0.9 }, .uv = [2]f32{ 0.0, 0.0 } },
@@ -83,7 +84,6 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         .size = vertex_data.len * @sizeOf(Vertex),
     });
     gctx.queue.writeBuffer(gctx.lookupResource(vertex_buffer).?, 0, Vertex, vertex_data[0..]);
-    defer gctx.releaseResource(bind_group_layout);
     // Create an index buffer.
     const index_data = [_]u16{ 0, 1, 3, 1, 2, 3 };
     const index_buffer = gctx.createBuffer(.{
@@ -91,7 +91,6 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         .size = index_data.len * @sizeOf(u16),
     });
     gctx.queue.writeBuffer(gctx.lookupResource(index_buffer).?, 0, u16, index_data[0..]);
-
     stbi.init(arena);
     defer stbi.deinit();
     var image = try stbi.Image.loadFromFile("assets/textures/" ++ "genart_0025_5.png", 4);
@@ -149,50 +148,50 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
     defer commands.release();
     gctx.submit(&.{commands});
     // (Async) Create a render pipeline.
-    {
-        const pipeline_layout = gctx.createPipelineLayout(&.{
-            bind_group_layout,
-        });
-        defer gctx.releaseResource(pipeline_layout);
-        const vs_module = zgpu.createWgslShaderModule(gctx.device, wgsl_vs, "vs");
-        defer vs_module.release();
-        const fs_module = zgpu.createWgslShaderModule(gctx.device, wgsl_fs, "fs");
-        defer fs_module.release();
-        const color_targets = [_]zgpu.wgpu.ColorTargetState{.{
-            .format = zgpu.GraphicsContext.swapchain_format,
-        }};
-        const vertex_attributes = [_]zgpu.wgpu.VertexAttribute{
-            .{ .format = .float32x2, .offset = 0, .shader_location = 0 },
-            .{ .format = .float32x2, .offset = @offsetOf(Vertex, "uv"), .shader_location = 1 },
-        };
-        const vertex_buffers = [_]zgpu.wgpu.VertexBufferLayout{.{
-            .array_stride = @sizeOf(Vertex),
-            .attribute_count = vertex_attributes.len,
-            .attributes = &vertex_attributes,
-        }};
-        // Create a render pipeline.
-        const pipeline_descriptor = zgpu.wgpu.RenderPipelineDescriptor{
-            .vertex = .{
-                .module = vs_module,
-                .entry_point = "main",
-                .buffer_count = vertex_buffers.len,
-                .buffers = &vertex_buffers,
-            },
-            .primitive = .{
-                .front_face = .cw,
-                .cull_mode = .back,
-                .topology = .triangle_list,
-            },
-            .fragment = &.{
-                .module = fs_module,
-                .entry_point = "main",
-                .target_count = color_targets.len,
-                .targets = &color_targets,
-            },
-        };
-        gctx.createRenderPipelineAsync(allocator, pipeline_layout, pipeline_descriptor, &renderer_state.pipeline);
-    }
+    renderer_pipeline_create(allocator, gctx, &.{bind_group_layout}, &renderer_state.pipeline);
     return renderer_state;
+}
+
+fn renderer_pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, bind_group_layout: []const zgpu.BindGroupLayoutHandle, out_pipeline_handle: *zgpu.RenderPipelineHandle) void {
+    const pipeline_layout = gctx.createPipelineLayout(bind_group_layout);
+    defer gctx.releaseResource(pipeline_layout);
+    const vs_module = zgpu.createWgslShaderModule(gctx.device, wgsl_vs, "vs");
+    defer vs_module.release();
+    const fs_module = zgpu.createWgslShaderModule(gctx.device, wgsl_fs, "fs");
+    defer fs_module.release();
+    const color_targets = [_]zgpu.wgpu.ColorTargetState{.{
+        .format = zgpu.GraphicsContext.swapchain_format,
+    }};
+    const vertex_attributes = [_]zgpu.wgpu.VertexAttribute{
+        .{ .format = .float32x2, .offset = 0, .shader_location = 0 },
+        .{ .format = .float32x2, .offset = @offsetOf(Vertex, "uv"), .shader_location = 1 },
+    };
+    const vertex_buffers = [_]zgpu.wgpu.VertexBufferLayout{.{
+        .array_stride = @sizeOf(Vertex),
+        .attribute_count = vertex_attributes.len,
+        .attributes = &vertex_attributes,
+    }};
+    // Create a render pipeline.
+    const pipeline_descriptor = zgpu.wgpu.RenderPipelineDescriptor{
+        .vertex = .{
+            .module = vs_module,
+            .entry_point = "main",
+            .buffer_count = vertex_buffers.len,
+            .buffers = &vertex_buffers,
+        },
+        .primitive = .{
+            .front_face = .cw,
+            .cull_mode = .back,
+            .topology = .triangle_list,
+        },
+        .fragment = &.{
+            .module = fs_module,
+            .entry_point = "main",
+            .target_count = color_targets.len,
+            .targets = &color_targets,
+        },
+    };
+    gctx.createRenderPipelineAsync(allocator, pipeline_layout, pipeline_descriptor, out_pipeline_handle);
 }
 
 fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
