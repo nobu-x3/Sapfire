@@ -20,10 +20,10 @@ b8 renderer_initialize (renderer *renderer, renderer_api api,
 	renderer->near_clip = 0.1f;
 	renderer->far_clip	= 1000.0f;
 	renderer->projection =
-		mat4_perspective (deg_to_rad (45.0f), 1280 / 720.0f,
-						  renderer->near_clip, renderer->far_clip);
+		mat4_perspective (deg_to_rad (45.0f), 800 / 600.0f, renderer->near_clip,
+						  renderer->far_clip);
 
-	renderer->view = mat4_translation ((vec3){0, 0, -30.0f});
+	renderer->view = mat4_translation ((vec3){0, 0, 30.0f});
 	renderer->view = mat4_inverse (renderer->view);
 	return TRUE;
 }
