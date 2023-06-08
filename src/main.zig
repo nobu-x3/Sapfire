@@ -46,17 +46,15 @@ const Uniforms = extern struct {
     mip_level: f32,
 };
 
+const Texture = struct { handle: zgpu.TextureHandle, view: zgpu.TextureViewHandle };
+
 const RendererState = struct {
     gctx: *zgpu.GraphicsContext,
-
     pipeline: zgpu.RenderPipelineHandle = .{},
     bind_group: zgpu.BindGroupHandle,
-
     vertex_buffer: zgpu.BufferHandle,
     index_buffer: zgpu.BufferHandle,
-
-    texture: zgpu.TextureHandle,
-    texture_view: zgpu.TextureViewHandle,
+    texture: Texture,
     sampler: zgpu.SamplerHandle,
     mip_level: i32 = 0,
 };
@@ -96,7 +94,7 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
     var image = try stbi.Image.loadFromFile("assets/textures/" ++ "genart_0025_5.png", 4);
     defer image.deinit();
     // Create a texture.
-    const texture = gctx.createTexture(.{
+    const texture_handle = gctx.createTexture(.{
         .usage = .{ .texture_binding = true, .copy_dst = true },
         .size = .{
             .width = image.width,
@@ -110,9 +108,9 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         ),
         .mip_level_count = std.math.log2_int(u32, std.math.max(image.width, image.height)) + 1,
     });
-    const texture_view = gctx.createTextureView(texture, .{});
+    const texture_view = gctx.createTextureView(texture_handle, .{});
     gctx.queue.writeTexture(
-        .{ .texture = gctx.lookupResource(texture).? },
+        .{ .texture = gctx.lookupResource(texture_handle).? },
         .{
             .bytes_per_row = image.bytes_per_row,
             .rows_per_image = image.height,
@@ -121,6 +119,7 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         u8,
         image.data,
     );
+    const texture = Texture{ .handle = texture_handle, .view = texture_view };
     // Create a sampler.
     const sampler = gctx.createSampler(.{});
     const bind_group = gctx.createBindGroup(bind_group_layout, &.{
@@ -135,14 +134,13 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         .vertex_buffer = vertex_buffer,
         .index_buffer = index_buffer,
         .texture = texture,
-        .texture_view = texture_view,
         .sampler = sampler,
     };
     // Generate mipmaps on the GPU.
     const commands = commands: {
         const encoder = gctx.device.createCommandEncoder(null);
         defer encoder.release();
-        gctx.generateMipmaps(arena, encoder, renderer_state.texture);
+        gctx.generateMipmaps(arena, encoder, renderer_state.texture.handle);
         break :commands encoder.finish(null);
     };
     defer commands.release();
