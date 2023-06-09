@@ -105,7 +105,7 @@ fn renderer_texture_load_data(gctx: *zgpu.GraphicsContext, texture: *Texture, wi
     );
 }
 
-fn resource_texture_generate_default() !stbi.Image {
+fn resource_texture_generate_default(gctx: *zgpu.GraphicsContext) !Texture {
     // Generate default texture
     @setEvalBranchQuota(256 * 256 * 4);
     const dimensions: u32 = 256;
@@ -118,16 +118,34 @@ fn resource_texture_generate_default() !stbi.Image {
             if (row % 2 != 0) {
                 if (col % 2 != 0) {
                     pixels[index + 1] = 0;
+                } else {
+                    pixels[index] = 0;
+                    pixels[index + 1] = 0;
+                    pixels[index + 2] = 0;
                 }
             } else {
                 if (col % 2 == 0) {
                     pixels[index + 1] = 0;
+                } else {
+                    pixels[index] = 0;
+                    pixels[index + 1] = 0;
+                    pixels[index + 2] = 0;
                 }
             }
         }
     }
-    var image = try stbi.Image.loadFromMemory(&pixels, channels);
-    return image;
+    // loadFromMemory segfaults, so don't use this.
+    // var image = stbi.Image.loadFromMemory(&pixels, channels) catch |e| {
+    //     std.log.err("Failed to load default texture.", .{});
+    //     return e;
+    // };
+    var texture = renderer_texture_create(gctx, .{ .texture_binding = true, .copy_dst = true }, .{
+        .width = 256,
+        .height = 256,
+        .depth_or_array_layers = 1,
+    }, .{ .components_count = 4, .components_width = 1, .is_hdr = false });
+    renderer_texture_load_data(gctx, &texture, dimensions, dimensions, dimensions * channels, pixels[0..]);
+    return texture;
 }
 
 fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
@@ -158,20 +176,20 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
     var image = try stbi.Image.loadFromFile("assets/textures/" ++ "genart_0025_5.png", 4);
     defer image.deinit();
     // Default texture
-    // var default_image = try resource_texture_generate_default();
-    // defer default_image.deinit();
+    var default_texture = try resource_texture_generate_default(gctx);
     // Create a texture.
     var texture = renderer_texture_create(gctx, .{ .texture_binding = true, .copy_dst = true }, .{
         .width = image.width,
         .height = image.height,
         .depth_or_array_layers = 1,
     }, .{ .components_count = image.num_components, .components_width = image.bytes_per_component, .is_hdr = image.is_hdr });
+    std.log.info("{}", .{image.bytes_per_row});
     renderer_texture_load_data(gctx, &texture, image.width, image.height, image.bytes_per_row, image.data);
     // Create a sampler.
     const sampler = gctx.createSampler(.{});
     const bind_group = gctx.createBindGroup(bind_group_layout, &.{
         .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = 256 },
-        .{ .binding = 1, .texture_view_handle = texture.view },
+        .{ .binding = 1, .texture_view_handle = default_texture.view },
         .{ .binding = 2, .sampler_handle = sampler },
     });
     const renderer_state = try allocator.create(RendererState);
@@ -180,8 +198,7 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         .bind_group = bind_group,
         .vertex_buffer = vertex_buffer,
         .index_buffer = index_buffer,
-        .texture = texture,
-        .texture_view = texture_view,
+        .texture = default_texture,
         .sampler = sampler,
     };
     // Generate mipmaps on the GPU.
