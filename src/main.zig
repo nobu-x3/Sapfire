@@ -61,6 +61,16 @@ const RendererState = struct {
     mip_level: i32 = 0,
 };
 
+fn renderer_buffer_create(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.BufferUsage, size: u64) zgpu.BufferHandle {
+    return gctx.createBuffer(.{ .usage = usage, .size = size });
+}
+
+fn renderer_buffer_create_and_load(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.BufferUsage, comptime T: type, data: []const T) zgpu.BufferHandle {
+    const buffer = gctx.createBuffer(.{ .usage = usage, .size = @sizeOf(T) * data.len });
+    gctx.queue.writeBuffer(gctx.lookupResource(buffer).?, 0, T, data);
+    return buffer;
+}
+
 fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
     const gctx = try zgpu.GraphicsContext.create(allocator, window);
     var arena_state = std.heap.ArenaAllocator.init(allocator);
@@ -79,18 +89,10 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         .{ .position = [2]f32{ 0.9, -0.9 }, .uv = [2]f32{ 1.0, 1.0 } },
         .{ .position = [2]f32{ -0.9, -0.9 }, .uv = [2]f32{ 0.0, 1.0 } },
     };
-    const vertex_buffer = gctx.createBuffer(.{
-        .usage = .{ .copy_dst = true, .vertex = true },
-        .size = vertex_data.len * @sizeOf(Vertex),
-    });
-    gctx.queue.writeBuffer(gctx.lookupResource(vertex_buffer).?, 0, Vertex, vertex_data[0..]);
+    var vertex_buffer: zgpu.BufferHandle = renderer_buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, Vertex, vertex_data[0..]);
     // Create an index buffer.
     const index_data = [_]u16{ 0, 1, 3, 1, 2, 3 };
-    const index_buffer = gctx.createBuffer(.{
-        .usage = .{ .copy_dst = true, .index = true },
-        .size = index_data.len * @sizeOf(u16),
-    });
-    gctx.queue.writeBuffer(gctx.lookupResource(index_buffer).?, 0, u16, index_data[0..]);
+    const index_buffer: zgpu.BufferHandle = renderer_buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u16, index_data[0..]);
     stbi.init(arena);
     defer stbi.deinit();
     var image = try stbi.Image.loadFromFile("assets/textures/" ++ "genart_0025_5.png", 4);
