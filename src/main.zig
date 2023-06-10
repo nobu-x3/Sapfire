@@ -3,51 +3,18 @@ const zgpu = @import("zgpu");
 const glfw = @import("zglfw");
 const stbi = @import("zstbi");
 const sf = struct {
-    pub const tex = @import("texture.zig");
-    pub const res = @import("resources.zig");
-    pub const buf = @import("buffer.zig");
+    usingnamespace @import("texture.zig");
+    usingnamespace @import("resources.zig");
+    usingnamespace @import("buffer.zig");
+    usingnamespace @import("pipeline.zig");
 };
 
-const Vertex = extern struct {
+pub const Vertex = extern struct {
     position: [2]f32,
     uv: [2]f32,
 };
 
-// zig fmt: off
-const wgsl_common =
-\\  struct Uniforms {
-\\      aspect_ratio: f32,
-\\      mip_level: f32,
-\\  }
-\\  @group(0) @binding(0) var<uniform> uniforms: Uniforms;
-;
-const wgsl_vs = wgsl_common ++
-\\  struct VertexOut {
-\\      @builtin(position) position_clip: vec4<f32>,
-\\      @location(0) uv: vec2<f32>,
-\\  }
-\\  @stage(vertex) fn main(
-\\      @location(0) position: vec2<f32>,
-\\      @location(1) uv: vec2<f32>,
-\\  ) -> VertexOut {
-\\      let p = vec2(position.x / uniforms.aspect_ratio, position.y);
-\\      var output: VertexOut;
-\\      output.position_clip = vec4(p, 0.0, 1.0);
-\\      output.uv = uv;
-\\      return output;
-\\  }
-;
-const wgsl_fs = wgsl_common ++
-\\  @group(0) @binding(1) var image: texture_2d<f32>;
-\\  @group(0) @binding(2) var image_sampler: sampler;
-\\  @stage(fragment) fn main(
-\\      @location(0) uv: vec2<f32>,
-\\  ) -> @location(0) vec4<f32> {
-\\      return textureSampleLevel(image, image_sampler, uv, uniforms.mip_level);
-\\  }
-// zig fmt: on
-;
-const Uniforms = extern struct {
+pub const Uniforms = extern struct {
     aspect_ratio: f32,
     mip_level: f32,
 };
@@ -61,7 +28,7 @@ const RendererState = struct {
     vertex_buffer: zgpu.BufferHandle,
     index_buffer: zgpu.BufferHandle,
 
-    texture: sf.tex.Texture,
+    texture: sf.Texture,
     sampler: zgpu.SamplerHandle,
     mip_level: i32 = 0,
 };
@@ -84,25 +51,25 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         .{ .position = [2]f32{ 0.9, -0.9 }, .uv = [2]f32{ 1.0, 1.0 } },
         .{ .position = [2]f32{ -0.9, -0.9 }, .uv = [2]f32{ 0.0, 1.0 } },
     };
-    var vertex_buffer: zgpu.BufferHandle = sf.buf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, Vertex, vertex_data[0..]);
+    var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, Vertex, vertex_data[0..]);
     // Create an index buffer.
     const index_data = [_]u16{ 0, 1, 3, 1, 2, 3 };
-    const index_buffer: zgpu.BufferHandle = sf.buf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u16, index_data[0..]);
+    const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u16, index_data[0..]);
 
     stbi.init(arena);
     defer stbi.deinit();
     var image = try stbi.Image.loadFromFile("assets/textures/" ++ "genart_0025_5.png", 4);
     defer image.deinit();
     // Default texture
-    var default_texture = try sf.res.resources_generate_default_texture(gctx);
+    var default_texture = try sf.resources_generate_default_texture(gctx);
     // Create a texture.
-    var texture = sf.tex.texture_create(gctx, .{ .texture_binding = true, .copy_dst = true }, .{
+    var texture = sf.texture_create(gctx, .{ .texture_binding = true, .copy_dst = true }, .{
         .width = image.width,
         .height = image.height,
         .depth_or_array_layers = 1,
     }, .{ .components_count = image.num_components, .components_width = image.bytes_per_component, .is_hdr = image.is_hdr });
     std.log.info("{}", .{image.bytes_per_row});
-    sf.tex.texture_load_data(gctx, &texture, image.width, image.height, image.bytes_per_row, image.data);
+    sf.texture_load_data(gctx, &texture, image.width, image.height, image.bytes_per_row, image.data);
     // Create a sampler.
     const sampler = gctx.createSampler(.{});
     const bind_group = gctx.createBindGroup(bind_group_layout, &.{
@@ -129,50 +96,8 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
     defer commands.release();
     gctx.submit(&.{commands});
     // (Async) Create a render pipeline.
-    renderer_pipeline_create(allocator, gctx, &.{bind_group_layout}, &renderer_state.pipeline);
+    sf.pipeline_create(allocator, gctx, &.{bind_group_layout}, &renderer_state.pipeline);
     return renderer_state;
-}
-
-fn renderer_pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, bind_group_layout: []const zgpu.BindGroupLayoutHandle, out_pipeline_handle: *zgpu.RenderPipelineHandle) void {
-    const pipeline_layout = gctx.createPipelineLayout(bind_group_layout);
-    defer gctx.releaseResource(pipeline_layout);
-    const vs_module = zgpu.createWgslShaderModule(gctx.device, wgsl_vs, "vs");
-    defer vs_module.release();
-    const fs_module = zgpu.createWgslShaderModule(gctx.device, wgsl_fs, "fs");
-    defer fs_module.release();
-    const color_targets = [_]zgpu.wgpu.ColorTargetState{.{
-        .format = zgpu.GraphicsContext.swapchain_format,
-    }};
-    const vertex_attributes = [_]zgpu.wgpu.VertexAttribute{
-        .{ .format = .float32x2, .offset = 0, .shader_location = 0 },
-        .{ .format = .float32x2, .offset = @offsetOf(Vertex, "uv"), .shader_location = 1 },
-    };
-    const vertex_buffers = [_]zgpu.wgpu.VertexBufferLayout{.{
-        .array_stride = @sizeOf(Vertex),
-        .attribute_count = vertex_attributes.len,
-        .attributes = &vertex_attributes,
-    }};
-    // Create a render pipeline.
-    const pipeline_descriptor = zgpu.wgpu.RenderPipelineDescriptor{
-        .vertex = .{
-            .module = vs_module,
-            .entry_point = "main",
-            .buffer_count = vertex_buffers.len,
-            .buffers = &vertex_buffers,
-        },
-        .primitive = .{
-            .front_face = .cw,
-            .cull_mode = .back,
-            .topology = .triangle_list,
-        },
-        .fragment = &.{
-            .module = fs_module,
-            .entry_point = "main",
-            .target_count = color_targets.len,
-            .targets = &color_targets,
-        },
-    };
-    gctx.createRenderPipelineAsync(allocator, pipeline_layout, pipeline_descriptor, out_pipeline_handle);
 }
 
 fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
