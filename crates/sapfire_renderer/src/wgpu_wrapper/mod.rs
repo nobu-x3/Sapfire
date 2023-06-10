@@ -330,7 +330,7 @@ impl WGPURenderingContext {
             .create_command_encoder(&CommandEncoderDescriptor {
                 label: Some("Render Encoder"),
             });
-        let desc = &RenderPassDescriptor {
+        let mut render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
             label: Some("Render Pass"),
             color_attachments: &[Some(RenderPassColorAttachment {
                 view: &view,
@@ -353,8 +353,7 @@ impl WGPURenderingContext {
                 }),
                 stencil_ops: None,
             }),
-        };
-        let mut render_pass = init_render_pass(&mut encoder, desc);
+        });
         render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
         render_pass.set_pipeline(&self.light_render_pipeline);
         render_pass.draw_light_model(
@@ -380,7 +379,7 @@ impl WGPURenderingContext {
         camera_transform: glam::Mat4,
         camera_position: &glam::Vec3,
         projection: &glam::Mat4,
-    ) -> Result<RenderPass, SurfaceError> {
+    ) {
         let camera_uniform = CameraUniform {
             view_proj: (*projection * camera_transform).to_cols_array_2d(),
             position: camera_position.to_array(),
@@ -391,14 +390,48 @@ impl WGPURenderingContext {
             0,
             bytemuck::cast_slice(&[camera_uniform]),
         );
+    }
+
+    pub fn init_render_pass(&mut self) -> Result<RenderPassInfo, SurfaceError> {
         let output = self.surface.get_current_texture()?;
         let view = output
             .texture
             .create_view(&TextureViewDescriptor::default());
-        let info =
-            RenderPassInfo::default_render_pass_info(&self.device, &view, &self.depth_texture.view);
-
-        Ok(init_render_pass(&mut info.encoder, &info.desc))
+        let mut encoder = self
+            .device
+            .create_command_encoder(&CommandEncoderDescriptor {
+                label: Some("Render Encoder"),
+            });
+        let render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
+            label: Some("Render Pass"),
+            color_attachments: &[Some(RenderPassColorAttachment {
+                view: &view,
+                resolve_target: None,
+                ops: Operations {
+                    load: LoadOp::Clear(Color {
+                        r: 0.3,
+                        g: 0.3,
+                        b: 0.3,
+                        a: 1.0,
+                    }),
+                    store: true,
+                },
+            })],
+            depth_stencil_attachment: Some(RenderPassDepthStencilAttachment {
+                view: &self.depth_texture.view,
+                depth_ops: Some(Operations {
+                    load: LoadOp::Clear(1.0),
+                    store: true,
+                }),
+                stencil_ops: None,
+            }),
+        });
+        Ok(RenderPassInfo {
+            output,
+            view,
+            encoder,
+            render_pass,
+        })
     }
 
     pub fn update(&mut self) {
@@ -423,53 +456,10 @@ impl WGPURenderingContext {
 }
 
 pub struct RenderPassInfo<'a> {
-    pub encoder: CommandEncoder,
-    pub desc: RenderPassDescriptor<'a, 'a>,
-}
-
-impl<'a> RenderPassInfo<'a> {
-    pub fn default_render_pass_info(
-        device: &Device,
-        color_texture_view: &'a TextureView,
-        depth_texture_view: &'a TextureView,
-    ) -> RenderPassInfo<'a> {
-        let encoder = device.create_command_encoder(&CommandEncoderDescriptor {
-            label: Some("Render Encoder"),
-        });
-        let desc = RenderPassDescriptor {
-            label: Some("Render Pass"),
-            color_attachments: &[Some(RenderPassColorAttachment {
-                view: &color_texture_view,
-                resolve_target: None,
-                ops: Operations {
-                    load: LoadOp::Clear(Color {
-                        r: 0.3,
-                        g: 0.3,
-                        b: 0.3,
-                        a: 1.0,
-                    }),
-                    store: true,
-                },
-            })],
-            depth_stencil_attachment: Some(RenderPassDepthStencilAttachment {
-                view: &depth_texture_view,
-                depth_ops: Some(Operations {
-                    load: LoadOp::Clear(1.0),
-                    store: true,
-                }),
-                stencil_ops: None,
-            }),
-        };
-        RenderPassInfo { encoder, desc }
-    }
-}
-
-pub fn init_render_pass<'a>(
-    encoder: &'a mut CommandEncoder,
-    desc: &'a RenderPassDescriptor,
-) -> RenderPass<'a> {
-    let render_pass = encoder.begin_render_pass(desc);
-    render_pass
+    output: SurfaceTexture,
+    view: TextureView,
+    encoder: CommandEncoder,
+    render_pass: RenderPass<'a>,
 }
 
 pub fn create_render_pipeline(
