@@ -2,10 +2,11 @@
   "configurations": {
     "launch": {
       "adapter": "CodeLLDB",
-      "filetypes": [ "rust" ],
+      "filetypes": [ "zig" ],
       "configuration": {
         "request": "launch",
-        "program": "${workspaceRoot}/target/debug/sapfire"
+        "program": "${workspaceRoot}/zig-out/bin/Sapfire",
+        "cwd": "${workspaceRoot}/zig-out/bin/"
       }
     }
   }
