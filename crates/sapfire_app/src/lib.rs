@@ -71,14 +71,15 @@ impl App {
                         WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
                             context.resize(**new_inner_size);
                         }
-                        WindowEvent::KeyboardInput { input, .. } => {
-                            if input.state == ElementState::Pressed {
+                        WindowEvent::KeyboardInput {input,  .. } => {
+                            if input.state == ElementState::Pressed{
                                 app.resources.insert(input.virtual_keycode)
-                            } else {
+                            }
+                            else {
                                 app.resources.insert(None::<VirtualKeyCode>)
                             }
                         }
-                        _ => {}
+                        _ => {},
                     }
                 }
                 Event::RedrawRequested(window_id) if window_id == context.window().id() => {
@@ -92,7 +93,6 @@ impl App {
                             &camera_transform.translation,
                             &camera.camera.projection,
                         );
-
                         match context.render() {
                             Ok(_) => {}
                             Err(sapfire_renderer::wgpu_wrapper::SurfaceError::Lost) => {

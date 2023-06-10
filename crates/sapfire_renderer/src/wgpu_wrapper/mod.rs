@@ -392,48 +392,6 @@ impl WGPURenderingContext {
         );
     }
 
-    pub fn init_render_pass(&mut self) -> Result<RenderPassInfo, SurfaceError> {
-        let output = self.surface.get_current_texture()?;
-        let view = output
-            .texture
-            .create_view(&TextureViewDescriptor::default());
-        let mut encoder = self
-            .device
-            .create_command_encoder(&CommandEncoderDescriptor {
-                label: Some("Render Encoder"),
-            });
-        let render_pass = encoder.begin_render_pass(&RenderPassDescriptor {
-            label: Some("Render Pass"),
-            color_attachments: &[Some(RenderPassColorAttachment {
-                view: &view,
-                resolve_target: None,
-                ops: Operations {
-                    load: LoadOp::Clear(Color {
-                        r: 0.3,
-                        g: 0.3,
-                        b: 0.3,
-                        a: 1.0,
-                    }),
-                    store: true,
-                },
-            })],
-            depth_stencil_attachment: Some(RenderPassDepthStencilAttachment {
-                view: &self.depth_texture.view,
-                depth_ops: Some(Operations {
-                    load: LoadOp::Clear(1.0),
-                    store: true,
-                }),
-                stencil_ops: None,
-            }),
-        });
-        Ok(RenderPassInfo {
-            output,
-            view,
-            encoder,
-            render_pass,
-        })
-    }
-
     pub fn update(&mut self) {
         for inst in &mut self.instances {
             let amount = glam::Quat::from_rotation_y((15.0 as f32).to_radians());
@@ -453,13 +411,6 @@ impl WGPURenderingContext {
             bytemuck::cast_slice(&[self.light_uniform]),
         );
     }
-}
-
-pub struct RenderPassInfo<'a> {
-    output: SurfaceTexture,
-    view: TextureView,
-    encoder: CommandEncoder,
-    render_pass: RenderPass<'a>,
 }
 
 pub fn create_render_pipeline(
