@@ -2,6 +2,7 @@ const std = @import("std");
 const zgpu = @import("zgpu");
 const glfw = @import("zglfw");
 const stbi = @import("zstbi");
+const zmath = @import("zmath");
 const sf = struct {
     usingnamespace @import("texture.zig");
     usingnamespace @import("resources.zig");
