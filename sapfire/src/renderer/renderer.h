@@ -1,5 +1,6 @@
 #pragma once
 
+#include "defines.h"
 #include "renderer_types.h"
 
 /**
@@ -26,5 +27,6 @@ void renderer_shutdown (renderer *renderer);
 * @return TRUE on success FALSE on failure. If FALSE is returned you should check the return value to see what went wrong
 */
 b8 renderer_draw_frame (renderer *renderer, render_bundle *bundle);
-void renderer_create_texture(renderer* renderer, const char* name, u32 width, u32 height, u32 channels, b8 opaque, const u8* pixels, struct texture* out_texture);
-void renderer_destroy_texture(renderer* renderer, struct texture* texture);
+
+// HACK: this should not be exposed outside the engine.
+SAPI void renderer_set_view (renderer *renderer, mat4 view);

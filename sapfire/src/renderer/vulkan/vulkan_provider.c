@@ -49,6 +49,9 @@ void create_command_buffers ();
 
 b8 create_buffers (vulkan_context *context); // TODO: remove this
 
+void upload_data (vulkan_context *context, VkCommandPool pool, VkQueue queue,
+				  vulkan_buffer *buffer, u64 size, u64 offset, void *data);
+
 b8 vulkan_initialize (renderer_provider *api, const char *app_name,
 					  struct platform_state *plat_state) {
 	event_register (EVENT_CODE_WINDOW_RESIZED, &context, window_resized);
@@ -208,6 +211,31 @@ b8 vulkan_initialize (renderer_provider *api, const char *app_name,
 		SF_FATAL ("Failed to create buffers.")
 		return FALSE;
 	}
+	vertex verts[4];
+	sfmemset (verts, 0, sizeof (vertex) * 4);
+
+	verts[0].position.x = -0.5;
+	verts[0].position.y = -0.5;
+
+	verts[1].position.x = 0.5;
+	verts[1].position.y = 0.5;
+
+	verts[2].position.x = -0.5;
+	verts[2].position.y = 0.5;
+
+	verts[3].position.x = 0.5;
+	verts[3].position.y = -0.5;
+
+	u32 indices[6] = {0, 1, 2, 0, 3, 1};
+
+	upload_data (&context, context.device.graphics_command_pool,
+				 context.device.graphics_queue, &context.VBO,
+				 sizeof (vertex) * 4, 0, verts);
+
+	upload_data (&context, context.device.graphics_command_pool,
+				 context.device.graphics_queue, &context.IBO, sizeof (u32) * 6,
+				 0, indices);
+
 	SF_INFO ("Successfully created buffers.");
 	SF_INFO ("Vulkan renderer provider initialized successfully.");
 	return TRUE;
@@ -562,44 +590,6 @@ b8 create_buffers (vulkan_context *context) {
 	}
 	vulkan_buffer_bind (context, &context->IBO, 0);
 
-	vertex verts[4];
-	sfmemset (verts, 0, sizeof (vertex) * 4);
-
-	verts[0].position.x = -0.5;
-	verts[0].position.y = -0.5;
-	verts[0].texcoord.x = 0.0f;
-	verts[0].texcoord.y = 0.0f;
-
-	verts[1].position.x = 0.5;
-	verts[1].position.y = 0.5;
-	verts[1].texcoord.x = 1.0f;
-	verts[1].texcoord.y = 1.0f;
-
-	verts[2].position.x = -0.5;
-	verts[2].position.y = 0.5;
-	verts[2].texcoord.x = 0.0f;
-	verts[2].texcoord.y = 1.0f;
-
-	verts[3].position.x = 0.5;
-	verts[3].position.y = -0.5;
-	verts[3].texcoord.x = 1.0f;
-	verts[3].texcoord.y = 0.0f;
-
-	u32 indices[6] = {0, 1, 2, 0, 3, 1};
-
-	upload_data (context, context->device.graphics_command_pool,
-				 context->device.graphics_queue, &context->VBO,
-				 sizeof (vertex) * 4, 0, verts);
-
-	upload_data (context, context->device.graphics_command_pool,
-				 context->device.graphics_queue, &context->IBO,
-				 sizeof (u32) * 6, 0, indices);
-
-	u32 mesh_id = 0;
-	if (!vulkan_shader_alloc (context, &context->shader, &mesh_id)) {
-		SF_ERROR ("Failed to allocate shader resource.");
-		return FALSE;
-	}
 	return TRUE;
 }
 
@@ -607,10 +597,10 @@ void vulkan_update_scene_data (mat4 projection, mat4 view) {
 	vulkan_command_buffer *cmd_buffer =
 		&context.graphics_command_buffers[context.image_index];
 	vulkan_shader_bind (&context, &context.shader);
-	context.scene_data.scene_camera.projection = projection;
-	context.scene_data.scene_camera.view	   = view;
-	vulkan_shader_update_uniforms (&context, &context.shader,
-								   &context.scene_data);
+	context.scene_data.projection = projection;
+	context.scene_data.view		  = view;
+	vulkan_shader_update_scene_uniforms (&context, &context.shader,
+										 &context.scene_data);
 }
 
 void vulkan_update_objects_data (mesh_data data) {

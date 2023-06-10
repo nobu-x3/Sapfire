@@ -69,16 +69,8 @@ typedef struct vulkan_shader {
 	vulkan_pipeline pipeline;
 	VkDescriptorPool scene_descriptor_pool;
 	VkDescriptorSetLayout scene_descriptor_set_layout;
-	VkDescriptorSet scene_descriptor_sets[8];
+	VkDescriptorSet scene_descriptor_sets[3];
 	vulkan_buffer scene_uniform_buffer;
-	VkDescriptorPool mesh_descriptor_pool;
-    VkDescriptorSetLayout mesh_descriptor_set_layout;
-    vulkan_buffer mesh_uniform_buffer;
-    // TODO: reference count instead
-    u32 mesh_uniform_buffer_index;
-    // TODO: make dynamic
-    vulkan_shader_mesh_state mesh_states[VULKAN_MAX_MESH_COUNT];
-    texture* default_diffuse;
 } vulkan_shader;
 
 typedef enum vulkan_render_pass_state {
