@@ -72,7 +72,7 @@ pub fn pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext
         },
         .primitive = .{
             .front_face = .cw,
-            .cull_mode = .none,
+            .cull_mode = .back,
             .topology = .triangle_list,
         },
         .depth_stencil = &.{
