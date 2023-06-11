@@ -21,6 +21,14 @@ pub const Uniforms = extern struct {
     model: zm.Mat,
 };
 
+pub const Camera = struct {
+    position: [3]f32 = .{ 0.0, 0.0, -3.0 },
+    forward: [3]f32 = .{ 0.0, 0.0, 0.0 },
+    pitch: f32 = 0.0,
+    // yaw: f32 = std.math.pi + 0.25 * std.math.pi,
+    yaw: f32 = 0.0,
+};
+
 pub const GlobalUniforms = extern struct {
     view_projection: zm.Mat,
 };
@@ -36,6 +44,10 @@ const RendererState = struct {
     depth_texture: sf.Texture,
     sampler: zgpu.SamplerHandle,
     mip_level: i32 = 0,
+    camera: Camera = .{},
+    mouse: struct {
+        cursor_pos: [2]f64 = .{ 0, 0 },
+    } = .{},
 };
 
 fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
@@ -124,18 +136,52 @@ fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
     allocator.destroy(renderer_state);
 }
 
+fn update(renderer_state: *RendererState, window: *glfw.Window) void {
+    const cursor_pos = window.getCursorPos();
+    const delta_x = @floatCast(f32, cursor_pos[0] - renderer_state.mouse.cursor_pos[0]);
+    const delta_y = @floatCast(f32, cursor_pos[1] - renderer_state.mouse.cursor_pos[1]);
+    renderer_state.mouse.cursor_pos = cursor_pos;
+
+    if (window.getMouseButton(.left) == .press) {} else if (window.getMouseButton(.right) == .press) {
+        renderer_state.camera.pitch += 0.0025 * delta_y;
+        renderer_state.camera.yaw += 0.0025 * delta_x;
+        renderer_state.camera.pitch = std.math.min(renderer_state.camera.pitch, 0.48 * std.math.pi);
+        renderer_state.camera.pitch = std.math.max(renderer_state.camera.pitch, -0.48 * std.math.pi);
+        renderer_state.camera.yaw = zm.modAngle(renderer_state.camera.yaw);
+    }
+    const speed = zm.f32x4s(2.0);
+    const delta_time = zm.f32x4s(renderer_state.gctx.stats.delta_time);
+    const transform = zm.mul(zm.rotationX(renderer_state.camera.pitch), zm.rotationY(renderer_state.camera.yaw));
+    var forward = zm.normalize3(zm.mul(zm.f32x4(0.0, 0.0, 1.0, 0.0), transform));
+    zm.storeArr3(&renderer_state.camera.forward, forward);
+    const right = speed * delta_time * zm.normalize3(zm.cross3(zm.f32x4(0.0, 1.0, 0.0, 0.0), forward));
+    forward = speed * delta_time * forward;
+    var cam_pos = zm.loadArr3(renderer_state.camera.position);
+    if (window.getKey(.up) == .press) {
+        cam_pos += forward;
+    } else if (window.getKey(.down) == .press) {
+        cam_pos -= forward;
+    }
+    if (window.getKey(.right) == .press) {
+        cam_pos += right;
+    } else if (window.getKey(.left) == .press) {
+        cam_pos -= right;
+    }
+    zm.storeArr3(&renderer_state.camera.position, cam_pos);
+}
+
 fn draw(renderer_state: *RendererState) void {
     const gctx = renderer_state.gctx;
     const fb_width = gctx.swapchain_descriptor.width;
     const fb_height = gctx.swapchain_descriptor.height;
     const t = @floatCast(f32, gctx.stats.time);
     const cam_world_to_view = zm.lookAtLh(
-        zm.f32x4(-5.0, 0.0, -9.0, 1.0),
-        zm.f32x4(0.0, 0.0, 0.0, 1.0),
+        zm.loadArr3(renderer_state.camera.position),
+        zm.loadArr3(renderer_state.camera.forward),
         zm.f32x4(0.0, 1.0, 0.0, 0.0),
     );
     const cam_view_to_clip = zm.perspectiveFovLh(
-        0.5 * std.math.pi,
+        0.25 * std.math.pi,
         @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
         0.01,
         200.0,
@@ -182,7 +228,7 @@ fn draw(renderer_state: *RendererState) void {
             // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
             const glob = gctx.uniformsAllocate(GlobalUniforms, 1);
             glob.slice[0] = .{
-                .view_projection = cam_world_to_clip,
+                .view_projection = zm.transpose(cam_world_to_clip),
             };
             const mem = gctx.uniformsAllocate(Uniforms, 1);
             mem.slice[0] = .{
@@ -229,6 +275,7 @@ pub fn main() !void {
     defer destroy(allocator, renderer_state);
     while (!window.shouldClose() and window.getKey(.escape) != .press) {
         glfw.pollEvents();
+        update(renderer_state, window);
         draw(renderer_state);
     }
 }
