@@ -2,6 +2,7 @@ const std = @import("std");
 const zgpu = @import("zgpu");
 const glfw = @import("zglfw");
 const stbi = @import("zstbi");
+const zm = @import("zmath");
 const sf = struct {
     usingnamespace @import("texture.zig");
     usingnamespace @import("resources.zig");
@@ -10,14 +11,11 @@ const sf = struct {
 };
 
 pub const Vertex = extern struct {
-    position: [2]f32,
+    position: [3]f32,
     uv: [2]f32,
 };
 
-pub const Uniforms = extern struct {
-    aspect_ratio: f32,
-    mip_level: f32,
-};
+pub const Uniforms = extern struct { aspect_ratio: f32, mip_level: f32, object_to_clip: zm.Mat };
 
 const RendererState = struct {
     gctx: *zgpu.GraphicsContext,
@@ -29,6 +27,7 @@ const RendererState = struct {
     index_buffer: zgpu.BufferHandle,
 
     texture: sf.Texture,
+    depth_texture: sf.Texture,
     sampler: zgpu.SamplerHandle,
     mip_level: i32 = 0,
 };
@@ -46,16 +45,15 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
     defer gctx.releaseResource(bind_group_layout);
     // Create a vertex buffer.
     const vertex_data = [_]Vertex{
-        .{ .position = [2]f32{ -0.9, 0.9 }, .uv = [2]f32{ 0.0, 0.0 } },
-        .{ .position = [2]f32{ 0.9, 0.9 }, .uv = [2]f32{ 1.0, 0.0 } },
-        .{ .position = [2]f32{ 0.9, -0.9 }, .uv = [2]f32{ 1.0, 1.0 } },
-        .{ .position = [2]f32{ -0.9, -0.9 }, .uv = [2]f32{ 0.0, 1.0 } },
+        .{ .position = [3]f32{ -0.9, 0.9, 0.0 }, .uv = [2]f32{ 0.0, 0.0 } },
+        .{ .position = [3]f32{ 0.9, 0.9, 0.0 }, .uv = [2]f32{ 1.0, 0.0 } },
+        .{ .position = [3]f32{ 0.9, -0.9, 0.0 }, .uv = [2]f32{ 1.0, 1.0 } },
+        .{ .position = [3]f32{ -0.9, -0.9, 0.0 }, .uv = [2]f32{ 0.0, 1.0 } },
     };
     var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, Vertex, vertex_data[0..]);
     // Create an index buffer.
     const index_data = [_]u16{ 0, 1, 3, 1, 2, 3 };
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u16, index_data[0..]);
-
     stbi.init(arena);
     defer stbi.deinit();
     var image = try stbi.Image.loadFromFile("assets/textures/" ++ "genart_0025_5.png", 4);
@@ -70,6 +68,8 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
     }, .{ .components_count = image.num_components, .components_width = image.bytes_per_component, .is_hdr = image.is_hdr });
     std.log.info("{}", .{image.bytes_per_row});
     sf.texture_load_data(gctx, &texture, image.width, image.height, image.bytes_per_row, image.data);
+    // Depth texture
+    const depth_texture = sf.texture_depth_create(gctx);
     // Create a sampler.
     const sampler = gctx.createSampler(.{});
     const bind_group = gctx.createBindGroup(bind_group_layout, &.{
@@ -84,6 +84,7 @@ fn renderer_init(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererS
         .vertex_buffer = vertex_buffer,
         .index_buffer = index_buffer,
         .texture = default_texture,
+        .depth_texture = depth_texture,
         .sampler = sampler,
     };
     // Generate mipmaps on the GPU.
@@ -109,7 +110,20 @@ fn draw(renderer_state: *RendererState) void {
     const gctx = renderer_state.gctx;
     const fb_width = gctx.swapchain_descriptor.width;
     const fb_height = gctx.swapchain_descriptor.height;
+    const t = @floatCast(f32, gctx.stats.time);
 
+    const cam_world_to_view = zm.lookAtLh(
+        zm.f32x4(3.0, 3.0, -3.0, 1.0),
+        zm.f32x4(0.0, 0.0, 0.0, 1.0),
+        zm.f32x4(0.0, 1.0, 0.0, 0.0),
+    );
+    const cam_view_to_clip = zm.perspectiveFovLh(
+        0.25 * std.math.pi,
+        @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
+        0.01,
+        200.0,
+    );
+    const cam_world_to_clip = zm.mul(cam_world_to_view, cam_view_to_clip);
     const back_buffer_view = gctx.swapchain.getCurrentTextureView();
     defer back_buffer_view.release();
 
@@ -123,31 +137,38 @@ fn draw(renderer_state: *RendererState) void {
             const ib_info = gctx.lookupResourceInfo(renderer_state.index_buffer) orelse break :pass;
             const pipeline = gctx.lookupResource(renderer_state.pipeline) orelse break :pass;
             const bind_group = gctx.lookupResource(renderer_state.bind_group) orelse break :pass;
-
+            const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
             const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
                 .view = back_buffer_view,
                 .load_op = .clear,
                 .store_op = .store,
             }};
+            const depth_attachment = zgpu.wgpu.RenderPassDepthStencilAttachment{
+                .view = depth_view,
+                .depth_load_op = .clear,
+                .depth_store_op = .store,
+                .depth_clear_value = 1.0,
+            };
             const render_pass_info = zgpu.wgpu.RenderPassDescriptor{
                 .color_attachment_count = color_attachments.len,
                 .color_attachments = &color_attachments,
+                .depth_stencil_attachment = &depth_attachment,
             };
             const pass = encoder.beginRenderPass(render_pass_info);
             defer {
                 pass.end();
                 pass.release();
             }
-
             pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
             pass.setIndexBuffer(ib_info.gpuobj.?, .uint16, 0, ib_info.size);
-
             pass.setPipeline(pipeline);
-
+            const object_to_world = zm.mul(zm.rotationY(t), zm.translation(-1.0, 0.0, 0.0));
+            const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
             const mem = gctx.uniformsAllocate(Uniforms, 1);
             mem.slice[0] = .{
                 .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
                 .mip_level = @intToFloat(f32, renderer_state.mip_level),
+                .object_to_clip = zm.transpose(object_to_clip),
             };
             pass.setBindGroup(0, bind_group, &.{mem.offset});
             pass.drawIndexed(6, 1, 0, 0, 0);
@@ -157,7 +178,14 @@ fn draw(renderer_state: *RendererState) void {
     defer commands.release();
 
     gctx.submit(&.{commands});
-    _ = gctx.present();
+    if (gctx.present() == .swap_chain_resized) {
+        // Release old depth texture.
+        gctx.releaseResource(renderer_state.depth_texture.view);
+        gctx.destroyResource(renderer_state.depth_texture.handle);
+
+        // Create a new depth texture to match the new window size.
+        renderer_state.depth_texture = sf.texture_depth_create(gctx);
+    }
 }
 
 pub fn main() !void {

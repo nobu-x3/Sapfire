@@ -3,6 +3,7 @@ const zgpu = @import("libs/zig-gamedev/libs/zgpu/build.zig");
 const zpool = @import("libs/zig-gamedev/libs/zpool/build.zig");
 const zglfw = @import("libs/zig-gamedev/libs/zglfw/build.zig");
 const zstbi = @import("libs/zig-gamedev/libs/zstbi/build.zig");
+const zmath = @import("libs/zig-gamedev/libs/zmath/build.zig");
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
@@ -33,11 +34,13 @@ pub fn build(b: *std.Build) void {
         .deps = .{ .zpool = zpool_pkg.zpool, .zglfw = zglfw_pkg.zglfw },
     });
     const zstbi_pkg = zstbi.package(b, target, optimize, .{});
+    const zmath_pkg = zmath.package(b, target, optimize, .{});
 
     zgpu_pkg.link(exe);
     zglfw_pkg.link(exe);
     zpool_pkg.link(exe);
     zstbi_pkg.link(exe);
+    zmath_pkg.link(exe);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
