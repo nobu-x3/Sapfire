@@ -7,29 +7,35 @@ const wgsl_common =
 \\  struct Uniforms {
 \\      aspect_ratio: f32,
 \\      mip_level: f32,
+\\      model: mat4x4<f32>,
 \\  }
-\\  @group(0) @binding(0) var<uniform> uniforms: Uniforms;
+\\  struct Globals {
+\\      view_proj: mat4x4<f32>,
+\\  }
+\\  @group(0) @binding(0) var<uniform> globalUniforms: Globals;
+\\  @group(1) @binding(0) var<uniform> uniforms: Uniforms;
 ;
 const wgsl_vs = wgsl_common ++
 \\  struct VertexOut {
 \\      @builtin(position) position_clip: vec4<f32>,
 \\      @location(0) uv: vec2<f32>,
 \\  }
-\\  @stage(vertex) fn main(
-\\      @location(0) position: vec2<f32>,
+\\  @vertex fn main(
+\\      @location(0) position: vec3<f32>,
 \\      @location(1) uv: vec2<f32>,
 \\  ) -> VertexOut {
-\\      let p = vec2(position.x / uniforms.aspect_ratio, position.y);
+\\      //let p = vec2(position.x / uniforms.aspect_ratio, position.y);
 \\      var output: VertexOut;
-\\      output.position_clip = vec4(p, 0.0, 1.0);
+\\      //output.position_clip = vec4(p, 0.0, 1.0);
+\\      output.position_clip = vec4(position, 1.0) * uniforms.model * globalUniforms.view_proj;
 \\      output.uv = uv;
 \\      return output;
 \\  }
 ;
 const wgsl_fs = wgsl_common ++
-\\  @group(0) @binding(1) var image: texture_2d<f32>;
-\\  @group(0) @binding(2) var image_sampler: sampler;
-\\  @stage(fragment) fn main(
+\\  @group(1) @binding(1) var image: texture_2d<f32>;
+\\  @group(1) @binding(2) var image_sampler: sampler;
+\\  @fragment fn main(
 \\      @location(0) uv: vec2<f32>,
 \\  ) -> @location(0) vec4<f32> {
 \\      return textureSampleLevel(image, image_sampler, uv, uniforms.mip_level);
@@ -48,7 +54,7 @@ pub fn pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext
         .format = zgpu.GraphicsContext.swapchain_format,
     }};
     const vertex_attributes = [_]zgpu.wgpu.VertexAttribute{
-        .{ .format = .float32x2, .offset = 0, .shader_location = 0 },
+        .{ .format = .float32x3, .offset = 0, .shader_location = 0 },
         .{ .format = .float32x2, .offset = @offsetOf(root.Vertex, "uv"), .shader_location = 1 },
     };
     const vertex_buffers = [_]zgpu.wgpu.VertexBufferLayout{.{
@@ -68,6 +74,11 @@ pub fn pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext
             .front_face = .cw,
             .cull_mode = .back,
             .topology = .triangle_list,
+        },
+        .depth_stencil = &.{
+            .format = .depth32_float,
+            .depth_write_enabled = true,
+            .depth_compare = .less,
         },
         .fragment = &.{
             .module = fs_module,
