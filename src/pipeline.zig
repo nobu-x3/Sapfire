@@ -1,6 +1,6 @@
 const std = @import("std");
 const zgpu = @import("zgpu");
-const root = @import("root");
+const renderer = @import("renderer.zig");
 
 // zig fmt: off
 const wgsl_common =
@@ -55,10 +55,10 @@ pub fn pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext
     }};
     const vertex_attributes = [_]zgpu.wgpu.VertexAttribute{
         .{ .format = .float32x3, .offset = 0, .shader_location = 0 },
-        .{ .format = .float32x2, .offset = @offsetOf(root.Vertex, "uv"), .shader_location = 1 },
+        .{ .format = .float32x2, .offset = @offsetOf(renderer.Vertex, "uv"), .shader_location = 1 },
     };
     const vertex_buffers = [_]zgpu.wgpu.VertexBufferLayout{.{
-        .array_stride = @sizeOf(root.Vertex),
+        .array_stride = @sizeOf(renderer.Vertex),
         .attribute_count = vertex_attributes.len,
         .attributes = &vertex_attributes,
     }};
