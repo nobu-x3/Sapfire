@@ -1,5 +1,4 @@
 bin/
-build/
 bin-int/
 .vs/
 .vscode/
@@ -21,4 +20,5 @@ Project/.vimspector.json
 Sapling/imgui.ini
 target/*
 crates/*/target/
-.cache/
+zig-out/
+zig-cache/
