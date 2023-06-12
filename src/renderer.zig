@@ -16,6 +16,13 @@ pub const Vertex = extern struct {
     uv: [2]f32,
 };
 
+const Mesh = struct {
+    index_offset: u32,
+    vertex_offset: i32,
+    num_indices: u32,
+    num_vertices: u32,
+};
+
 pub const Uniforms = extern struct {
     aspect_ratio: f32,
     mip_level: f32,
