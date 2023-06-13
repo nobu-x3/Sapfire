@@ -16,7 +16,7 @@ pub const Vertex = extern struct {
     uv: [2]f32,
 };
 
-const Mesh = struct {
+pub const Mesh = struct {
     index_offset: u32,
     vertex_offset: i32,
     num_indices: u32,
@@ -52,6 +52,7 @@ const RendererState = struct {
     depth_texture: sf.Texture,
     sampler: zgpu.SamplerHandle,
     mip_level: i32 = 0,
+    meshes: std.ArrayList(Mesh),
     camera: Camera = .{},
     mouse: struct {
         cursor_pos: [2]f64 = .{ 0, 0 },
@@ -73,17 +74,20 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
     });
     defer gctx.releaseResource(local_bgl);
-    // Create a vertex buffer.
-    const vertex_data = [_]Vertex{
-        .{ .position = [3]f32{ -0.9, 0.9, 0.0 }, .uv = [2]f32{ 0.0, 0.0 } },
-        .{ .position = [3]f32{ 0.9, 0.9, 0.0 }, .uv = [2]f32{ 1.0, 0.0 } },
-        .{ .position = [3]f32{ 0.9, -0.9, 0.0 }, .uv = [2]f32{ 1.0, 1.0 } },
-        .{ .position = [3]f32{ -0.9, -0.9, 0.0 }, .uv = [2]f32{ 0.0, 1.0 } },
-    };
-    var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, Vertex, vertex_data[0..]);
+    var meshes = std.ArrayList(Mesh).init(allocator);
+    try meshes.ensureTotalCapacity(128);
+    var vertices = std.ArrayList(Vertex).init(arena);
+    defer vertices.deinit();
+    try vertices.ensureTotalCapacity(256);
+    var indices = std.ArrayList(u32).init(arena);
+    defer indices.deinit();
+    try indices.ensureTotalCapacity(256);
+    mesh.init(arena);
+    defer mesh.deinit();
+    try sf.resources_load_mesh(arena, "assets/models/cube.gltf", &meshes, &vertices, &indices);
+    var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, Vertex, vertices.items);
     // Create an index buffer.
-    const index_data = [_]u16{ 0, 1, 3, 1, 2, 3 };
-    const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u16, index_data[0..]);
+    const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
     stbi.init(arena);
     defer stbi.deinit();
     var image = try stbi.Image.loadFromFile("assets/textures/" ++ "genart_0025_5.png", 4);
@@ -100,7 +104,11 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     // Depth texture
     const depth_texture = sf.texture_depth_create(gctx);
     // Create a sampler.
-    const sampler = gctx.createSampler(.{});
+    const sampler = gctx.createSampler(.{
+        .address_mode_u = .repeat,
+        .address_mode_v = .repeat,
+        .address_mode_w = .repeat,
+    });
     const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
         .{
             .binding = 0,
@@ -124,6 +132,7 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
         .depth_texture = depth_texture,
         .sampler = sampler,
         .global_uniform_bind_group = global_uniform_bg,
+        .meshes = meshes,
     };
     // Generate mipmaps on the GPU.
     const commands = commands: {
@@ -141,6 +150,7 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
 
 pub fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
     renderer_state.gctx.destroy(allocator);
+    renderer_state.meshes.deinit();
     allocator.destroy(renderer_state);
 }
 
@@ -229,7 +239,7 @@ pub fn draw(renderer_state: *RendererState) void {
                 pass.release();
             }
             pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
-            pass.setIndexBuffer(ib_info.gpuobj.?, .uint16, 0, ib_info.size);
+            pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
             pass.setPipeline(pipeline);
             const object_to_world = zm.mul(zm.rotationY(t), zm.translation(-1.0, 0.0, 0.0));
             // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);

@@ -48,8 +48,11 @@ pub fn resources_generate_default_texture(gctx: *zgpu.GraphicsContext) !texture.
     return new_texture;
 }
 
-pub fn resources_load_mesh(arena: std.mem.Allocator, path: []const u8, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(Vertex), out_indices: *std.ArrayList(u32)) !void {
-    const data = try zmesh.io.parseAndLoadFile(path);
+pub fn resources_load_mesh(arena: std.mem.Allocator, path: [:0]const u8, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(Vertex), out_indices: *std.ArrayList(u32)) !void {
+    const data = zmesh.io.parseAndLoadFile(path) catch |e| {
+        std.log.err("Error type: {s}", .{@typeName(@TypeOf(e))});
+        return e;
+    };
     defer zmesh.io.freeData(data);
     var indices = std.ArrayList(u32).init(arena);
     var positions = std.ArrayList([3]f32).init(arena);
