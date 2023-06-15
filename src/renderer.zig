@@ -255,7 +255,9 @@ pub fn draw(renderer_state: *RendererState) void {
             };
             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
             pass.setBindGroup(1, bind_group, &.{mem.offset});
-            pass.drawIndexed(renderer_state.meshes.items[0].num_indices, 1, renderer_state.meshes.items[0].index_offset, renderer_state.meshes.items[0].vertex_offset, 0);
+            for(renderer_state.meshes.items) |item| {
+                pass.drawIndexed(item.num_indices, 1, item.index_offset, item.vertex_offset, 0);
+            }
         }
         break :commands encoder.finish(null);
     };
