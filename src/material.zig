@@ -36,6 +36,6 @@ pub fn material_create(name: [:0]const u8, allocator: std.mem.Allocator, gctx: *
         .depth_texture = depth_texture,
         .sampler = sampler,
     };
-    pip.pipeline_create(allocator, gctx, &.{ global_uniform_bgl, local_bgl }, &material.pipeline);
+    pip.pipeline_create(allocator, gctx, &.{ global_uniform_bgl, local_bgl }, false, &material.pipeline);
     return material;
 }

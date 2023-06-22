@@ -43,7 +43,7 @@ const wgsl_fs = wgsl_common ++
 // zig fmt: on
 ;
 
-pub fn pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, bind_group_layout: []const zgpu.BindGroupLayoutHandle, out_pipeline_handle: *zgpu.RenderPipelineHandle) void {
+pub fn pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, bind_group_layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool, out_pipeline_handle: *zgpu.RenderPipelineHandle) void {
     const pipeline_layout = gctx.createPipelineLayout(bind_group_layout);
     defer gctx.releaseResource(pipeline_layout);
     const vs_module = zgpu.createWgslShaderModule(gctx.device, wgsl_vs, "vs");
@@ -87,5 +87,9 @@ pub fn pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext
             .targets = &color_targets,
         },
     };
-    gctx.createRenderPipelineAsync(allocator, pipeline_layout, pipeline_descriptor, out_pipeline_handle);
+    if (async_shader_compilation) {
+        gctx.createRenderPipelineAsync(allocator, pipeline_layout, pipeline_descriptor, out_pipeline_handle);
+    } else {
+        out_pipeline_handle.* = gctx.createRenderPipeline(pipeline_layout, pipeline_descriptor);
+    }
 }
