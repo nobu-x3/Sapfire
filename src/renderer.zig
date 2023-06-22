@@ -9,6 +9,7 @@ const sf = struct {
     usingnamespace @import("resources.zig");
     usingnamespace @import("buffer.zig");
     usingnamespace @import("pipeline.zig");
+    usingnamespace @import("material.zig");
 };
 
 pub const Vertex = extern struct {
@@ -43,14 +44,11 @@ pub const Camera = struct {
 
 const RendererState = struct {
     gctx: *zgpu.GraphicsContext,
-    pipeline: zgpu.RenderPipelineHandle = .{},
-    bind_group: zgpu.BindGroupHandle,
     global_uniform_bind_group: zgpu.BindGroupHandle,
     vertex_buffer: zgpu.BufferHandle,
     index_buffer: zgpu.BufferHandle,
     texture_system: sf.TextureSystem,
-    depth_texture: sf.Texture,
-    sampler: zgpu.SamplerHandle,
+    material: sf.Material,
     mip_level: i32 = 0,
     meshes: std.ArrayList(Mesh),
     camera: Camera = .{},
@@ -88,29 +86,8 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, Vertex, vertices.items);
     // Create an index buffer.
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
-    // stbi.init(arena);
-    // defer stbi.deinit();
-    // var image = try stbi.Image.loadFromFile("assets/textures/" ++ "genart_0025_5.png", 4);
-    // defer image.deinit();
-    // // Default texture
-    // var default_texture = try sf.resources_generate_default_texture(gctx);
-    // // Create a texture.
-    // var texture = sf.texture_create(gctx, .{ .texture_binding = true, .copy_dst = true }, .{
-    //     .width = image.width,
-    //     .height = image.height,
-    //     .depth_or_array_layers = 1,
-    // }, .{ .components_count = image.num_components, .components_width = image.bytes_per_component, .is_hdr = image.is_hdr });
-    // sf.texture_load_data(gctx, &texture, image.width, image.height, image.bytes_per_row, image.data);
     var texture_system = try sf.texture_system_init(allocator, gctx);
     try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
-    // Depth texture
-    const depth_texture = sf.texture_depth_create(gctx);
-    // Create a sampler.
-    const sampler = gctx.createSampler(.{
-        .address_mode_u = .repeat,
-        .address_mode_v = .repeat,
-        .address_mode_w = .repeat,
-    });
     const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
         .{
             .binding = 0,
@@ -119,23 +96,20 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
             .size = @sizeOf(GlobalUniforms),
         },
     });
-
-    const local_bg = gctx.createBindGroup(local_bgl, &.{
-        .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = @sizeOf(Uniforms) },
-        .{ .binding = 1, .texture_view_handle = sf.texture_system_get_texture(&texture_system, "assets/textures/" ++ "genart_0025_5.png").view },
-        .{ .binding = 2, .sampler_handle = sampler },
-    });
+    const material = sf.material_create("material", allocator, gctx, global_uniform_bgl, &texture_system, &.{
+        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+    }, @sizeOf(Uniforms), "assets/textures/" ++ "genart_0025_5.png");
     const renderer_state = try allocator.create(RendererState);
     renderer_state.* = .{
         .gctx = gctx,
-        .bind_group = local_bg,
         .vertex_buffer = vertex_buffer,
         .index_buffer = index_buffer,
-        .depth_texture = depth_texture,
         .texture_system = texture_system,
-        .sampler = sampler,
         .global_uniform_bind_group = global_uniform_bg,
         .meshes = meshes,
+        .material = material,
     };
     // Generate mipmaps on the GPU.
     // const commands = commands: {
@@ -147,7 +121,6 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     // defer commands.release();
     // gctx.submit(&.{commands});
     // (Async) Create a render pipeline.
-    sf.pipeline_create(allocator, gctx, &.{ global_uniform_bgl, local_bgl }, &renderer_state.pipeline);
     return renderer_state;
 }
 
@@ -217,10 +190,10 @@ pub fn draw(renderer_state: *RendererState) void {
         pass: {
             const vb_info = gctx.lookupResourceInfo(renderer_state.vertex_buffer) orelse break :pass;
             const ib_info = gctx.lookupResourceInfo(renderer_state.index_buffer) orelse break :pass;
-            const pipeline = gctx.lookupResource(renderer_state.pipeline) orelse break :pass;
-            const bind_group = gctx.lookupResource(renderer_state.bind_group) orelse break :pass;
+            const pipeline = gctx.lookupResource(renderer_state.material.pipeline) orelse break :pass;
+            const bind_group = gctx.lookupResource(renderer_state.material.bind_group) orelse break :pass;
             const global_uniform_bind_group = gctx.lookupResource(renderer_state.global_uniform_bind_group) orelse break :pass;
-            const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
+            const depth_view = gctx.lookupResource(renderer_state.material.depth_texture.view) orelse break :pass;
             const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
                 .view = back_buffer_view,
                 .load_op = .clear,
@@ -259,7 +232,7 @@ pub fn draw(renderer_state: *RendererState) void {
             };
             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
             pass.setBindGroup(1, bind_group, &.{mem.offset});
-            for(renderer_state.meshes.items) |item| {
+            for (renderer_state.meshes.items) |item| {
                 pass.drawIndexed(item.num_indices, 1, item.index_offset, item.vertex_offset, 0);
             }
         }
@@ -269,9 +242,9 @@ pub fn draw(renderer_state: *RendererState) void {
     gctx.submit(&.{commands});
     if (gctx.present() == .swap_chain_resized) {
         // Release old depth texture.
-        gctx.releaseResource(renderer_state.depth_texture.view);
-        gctx.destroyResource(renderer_state.depth_texture.handle);
+        gctx.releaseResource(renderer_state.material.depth_texture.view);
+        gctx.destroyResource(renderer_state.material.depth_texture.handle);
         // Create a new depth texture to match the new window size.
-        renderer_state.depth_texture = sf.texture_depth_create(gctx);
+        renderer_state.material.depth_texture = sf.texture_depth_create(gctx);
     }
 }
