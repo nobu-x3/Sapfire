@@ -10,36 +10,7 @@ const sf = struct {
     usingnamespace @import("buffer.zig");
     usingnamespace @import("pipeline.zig");
     usingnamespace @import("material.zig");
-};
-
-pub const Vertex = extern struct {
-    position: [3]f32,
-    uv: [2]f32,
-};
-
-pub const Mesh = struct {
-    index_offset: u32,
-    vertex_offset: i32,
-    num_indices: u32,
-    num_vertices: u32,
-};
-
-pub const Uniforms = extern struct {
-    aspect_ratio: f32,
-    mip_level: f32,
-    model: zm.Mat,
-};
-
-pub const GlobalUniforms = extern struct {
-    view_projection: zm.Mat,
-};
-
-pub const Camera = struct {
-    position: [3]f32 = .{ 0.0, 0.0, -3.0 },
-    forward: [3]f32 = .{ 0.0, 0.0, 0.0 },
-    pitch: f32 = 0.0,
-    // yaw: f32 = std.math.pi + 0.25 * std.math.pi,
-    yaw: f32 = 0.0,
+    usingnamespace @import("types.zig");
 };
 
 const RendererState = struct {
@@ -50,8 +21,8 @@ const RendererState = struct {
     texture_system: sf.TextureSystem,
     material: sf.Material,
     mip_level: i32 = 0,
-    meshes: std.ArrayList(Mesh),
-    camera: Camera = .{},
+    meshes: std.ArrayList(sf.Mesh),
+    camera: sf.Camera = .{},
     mouse: struct {
         cursor_pos: [2]f64 = .{ 0, 0 },
     } = .{},
@@ -72,9 +43,9 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
     });
     defer gctx.releaseResource(local_bgl);
-    var meshes = std.ArrayList(Mesh).init(allocator);
+    var meshes = std.ArrayList(sf.Mesh).init(allocator);
     try meshes.ensureTotalCapacity(128);
-    var vertices = std.ArrayList(Vertex).init(arena);
+    var vertices = std.ArrayList(sf.Vertex).init(arena);
     defer vertices.deinit();
     try vertices.ensureTotalCapacity(256);
     var indices = std.ArrayList(u32).init(arena);
@@ -83,7 +54,7 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     mesh.init(arena);
     defer mesh.deinit();
     try sf.resources_load_mesh(arena, "assets/models/cube.gltf", &meshes, &vertices, &indices);
-    var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, Vertex, vertices.items);
+    var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
     // Create an index buffer.
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
     var texture_system = try sf.texture_system_init(allocator, gctx);
@@ -93,14 +64,14 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
             .binding = 0,
             .buffer_handle = gctx.uniforms.buffer,
             .offset = 0,
-            .size = @sizeOf(GlobalUniforms),
+            .size = @sizeOf(sf.GlobalUniforms),
         },
     });
     const material = sf.material_create("material", allocator, gctx, global_uniform_bgl, &texture_system, &.{
         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-    }, @sizeOf(Uniforms), "assets/textures/" ++ "genart_0025_5.png");
+    }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
     const renderer_state = try allocator.create(RendererState);
     renderer_state.* = .{
         .gctx = gctx,
@@ -220,11 +191,11 @@ pub fn draw(renderer_state: *RendererState) void {
             pass.setPipeline(pipeline);
             const object_to_world = zm.mul(zm.rotationY(t), zm.translation(-1.0, 0.0, 0.0));
             // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
-            const glob = gctx.uniformsAllocate(GlobalUniforms, 1);
+            const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
             glob.slice[0] = .{
                 .view_projection = zm.transpose(cam_world_to_clip),
             };
-            const mem = gctx.uniformsAllocate(Uniforms, 1);
+            const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
             mem.slice[0] = .{
                 .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
                 .mip_level = @intToFloat(f32, renderer_state.mip_level),
