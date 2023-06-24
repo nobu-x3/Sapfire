@@ -1,8 +1,12 @@
 const std = @import("std");
 const glfw = @import("zglfw");
 const sf = @import("renderer/renderer.zig");
+const log = @import("core/logger.zig");
 
 pub fn main() !void {
+    try log.init();
+    defer log.deinit();
+    log.info("hello", .{});
     glfw.init() catch {
         std.log.err("Failed to init glfw.", .{});
         return;
