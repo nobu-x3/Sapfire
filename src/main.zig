@@ -1,6 +1,6 @@
 const std = @import("std");
 const glfw = @import("zglfw");
-const sf = @import("renderer.zig");
+const sf = @import("renderer/renderer.zig");
 
 pub fn main() !void {
     glfw.init() catch {
