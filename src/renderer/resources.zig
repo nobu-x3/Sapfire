@@ -3,10 +3,11 @@ const zgpu = @import("zgpu");
 const texture = @import("texture.zig");
 const zmesh = @import("zmesh");
 const types = @import("renderer_types.zig");
+const log = @import("../core/logger.zig");
 
 pub fn resources_load_mesh(arena: std.mem.Allocator, path: [:0]const u8, out_meshes: *std.ArrayList(types.Mesh), out_vertices: *std.ArrayList(types.Vertex), out_indices: *std.ArrayList(u32)) !void {
     const data = zmesh.io.parseAndLoadFile(path) catch |e| {
-        std.log.err("Error type: {s}", .{@typeName(@TypeOf(e))});
+        log.err("Error type: {s}", .{@typeName(@TypeOf(e))});
         return e;
     };
     defer zmesh.io.freeData(data);

@@ -1,10 +1,11 @@
 const std = @import("std");
 const zgpu = @import("zgpu");
 const stbi = @import("zstbi");
+const log = @import("../core/logger.zig");
 
-pub const TextureFormat = struct { 
+pub const TextureFormat = struct {
     components_count: u32,
-    components_width: u32, 
+    components_width: u32,
     is_hdr: bool,
 };
 
@@ -25,7 +26,7 @@ pub fn texture_system_init(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsCon
     var map = std.StringHashMap(Texture).init(arena_alloc);
     try map.ensureTotalCapacity(256);
     var default_texture = try generate_default_texture(gctx);
-    return TextureSystem { 
+    return TextureSystem{
         .arena = arena,
         .map = map,
         .default_texture = default_texture,
@@ -37,32 +38,32 @@ pub fn texture_system_deinit(system: *TextureSystem) void {
     system.arena.deinit();
 }
 
-pub fn texture_system_add_texture(system: *TextureSystem, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void{
+pub fn texture_system_add_texture(system: *TextureSystem, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
     var texture: Texture = undefined;
     var arena_alloc = system.arena.allocator();
     stbi.init(arena_alloc);
     defer stbi.deinit();
     var image = stbi.Image.loadFromFile(pathname, 4) catch {
-        std.log.err("Error loading texture from path {s}, using default texture.", .{pathname});
+        log.err("Error loading texture from path {s}, using default texture.", .{pathname});
         texture = system.default_texture;
         return;
     };
     defer image.deinit();
-    texture = texture_create(gctx, usage, .{ .width = image.width,
-            .height = image.height,
-            .depth_or_array_layers = 1,
-         }, 
-         .{ 
-                .components_count = image.num_components, 
-                .components_width = image.bytes_per_component, 
-                .is_hdr = image.is_hdr, 
-            });
+    texture = texture_create(gctx, usage, .{
+        .width = image.width,
+        .height = image.height,
+        .depth_or_array_layers = 1,
+    }, .{
+        .components_count = image.num_components,
+        .components_width = image.bytes_per_component,
+        .is_hdr = image.is_hdr,
+    });
     texture_load_data(gctx, &texture, image.width, image.height, image.bytes_per_row, image.data);
     try system.map.put(pathname, texture);
 }
 
 pub fn texture_system_get_texture(system: *TextureSystem, name: [:0]const u8) Texture {
-    if(system.map.contains(name)) {
+    if (system.map.contains(name)) {
         return system.map.get(name) orelse unreachable;
     }
     return system.default_texture;

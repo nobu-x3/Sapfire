@@ -8,12 +8,12 @@ pub fn main() !void {
     defer log.deinit();
     log.info("hello", .{});
     glfw.init() catch {
-        std.log.err("Failed to init glfw.", .{});
+        log.err("Failed to init glfw.", .{});
         return;
     };
     defer glfw.terminate();
     const window = glfw.Window.create(800, 600, "Sapfire", null) catch {
-        std.log.err("Failed to create window.", .{});
+        log.err("Failed to create window.", .{});
         return;
     };
     defer window.destroy();
@@ -22,7 +22,7 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
     const renderer_state = sf.renderer_create(allocator, window) catch {
-        std.log.err("Failed to initialize renderer.", .{});
+        log.err("Failed to initialize renderer.", .{});
         return;
     };
     defer sf.destroy(allocator, renderer_state);
