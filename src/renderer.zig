@@ -199,7 +199,6 @@ pub fn draw(renderer_state: *RendererState) void {
             glob.slice[0] = .{
                 .view_projection = zm.transpose(cam_world_to_clip),
             };
-            pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
             var material_iter = renderer_state.material_system.map.iterator();
             while (material_iter.next()) |entry| {
                 const pipeline = gctx.lookupResource(entry.key_ptr.pipeline) orelse break :pass;
@@ -213,6 +212,7 @@ pub fn draw(renderer_state: *RendererState) void {
                         .mip_level = @intToFloat(f32, renderer_state.mip_level),
                         .model = zm.transpose(object_to_world),
                     };
+                    pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
                     pass.setBindGroup(1, bind_group, &.{mem.offset});
                     pass.drawIndexed(item.num_indices, 1, item.index_offset, item.vertex_offset, 0);
                 }

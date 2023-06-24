@@ -47,7 +47,7 @@ pub fn material_system_add_material(system: *MaterialSystem, name: [:0]const u8,
 }
 
 pub fn material_system_add_material_to_mesh(system: *MaterialSystem, material: *Material, mesh: types.Mesh) !void {
-    var list = system.map.get(material.*);
+    var list = system.map.getPtr(material.*);
     try list.?.append(mesh);
 }
 
