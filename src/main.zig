@@ -1,34 +1,38 @@
 const std = @import("std");
 const glfw = @import("zglfw");
-const sf = @import("renderer/renderer.zig");
+const app = @import("core/application.zig");
 const log = @import("core/logger.zig");
+const game_types = @import("game_types.zig");
+const Game = game_types.Game;
+const GameError = game_types.GameError;
 
 pub fn main() !void {
-    try log.init();
-    defer log.deinit();
-    log.info("hello", .{});
-    glfw.init() catch {
-        log.err("Failed to init glfw.", .{});
-        return;
+    var game = Game{
+        .initialize = &initialize,
+        .update = &update,
+        .render = &render,
     };
-    defer glfw.terminate();
-    const window = glfw.Window.create(800, 600, "Sapfire", null) catch {
-        log.err("Failed to create window.", .{});
-        return;
+    const config = app.ApplicationConfig{
+        .window_width = 800,
+        .window_height = 600,
+        .window_name = "Sapfire",
+        .game = &game,
     };
-    defer window.destroy();
-    window.setSizeLimits(400, 400, -1, -1);
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-    const renderer_state = sf.renderer_create(allocator, window) catch {
-        log.err("Failed to initialize renderer.", .{});
-        return;
-    };
-    defer sf.destroy(allocator, renderer_state);
-    while (!window.shouldClose() and window.getKey(.escape) != .press) {
-        glfw.pollEvents();
-        sf.update(renderer_state, window);
-        sf.draw(renderer_state);
-    }
+    var application = try app.application_create(config);
+    try app.application_run(&application);
+}
+
+pub fn update(game: *Game, delta_time: f32) GameError!void {
+    _ = game;
+    _ = delta_time;
+    log.debug("frame", .{});
+}
+
+pub fn initialize(game: *Game) GameError!void {
+    _ = game;
+}
+
+pub fn render(game: *Game, delta_time: f32) GameError!void {
+    _ = game;
+    _ = delta_time;
 }

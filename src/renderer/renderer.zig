@@ -13,7 +13,7 @@ const sf = struct {
     usingnamespace @import("renderer_types.zig");
 };
 
-const RendererState = struct {
+pub const RendererState = struct {
     gctx: *zgpu.GraphicsContext,
     global_uniform_bind_group: zgpu.BindGroupHandle,
     vertex_buffer: zgpu.BufferHandle,
