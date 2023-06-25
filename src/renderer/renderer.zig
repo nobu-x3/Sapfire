@@ -39,12 +39,6 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
     });
     defer gctx.releaseResource(global_uniform_bgl);
-    const local_bgl = gctx.createBindGroupLayout(&.{
-        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-    });
-    defer gctx.releaseResource(local_bgl);
     var meshes = std.ArrayList(sf.Mesh).init(allocator);
     try meshes.ensureTotalCapacity(128);
     var vertices = std.ArrayList(sf.Vertex).init(arena);
@@ -73,17 +67,29 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
             .size = @sizeOf(sf.GlobalUniforms),
         },
     });
+    const local_bgl_entries = .{
+        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+    };
+    var bgls = [_]zgpu.wgpu.BindGroupLayoutEntry{
+        .{
+            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+        },
+        .{
+            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+            zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+            zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+        },
+    };
+    var pipeline = try sf.pipeline_system_add_pipeline(&pipeline_system, gctx, bgls, false);
     var material_system = try sf.material_system_init(allocator, 1);
-    try sf.material_system_add_material(&material_system, "material", gctx, global_uniform_bgl, &texture_system, &.{
-        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-    }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025768_5.png");
-    try sf.material_system_add_material(&material_system, "material1", gctx, global_uniform_bgl, &texture_system, &.{
-        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-    }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
+    try sf.material_system_add_material(&material_system, "material", gctx, global_uniform_bgl, &texture_system, local_bgl_entries, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025768_5.png");
+    try sf.material_system_add_material(&material_system, "material1", gctx, global_uniform_bgl, &texture_system, local_bgl_entries, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
+    var mat0 = try material_system.names.getPtr("material");
+    var mat1 = try material_system.names.getPtr("material1");
+    try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat0);
+    try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat1);
     for (meshes.items, 0..) |item, index| {
         if (index == 0) {
             try sf.material_system_add_material_to_mesh_by_name(&material_system, "material", item);
@@ -214,22 +220,24 @@ pub fn draw(renderer_state: *RendererState) void {
             glob.slice[0] = .{
                 .view_projection = zm.transpose(cam_world_to_clip),
             };
-            var material_iter = renderer_state.material_system.map.iterator();
-            while (material_iter.next()) |entry| {
-                const pipeline = gctx.lookupResource(entry.key_ptr.pipeline) orelse break :pass;
-                const bind_group = gctx.lookupResource(entry.key_ptr.bind_group) orelse break :pass;
+            for (renderer_state.pipeline_system.pipelines.items) |pipe| {
+                const pipeline = gctx.lookupResource(pipe.handle) orelse break :pass;
                 pass.setPipeline(pipeline);
-                for (entry.value_ptr.items) |item| {
-                    const object_to_world = zm.mul(zm.rotationY(t), zm.translation(-1.0, 0.0, 0.0));
-                    const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
-                    mem.slice[0] = .{
-                        .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
-                        .mip_level = @intToFloat(f32, renderer_state.mip_level),
-                        .model = zm.transpose(object_to_world),
-                    };
-                    pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
-                    pass.setBindGroup(1, bind_group, &.{mem.offset});
-                    pass.drawIndexed(item.num_indices, 1, item.index_offset, item.vertex_offset, 0);
+                for (pipe.materials.items) |material| {
+                    const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
+                    const meshes = try renderer_state.material_system.map.getPtr(material);
+                    for (meshes.items) |item| {
+                        const object_to_world = zm.mul(zm.rotationY(t), zm.translation(-1.0, 0.0, 0.0));
+                        const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
+                        mem.slice[0] = .{
+                            .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
+                            .mip_level = @intToFloat(f32, renderer_state.mip_level),
+                            .model = zm.transpose(object_to_world),
+                        };
+                        pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
+                        pass.setBindGroup(1, bind_group, &.{mem.offset});
+                        pass.drawIndexed(item.num_indices, 1, item.index_offset, item.vertex_offset, 0);
+                    }
                 }
             }
         }

@@ -57,12 +57,12 @@ pub fn material_system_add_material_to_mesh_by_name(system: *MaterialSystem, nam
 }
 
 pub const Material = struct {
-    pipeline: zgpu.RenderPipelineHandle = .{},
     bind_group: zgpu.BindGroupHandle,
     sampler: zgpu.SamplerHandle, // in case we need it later
 };
 
-pub fn material_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, global_uniform_bgl: zgpu.BindGroupLayoutHandle, texture_system: *tex.TextureSystem, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) Material {
+// TODO: make bind group configurable
+pub fn material_create(gctx: *zgpu.GraphicsContext, texture_system: *tex.TextureSystem, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) Material {
     // bind group
     const local_bgl = gctx.createBindGroupLayout(layout);
     defer gctx.releaseResource(local_bgl);
@@ -81,6 +81,5 @@ pub fn material_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext
         .bind_group = local_bg,
         .sampler = sampler,
     };
-    pip.pipeline_create(allocator, gctx, &.{ global_uniform_bgl, local_bgl }, false, &material.pipeline);
     return material;
 }
