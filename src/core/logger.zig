@@ -27,9 +27,9 @@ pub fn deinit() void {
 pub fn debug(comptime format: []const u8, args: anytype) void {
     if (!instance.debug_logging) return;
     var buf: [256]u8 = undefined;
-    const str = std.fmt.bufPrint(&buf, "[DEBUG]:\t" ++ format, args) catch {
+    const str = std.fmt.bufPrint(&buf, "[DEBUG]:\t" ++ format ++ "\n", args) catch {
         var wider_buf: [512]u8 = undefined;
-        const str = std.fmt.bufPrint(&wider_buf, "[DEBUG]:\t" ++ format, args) catch {
+        const str = std.fmt.bufPrint(&wider_buf, "[DEBUG]:\t" ++ format ++ "\n", args) catch {
             std.log.err("Message too long", .{});
             return;
         };
@@ -47,9 +47,9 @@ pub fn debug(comptime format: []const u8, args: anytype) void {
 
 pub fn err(comptime format: []const u8, args: anytype) void {
     var buf: [256]u8 = undefined;
-    const str = std.fmt.bufPrint(&buf, "[ERROR]:\t" ++ format, args) catch {
+    const str = std.fmt.bufPrint(&buf, "[ERROR]:\t" ++ format ++ "\n", args) catch {
         var wider_buf: [512]u8 = undefined;
-        const str = std.fmt.bufPrint(&wider_buf, "[ERROR]:\t" ++ format, args) catch {
+        const str = std.fmt.bufPrint(&wider_buf, "[ERROR]:\t" ++ format ++ "\n", args) catch {
             std.log.err("Message too long", .{});
             return;
         };
@@ -67,9 +67,9 @@ pub fn err(comptime format: []const u8, args: anytype) void {
 
 pub fn warn(comptime format: []const u8, args: anytype) void {
     var buf: [256]u8 = undefined;
-    const str = std.fmt.bufPrint(&buf, "[WARN]:\t" ++ format, args) catch {
+    const str = std.fmt.bufPrint(&buf, "[WARN]:\t" ++ format ++ "\n", args) catch {
         var wider_buf: [512]u8 = undefined;
-        const str = std.fmt.bufPrint(&wider_buf, "[WARN]:\t" ++ format, args) catch {
+        const str = std.fmt.bufPrint(&wider_buf, "[WARN]:\t" ++ format ++ "\n", args) catch {
             std.log.err("Message too long", .{});
             return;
         };
@@ -87,9 +87,9 @@ pub fn warn(comptime format: []const u8, args: anytype) void {
 
 pub fn info(comptime format: []const u8, args: anytype) void {
     var buf: [256]u8 = undefined;
-    const str = std.fmt.bufPrint(&buf, "[INFO]:\t" ++ format, args) catch {
+    const str = std.fmt.bufPrint(&buf, "[INFO]:\t" ++ format ++ "\n", args) catch {
         var wider_buf: [512]u8 = undefined;
-        const str = std.fmt.bufPrint(&wider_buf, "[INFO]:\t" ++ format, args) catch {
+        const str = std.fmt.bufPrint(&wider_buf, "[INFO]:\t" ++ format ++ "\n", args) catch {
             std.log.err("Message too long", .{});
             return;
         };
