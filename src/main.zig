@@ -19,13 +19,12 @@ pub fn main() !void {
         .game = &game,
     };
     var application = try app.application_create(config);
-    try app.application_run(&application);
+    _ = application;
 }
 
 pub fn update(game: *Game, delta_time: f32) GameError!void {
     _ = game;
     _ = delta_time;
-    log.debug("frame", .{});
 }
 
 pub fn initialize(game: *Game) GameError!void {

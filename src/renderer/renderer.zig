@@ -54,13 +54,13 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     try indices.ensureTotalCapacity(256);
     mesh.init(arena);
     defer mesh.deinit();
-    try sf.resources_load_mesh(arena, "assets/models/cube.gltf", &meshes, &vertices, &indices);
+    // try sf.resources_load_mesh(arena, "assets/models/cube.gltf", &meshes, &vertices, &indices);
     try sf.resources_load_mesh(arena, "assets/models/SciFiHelmet/SciFiHelmet.gltf", &meshes, &vertices, &indices);
     var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
     // Create an index buffer.
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
     var texture_system = try sf.texture_system_init(allocator, gctx);
-    try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
+    try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025768_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
     const depth_texture = sf.texture_depth_create(gctx);
     const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
         .{
