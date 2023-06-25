@@ -1,7 +1,9 @@
 const std = @import("std");
 const zgpu = @import("zgpu");
+const log = @import("../core/logger.zig");
 const renderer = @import("renderer.zig");
 const types = @import("renderer_types.zig");
+const mat = @import("material.zig");
 
 // zig fmt: off
 const wgsl_common =
@@ -43,6 +45,47 @@ const wgsl_fs = wgsl_common ++
 \\  }
 // zig fmt: on
 ;
+
+pub const PipelineSystem = struct {
+    pipelines: std.ArrayList(Pipeline),
+    arena: std.heap.ArenaAllocator,
+};
+
+pub fn pipeline_system_init(allocator: std.mem.Allocator) !PipelineSystem {
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    const pipelines = try std.ArrayList(Pipeline).initCapacity(arena.allocator(), 8);
+    return PipelineSystem{
+        .arena = arena,
+        .pipelines = pipelines,
+    };
+}
+
+pub fn pipeline_system_deinit(system: *PipelineSystem) void {
+    system.arena.deinit();
+}
+
+pub fn pipeline_system_add_pipeline(system: *PipelineSystem, gctx: *zgpu.GraphicsContext, bind_group_layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool) *Pipeline {
+    var pipeline: Pipeline = undefined;
+    pipeline_create(system.arena, gctx, bind_group_layout, async_shader_compilation, &pipeline.handle);
+    pipeline.materials = std.ArrayList().init(system.arena);
+    system.pipelines.append(pipeline);
+    return &system.pipelines.getLast();
+}
+
+pub fn pipeline_system_add_material(system: *PipelineSystem, pipeline: *Pipeline, material: *mat.Material) !void {
+    for (system.pipelines.items) |pipe| {
+        if (pipe.handle == pipeline.handle) {
+            try pipe.materials.append(material);
+            return;
+        }
+    }
+    log.err("Non-existent pipeline passed to pipeline_system_add_material()", .{});
+}
+
+pub const Pipeline = struct {
+    handle: zgpu.RenderPipelineHandle,
+    materials: std.ArrayList(*mat.Material),
+};
 
 pub fn pipeline_create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, bind_group_layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool, out_pipeline_handle: *zgpu.RenderPipelineHandle) void {
     const pipeline_layout = gctx.createPipelineLayout(bind_group_layout);

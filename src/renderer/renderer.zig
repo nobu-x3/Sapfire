@@ -18,6 +18,7 @@ pub const RendererState = struct {
     global_uniform_bind_group: zgpu.BindGroupHandle,
     vertex_buffer: zgpu.BufferHandle,
     index_buffer: zgpu.BufferHandle,
+    pipeline_system: sf.PipelineSystem,
     texture_system: sf.TextureSystem,
     material_system: sf.MaterialSystem,
     depth_texture: sf.Texture,
@@ -59,6 +60,7 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
     // Create an index buffer.
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
+    var pipeline_system = try sf.pipeline_system_init(allocator);
     var texture_system = try sf.texture_system_init(allocator, gctx);
     try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025768_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
     try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
@@ -94,6 +96,7 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
         .gctx = gctx,
         .vertex_buffer = vertex_buffer,
         .index_buffer = index_buffer,
+        .pipeline_system = pipeline_system,
         .texture_system = texture_system,
         .material_system = material_system,
         .global_uniform_bind_group = global_uniform_bg,
@@ -114,10 +117,11 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
 }
 
 pub fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
-    renderer_state.gctx.destroy(allocator);
-    sf.texture_system_deinit(&renderer_state.texture_system);
-    sf.material_system_deinit(&renderer_state.material_system);
     renderer_state.meshes.deinit();
+    sf.material_system_deinit(&renderer_state.material_system);
+    sf.texture_system_deinit(&renderer_state.texture_system);
+    sf.pipeline_system_deinit(&renderer_state.pipeline_system);
+    renderer_state.gctx.destroy(allocator);
     allocator.destroy(renderer_state);
 }
 
