@@ -15,7 +15,14 @@ pub const debug_enabled: bool = builtin.mode == .Debug;
 
 pub fn init() !void {
     var buf: [128]u8 = undefined;
-    const path = try std.fmt.bufPrint(&buf, "logs/log_{}", .{std.time.timestamp()});
+    // std.fs.cwd().openDir("logs", .{}) catch |e| {
+    //     std.log.err("{s}", .{@typeName(@TypeOf(e))});
+    //     try std.fs.cwd().makeDir("logs");
+    // };
+    std.fs.cwd().makeDir("logs") catch |e| {
+        std.log.warn("\nLoggin directory already exists. {s}", .{@typeName(@TypeOf(e))});
+    };
+    const path = try std.fmt.bufPrint(&buf, "logs/log_{}.log", .{std.time.timestamp()});
     instance.handle = try std.fs.cwd().createFile(path, .{ .read = true });
     instance.debug_logging = debug_enabled;
 }

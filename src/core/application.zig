@@ -34,7 +34,6 @@ pub fn application_create(config: ApplicationConfig) !void {
     };
     defer window.destroy();
     window.setSizeLimits(400, 400, -1, -1);
-    // var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
