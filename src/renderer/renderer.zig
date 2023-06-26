@@ -92,13 +92,8 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     var mat1 = material_system.names.getPtr("material1").?;
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat0);
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat1);
-    for (meshes.items, 0..) |item, index| {
-        if (index == 0) {
-            try sf.material_system_add_material_to_mesh_by_name(&material_system, "material", item);
-        } else {
-            try sf.material_system_add_material_to_mesh_by_name(&material_system, "material1", item);
-        }
-    }
+    try sf.material_system_add_material_to_mesh_by_name(&material_system, "material", meshes.items[0]);
+    try sf.material_system_add_material_to_mesh_by_name(&material_system, "material1", meshes.items[1]);
     const renderer_state = try allocator.create(RendererState);
     renderer_state.* = .{
         .gctx = gctx,
