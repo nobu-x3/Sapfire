@@ -53,7 +53,7 @@ pub const PipelineSystem = struct {
 
 pub fn pipeline_system_init(allocator: std.mem.Allocator) !PipelineSystem {
     var arena = std.heap.ArenaAllocator.init(allocator);
-    const pipelines = try std.ArrayList(Pipeline).initCapacity(arena.allocator(), 8);
+    var pipelines = try std.ArrayList(Pipeline).initCapacity(arena.allocator(), 8);
     return PipelineSystem{
         .arena = arena,
         .pipelines = pipelines,
@@ -64,36 +64,45 @@ pub fn pipeline_system_deinit(system: *PipelineSystem) void {
     system.arena.deinit();
 }
 
-pub fn pipeline_system_add_pipeline(system: *PipelineSystem, gctx: *zgpu.GraphicsContext, layout: []const zgpu.wgpu.BindGroupLayoutEntry, async_shader_compilation: bool) !*Pipeline {
-    var bgls: [64]zgpu.BindGroupLayoutHandle = undefined;
-    for (0..layout.len) |index| {
-        bgls[index] = gctx.createBindGroupLayout(layout[index]);
-    }
-    defer {
-        for (0..layout.len) |index| {
-            gctx.releaseResource(bgls[index]);
-        }
-    }
+pub fn pipeline_system_add_pipeline(system: *PipelineSystem, gctx: *zgpu.GraphicsContext, layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool) !*const Pipeline {
+    // var bgls: [64]zgpu.BindGroupLayoutHandle = undefined;
+    // for (0..layout.len) |index| {
+    //     bgls[index] = gctx.createBindGroupLayout(layout[index]);
+    // }
+    // defer {
+    //     for (0..layout.len) |index| {
+    //         gctx.releaseResource(bgls[index]);
+    //     }
+    // }
     var pipeline: Pipeline = undefined;
-    pipeline_create(system.arena, gctx, bgls[0..layout.len], async_shader_compilation, &pipeline.handle);
-    pipeline.materials = std.ArrayList().init(system.arena);
+    // pipeline_create(system.arena, gctx, bgls[0..layout.len], async_shader_compilation, &pipeline.handle);
+    pipeline_create(system.arena.allocator(), gctx, layout, async_shader_compilation, &pipeline.handle);
+    pipeline.materials = std.ArrayList(*const mat.Material).init(system.arena.allocator());
     try system.pipelines.append(pipeline);
-    return &system.pipelines.getLast();
+    return &system.pipelines.items[system.pipelines.items.len - 1];
 }
 
-pub fn pipeline_system_add_material(system: *PipelineSystem, pipeline: *Pipeline, material: *mat.Material) !void {
-    for (system.pipelines.items) |pipe| {
-        if (pipe.handle == pipeline.handle) {
-            try pipe.materials.append(material);
-            return;
+pub fn pipeline_system_add_material(system: *PipelineSystem, pipeline: *const Pipeline, material: *const mat.Material) !void {
+    var found: bool = false;
+    var pipeline_index: usize = 0;
+    for (system.pipelines.items, 0..) |pipe, index| {
+        if (pipe.handle.id == pipeline.handle.id) {
+            // try pipe.materials.append(material);
+            pipeline_index = index;
+            found = true;
+            break;
         }
+    }
+    if (found) {
+        try system.pipelines.items[pipeline_index].materials.append(material);
+        return;
     }
     log.err("Non-existent pipeline passed to pipeline_system_add_material()", .{});
 }
 
 pub const Pipeline = struct {
     handle: zgpu.RenderPipelineHandle,
-    materials: std.ArrayList(*mat.Material),
+    materials: std.ArrayList(*const mat.Material),
 };
 
 // TODO: make shader modules configurable

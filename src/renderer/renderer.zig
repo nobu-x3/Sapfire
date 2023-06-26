@@ -67,27 +67,29 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
             .size = @sizeOf(sf.GlobalUniforms),
         },
     });
-    const local_bgl_entries = .{
-        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-    };
-    var bgls = [_]zgpu.wgpu.BindGroupLayoutEntry{
-        .{
-            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-        },
-        .{
+    const local_bgl = gctx.createBindGroupLayout(
+        &.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
             zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
             zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
         },
-    };
-    var pipeline = try sf.pipeline_system_add_pipeline(&pipeline_system, gctx, bgls, false);
+    );
+    defer gctx.releaseResource(local_bgl);
+    var pipeline = try sf.pipeline_system_add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
+    // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
     var material_system = try sf.material_system_init(allocator, 1);
-    try sf.material_system_add_material(&material_system, "material", gctx, global_uniform_bgl, &texture_system, local_bgl_entries, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025768_5.png");
-    try sf.material_system_add_material(&material_system, "material1", gctx, global_uniform_bgl, &texture_system, local_bgl_entries, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
-    var mat0 = try material_system.names.getPtr("material");
-    var mat1 = try material_system.names.getPtr("material1");
+    try sf.material_system_add_material(&material_system, "material", gctx, &texture_system, &.{
+        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+    }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025768_5.png");
+    try sf.material_system_add_material(&material_system, "material1", gctx, &texture_system, &.{
+        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+    }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
+    var mat0 = material_system.names.getPtr("material").?;
+    var mat1 = material_system.names.getPtr("material1").?;
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat0);
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat1);
     for (meshes.items, 0..) |item, index| {
@@ -225,7 +227,7 @@ pub fn draw(renderer_state: *RendererState) void {
                 pass.setPipeline(pipeline);
                 for (pipe.materials.items) |material| {
                     const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
-                    const meshes = try renderer_state.material_system.map.getPtr(material);
+                    const meshes = renderer_state.material_system.map.getPtr(material.*).?;
                     for (meshes.items) |item| {
                         const object_to_world = zm.mul(zm.rotationY(t), zm.translation(-1.0, 0.0, 0.0));
                         const mem = gctx.uniformsAllocate(sf.Uniforms, 1);

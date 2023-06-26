@@ -36,10 +36,10 @@ pub fn material_system_deinit(system: *MaterialSystem) void {
     system.arena.deinit();
 }
 
-pub fn material_system_add_material(system: *MaterialSystem, name: [:0]const u8, gctx: *zgpu.GraphicsContext, global_uniform_bgl: zgpu.BindGroupLayoutHandle, texture_system: *tex.TextureSystem, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) !void {
+pub fn material_system_add_material(system: *MaterialSystem, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *tex.TextureSystem, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) !void {
     if (!system.names.contains(name)) {
         var arena = system.arena.allocator();
-        var material = material_create(arena, gctx, global_uniform_bgl, texture_system, layout, uniform_size, texture_name);
+        var material = material_create(gctx, texture_system, layout, uniform_size, texture_name);
         try system.names.putNoClobber(name, material);
         var meshes = try std.ArrayList(types.Mesh).initCapacity(arena, DEFAULT_MESH_LIST_CAPACITY);
         try system.map.putNoClobber(material, meshes);
