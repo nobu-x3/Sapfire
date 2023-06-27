@@ -1,6 +1,7 @@
 const GameTypes = @import("../game_types.zig");
 const Game = GameTypes.Game;
 const renderer = @import("../renderer/renderer.zig");
+const asset = @import("asset_manager.zig");
 const log = @import("logger.zig");
 const std = @import("std");
 const glfw = @import("zglfw");
@@ -21,8 +22,14 @@ const Application = struct {
 };
 
 pub fn application_create(config: ApplicationConfig) !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
     try log.init();
     defer log.deinit();
+    asset.init();
+    defer asset.deinit();
+    asset.create_asset("assets/textures/cobblestone.png");
     glfw.init() catch |e| {
         log.err("Failed to init glfw.", .{});
         return e;
@@ -34,9 +41,7 @@ pub fn application_create(config: ApplicationConfig) !void {
     };
     defer window.destroy();
     window.setSizeLimits(400, 400, -1, -1);
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
+
     const renderer_state = renderer.renderer_create(allocator, window) catch |e| {
         log.err("Failed to initialize renderer.", .{});
         return e;

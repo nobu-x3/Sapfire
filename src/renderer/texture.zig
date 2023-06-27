@@ -14,31 +14,31 @@ pub const Texture = struct {
     view: zgpu.TextureViewHandle,
 };
 
-pub const TextureSystem = struct {
+pub const TextureManager = struct {
     map: std.StringHashMap(Texture),
     arena: std.heap.ArenaAllocator,
     default_texture: Texture,
 };
 
-pub fn texture_system_init(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext) !TextureSystem {
+pub fn texture_system_init(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext) !TextureManager {
     var arena = std.heap.ArenaAllocator.init(allocator);
     var arena_alloc = arena.allocator();
     var map = std.StringHashMap(Texture).init(arena_alloc);
     try map.ensureTotalCapacity(256);
     var default_texture = try generate_default_texture(gctx);
-    return TextureSystem{
+    return TextureManager{
         .arena = arena,
         .map = map,
         .default_texture = default_texture,
     };
 }
 
-pub fn texture_system_deinit(system: *TextureSystem) void {
+pub fn texture_system_deinit(system: *TextureManager) void {
     system.map.deinit();
     system.arena.deinit();
 }
 
-pub fn texture_system_add_texture(system: *TextureSystem, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
+pub fn texture_system_add_texture(system: *TextureManager, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
     var texture: Texture = undefined;
     var arena_alloc = system.arena.allocator();
     stbi.init(arena_alloc);
@@ -62,7 +62,7 @@ pub fn texture_system_add_texture(system: *TextureSystem, pathname: [:0]const u8
     try system.map.put(pathname, texture);
 }
 
-pub fn texture_system_get_texture(system: *TextureSystem, name: [:0]const u8) Texture {
+pub fn texture_system_get_texture(system: *TextureManager, name: [:0]const u8) Texture {
     if (system.map.contains(name)) {
         return system.map.get(name) orelse unreachable;
     }
