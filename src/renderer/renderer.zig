@@ -4,6 +4,7 @@ const glfw = @import("zglfw");
 const stbi = @import("zstbi");
 const zm = @import("zmath");
 const mesh = @import("zmesh");
+const asset_manager = @import("../core/asset_manager.zig");
 const sf = struct {
     usingnamespace @import("texture.zig");
     usingnamespace @import("resources.zig");
@@ -19,8 +20,6 @@ pub const RendererState = struct {
     vertex_buffer: zgpu.BufferHandle,
     index_buffer: zgpu.BufferHandle,
     pipeline_system: sf.PipelineSystem,
-    texture_system: sf.TextureManager,
-    material_system: sf.MaterialManager,
     depth_texture: sf.Texture,
     mip_level: i32 = 0,
     meshes: std.ArrayList(sf.Mesh),
@@ -55,9 +54,9 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     // Create an index buffer.
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
     var pipeline_system = try sf.pipeline_system_init(allocator);
-    var texture_system = try sf.texture_system_init(allocator);
-    try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025768_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
-    try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
+    var texture_system = asset_manager.texture_manager();
+    try sf.texture_system_add_texture(texture_system, "assets/textures/" ++ "genart_0025768_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
+    try sf.texture_system_add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
     const depth_texture = sf.texture_depth_create(gctx);
     const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
         .{
@@ -77,13 +76,13 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     defer gctx.releaseResource(local_bgl);
     var pipeline = try sf.pipeline_system_add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
     // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
-    var material_system = try sf.material_system_init(allocator, 1);
-    try sf.material_system_add_material(&material_system, "material", gctx, &texture_system, &.{
+    var material_system = asset_manager.material_manager();
+    try sf.material_system_add_material(material_system, "material", gctx, texture_system, &.{
         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
     }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025768_5.png");
-    try sf.material_system_add_material(&material_system, "material1", gctx, &texture_system, &.{
+    try sf.material_system_add_material(material_system, "material1", gctx, texture_system, &.{
         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
@@ -92,16 +91,14 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     var mat1 = material_system.names.getPtr("material1").?;
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat0);
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat1);
-    try sf.material_system_add_material_to_mesh_by_name(&material_system, "material", meshes.items[0]);
-    try sf.material_system_add_material_to_mesh_by_name(&material_system, "material1", meshes.items[1]);
+    try sf.material_system_add_material_to_mesh_by_name(material_system, "material", meshes.items[0]);
+    try sf.material_system_add_material_to_mesh_by_name(material_system, "material1", meshes.items[1]);
     const renderer_state = try allocator.create(RendererState);
     renderer_state.* = .{
         .gctx = gctx,
         .vertex_buffer = vertex_buffer,
         .index_buffer = index_buffer,
         .pipeline_system = pipeline_system,
-        .texture_system = texture_system,
-        .material_system = material_system,
         .global_uniform_bind_group = global_uniform_bg,
         .meshes = meshes,
         .depth_texture = depth_texture,
@@ -121,8 +118,6 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
 
 pub fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
     renderer_state.meshes.deinit();
-    sf.material_system_deinit(&renderer_state.material_system);
-    sf.texture_system_deinit(&renderer_state.texture_system);
     sf.pipeline_system_deinit(&renderer_state.pipeline_system);
     renderer_state.gctx.destroy(allocator);
     allocator.destroy(renderer_state);
@@ -222,7 +217,7 @@ pub fn draw(renderer_state: *RendererState) void {
                 pass.setPipeline(pipeline);
                 for (pipe.materials.items) |material| {
                     const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
-                    const meshes = renderer_state.material_system.map.getPtr(material.*).?;
+                    const meshes = asset_manager.material_manager().map.getPtr(material.*).?;
                     for (meshes.items) |item| {
                         const object_to_world = zm.mul(zm.rotationY(t), zm.translation(-1.0, 0.0, 0.0));
                         const mem = gctx.uniformsAllocate(sf.Uniforms, 1);

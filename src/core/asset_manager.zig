@@ -3,6 +3,7 @@ const std = @import("std");
 const tex = @import("../renderer/texture.zig");
 const mat = @import("../renderer/material.zig");
 const crypto = std.crypto;
+const json = std.json;
 
 const AssetManager = struct {
     allocator: std.mem.Allocator,
@@ -17,6 +18,14 @@ const AssetType = enum {
 };
 
 var instance: AssetManager = undefined;
+
+pub fn texture_manager() *tex.TextureManager {
+    return &instance.texture_manager;
+}
+
+pub fn material_manager() *mat.MaterialManager {
+    return &instance.material_manager;
+}
 
 pub fn init(
     allocator: std.mem.Allocator,
