@@ -12,7 +12,6 @@ The following is a non-exhaustive feature list that the engine supports or is pl
 - File I/O
 - Performant Logger
 - Profiling & Debugging utilities
-- Low-level utilities (dynamic arrays, string handling, etc)
 
 ## Renderer progress
 After attempting to write a renderer so many times, I noticed that I get sidetracked mid-way and dig my self in a hole every time. This time I wanted to outline my plan clearly and use it as a guide to keep myself focused.
