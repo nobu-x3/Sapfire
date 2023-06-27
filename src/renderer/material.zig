@@ -12,6 +12,7 @@ pub const MaterialManager = struct {
 
 const DEFAULT_MESH_LIST_CAPACITY = 8;
 
+// TODO: parse config file
 pub fn material_system_init(allocator: std.mem.Allocator, unique_materials: u32) !MaterialManager {
     var arena = std.heap.ArenaAllocator.init(allocator);
     var alloc = arena.allocator();

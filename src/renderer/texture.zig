@@ -3,6 +3,8 @@ const zgpu = @import("zgpu");
 const stbi = @import("zstbi");
 const log = @import("../core/logger.zig");
 
+const INVALID_ID = 4294967295;
+
 pub const TextureFormat = struct {
     components_count: u32,
     components_width: u32,
@@ -10,6 +12,7 @@ pub const TextureFormat = struct {
 };
 
 pub const Texture = struct {
+    generation: u32 = INVALID_ID,
     handle: zgpu.TextureHandle,
     view: zgpu.TextureViewHandle,
 };
@@ -17,24 +20,23 @@ pub const Texture = struct {
 pub const TextureManager = struct {
     map: std.StringHashMap(Texture),
     arena: std.heap.ArenaAllocator,
-    default_texture: Texture,
+    default_texture: ?Texture = null,
 };
 
-pub fn texture_system_init(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext) !TextureManager {
+// TODO: parse config file
+pub fn texture_system_init(allocator: std.mem.Allocator) !TextureManager {
     var arena = std.heap.ArenaAllocator.init(allocator);
     var arena_alloc = arena.allocator();
     var map = std.StringHashMap(Texture).init(arena_alloc);
     try map.ensureTotalCapacity(256);
-    var default_texture = try generate_default_texture(gctx);
     return TextureManager{
         .arena = arena,
         .map = map,
-        .default_texture = default_texture,
     };
 }
 
 pub fn texture_system_deinit(system: *TextureManager) void {
-    system.map.deinit();
+    // system.map.deinit();
     system.arena.deinit();
 }
 
@@ -45,7 +47,10 @@ pub fn texture_system_add_texture(system: *TextureManager, pathname: [:0]const u
     defer stbi.deinit();
     var image = stbi.Image.loadFromFile(pathname, 4) catch {
         log.err("Error loading texture from path {s}, using default texture.", .{pathname});
-        texture = system.default_texture;
+        if (system.default_texture == null) {
+            system.default_texture = try generate_default_texture(gctx);
+        }
+        texture = system.default_texture.?;
         return;
     };
     defer image.deinit();
@@ -66,7 +71,7 @@ pub fn texture_system_get_texture(system: *TextureManager, name: [:0]const u8) T
     if (system.map.contains(name)) {
         return system.map.get(name) orelse unreachable;
     }
-    return system.default_texture;
+    return system.default_texture.?;
 }
 
 fn texture_create(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage, size: zgpu.wgpu.Extent3D, format: TextureFormat) Texture {

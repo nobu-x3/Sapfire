@@ -55,7 +55,7 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     // Create an index buffer.
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
     var pipeline_system = try sf.pipeline_system_init(allocator);
-    var texture_system = try sf.texture_system_init(allocator, gctx);
+    var texture_system = try sf.texture_system_init(allocator);
     try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025768_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
     try sf.texture_system_add_texture(&texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
     const depth_texture = sf.texture_depth_create(gctx);

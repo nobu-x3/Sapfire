@@ -27,9 +27,8 @@ pub fn application_create(config: ApplicationConfig) !void {
     const allocator = gpa.allocator();
     try log.init();
     defer log.deinit();
-    asset.init();
+    try asset.init(allocator, "");
     defer asset.deinit();
-    asset.create_asset("assets/textures/cobblestone.png");
     glfw.init() catch |e| {
         log.err("Failed to init glfw.", .{});
         return e;
