@@ -2,6 +2,8 @@ const std = @import("std");
 const zgpu = @import("zgpu");
 const stbi = @import("zstbi");
 const log = @import("../core/logger.zig");
+const json = std.json;
+const asset_manager = @import("../core/asset_manager.zig");
 
 const INVALID_ID = 4294967295;
 
@@ -12,27 +14,78 @@ pub const TextureFormat = struct {
 };
 
 pub const Texture = struct {
-    generation: u32 = INVALID_ID,
+    // guid: [64]u8,
     handle: zgpu.TextureHandle,
     view: zgpu.TextureViewHandle,
+};
+
+pub const TextureAsset = struct {
+    guid: [64]u8,
+    data: []const u8,
+    parse_success: bool,
 };
 
 pub const TextureManager = struct {
     map: std.StringHashMap(Texture),
     arena: std.heap.ArenaAllocator,
     default_texture: ?Texture = null,
+    texture_assets_map: std.StringHashMap(TextureAsset),
 };
 
-// TODO: parse config file
-pub fn texture_system_init(allocator: std.mem.Allocator) !TextureManager {
+// Config loads assets to texture_assets_map, renderer will load it from
+// texture_assets_map using guid and then make image & view
+pub fn texture_system_init(allocator: std.mem.Allocator, config_path: []const u8) !TextureManager {
     var arena = std.heap.ArenaAllocator.init(allocator);
     var arena_alloc = arena.allocator();
     var map = std.StringHashMap(Texture).init(arena_alloc);
     try map.ensureTotalCapacity(256);
+    var parse_arena = std.heap.ArenaAllocator.init(allocator);
+    defer parse_arena.deinit();
+    const config_data = std.fs.cwd().readFileAlloc(parse_arena.allocator(), config_path, 512 * 16) catch |e| {
+        log.err("Failed to parse texture config file. Given path:{s}", .{config_path});
+        return e;
+    };
+    const Config = struct {
+        database: [][:0]const u8,
+    };
+    const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
+    defer json.parseFree(Config, parse_arena.allocator(), config);
+    var out_list = std.StringHashMap(TextureAsset).init(allocator);
+    try out_list.ensureTotalCapacity(@intCast(u32, config.database.len));
+    try parse_pngs(allocator, config.database, &out_list);
     return TextureManager{
         .arena = arena,
         .map = map,
+        .texture_assets_map = out_list,
     };
+}
+
+// TODO: temp function
+fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std.StringHashMap(TextureAsset)) !void {
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
+    stbi.init(arena.allocator());
+    defer stbi.deinit();
+    for (paths) |path| {
+        const hash = asset_manager.generate_guid(path);
+        var image = stbi.Image.loadFromFile(path, 4) catch {
+            log.err("Error loading texture from path {s}.", .{path});
+            const asset: TextureAsset = .{
+                .guid = hash,
+                .data = &.{0},
+                .parse_success = false,
+            };
+            try out_map.putNoClobber(&hash, asset);
+            continue;
+        };
+        defer image.deinit();
+        const asset: TextureAsset = .{
+            .guid = hash,
+            .data = image.data,
+            .parse_success = false,
+        };
+        try out_map.putNoClobber(&hash, asset);
+    }
 }
 
 pub fn texture_system_deinit(system: *TextureManager) void {

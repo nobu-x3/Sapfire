@@ -17,10 +17,6 @@ const AssetType = enum {
     Mesh,
 };
 
-const ProjectConfig = struct {
-    root: []const u8,
-};
-
 var instance: AssetManager = undefined;
 
 pub fn texture_manager() *tex.TextureManager {
@@ -31,6 +27,8 @@ pub fn material_manager() *mat.MaterialManager {
     return &instance.material_manager;
 }
 
+// TODO: takes in path to "project" serialization which contains paths to each subsystem's serialization file.
+// Each submodule will have its own file so that project's assets can be loaded in parallel
 pub fn init(
     allocator: std.mem.Allocator,
     project_config: []const u8,
@@ -42,19 +40,14 @@ pub fn init(
         log.err("Failed to parse project config file.", .{});
         return e;
     };
-    var parser = json.Parser.init(arena.allocator(), .alloc_if_needed);
-    defer json.Parser.deinit(&parser);
-    var values = try parser.parse(config_data);
-    defer values.deinit();
-    const texture_path = values.root.object.get("texture_config");
-    if (texture_path != null) {
-        instance.texture_manager = try tex.texture_system_init(allocator);
-    }
-    const material_path = values.root.object.get("material_config");
-    if (material_path != null) {
-        instance.material_manager = try mat.material_system_init(allocator, 32);
-    }
-    instance.texture_manager = try tex.texture_system_init(allocator);
+    const Config = struct {
+        texture_config: []const u8,
+        material_config: []const u8,
+    };
+    const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
+    defer json.parseFree(Config, arena.allocator(), config);
+    instance.texture_manager = try tex.texture_system_init(allocator, config.texture_config);
+    instance.material_manager = try mat.material_system_init(allocator, 32);
 }
 
 pub fn deinit() void {
@@ -62,8 +55,7 @@ pub fn deinit() void {
     tex.texture_system_deinit(&instance.texture_manager);
 }
 
-// TODO: takes in path to "project" serialization which contains paths to each subsystem's serialization file.
-// Each submodule will have its own file so that project's assets can be loaded in parallel
+// TODO: this should be used to import raw files and generate .sf* format assets
 pub fn create_asset(
     path: []const u8,
     asset_type: AssetType,
@@ -72,4 +64,11 @@ pub fn create_asset(
     var guid: [64]u8 = undefined;
     crypto.hash.sha2.Sha512.hash(path, guid[0..], .{});
     std.log.info("hash: {s}", .{guid});
+}
+
+pub fn generate_guid(path: []const u8) [64]u8 {
+    var guid: [64]u8 = undefined;
+    crypto.hash.sha2.Sha512.hash(path, guid[0..], .{});
+    std.log.info("hash: {s}", .{guid});
+    return guid;
 }
