@@ -1,5 +1,5 @@
 const std = @import("std");
-
+const log = @import("logger.zig");
 const tex = @import("../renderer/texture.zig");
 const mat = @import("../renderer/material.zig");
 const crypto = std.crypto;
@@ -17,6 +17,10 @@ const AssetType = enum {
     Mesh,
 };
 
+const ProjectConfig = struct {
+    root: []const u8,
+};
+
 var instance: AssetManager = undefined;
 
 pub fn texture_manager() *tex.TextureManager {
@@ -31,10 +35,26 @@ pub fn init(
     allocator: std.mem.Allocator,
     project_config: []const u8,
 ) !void {
-    _ = project_config;
     instance.allocator = allocator;
+    var arena = std.heap.ArenaAllocator.init(allocator);
+    defer arena.deinit();
+    const config_data = std.fs.cwd().readFileAlloc(arena.allocator(), project_config, 512 * 16) catch |e| {
+        log.err("Failed to parse project config file.", .{});
+        return e;
+    };
+    var parser = json.Parser.init(arena.allocator(), .alloc_if_needed);
+    defer json.Parser.deinit(&parser);
+    var values = try parser.parse(config_data);
+    defer values.deinit();
+    const texture_path = values.root.object.get("texture_config");
+    if (texture_path != null) {
+        instance.texture_manager = try tex.texture_system_init(allocator);
+    }
+    const material_path = values.root.object.get("material_config");
+    if (material_path != null) {
+        instance.material_manager = try mat.material_system_init(allocator, 32);
+    }
     instance.texture_manager = try tex.texture_system_init(allocator);
-    instance.material_manager = try mat.material_system_init(allocator, 32);
 }
 
 pub fn deinit() void {

@@ -27,7 +27,7 @@ pub fn application_create(config: ApplicationConfig) !void {
     const allocator = gpa.allocator();
     try log.init();
     defer log.deinit();
-    try asset.init(allocator, "");
+    try asset.init(allocator, "project/project_config.json");
     defer asset.deinit();
     glfw.init() catch |e| {
         log.err("Failed to init glfw.", .{});
