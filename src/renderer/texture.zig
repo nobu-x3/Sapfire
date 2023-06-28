@@ -10,6 +10,7 @@ const INVALID_ID = 4294967295;
 pub const TextureFormat = struct {
     components_count: u32,
     components_width: u32,
+    bytes_per_row: u32,
     is_hdr: bool,
 };
 
@@ -23,13 +24,16 @@ pub const TextureAsset = struct {
     guid: [64]u8,
     data: []const u8,
     parse_success: bool,
+    width: u32,
+    height: u32,
+    format: TextureFormat,
 };
 
 pub const TextureManager = struct {
     map: std.StringHashMap(Texture),
     arena: std.heap.ArenaAllocator,
     default_texture: ?Texture = null,
-    texture_assets_map: std.StringHashMap(TextureAsset),
+    texture_assets_map: std.AutoHashMap([64]u8, TextureAsset),
 };
 
 // Config loads assets to texture_assets_map, renderer will load it from
@@ -50,18 +54,18 @@ pub fn texture_system_init(allocator: std.mem.Allocator, config_path: []const u8
     };
     const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
     defer json.parseFree(Config, parse_arena.allocator(), config);
-    var out_list = std.StringHashMap(TextureAsset).init(allocator);
-    try out_list.ensureTotalCapacity(@intCast(u32, config.database.len));
-    try parse_pngs(allocator, config.database, &out_list);
+    var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
+    try asset_map.ensureTotalCapacity(@intCast(u32, config.database.len));
+    try parse_pngs(allocator, config.database, &asset_map);
     return TextureManager{
         .arena = arena,
         .map = map,
-        .texture_assets_map = out_list,
+        .texture_assets_map = asset_map,
     };
 }
 
 // TODO: temp function
-fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std.StringHashMap(TextureAsset)) !void {
+fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std.AutoHashMap([64]u8, TextureAsset)) !void {
     var arena = std.heap.ArenaAllocator.init(allocator);
     defer arena.deinit();
     stbi.init(arena.allocator());
@@ -74,17 +78,34 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
                 .guid = hash,
                 .data = &.{0},
                 .parse_success = false,
+                .width = 0,
+                .height = 0,
+                .format = .{
+                    .components_count = 0,
+                    .components_width = 0,
+                    .bytes_per_row = 0,
+                    .is_hdr = false,
+                },
             };
-            try out_map.putNoClobber(&hash, asset);
+            try out_map.putNoClobber(hash, asset);
             continue;
         };
         defer image.deinit();
         const asset: TextureAsset = .{
             .guid = hash,
             .data = image.data,
-            .parse_success = false,
+            .parse_success = true,
+            .width = image.width,
+            .height = image.height,
+            .format = .{
+                .components_count = image.num_components,
+                .components_width = image.bytes_per_component,
+                .bytes_per_row = image.bytes_per_row,
+                .is_hdr = image.is_hdr,
+            },
         };
-        try out_map.putNoClobber(&hash, asset);
+        try out_map.putNoClobber(hash, asset);
+        log.info("Adding texture at path {s} with guid \n{s} to database.", .{ path, hash });
     }
 }
 
@@ -95,28 +116,30 @@ pub fn texture_system_deinit(system: *TextureManager) void {
 
 pub fn texture_system_add_texture(system: *TextureManager, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
     var texture: Texture = undefined;
-    var arena_alloc = system.arena.allocator();
-    stbi.init(arena_alloc);
-    defer stbi.deinit();
-    var image = stbi.Image.loadFromFile(pathname, 4) catch {
-        log.err("Error loading texture from path {s}, using default texture.", .{pathname});
+    const guid = asset_manager.generate_guid(pathname);
+    if (!system.texture_assets_map.contains(guid)) {
+        log.err("Texture at path {s} is not present in the asset database. Using default texture.", .{pathname});
         if (system.default_texture == null) {
             system.default_texture = try generate_default_texture(gctx);
         }
         texture = system.default_texture.?;
         return;
-    };
-    defer image.deinit();
+    }
+    var image = system.texture_assets_map.getPtr(guid).?;
+    if (!image.parse_success) {
+        log.err("Texture at path {s} encountered an error when adding to the asset database and cannot be used until imported properly. Using default texture.", .{pathname});
+        if (system.default_texture == null) {
+            system.default_texture = try generate_default_texture(gctx);
+        }
+        texture = system.default_texture.?;
+        return;
+    }
     texture = texture_create(gctx, usage, .{
         .width = image.width,
         .height = image.height,
         .depth_or_array_layers = 1,
-    }, .{
-        .components_count = image.num_components,
-        .components_width = image.bytes_per_component,
-        .is_hdr = image.is_hdr,
-    });
-    texture_load_data(gctx, &texture, image.width, image.height, image.bytes_per_row, image.data);
+    }, image.format);
+    texture_load_data(gctx, &texture, image.width, image.height, image.format.bytes_per_row, image.data);
     try system.map.put(pathname, texture);
 }
 
@@ -128,7 +151,7 @@ pub fn texture_system_get_texture(system: *TextureManager, name: [:0]const u8) T
 }
 
 fn texture_create(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage, size: zgpu.wgpu.Extent3D, format: TextureFormat) Texture {
-    const texture = gctx.createTexture(.{
+    const handle = gctx.createTexture(.{
         .usage = usage,
         .size = size,
         .format = zgpu.imageInfoToTextureFormat(
@@ -138,8 +161,8 @@ fn texture_create(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage, si
         ),
         .mip_level_count = std.math.log2_int(u32, std.math.max(size.width, size.height)) + 1,
     });
-    const texture_view = gctx.createTextureView(texture, .{});
-    return Texture{ .handle = texture, .view = texture_view };
+    const texture_view = gctx.createTextureView(handle, .{});
+    return Texture{ .handle = handle, .view = texture_view };
 }
 
 pub fn texture_depth_create(gctx: *zgpu.GraphicsContext) Texture {
@@ -159,7 +182,7 @@ pub fn texture_depth_create(gctx: *zgpu.GraphicsContext) Texture {
     return Texture{ .handle = texture, .view = view };
 }
 
-fn texture_load_data(gctx: *zgpu.GraphicsContext, texture: *Texture, width: u32, height: u32, row_width: u32, data: []u8) void {
+fn texture_load_data(gctx: *zgpu.GraphicsContext, texture: *Texture, width: u32, height: u32, row_width: u32, data: []const u8) void {
     gctx.queue.writeTexture(
         .{ .texture = gctx.lookupResource(texture.handle).? },
         .{
@@ -210,7 +233,12 @@ fn generate_default_texture(gctx: *zgpu.GraphicsContext) !Texture {
         .width = 256,
         .height = 256,
         .depth_or_array_layers = 1,
-    }, .{ .components_count = 4, .components_width = 1, .is_hdr = false });
+    }, .{
+        .components_count = 4,
+        .components_width = 1,
+        .is_hdr = false,
+        .bytes_per_row = dimensions,
+    });
     texture_load_data(gctx, &new_texture, dimensions, dimensions, dimensions * channels, pixels[0..]);
     return new_texture;
 }
