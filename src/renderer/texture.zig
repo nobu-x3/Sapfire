@@ -22,7 +22,7 @@ pub const Texture = struct {
 
 pub const TextureAsset = struct {
     guid: [64]u8,
-    data: []const u8,
+    data: []u8,
     parse_success: bool,
     width: u32,
     height: u32,
@@ -56,7 +56,7 @@ pub fn texture_system_init(allocator: std.mem.Allocator, config_path: []const u8
     defer json.parseFree(Config, parse_arena.allocator(), config);
     var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
     try asset_map.ensureTotalCapacity(@intCast(u32, config.database.len));
-    try parse_pngs(allocator, config.database, &asset_map);
+    try parse_pngs(arena_alloc, config.database, &asset_map);
     return TextureManager{
         .arena = arena,
         .map = map,
@@ -76,7 +76,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
             log.err("Error loading texture from path {s}.", .{path});
             const asset: TextureAsset = .{
                 .guid = hash,
-                .data = &.{0},
+                .data = undefined,
                 .parse_success = false,
                 .width = 0,
                 .height = 0,
@@ -91,9 +91,13 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
             continue;
         };
         defer image.deinit();
+
+        // WARNING: if not using arena allocator do not forget to clean up
+        var data: []u8 = try allocator.alloc(u8, image.data.len); // idk but this was damn hard to find
+        @memcpy(data, image.data);
         const asset: TextureAsset = .{
             .guid = hash,
-            .data = image.data,
+            .data = data,
             .parse_success = true,
             .width = image.width,
             .height = image.height,
@@ -183,8 +187,9 @@ pub fn texture_depth_create(gctx: *zgpu.GraphicsContext) Texture {
 }
 
 fn texture_load_data(gctx: *zgpu.GraphicsContext, texture: *Texture, width: u32, height: u32, row_width: u32, data: []const u8) void {
+    var res = gctx.lookupResource(texture.handle).?;
     gctx.queue.writeTexture(
-        .{ .texture = gctx.lookupResource(texture.handle).? },
+        .{ .texture = res },
         .{
             .bytes_per_row = row_width,
             .rows_per_image = height,

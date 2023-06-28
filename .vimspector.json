@@ -6,7 +6,7 @@
       "configuration": {
         "request": "launch",
         "program": "${workspaceRoot}/zig-out/bin/Sapfire",
-        "cwd": "${workspaceRoot}/zig-out/bin/"
+        "cwd": "${workspaceRoot}/"
       }
     }
   }
