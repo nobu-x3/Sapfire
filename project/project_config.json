@@ -1,4 +1,5 @@
 {
     "texture_config" : "project/texture_config.json",
-    "material_config" : "material_config.json"
+    "material_config" : "project/material_config.json",
+    "mesh_config" : "project/mesh_config.json"
 }

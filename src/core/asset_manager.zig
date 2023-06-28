@@ -1,6 +1,7 @@
 const std = @import("std");
 const log = @import("logger.zig");
 const tex = @import("../renderer/texture.zig");
+const mesh = @import("../renderer/mesh.zig");
 const mat = @import("../renderer/material.zig");
 const crypto = std.crypto;
 const json = std.json;
@@ -9,6 +10,7 @@ const AssetManager = struct {
     allocator: std.mem.Allocator,
     texture_manager: tex.TextureManager,
     material_manager: mat.MaterialManager,
+    mesh_manager: mesh.MeshManager,
 };
 
 const AssetType = enum {
@@ -43,15 +45,18 @@ pub fn init(
     const Config = struct {
         texture_config: []const u8,
         material_config: []const u8,
+        mesh_config: []const u8,
     };
     const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
     defer json.parseFree(Config, arena.allocator(), config);
     instance.texture_manager = try tex.texture_manager_init(allocator, config.texture_config);
+    instance.mesh_manager = try mesh.mesh_manager_init(allocator, config.mesh_config);
     instance.material_manager = try mat.material_system_init(allocator, 32);
 }
 
 pub fn deinit() void {
     mat.material_system_deinit(&instance.material_manager);
+    mesh.mesh_manager_deinit(&instance.mesh_manager);
     tex.texture_manager_deinit(&instance.texture_manager);
 }
 
