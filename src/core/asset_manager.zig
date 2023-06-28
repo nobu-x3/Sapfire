@@ -46,13 +46,13 @@ pub fn init(
     };
     const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
     defer json.parseFree(Config, arena.allocator(), config);
-    instance.texture_manager = try tex.texture_system_init(allocator, config.texture_config);
+    instance.texture_manager = try tex.texture_manager_init(allocator, config.texture_config);
     instance.material_manager = try mat.material_system_init(allocator, 32);
 }
 
 pub fn deinit() void {
     mat.material_system_deinit(&instance.material_manager);
-    tex.texture_system_deinit(&instance.texture_manager);
+    tex.texture_manager_deinit(&instance.texture_manager);
 }
 
 // TODO: this should be used to import raw files and generate .sf* format assets

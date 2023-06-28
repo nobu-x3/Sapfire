@@ -1,5 +1,4 @@
 const std = @import("std");
-const zgpu = @import("zgpu");
 const texture = @import("texture.zig");
 const zmesh = @import("zmesh");
 const types = @import("renderer_types.zig");

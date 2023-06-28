@@ -75,7 +75,7 @@ pub fn material_create(gctx: *zgpu.GraphicsContext, texture_system: *tex.Texture
     });
     const local_bg = gctx.createBindGroup(local_bgl, &.{
         .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = uniform_size },
-        .{ .binding = 1, .texture_view_handle = tex.texture_system_get_texture(texture_system, texture_name).view },
+        .{ .binding = 1, .texture_view_handle = tex.texture_manager_get_texture(texture_system, texture_name).view },
         .{ .binding = 2, .sampler_handle = sampler },
     });
     var material = Material{

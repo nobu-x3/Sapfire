@@ -38,7 +38,7 @@ pub const TextureManager = struct {
 
 // Config loads assets to texture_assets_map, renderer will load it from
 // texture_assets_map using guid and then make image & view
-pub fn texture_system_init(allocator: std.mem.Allocator, config_path: []const u8) !TextureManager {
+pub fn texture_manager_init(allocator: std.mem.Allocator, config_path: []const u8) !TextureManager {
     var arena = std.heap.ArenaAllocator.init(allocator);
     var arena_alloc = arena.allocator();
     var map = std.StringHashMap(Texture).init(arena_alloc);
@@ -113,12 +113,12 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
     }
 }
 
-pub fn texture_system_deinit(system: *TextureManager) void {
+pub fn texture_manager_deinit(system: *TextureManager) void {
     // system.map.deinit();
     system.arena.deinit();
 }
 
-pub fn texture_system_add_texture(system: *TextureManager, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
+pub fn texture_manager_add_texture(system: *TextureManager, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
     var texture: Texture = undefined;
     const guid = asset_manager.generate_guid(pathname);
     if (!system.texture_assets_map.contains(guid)) {
@@ -147,7 +147,7 @@ pub fn texture_system_add_texture(system: *TextureManager, pathname: [:0]const u
     try system.map.put(pathname, texture);
 }
 
-pub fn texture_system_get_texture(system: *TextureManager, name: [:0]const u8) Texture {
+pub fn texture_manager_get_texture(system: *TextureManager, name: [:0]const u8) Texture {
     if (system.map.contains(name)) {
         return system.map.get(name) orelse unreachable;
     }
