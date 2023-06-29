@@ -30,7 +30,7 @@ pub const TextureAsset = struct {
 };
 
 pub const TextureManager = struct {
-    map: std.StringHashMap(Texture),
+    map: std.AutoHashMap([64]u8, Texture),
     arena: std.heap.ArenaAllocator,
     default_texture: ?Texture = null,
     texture_assets_map: std.AutoHashMap([64]u8, TextureAsset),
@@ -41,7 +41,7 @@ pub const TextureManager = struct {
 pub fn texture_manager_init(allocator: std.mem.Allocator, config_path: []const u8) !TextureManager {
     var arena = std.heap.ArenaAllocator.init(allocator);
     var arena_alloc = arena.allocator();
-    var map = std.StringHashMap(Texture).init(arena_alloc);
+    var map = std.AutoHashMap([64]u8, Texture).init(arena_alloc);
     try map.ensureTotalCapacity(256);
     var parse_arena = std.heap.ArenaAllocator.init(allocator);
     defer parse_arena.deinit();
@@ -109,7 +109,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
             },
         };
         try out_map.putNoClobber(hash, asset);
-        log.info("Adding texture at path {s} with guid \n{s} to database.", .{ path, hash });
+        log.info("Adding texture at path {s} with guid \n{d} to database.", .{ path, hash });
     }
 }
 
@@ -121,20 +121,17 @@ pub fn texture_manager_deinit(system: *TextureManager) void {
 pub fn texture_manager_add_texture(system: *TextureManager, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
     var texture: Texture = undefined;
     const guid = asset_manager.generate_guid(pathname);
+    if (system.default_texture == null) {
+        system.default_texture = try generate_default_texture(gctx);
+    }
     if (!system.texture_assets_map.contains(guid)) {
         log.err("Texture at path {s} is not present in the asset database. Using default texture.", .{pathname});
-        if (system.default_texture == null) {
-            system.default_texture = try generate_default_texture(gctx);
-        }
         texture = system.default_texture.?;
         return;
     }
     var image = system.texture_assets_map.getPtr(guid).?;
     if (!image.parse_success) {
         log.err("Texture at path {s} encountered an error when adding to the asset database and cannot be used until imported properly. Using default texture.", .{pathname});
-        if (system.default_texture == null) {
-            system.default_texture = try generate_default_texture(gctx);
-        }
         texture = system.default_texture.?;
         return;
     }
@@ -144,14 +141,17 @@ pub fn texture_manager_add_texture(system: *TextureManager, pathname: [:0]const 
         .depth_or_array_layers = 1,
     }, image.format);
     texture_load_data(gctx, &texture, image.width, image.height, image.format.bytes_per_row, image.data);
-    try system.map.put(pathname, texture);
+    // TODO: rework this to use guids
+    try system.map.put(guid, texture);
 }
 
-pub fn texture_manager_get_texture(system: *TextureManager, name: [:0]const u8) Texture {
-    if (system.map.contains(name)) {
-        return system.map.get(name) orelse unreachable;
-    }
-    return system.default_texture.?;
+pub fn texture_manager_get_texture_by_name(system: *TextureManager, name: [:0]const u8) Texture {
+    const guid = asset_manager.generate_guid(name);
+    return system.map.get(guid) orelse system.default_texture.?;
+}
+
+pub fn texture_manager_get_texture(system: *TextureManager, guid: [64]u8) Texture {
+    return system.map.get(guid) orelse system.default_texture.?;
 }
 
 fn texture_create(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage, size: zgpu.wgpu.Extent3D, format: TextureFormat) Texture {

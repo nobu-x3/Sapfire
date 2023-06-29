@@ -85,8 +85,8 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
     }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
-    var mat0 = material_manager.names.getPtr("material").?;
-    var mat1 = material_manager.names.getPtr("material1").?;
+    var mat0 = material_manager.materials.getPtr(asset_manager.generate_guid("material")).?;
+    var mat1 = material_manager.materials.getPtr(asset_manager.generate_guid("material1")).?;
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat0);
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat1);
     try sf.material_manager_add_material_to_mesh_by_name(material_manager, "material", meshes.items[0]);
