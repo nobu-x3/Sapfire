@@ -53,7 +53,7 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
     var pipeline_system = try sf.pipeline_system_init(allocator);
     var texture_system = asset_manager.texture_manager();
-    try sf.texture_manager_add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
+    try sf.texture_manager_add_texture(texture_system, "assets/textures/" ++ "cobblestone.png", gctx, .{ .texture_binding = true, .copy_dst = true });
     try sf.texture_manager_add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
     const depth_texture = sf.texture_depth_create(gctx);
     const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
@@ -79,7 +79,7 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-    }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
+    }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "cobblestone.png");
     try sf.material_system_add_material(material_system, "material1", gctx, texture_system, &.{
         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
