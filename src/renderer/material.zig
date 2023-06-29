@@ -6,6 +6,12 @@ const std = @import("std");
 const log = @import("../core/logger.zig");
 const asset_manager = @import("../core/asset_manager.zig");
 const json = std.json;
+const sf = struct {
+    usingnamespace @import("../core/asset_manager.zig");
+    usingnamespace @import("pipeline.zig");
+    usingnamespace @import("renderer_types.zig");
+    usingnamespace @import("texture.zig");
+};
 
 pub const MaterialManager = struct {
     map: std.AutoArrayHashMap(Material, std.ArrayList(types.Mesh)),
@@ -64,7 +70,7 @@ pub fn material_manager_init(allocator: std.mem.Allocator, config_path: []const 
 }
 
 fn create_material_asset(parse_allocator: std.mem.Allocator, path: [:0]const u8) !MaterialAsset {
-    const material_guid = asset_manager.generate_guid(path);
+    const material_guid = asset_manager.AssetManager.generate_guid(path);
     const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
         log.err("Failed to parse material config file. Given path:{s}", .{path});
         return e;
@@ -95,7 +101,7 @@ pub fn material_manager_add_material(system: *MaterialManager, name: [:0]const u
     if (system.default_material == null) {
         system.default_material = create_default_material(gctx);
     }
-    const guid = asset_manager.generate_guid(name);
+    const guid = asset_manager.AssetManager.generate_guid(name);
     if (!system.materials.contains(guid)) {
         var arena = system.arena.allocator();
         var material = material_create(gctx, texture_system, layout, uniform_size, texture_name);
@@ -111,7 +117,7 @@ pub fn material_manager_add_material_to_mesh(system: *MaterialManager, material:
 }
 
 pub fn material_manager_add_material_to_mesh_by_name(system: *MaterialManager, name: [:0]const u8, mesh: types.Mesh) !void {
-    const guid = asset_manager.generate_guid(name);
+    const guid = asset_manager.AssetManager.generate_guid(name);
     const material = system.materials.getPtr(guid).?;
     try material_manager_add_material_to_mesh(system, material, mesh);
 }
@@ -156,7 +162,7 @@ fn create_default_material(gctx: *zgpu.GraphicsContext) Material {
     });
     const local_bg = gctx.createBindGroup(local_bgl, &.{
         .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = @sizeOf(types.Uniforms) },
-        .{ .binding = 1, .texture_view_handle = asset_manager.texture_manager().default_texture.?.view },
+        .{ .binding = 1, .texture_view_handle = asset_manager.AssetManager.texture_manager().default_texture.?.view },
         .{ .binding = 2, .sampler_handle = sampler },
     });
     var material = Material{

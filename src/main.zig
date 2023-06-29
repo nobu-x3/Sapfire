@@ -18,7 +18,7 @@ pub fn main() !void {
         .window_name = "Sapfire",
         .game = &game,
     };
-    var application = try app.application_create(config);
+    var application = try app.Application.create(config);
     _ = application;
 }
 

@@ -71,7 +71,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
     stbi.init(arena.allocator());
     defer stbi.deinit();
     for (paths) |path| {
-        const hash = asset_manager.generate_guid(path);
+        const hash = asset_manager.AssetManager.generate_guid(path);
         var image = stbi.Image.loadFromFile(path, 4) catch {
             log.err("Error loading texture from path {s}.", .{path});
             const asset: TextureAsset = .{
@@ -120,7 +120,7 @@ pub fn texture_manager_deinit(system: *TextureManager) void {
 
 pub fn texture_manager_add_texture(system: *TextureManager, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
     var texture: Texture = undefined;
-    const guid = asset_manager.generate_guid(pathname);
+    const guid = asset_manager.AssetManager.generate_guid(pathname);
     if (system.default_texture == null) {
         system.default_texture = try generate_default_texture(gctx);
     }
@@ -146,7 +146,7 @@ pub fn texture_manager_add_texture(system: *TextureManager, pathname: [:0]const 
 }
 
 pub fn texture_manager_get_texture_by_name(system: *TextureManager, name: [:0]const u8) Texture {
-    const guid = asset_manager.generate_guid(name);
+    const guid = asset_manager.AssetManager.generate_guid(name);
     return system.map.get(guid) orelse system.default_texture.?;
 }
 

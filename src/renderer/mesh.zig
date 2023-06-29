@@ -1,10 +1,12 @@
 const std = @import("std");
-const texture = @import("texture.zig");
 const zmesh = @import("zmesh");
-const types = @import("renderer_types.zig");
 const log = @import("../core/logger.zig");
-const asset_manager = @import("../core/asset_manager.zig");
 const json = std.json;
+const sf = struct {
+    usingnamespace @import("texture.zig");
+    usingnamespace @import("renderer_types.zig");
+    usingnamespace @import("../core/asset_manager.zig");
+};
 
 pub const MeshAsset = struct {
     guid: [64]u8,
@@ -64,7 +66,7 @@ fn create_mesh_asset(arena: std.mem.Allocator, path: [:0]const u8, out_map: *std
     var positions = std.ArrayList([3]f32).init(arena);
     var uvs = std.ArrayList([2]f32).init(arena);
     try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
-    const guid = asset_manager.generate_guid(path);
+    const guid = sf.AssetManager.generate_guid(path);
     const asset = MeshAsset{
         .guid = guid,
         .indices = indices,
@@ -75,9 +77,9 @@ fn create_mesh_asset(arena: std.mem.Allocator, path: [:0]const u8, out_map: *std
     try out_map.put(guid, asset);
 }
 
-pub fn mesh_manager_load_mesh(path: [:0]const u8, out_meshes: *std.ArrayList(types.Mesh), out_vertices: *std.ArrayList(types.Vertex), out_indices: *std.ArrayList(u32)) !void {
-    const guid = asset_manager.generate_guid(path);
-    var manager = asset_manager.mesh_manager();
+pub fn mesh_manager_load_mesh(path: [:0]const u8, out_meshes: *std.ArrayList(sf.Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !void {
+    const guid = sf.AssetManager.generate_guid(path);
+    var manager = sf.AssetManager.mesh_manager();
     const data = manager.mesh_assets_map.get(guid) orelse {
         log.err("Mesh at path {s} is not present in the asset database. Loading failed.", .{path});
         return;
