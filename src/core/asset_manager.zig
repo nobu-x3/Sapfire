@@ -1,26 +1,29 @@
 const std = @import("std");
 const log = @import("logger.zig");
-const tex = @import("../renderer/texture.zig");
-const mesh = @import("../renderer/mesh.zig");
-const mat = @import("../renderer/material.zig");
 const crypto = std.crypto;
 const json = std.json;
 
+const sf = struct {
+    usingnamespace @import("../renderer/texture.zig");
+    usingnamespace @import("../renderer/mesh.zig");
+    usingnamespace @import("../renderer/material.zig");
+};
+
 pub const AssetManager = struct {
     allocator: std.mem.Allocator,
-    texture_manager: tex.TextureManager,
-    material_manager: mat.MaterialManager,
-    mesh_manager: mesh.MeshManager,
+    texture_manager: sf.TextureManager,
+    material_manager: sf.MaterialManager,
+    mesh_manager: sf.MeshManager,
 
-    pub fn texture_manager() *tex.TextureManager {
+    pub fn texture_manager() *sf.TextureManager {
         return &instance.texture_manager;
     }
 
-    pub fn material_manager() *mat.MaterialManager {
+    pub fn material_manager() *sf.MaterialManager {
         return &instance.material_manager;
     }
 
-    pub fn mesh_manager() *mesh.MeshManager {
+    pub fn mesh_manager() *sf.MeshManager {
         return &instance.mesh_manager;
     }
 
@@ -44,15 +47,15 @@ pub const AssetManager = struct {
         };
         const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
         defer json.parseFree(Config, arena.allocator(), config);
-        instance.texture_manager = try tex.texture_manager_init(allocator, config.texture_config);
-        instance.mesh_manager = try mesh.mesh_manager_init(allocator, config.mesh_config);
-        instance.material_manager = try mat.material_manager_init(allocator, config.material_config);
+        instance.texture_manager = try sf.texture_manager_init(allocator, config.texture_config);
+        instance.mesh_manager = try sf.MeshManager.init(allocator, config.mesh_config);
+        instance.material_manager = try sf.material_manager_init(allocator, config.material_config);
     }
 
     pub fn deinit() void {
-        mat.material_manager_deinit(&instance.material_manager);
-        mesh.mesh_manager_deinit(&instance.mesh_manager);
-        tex.texture_manager_deinit(&instance.texture_manager);
+        sf.material_manager_deinit(&instance.material_manager);
+        sf.MeshManager.deinit(&instance.mesh_manager);
+        sf.texture_manager_deinit(&instance.texture_manager);
     }
 
     // TODO: this should be used to import raw files and generate .sf* format assets
