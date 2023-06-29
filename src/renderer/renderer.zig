@@ -50,7 +50,7 @@ pub const RendererState = struct {
         var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
         // Create an index buffer.
         const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
-        var pipeline_system = try sf.pipeline_system_init(allocator);
+        var pipeline_system = try sf.PipelineSystem.init(allocator);
         var texture_system = sf.AssetManager.texture_manager();
         try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "cobblestone.png", gctx, .{ .texture_binding = true, .copy_dst = true });
         try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
@@ -71,25 +71,25 @@ pub const RendererState = struct {
             },
         );
         defer gctx.releaseResource(local_bgl);
-        var pipeline = try sf.pipeline_system_add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
+        var pipeline = try sf.PipelineSystem.add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
         // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
         var material_manager = sf.AssetManager.material_manager();
-        try sf.material_manager_add_material(material_manager, "material", gctx, texture_system, &.{
+        try sf.MaterialManager.add_material(material_manager, "material", gctx, texture_system, &.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
             zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
             zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
         }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "cobblestone.png");
-        try sf.material_manager_add_material(material_manager, "material1", gctx, texture_system, &.{
+        try sf.MaterialManager.add_material(material_manager, "material1", gctx, texture_system, &.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
             zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
             zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
         }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
         var mat0 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("material")).?;
         var mat1 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("material1")).?;
-        try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat0);
-        try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat1);
-        try sf.material_manager_add_material_to_mesh_by_name(material_manager, "material", meshes.items[0]);
-        try sf.material_manager_add_material_to_mesh_by_name(material_manager, "material1", meshes.items[1]);
+        try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat0);
+        try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat1);
+        try sf.MaterialManager.add_material_to_mesh_by_name(material_manager, "material", meshes.items[0]);
+        try sf.MaterialManager.add_material_to_mesh_by_name(material_manager, "material1", meshes.items[1]);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
             .gctx = gctx,
@@ -115,7 +115,7 @@ pub const RendererState = struct {
 
     pub fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
         renderer_state.meshes.deinit();
-        sf.pipeline_system_deinit(&renderer_state.pipeline_system);
+        sf.PipelineSystem.deinit(&renderer_state.pipeline_system);
         renderer_state.gctx.destroy(allocator);
         allocator.destroy(renderer_state);
     }

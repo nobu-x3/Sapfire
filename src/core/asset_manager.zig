@@ -49,11 +49,11 @@ pub const AssetManager = struct {
         defer json.parseFree(Config, arena.allocator(), config);
         instance.texture_manager = try sf.TextureManager.init(allocator, config.texture_config);
         instance.mesh_manager = try sf.MeshManager.init(allocator, config.mesh_config);
-        instance.material_manager = try sf.material_manager_init(allocator, config.material_config);
+        instance.material_manager = try sf.MaterialManager.init(allocator, config.material_config);
     }
 
     pub fn deinit() void {
-        sf.material_manager_deinit(&instance.material_manager);
+        sf.MaterialManager.deinit(&instance.material_manager);
         sf.MeshManager.deinit(&instance.mesh_manager);
         sf.TextureManager.deinit(&instance.texture_manager);
     }
