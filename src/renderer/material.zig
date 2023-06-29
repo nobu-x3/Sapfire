@@ -1,10 +1,6 @@
-const tex = @import("texture.zig");
-const types = @import("renderer_types.zig");
-const pip = @import("pipeline.zig");
 const zgpu = @import("zgpu");
 const std = @import("std");
 const log = @import("../core/logger.zig");
-const asset_manager = @import("../core/asset_manager.zig");
 const json = std.json;
 const sf = struct {
     usingnamespace @import("../core/asset_manager.zig");
@@ -14,7 +10,7 @@ const sf = struct {
 };
 
 pub const MaterialManager = struct {
-    map: std.AutoArrayHashMap(Material, std.ArrayList(types.Mesh)),
+    map: std.AutoArrayHashMap(Material, std.ArrayList(sf.Mesh)),
     materials: std.AutoHashMap([64]u8, Material),
     materias_asset_map: std.AutoHashMap([64]u8, MaterialAsset),
     arena: std.heap.ArenaAllocator,
@@ -50,7 +46,7 @@ pub fn material_manager_init(allocator: std.mem.Allocator, config_path: []const 
     };
     const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
     defer json.parseFree(Config, parse_arena.allocator(), config);
-    var map = std.AutoArrayHashMap(Material, std.ArrayList(types.Mesh)).init(alloc);
+    var map = std.AutoArrayHashMap(Material, std.ArrayList(sf.Mesh)).init(alloc);
     try map.ensureTotalCapacity(@intCast(u32, config.database.len));
     var materials = std.AutoHashMap([64]u8, Material).init(alloc);
     try materials.ensureTotalCapacity(@intCast(u32, config.database.len));
@@ -70,7 +66,7 @@ pub fn material_manager_init(allocator: std.mem.Allocator, config_path: []const 
 }
 
 fn create_material_asset(parse_allocator: std.mem.Allocator, path: [:0]const u8) !MaterialAsset {
-    const material_guid = asset_manager.AssetManager.generate_guid(path);
+    const material_guid = sf.AssetManager.generate_guid(path);
     const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
         log.err("Failed to parse material config file. Given path:{s}", .{path});
         return e;
@@ -97,33 +93,33 @@ pub fn material_manager_deinit(system: *MaterialManager) void {
     system.arena.deinit();
 }
 
-pub fn material_manager_add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *tex.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) !void {
+pub fn material_manager_add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) !void {
     if (system.default_material == null) {
         system.default_material = create_default_material(gctx);
     }
-    const guid = asset_manager.AssetManager.generate_guid(name);
+    const guid = sf.AssetManager.generate_guid(name);
     if (!system.materials.contains(guid)) {
         var arena = system.arena.allocator();
         var material = material_create(gctx, texture_system, layout, uniform_size, texture_name);
         try system.materials.putNoClobber(guid, material);
-        var meshes = try std.ArrayList(types.Mesh).initCapacity(arena, DEFAULT_MESH_LIST_CAPACITY);
+        var meshes = try std.ArrayList(sf.Mesh).initCapacity(arena, DEFAULT_MESH_LIST_CAPACITY);
         try system.map.putNoClobber(material, meshes);
     }
 }
 
-pub fn material_manager_add_material_to_mesh(system: *MaterialManager, material: *Material, mesh: types.Mesh) !void {
+pub fn material_manager_add_material_to_mesh(system: *MaterialManager, material: *Material, mesh: sf.Mesh) !void {
     var list = system.map.getPtr(material.*);
     try list.?.append(mesh);
 }
 
-pub fn material_manager_add_material_to_mesh_by_name(system: *MaterialManager, name: [:0]const u8, mesh: types.Mesh) !void {
-    const guid = asset_manager.AssetManager.generate_guid(name);
+pub fn material_manager_add_material_to_mesh_by_name(system: *MaterialManager, name: [:0]const u8, mesh: sf.Mesh) !void {
+    const guid = sf.AssetManager.generate_guid(name);
     const material = system.materials.getPtr(guid).?;
     try material_manager_add_material_to_mesh(system, material, mesh);
 }
 
 // TODO: make bind group configurable
-pub fn material_create(gctx: *zgpu.GraphicsContext, texture_system: *tex.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) Material {
+pub fn material_create(gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) Material {
     // bind group
     const local_bgl = gctx.createBindGroupLayout(layout);
     defer gctx.releaseResource(local_bgl);
@@ -135,7 +131,7 @@ pub fn material_create(gctx: *zgpu.GraphicsContext, texture_system: *tex.Texture
     });
     const local_bg = gctx.createBindGroup(local_bgl, &.{
         .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = uniform_size },
-        .{ .binding = 1, .texture_view_handle = tex.texture_manager_get_texture_by_name(texture_system, texture_name).view },
+        .{ .binding = 1, .texture_view_handle = sf.TextureManager.get_texture_by_name(texture_system, texture_name).view },
         .{ .binding = 2, .sampler_handle = sampler },
     });
     var material = Material{
@@ -161,8 +157,8 @@ fn create_default_material(gctx: *zgpu.GraphicsContext) Material {
         .address_mode_w = .repeat,
     });
     const local_bg = gctx.createBindGroup(local_bgl, &.{
-        .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = @sizeOf(types.Uniforms) },
-        .{ .binding = 1, .texture_view_handle = asset_manager.AssetManager.texture_manager().default_texture.?.view },
+        .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = @sizeOf(sf.Uniforms) },
+        .{ .binding = 1, .texture_view_handle = sf.AssetManager.texture_manager().default_texture.?.view },
         .{ .binding = 2, .sampler_handle = sampler },
     });
     var material = Material{

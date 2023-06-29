@@ -52,9 +52,9 @@ pub const RendererState = struct {
         const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
         var pipeline_system = try sf.pipeline_system_init(allocator);
         var texture_system = sf.AssetManager.texture_manager();
-        try sf.texture_manager_add_texture(texture_system, "assets/textures/" ++ "cobblestone.png", gctx, .{ .texture_binding = true, .copy_dst = true });
-        try sf.texture_manager_add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
-        const depth_texture = sf.texture_depth_create(gctx);
+        try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "cobblestone.png", gctx, .{ .texture_binding = true, .copy_dst = true });
+        try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
+        const depth_texture = sf.Texture.create_depth(gctx);
         const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
             .{
                 .binding = 0,
@@ -239,7 +239,7 @@ pub const RendererState = struct {
             gctx.releaseResource(renderer_state.depth_texture.view);
             gctx.destroyResource(renderer_state.depth_texture.handle);
             // Create a new depth texture to match the new window size.
-            renderer_state.depth_texture = sf.texture_depth_create(gctx);
+            renderer_state.depth_texture = sf.Texture.create_depth(gctx);
         }
     }
 };
