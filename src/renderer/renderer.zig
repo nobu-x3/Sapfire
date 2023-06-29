@@ -7,7 +7,7 @@ const mesh = @import("zmesh");
 const asset_manager = @import("../core/asset_manager.zig");
 const sf = struct {
     usingnamespace @import("texture.zig");
-    usingnamespace @import("resources.zig");
+    usingnamespace @import("mesh.zig");
     usingnamespace @import("buffer.zig");
     usingnamespace @import("pipeline.zig");
     usingnamespace @import("material.zig");
@@ -46,10 +46,8 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     var indices = std.ArrayList(u32).init(arena);
     defer indices.deinit();
     try indices.ensureTotalCapacity(256);
-    mesh.init(arena);
-    defer mesh.deinit();
-    try sf.resources_load_mesh(arena, "assets/models/cube.gltf", &meshes, &vertices, &indices);
-    try sf.resources_load_mesh(arena, "assets/models/SciFiHelmet/SciFiHelmet.gltf", &meshes, &vertices, &indices);
+    try sf.mesh_manager_load_mesh("assets/models/cube.gltf", &meshes, &vertices, &indices);
+    try sf.mesh_manager_load_mesh("assets/models/SciFiHelmet/SciFiHelmet.gltf", &meshes, &vertices, &indices);
     var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
     // Create an index buffer.
     const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);

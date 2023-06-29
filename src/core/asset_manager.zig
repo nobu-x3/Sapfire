@@ -29,6 +29,10 @@ pub fn material_manager() *mat.MaterialManager {
     return &instance.material_manager;
 }
 
+pub fn mesh_manager() *mesh.MeshManager {
+    return &instance.mesh_manager;
+}
+
 // TODO: takes in path to "project" serialization which contains paths to each subsystem's serialization file.
 // Each submodule will have its own file so that project's assets can be loaded in parallel
 pub fn init(

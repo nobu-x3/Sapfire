@@ -75,29 +75,26 @@ fn create_mesh_asset(arena: std.mem.Allocator, path: [:0]const u8, out_map: *std
     try out_map.put(guid, asset);
 }
 
-pub fn resources_load_mesh(arena: std.mem.Allocator, path: [:0]const u8, out_meshes: *std.ArrayList(types.Mesh), out_vertices: *std.ArrayList(types.Vertex), out_indices: *std.ArrayList(u32)) !void {
-    const data = zmesh.io.parseAndLoadFile(path) catch |e| {
-        log.err("Error type: {s}", .{@typeName(@TypeOf(e))});
-        return e;
+pub fn mesh_manager_load_mesh(path: [:0]const u8, out_meshes: *std.ArrayList(types.Mesh), out_vertices: *std.ArrayList(types.Vertex), out_indices: *std.ArrayList(u32)) !void {
+    const guid = asset_manager.generate_guid(path);
+    var manager = asset_manager.mesh_manager();
+    const data = manager.mesh_assets_map.get(guid) orelse {
+        log.err("Mesh at path {s} is not present in the asset database. Loading failed.", .{path});
+        return;
     };
-    defer zmesh.io.freeData(data);
-    var indices = std.ArrayList(u32).init(arena);
-    var positions = std.ArrayList([3]f32).init(arena);
-    var uvs = std.ArrayList([2]f32).init(arena);
-    try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
     try out_meshes.append(.{
         .index_offset = @intCast(u32, out_indices.items.len),
         .vertex_offset = @intCast(i32, out_vertices.items.len),
-        .num_indices = @intCast(u32, indices.items.len),
-        .num_vertices = @intCast(u32, positions.items.len),
+        .num_indices = @intCast(u32, data.indices.items.len),
+        .num_vertices = @intCast(u32, data.positions.items.len),
     });
-    for (indices.items) |index| {
+    for (data.indices.items) |index| {
         try out_indices.append(index);
     }
-    for (positions.items, 0..) |_, index| {
+    for (data.positions.items, 0..) |_, index| {
         try out_vertices.append(.{
-            .position = positions.items[index],
-            .uv = uvs.items[index],
+            .position = data.positions.items[index],
+            .uv = data.uvs.items[index],
         });
     }
 }
