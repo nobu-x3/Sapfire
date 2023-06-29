@@ -74,23 +74,23 @@ pub fn renderer_create(allocator: std.mem.Allocator, window: *glfw.Window) !*Ren
     defer gctx.releaseResource(local_bgl);
     var pipeline = try sf.pipeline_system_add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
     // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
-    var material_system = asset_manager.material_manager();
-    try sf.material_system_add_material(material_system, "material", gctx, texture_system, &.{
+    var material_manager = asset_manager.material_manager();
+    try sf.material_manager_add_material(material_manager, "material", gctx, texture_system, &.{
         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
     }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "cobblestone.png");
-    try sf.material_system_add_material(material_system, "material1", gctx, texture_system, &.{
+    try sf.material_manager_add_material(material_manager, "material1", gctx, texture_system, &.{
         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
         zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
     }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
-    var mat0 = material_system.names.getPtr("material").?;
-    var mat1 = material_system.names.getPtr("material1").?;
+    var mat0 = material_manager.names.getPtr("material").?;
+    var mat1 = material_manager.names.getPtr("material1").?;
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat0);
     try sf.pipeline_system_add_material(&pipeline_system, pipeline, mat1);
-    try sf.material_system_add_material_to_mesh_by_name(material_system, "material", meshes.items[0]);
-    try sf.material_system_add_material_to_mesh_by_name(material_system, "material1", meshes.items[1]);
+    try sf.material_manager_add_material_to_mesh_by_name(material_manager, "material", meshes.items[0]);
+    try sf.material_manager_add_material_to_mesh_by_name(material_manager, "material1", meshes.items[1]);
     const renderer_state = try allocator.create(RendererState);
     renderer_state.* = .{
         .gctx = gctx,

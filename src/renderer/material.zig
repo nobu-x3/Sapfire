@@ -13,7 +13,7 @@ pub const MaterialManager = struct {
 const DEFAULT_MESH_LIST_CAPACITY = 8;
 
 // TODO: parse config file
-pub fn material_system_init(allocator: std.mem.Allocator, unique_materials: u32) !MaterialManager {
+pub fn material_manager_init(allocator: std.mem.Allocator, unique_materials: u32) !MaterialManager {
     var arena = std.heap.ArenaAllocator.init(allocator);
     var alloc = arena.allocator();
     var map = std.AutoArrayHashMap(Material, std.ArrayList(types.Mesh)).init(alloc);
@@ -27,7 +27,7 @@ pub fn material_system_init(allocator: std.mem.Allocator, unique_materials: u32)
     };
 }
 
-pub fn material_system_deinit(system: *MaterialManager) void {
+pub fn material_manager_deinit(system: *MaterialManager) void {
     // system.names.deinit();
     // var iter = system.map.iterator();
     // while (iter.next()) |entry| {
@@ -37,7 +37,7 @@ pub fn material_system_deinit(system: *MaterialManager) void {
     system.arena.deinit();
 }
 
-pub fn material_system_add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *tex.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) !void {
+pub fn material_manager_add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *tex.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) !void {
     if (!system.names.contains(name)) {
         var arena = system.arena.allocator();
         var material = material_create(gctx, texture_system, layout, uniform_size, texture_name);
@@ -47,14 +47,14 @@ pub fn material_system_add_material(system: *MaterialManager, name: [:0]const u8
     }
 }
 
-pub fn material_system_add_material_to_mesh(system: *MaterialManager, material: *Material, mesh: types.Mesh) !void {
+pub fn material_manager_add_material_to_mesh(system: *MaterialManager, material: *Material, mesh: types.Mesh) !void {
     var list = system.map.getPtr(material.*);
     try list.?.append(mesh);
 }
 
-pub fn material_system_add_material_to_mesh_by_name(system: *MaterialManager, name: [:0]const u8, mesh: types.Mesh) !void {
+pub fn material_manager_add_material_to_mesh_by_name(system: *MaterialManager, name: [:0]const u8, mesh: types.Mesh) !void {
     const material = system.names.getPtr(name).?;
-    try material_system_add_material_to_mesh(system, material, mesh);
+    try material_manager_add_material_to_mesh(system, material, mesh);
 }
 
 pub const Material = struct {

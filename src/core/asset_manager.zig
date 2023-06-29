@@ -55,11 +55,11 @@ pub fn init(
     defer json.parseFree(Config, arena.allocator(), config);
     instance.texture_manager = try tex.texture_manager_init(allocator, config.texture_config);
     instance.mesh_manager = try mesh.mesh_manager_init(allocator, config.mesh_config);
-    instance.material_manager = try mat.material_system_init(allocator, 32);
+    instance.material_manager = try mat.material_manager_init(allocator, 32);
 }
 
 pub fn deinit() void {
-    mat.material_system_deinit(&instance.material_manager);
+    mat.material_manager_deinit(&instance.material_manager);
     mesh.mesh_manager_deinit(&instance.mesh_manager);
     tex.texture_manager_deinit(&instance.texture_manager);
 }
