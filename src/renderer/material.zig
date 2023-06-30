@@ -59,6 +59,7 @@ pub const MaterialManager = struct {
         //     entry.value_ptr.deinit();
         // }
         // system.map.deinit();
+        system.asset_arena.deinit();
         system.arena.deinit();
     }
 
