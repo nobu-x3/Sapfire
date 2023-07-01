@@ -5,6 +5,8 @@ const zglfw = @import("libs/zig-gamedev/libs/zglfw/build.zig");
 const zstbi = @import("libs/zig-gamedev/libs/zstbi/build.zig");
 const zmath = @import("libs/zig-gamedev/libs/zmath/build.zig");
 const zmesh = @import("libs/zig-gamedev/libs/zmesh/build.zig");
+// TODO: implement our own job system based on fibers instead of threads
+const zjobs = @import("libs/zig-gamedev/libs/zjobs/build.zig");
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
@@ -34,6 +36,7 @@ pub fn build(b: *std.Build) void {
     const zgpu_pkg = zgpu.package(b, target, optimize, .{
         .deps = .{ .zpool = zpool_pkg.zpool, .zglfw = zglfw_pkg.zglfw },
     });
+    const zjobs_pkg = zjobs.package(b, target, optimize, .{});
     const zstbi_pkg = zstbi.package(b, target, optimize, .{});
     const zmath_pkg = zmath.package(b, target, optimize, .{});
     const zmesh_pkg = zmesh.package(b, target, optimize, .{});
@@ -44,6 +47,7 @@ pub fn build(b: *std.Build) void {
     zstbi_pkg.link(exe);
     zmath_pkg.link(exe);
     zmesh_pkg.link(exe);
+    zjobs_pkg.link(exe);
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

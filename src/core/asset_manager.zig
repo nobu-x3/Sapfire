@@ -2,6 +2,7 @@ const std = @import("std");
 const log = @import("logger.zig");
 const crypto = std.crypto;
 const json = std.json;
+const jobs = @import("jobs.zig");
 
 const sf = struct {
     usingnamespace @import("../renderer/texture.zig");
@@ -47,24 +48,57 @@ pub const AssetManager = struct {
         };
         const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
         defer json.parseFree(Config, arena.allocator(), config);
-        var thread1 = try std.Thread.spawn(.{}, populate_texture_manager, .{ allocator, config.texture_config, &instance.texture_manager });
-        var thread2 = try std.Thread.spawn(.{}, populate_material_manager, .{ allocator, config.material_config, &instance.material_manager });
-        var thread3 = try std.Thread.spawn(.{}, populate_mesh_manager, .{ allocator, config.mesh_config, &instance.mesh_manager });
-        thread1.join();
-        thread2.join();
-        thread3.join();
-    }
 
-    fn populate_texture_manager(allocator: std.mem.Allocator, path: []const u8, out_manager: *sf.TextureManager) !void {
-        out_manager.* = try sf.TextureManager.init(allocator, path);
-    }
+        _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
+            allocator: std.mem.Allocator,
+            path: []const u8,
+            texman: *sf.TextureManager,
+            pub fn exec(self: *@This()) void {
+                self.texman.* = sf.TextureManager.init(self.allocator, self.path) catch {
+                    return;
+                };
+            }
+        }{
+            .allocator = allocator,
+            .path = config.texture_config,
+            .texman = &instance.texture_manager,
+        });
+        jobs.JobsManager.jobs().start();
+        _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
+            allocator: std.mem.Allocator,
+            path: []const u8,
+            matman: *sf.MaterialManager,
+            pub fn exec(self: *@This()) void {
+                self.matman.* = sf.MaterialManager.init(self.allocator, self.path) catch {
+                    return;
+                };
+            }
+        }{
+            .allocator = allocator,
+            .path = config.material_config,
+            .matman = &instance.material_manager,
+        });
 
-    fn populate_mesh_manager(allocator: std.mem.Allocator, path: []const u8, out_manager: *sf.MeshManager) !void {
-        out_manager.* = try sf.MeshManager.init(allocator, path);
-    }
-
-    fn populate_material_manager(allocator: std.mem.Allocator, path: []const u8, out_manager: *sf.MaterialManager) !void {
-        out_manager.* = try sf.MaterialManager.init(allocator, path);
+        _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
+            allocator: std.mem.Allocator,
+            path: []const u8,
+            meshman: *sf.MeshManager,
+            pub fn exec(self: *@This()) void {
+                self.meshman.* = sf.MeshManager.init(self.allocator, self.path) catch {
+                    return;
+                };
+            }
+        }{
+            .allocator = allocator,
+            .path = config.mesh_config,
+            .meshman = &instance.mesh_manager,
+        });
+        _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
+            pub fn exec(_: *@This()) void {
+                jobs.JobsManager.jobs().stop();
+            }
+        }{});
+        jobs.JobsManager.jobs().join();
     }
 
     pub fn deinit() void {

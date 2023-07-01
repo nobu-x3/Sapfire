@@ -5,6 +5,7 @@ const sf = struct {
     usingnamespace @import("../game_types.zig");
     usingnamespace @import("../renderer/renderer.zig");
     usingnamespace @import("asset_manager.zig");
+    usingnamespace @import("jobs.zig");
 };
 const Game = sf.Game;
 
@@ -28,6 +29,8 @@ pub const Application = struct {
         const allocator = gpa.allocator();
         try log.init();
         defer log.deinit();
+        sf.JobsManager.init();
+        defer sf.JobsManager.deinit();
         try sf.AssetManager.init(allocator, "project/project_config.json");
         defer sf.AssetManager.deinit();
         glfw.init() catch |e| {
