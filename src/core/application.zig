@@ -6,6 +6,7 @@ const sf = struct {
     usingnamespace @import("../renderer/renderer.zig");
     usingnamespace @import("asset_manager.zig");
     usingnamespace @import("jobs.zig");
+    usingnamespace @import("time.zig");
 };
 const Game = sf.Game;
 
@@ -33,6 +34,7 @@ pub const Application = struct {
         defer sf.JobsManager.deinit();
         try sf.AssetManager.init(allocator, "project/project_config.json");
         defer sf.AssetManager.deinit();
+        sf.Time.init();
         glfw.init() catch |e| {
             log.err("Failed to init glfw.", .{});
             return e;
@@ -52,9 +54,10 @@ pub const Application = struct {
         defer sf.RendererState.destroy(allocator, renderer_state);
         while (!window.shouldClose() and window.getKey(.escape) != .press) {
             glfw.pollEvents();
-            try config.game.update(config.game, 0.0);
+            sf.Time.update();
+            try config.game.update(config.game, sf.Time.delta_time());
             sf.RendererState.update(renderer_state, window);
-            try config.game.render(config.game, 0.0);
+            try config.game.render(config.game, sf.Time.delta_time());
             sf.RendererState.draw(renderer_state);
         }
     }

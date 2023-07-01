@@ -12,6 +12,7 @@ const sf = struct {
     usingnamespace @import("material.zig");
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("../core/asset_manager.zig");
+    usingnamespace @import("../core/time.zig");
 };
 
 pub const RendererState = struct {
@@ -133,7 +134,8 @@ pub const RendererState = struct {
             renderer_state.camera.yaw = zm.modAngle(renderer_state.camera.yaw);
         }
         const speed = zm.f32x4s(2.0);
-        const delta_time = zm.f32x4s(renderer_state.gctx.stats.delta_time);
+        // const delta_time = zm.f32x4s(renderer_state.gctx.stats.delta_time);
+        const delta_time = zm.f32x4s(sf.Time.delta_time());
         const transform = zm.mul(zm.rotationX(renderer_state.camera.pitch), zm.rotationY(renderer_state.camera.yaw));
         var forward = zm.normalize3(zm.mul(zm.f32x4(0.0, 0.0, 1.0, 0.0), transform));
         zm.storeArr3(&renderer_state.camera.forward, forward);
@@ -153,11 +155,13 @@ pub const RendererState = struct {
         zm.storeArr3(&renderer_state.camera.position, cam_pos);
     }
 
+    var t: f32 = 0.0;
     pub fn draw(renderer_state: *RendererState) void {
         const gctx = renderer_state.gctx;
         const fb_width = gctx.swapchain_descriptor.width;
         const fb_height = gctx.swapchain_descriptor.height;
-        const t = @floatCast(f32, gctx.stats.time);
+        // const t = @floatCast(f32, gctx.stats.time);
+        t += sf.Time.delta_time();
         const cam_world_to_view = zm.lookAtLh(
             zm.loadArr3(renderer_state.camera.position),
             zm.loadArr3(renderer_state.camera.forward),
