@@ -38,6 +38,8 @@ pub const RendererState = struct {
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         });
         defer gctx.releaseResource(global_uniform_bgl);
+        const transform = sf.Transform.init();
+        _ = transform;
         var meshes = std.ArrayList(sf.Mesh).init(allocator);
         try meshes.ensureTotalCapacity(128);
         var vertices = std.ArrayList(sf.Vertex).init(arena);
@@ -219,8 +221,10 @@ pub const RendererState = struct {
                     for (pipe.materials.items) |material| {
                         const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
                         const meshes = sf.AssetManager.material_manager().map.getPtr(material.*).?;
-                        for (meshes.items) |item| {
-                            const object_to_world = zm.mul(zm.rotationY(t), zm.translation(-1.0, 0.0, 0.0));
+                        for (meshes.items, 0..) |item, index| {
+                            sf.Transform.rotate(&meshes.items[index].transform, t, .{ 0.0, 1.0, 0.0 });
+                            sf.Transform.update(&meshes.items[index].transform);
+                            const object_to_world = item.transform.matrix;
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
                             mem.slice[0] = .{
                                 .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
