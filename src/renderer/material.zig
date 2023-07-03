@@ -10,7 +10,7 @@ const sf = struct {
 };
 
 pub const MaterialManager = struct {
-    map: std.AutoArrayHashMap(Material, std.ArrayList(sf.Mesh)),
+    map: std.AutoArrayHashMap(Material, std.ArrayList(*sf.Mesh)),
     materials: std.AutoHashMap([64]u8, Material),
     materias_asset_map: std.AutoHashMap([64]u8, MaterialAsset),
     arena: std.heap.ArenaAllocator,
@@ -33,7 +33,7 @@ pub const MaterialManager = struct {
         };
         const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
         defer json.parseFree(Config, parse_arena.allocator(), config);
-        var map = std.AutoArrayHashMap(Material, std.ArrayList(sf.Mesh)).init(alloc);
+        var map = std.AutoArrayHashMap(Material, std.ArrayList(*sf.Mesh)).init(alloc);
         try map.ensureTotalCapacity(@intCast(u32, config.database.len));
         var materials = std.AutoHashMap([64]u8, Material).init(alloc);
         try materials.ensureTotalCapacity(@intCast(u32, config.database.len));
@@ -72,17 +72,17 @@ pub const MaterialManager = struct {
             var arena = system.arena.allocator();
             var material = Material.create(gctx, texture_system, layout, uniform_size, texture_name);
             try system.materials.putNoClobber(guid, material);
-            var meshes = try std.ArrayList(sf.Mesh).initCapacity(arena, DEFAULT_MESH_LIST_CAPACITY);
+            var meshes = try std.ArrayList(*sf.Mesh).initCapacity(arena, DEFAULT_MESH_LIST_CAPACITY);
             try system.map.putNoClobber(material, meshes);
         }
     }
 
-    pub fn add_material_to_mesh(system: *MaterialManager, material: *Material, mesh: sf.Mesh) !void {
+    pub fn add_material_to_mesh(system: *MaterialManager, material: *Material, mesh: *sf.Mesh) !void {
         var list = system.map.getPtr(material.*);
         try list.?.append(mesh);
     }
 
-    pub fn add_material_to_mesh_by_name(system: *MaterialManager, name: [:0]const u8, mesh: sf.Mesh) !void {
+    pub fn add_material_to_mesh_by_name(system: *MaterialManager, name: [:0]const u8, mesh: *sf.Mesh) !void {
         const guid = sf.AssetManager.generate_guid(name);
         const material = system.materials.getPtr(guid).?;
         try add_material_to_mesh(system, material, mesh);

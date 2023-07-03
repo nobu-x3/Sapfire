@@ -91,8 +91,8 @@ pub const RendererState = struct {
         var mat1 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("material1")).?;
         try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat0);
         try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat1);
-        try sf.MaterialManager.add_material_to_mesh_by_name(material_manager, "material", meshes.items[0]);
-        try sf.MaterialManager.add_material_to_mesh_by_name(material_manager, "material1", meshes.items[1]);
+        try sf.MaterialManager.add_material_to_mesh_by_name(material_manager, "material", &meshes.items[0]);
+        try sf.MaterialManager.add_material_to_mesh_by_name(material_manager, "material1", &meshes.items[1]);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
             .gctx = gctx,
@@ -128,7 +128,10 @@ pub const RendererState = struct {
         const delta_x = @floatCast(f32, cursor_pos[0] - renderer_state.mouse.cursor_pos[0]);
         const delta_y = @floatCast(f32, cursor_pos[1] - renderer_state.mouse.cursor_pos[1]);
         renderer_state.mouse.cursor_pos = cursor_pos;
-        if (window.getMouseButton(.left) == .press) {} else if (window.getMouseButton(.right) == .press) {
+        if (window.getMouseButton(.left) == .press) {
+            renderer_state.meshes.items[0].transform.rotate(delta_y * 0.0025, .{ 1.0, 0.0, 0.0 });
+            renderer_state.meshes.items[0].transform.rotate(delta_x * 0.0025, .{ 0.0, 1.0, 0.0 });
+        } else if (window.getMouseButton(.right) == .press) {
             renderer_state.camera.pitch += 0.0025 * delta_y;
             renderer_state.camera.yaw += 0.0025 * delta_x;
             renderer_state.camera.pitch = std.math.min(renderer_state.camera.pitch, 0.48 * std.math.pi);
@@ -155,6 +158,10 @@ pub const RendererState = struct {
             cam_pos -= right;
         }
         zm.storeArr3(&renderer_state.camera.position, cam_pos);
+        for (renderer_state.meshes.items, 0..) |_, index| {
+            // renderer_state.meshes.items[index].transform.update();
+            sf.Transform.update(&renderer_state.meshes.items[index].transform);
+        }
     }
 
     pub fn draw(renderer_state: *RendererState) void {

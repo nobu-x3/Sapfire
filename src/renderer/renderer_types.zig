@@ -1,4 +1,5 @@
 const zm = @import("zmath");
+const log = @import("../core/logger.zig");
 const std = @import("std");
 pub const Vertex = extern struct {
     position: [3]f32,
@@ -58,6 +59,5 @@ pub const Transform = struct {
             self.euler_angles[2] + angle * axis[2],
         };
         self.rotation = zm.quatFromRollPitchYaw(self.euler_angles[0], self.euler_angles[1], self.euler_angles[2]);
-        self.matrix = zm.mul(zm.matFromQuat(self.rotation), zm.translation(self.position[0], self.position[1], self.position[2]));
     }
 };
