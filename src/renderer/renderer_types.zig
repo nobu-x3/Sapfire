@@ -53,10 +53,11 @@ pub const Transform = struct {
 
     pub fn rotate(self: *Transform, angle: f32, axis: [3]f32) void {
         self.euler_angles = .{
-            self.euler_angles[0] + angle * std.math.pi * axis[0],
-            self.euler_angles[1] + angle * std.math.pi * axis[1],
-            self.euler_angles[2] + angle * std.math.pi * axis[2],
+            self.euler_angles[0] + angle * axis[0],
+            self.euler_angles[1] + angle * axis[1],
+            self.euler_angles[2] + angle * axis[2],
         };
         self.rotation = zm.quatFromRollPitchYaw(self.euler_angles[0], self.euler_angles[1], self.euler_angles[2]);
+        self.matrix = zm.mul(zm.matFromQuat(self.rotation), zm.translation(self.position[0], self.position[1], self.position[2]));
     }
 };

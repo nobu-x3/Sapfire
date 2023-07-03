@@ -157,13 +157,10 @@ pub const RendererState = struct {
         zm.storeArr3(&renderer_state.camera.position, cam_pos);
     }
 
-    var t: f32 = 0.0;
     pub fn draw(renderer_state: *RendererState) void {
         const gctx = renderer_state.gctx;
         const fb_width = gctx.swapchain_descriptor.width;
         const fb_height = gctx.swapchain_descriptor.height;
-        // const t = @floatCast(f32, gctx.stats.time);
-        t += sf.Time.delta_time();
         const cam_world_to_view = zm.lookAtLh(
             zm.loadArr3(renderer_state.camera.position),
             zm.loadArr3(renderer_state.camera.forward),
@@ -221,9 +218,7 @@ pub const RendererState = struct {
                     for (pipe.materials.items) |material| {
                         const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
                         const meshes = sf.AssetManager.material_manager().map.getPtr(material.*).?;
-                        for (meshes.items, 0..) |item, index| {
-                            sf.Transform.rotate(&meshes.items[index].transform, t, .{ 0.0, 1.0, 0.0 });
-                            sf.Transform.update(&meshes.items[index].transform);
+                        for (meshes.items) |item| {
                             const object_to_world = item.transform.matrix;
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
                             mem.slice[0] = .{
