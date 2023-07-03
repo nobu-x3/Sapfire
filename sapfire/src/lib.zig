@@ -1,10 +1,10 @@
 const std = @import("std");
 const glfw = @import("zglfw");
-const app = @import("core/application.zig");
-const log = @import("core/logger.zig");
+pub const app = @import("core/application.zig");
+pub const log = @import("core/logger.zig");
 const game_types = @import("game_types.zig");
-const Game = game_types.Game;
-const GameError = game_types.GameError;
+pub const Game = game_types.Game;
+pub const GameError = game_types.GameError;
 
 pub fn main() !void {
     var game = Game{
@@ -22,16 +22,8 @@ pub fn main() !void {
     _ = application;
 }
 
-pub fn update(game: *Game, delta_time: f32) GameError!void {
-    _ = game;
-    _ = delta_time;
-}
+extern fn update(game: *Game, delta_time: f32) GameError!void;
 
-pub fn initialize(game: *Game) GameError!void {
-    _ = game;
-}
+extern fn initialize(game: *Game) GameError!void;
 
-pub fn render(game: *Game, delta_time: f32) GameError!void {
-    _ = game;
-    _ = delta_time;
-}
+extern fn render(game: *Game, delta_time: f32) GameError!void;

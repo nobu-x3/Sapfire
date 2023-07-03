@@ -8,7 +8,7 @@ const zmesh = @import("libs/zig-gamedev/libs/zmesh/build.zig");
 // TODO: implement our own job system based on fibers instead of threads
 const zjobs = @import("libs/zig-gamedev/libs/zjobs/build.zig");
 // Although this function looks imperative, note that its job is to
-// declaratively construct a build graph that will be executed by an external
+// declaratively construct a build graph that will be sap_executed by an external
 // runner.
 pub fn build(b: *std.Build) void {
     // Standard target options allows the person running `zig build` to choose
@@ -22,11 +22,11 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    const exe = b.addExecutable(.{
+    const sapfire_lib = b.addSharedLibrary(.{
         .name = "Sapfire",
         // In this case the main source file is merely a path, however, in more
         // complicated build scripts, this could be a generated file.
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = .{ .path = "sapfire/src/lib.zig" },
         .target = target,
         .optimize = optimize,
     });
@@ -40,24 +40,42 @@ pub fn build(b: *std.Build) void {
     const zstbi_pkg = zstbi.package(b, target, optimize, .{});
     const zmath_pkg = zmath.package(b, target, optimize, .{});
     const zmesh_pkg = zmesh.package(b, target, optimize, .{});
+    zgpu_pkg.link(sapfire_lib);
+    zglfw_pkg.link(sapfire_lib);
+    zpool_pkg.link(sapfire_lib);
+    zstbi_pkg.link(sapfire_lib);
+    zmath_pkg.link(sapfire_lib);
+    zmesh_pkg.link(sapfire_lib);
+    zjobs_pkg.link(sapfire_lib);
 
-    zgpu_pkg.link(exe);
-    zglfw_pkg.link(exe);
-    zpool_pkg.link(exe);
-    zstbi_pkg.link(exe);
-    zmath_pkg.link(exe);
-    zmesh_pkg.link(exe);
-    zjobs_pkg.link(exe);
+    // This declares intent for the library to be installed into the standard
+    // location when the user invokes the "install" step (the default step when
+    // running `zig build`).
+    b.installArtifact(sapfire_lib);
 
-    // This declares intent for the executable to be installed into the
+    const sapfire_module = b.addModule("sapfire", .{ .source_file = .{ .path = "sapfire/src/lib.zig" } });
+
+    const sapling_exe = b.addExecutable(.{
+        .name = "Sapling",
+        // In this case the main source file is merely a path, however, in more
+        // complicated build scripts, this could be a generated file.
+        .root_source_file = .{ .path = "sapling/src/main.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+
+    sapling_exe.addModule("sapfire", sapfire_module);
+    sapling_exe.linkLibrary(sapfire_lib);
+
+    // This declares intent for the sap_executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
-    b.installArtifact(exe);
+    b.installArtifact(sapling_exe);
 
-    // This *creates* a Run step in the build graph, to be executed when another
+    // This *creates* a Run step in the build graph, to be sap_executed when another
     // step is evaluated that depends on it. The next line below will establish
     // such a dependency.
-    const run_cmd = b.addRunArtifact(exe);
+    const run_cmd = b.addRunArtifact(sapling_exe);
 
     // By making the run step depend on the install step, it will be run from the
     // installation directory rather than directly from within the cache directory.
@@ -76,20 +94,4 @@ pub fn build(b: *std.Build) void {
     // This will evaluate the `run` step rather than the default, which is "install".
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
-
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
-    const unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/main.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const run_unit_tests = b.addRunArtifact(unit_tests);
-
-    // Similar to creating the run step earlier, this exposes a `test` step to
-    // the `zig build --help` menu, providing a way for the user to request
-    // running the unit tests.
-    const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&run_unit_tests.step);
 }
