@@ -4,6 +4,7 @@ const glfw = @import("zglfw");
 const stbi = @import("zstbi");
 const zm = @import("zmath");
 const mesh = @import("zmesh");
+const zgui = @import("zgui");
 const sf = struct {
     usingnamespace @import("texture.zig");
     usingnamespace @import("mesh.zig");
@@ -239,6 +240,17 @@ pub const RendererState = struct {
                         }
                     }
                 }
+            }
+            { // gui pass
+                const gui_pass = zgpu.beginRenderPassSimple(encoder, .load, back_buffer_view, null, null, null);
+                defer zgpu.endReleasePass(gui_pass);
+                zgui.backend.newFrame(fb_width, fb_height);
+
+                zgui.bulletText(
+                    "Average :  {d:.3} ms/frame ({d:.1} fps)",
+                    .{ renderer_state.gctx.stats.average_cpu_time, renderer_state.gctx.stats.fps },
+                );
+                zgui.backend.draw(gui_pass);
             }
             break :commands encoder.finish(null);
         };

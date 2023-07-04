@@ -9,6 +9,7 @@ const sf = struct {
     usingnamespace @import("time.zig");
 };
 const Game = sf.Game;
+const zgui = @import("zgui");
 
 pub const ApplicationConfig = struct {
     window_width: i32,
@@ -52,6 +53,10 @@ pub const Application = struct {
             return e;
         };
         defer sf.RendererState.destroy(allocator, renderer_state);
+        zgui.init(allocator);
+        defer zgui.deinit();
+        zgui.backend.init(window, renderer_state.gctx.device, @enumToInt(renderer_state.gctx.swapchain_descriptor.format));
+        defer zgui.backend.deinit();
         while (!window.shouldClose() and window.getKey(.escape) != .press) {
             glfw.pollEvents();
             sf.Time.update();
