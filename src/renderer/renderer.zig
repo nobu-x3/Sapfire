@@ -216,6 +216,7 @@ pub const RendererState = struct {
                 pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
                 pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
                 // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
+
                 const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
                 glob.slice[0] = .{
                     .view_projection = zm.transpose(cam_world_to_clip),
@@ -245,11 +246,13 @@ pub const RendererState = struct {
                 const gui_pass = zgpu.beginRenderPassSimple(encoder, .load, back_buffer_view, null, null, null);
                 defer zgpu.endReleasePass(gui_pass);
                 zgui.backend.newFrame(fb_width, fb_height);
-
-                zgui.bulletText(
-                    "Average :  {d:.3} ms/frame ({d:.1} fps)",
-                    .{ renderer_state.gctx.stats.average_cpu_time, renderer_state.gctx.stats.fps },
-                );
+                if (zgui.begin("Stats", .{ .flags = .{ .always_auto_resize = true } })) {
+                    zgui.bulletText(
+                        "Average :  {d:.3} ms/frame ({d:.1} fps)",
+                        .{ renderer_state.gctx.stats.average_cpu_time, renderer_state.gctx.stats.fps },
+                    );
+                }
+                zgui.end();
                 zgui.backend.draw(gui_pass);
             }
             break :commands encoder.finish(null);
