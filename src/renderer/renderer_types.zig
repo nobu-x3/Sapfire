@@ -6,6 +6,11 @@ pub const Vertex = extern struct {
     uv: [2]f32,
 };
 
+pub const SimpleScene = struct {
+    guid: [64]u8,
+    meshes: std.ArrayList(Mesh),
+};
+
 pub const Mesh = struct {
     index_offset: u32,
     vertex_offset: i32,
