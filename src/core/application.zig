@@ -33,7 +33,7 @@ pub const Application = struct {
         defer log.deinit();
         sf.JobsManager.init();
         defer sf.JobsManager.deinit();
-        try sf.AssetManager.init(allocator, "project/project_config.json");
+        try sf.AssetManager.init(allocator, "project/project_config.json"); // TODO: move this to editor, we don't need to load EVERYTHING at runtime
         defer sf.AssetManager.deinit();
         sf.Time.init();
         glfw.init() catch |e| {

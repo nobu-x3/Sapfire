@@ -10,6 +10,9 @@ const sf = struct {
     usingnamespace @import("../renderer/material.zig");
 };
 
+// TODO: add SceneAssetManager.
+// The purpose is to separate runtime and edittime asset managers.
+// Editor asset manager will load ALL assets to memory, while runtime asset manager will only load those used in the scene.
 pub const AssetManager = struct {
     allocator: std.mem.Allocator,
     texture_manager: sf.TextureManager,
