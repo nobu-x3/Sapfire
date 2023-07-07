@@ -74,6 +74,7 @@ pub const MaterialManager = struct {
             try system.materials.putNoClobber(guid, material);
             var meshes = try std.ArrayList(*sf.Mesh).initCapacity(arena, DEFAULT_MESH_LIST_CAPACITY);
             try system.map.putNoClobber(material, meshes);
+            log.info("Added material at path {s} with guid\n{d}", .{ name, guid });
         }
     }
 

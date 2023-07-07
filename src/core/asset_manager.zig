@@ -64,7 +64,7 @@ pub const AssetManager = struct {
             .texman = &instance.texture_manager,
         });
         jobs.JobsManager.jobs().start();
-        _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
+        const material_job = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
             allocator: std.mem.Allocator,
             path: []const u8,
             matman: *sf.MaterialManager,
@@ -79,7 +79,7 @@ pub const AssetManager = struct {
             .matman = &instance.material_manager,
         });
 
-        _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
+        _ = try jobs.JobsManager.jobs().schedule(material_job, struct {
             allocator: std.mem.Allocator,
             path: []const u8,
             meshman: *sf.MeshManager,

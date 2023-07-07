@@ -10,6 +10,7 @@ const sf = struct {
 
 pub const MeshAsset = struct {
     guid: [64]u8,
+    material_guid: [64]u8,
     indices: std.ArrayList(u32),
     positions: std.ArrayList([3]f32),
     uvs: std.ArrayList([2]f32),
@@ -22,12 +23,19 @@ pub const MeshAsset = struct {
             log.err("Mesh at path {s} is not present in the asset database. Loading failed.", .{path});
             return;
         };
+        const matman = sf.AssetManager.material_manager();
+        const material = matman.materials.getPtr(data.material_guid) orelse {
+            log.err("Loading failed mesh at path {s} failed. Material at given path is not present in the material database.", .{path});
+            return;
+        };
         try out_meshes.append(.{
+            .material = material,
             .index_offset = @intCast(u32, out_indices.items.len),
             .vertex_offset = @intCast(i32, out_vertices.items.len),
             .num_indices = @intCast(u32, data.indices.items.len),
             .num_vertices = @intCast(u32, data.positions.items.len),
         });
+        try matman.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
         for (data.indices.items) |index| {
             try out_indices.append(index);
         }
@@ -63,7 +71,7 @@ pub const MeshManager = struct {
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(@intCast(u32, config.database.len));
         for (config.database) |path| {
-            create_mesh_asset(arena_alloc, path, &asset_map) catch |e| {
+            create_mesh_asset(arena_alloc, parse_arena.allocator(), path, &asset_map) catch |e| {
                 log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
                 return e;
             };
@@ -79,8 +87,17 @@ pub const MeshManager = struct {
         manager.arena.deinit();
     }
 
-    fn create_mesh_asset(arena: std.mem.Allocator, path: [:0]const u8, out_map: *std.AutoHashMap([64]u8, MeshAsset)) !void {
-        const data = zmesh.io.parseAndLoadFile(path) catch |e| {
+    fn create_mesh_asset(arena: std.mem.Allocator, parse_arena: std.mem.Allocator, path: [:0]const u8, out_map: *std.AutoHashMap([64]u8, MeshAsset)) !void {
+        const config_data = std.fs.cwd().readFileAlloc(parse_arena, path, 512 * 16) catch |e| {
+            log.err("Failed to parse mesh config file. Given path:{s}", .{path});
+            return e;
+        };
+        const Config = struct {
+            geometry_path: [:0]const u8,
+            material_path: [:0]const u8,
+        };
+        const config = try json.parseFromSlice(Config, parse_arena, config_data, .{});
+        const data = zmesh.io.parseAndLoadFile(config.geometry_path) catch |e| {
             log.err("Error type: {s}", .{@typeName(@TypeOf(e))});
             return e;
         };
@@ -89,14 +106,17 @@ pub const MeshManager = struct {
         var positions = std.ArrayList([3]f32).init(arena);
         var uvs = std.ArrayList([2]f32).init(arena);
         try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
+        const material_guid = sf.AssetManager.generate_guid(config.material_path);
         const guid = sf.AssetManager.generate_guid(path);
         const asset = MeshAsset{
             .guid = guid,
+            .material_guid = material_guid,
             .indices = indices,
             .positions = positions,
             .uvs = uvs,
             .parse_success = true,
         };
         try out_map.put(guid, asset);
+        log.info("Mesh at {s} added to asset map", .{path});
     }
 };

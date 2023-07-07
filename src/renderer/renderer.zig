@@ -23,6 +23,7 @@ pub const RendererState = struct {
     index_buffer: zgpu.BufferHandle,
     pipeline_system: sf.PipelineSystem,
     depth_texture: sf.Texture,
+    // current_scene: sf.SimpleScene,
     mip_level: i32 = 0,
     meshes: std.ArrayList(sf.Mesh),
     camera: sf.Camera = .{},
@@ -30,6 +31,7 @@ pub const RendererState = struct {
         cursor_pos: [2]f64 = .{ 0, 0 },
     } = .{},
 
+    // TODO: runtime dependent assets should be multithreaded here. Probably pass a pointer to scene asset here.
     pub fn create(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
         const gctx = try zgpu.GraphicsContext.create(allocator, window);
         var arena_state = std.heap.ArenaAllocator.init(allocator);
@@ -41,20 +43,6 @@ pub const RendererState = struct {
         defer gctx.releaseResource(global_uniform_bgl);
         const transform = sf.Transform.init();
         _ = transform;
-        var meshes = std.ArrayList(sf.Mesh).init(allocator);
-        try meshes.ensureTotalCapacity(128);
-        var vertices = std.ArrayList(sf.Vertex).init(arena);
-        defer vertices.deinit();
-        try vertices.ensureTotalCapacity(256);
-        var indices = std.ArrayList(u32).init(arena);
-        defer indices.deinit();
-        try indices.ensureTotalCapacity(256);
-        try sf.MeshAsset.load_mesh("assets/models/cube.gltf", &meshes, &vertices, &indices);
-        try sf.MeshAsset.load_mesh("assets/models/SciFiHelmet/SciFiHelmet.gltf", &meshes, &vertices, &indices);
-        var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
-        // Create an index buffer.
-        const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
-        var pipeline_system = try sf.PipelineSystem.init(allocator);
         var texture_system = sf.AssetManager.texture_manager();
         try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "cobblestone.png", gctx, .{ .texture_binding = true, .copy_dst = true });
         try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
@@ -75,25 +63,38 @@ pub const RendererState = struct {
             },
         );
         defer gctx.releaseResource(local_bgl);
+        var pipeline_system = try sf.PipelineSystem.init(allocator);
         var pipeline = try sf.PipelineSystem.add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
         // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
         var material_manager = sf.AssetManager.material_manager();
-        try sf.MaterialManager.add_material(material_manager, "material", gctx, texture_system, &.{
+        try sf.MaterialManager.add_material(material_manager, "project/materials/material.json", gctx, texture_system, &.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
             zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
             zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
         }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "cobblestone.png");
-        try sf.MaterialManager.add_material(material_manager, "material1", gctx, texture_system, &.{
+        try sf.MaterialManager.add_material(material_manager, "project/materials/material.json", gctx, texture_system, &.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
             zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
             zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
         }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
-        var mat0 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("material")).?;
-        var mat1 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("material1")).?;
+        var mat0 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("project/materials/material.json")).?;
+        var mat1 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("project/materials/material.json")).?;
         try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat0);
         try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat1);
-        try sf.MaterialManager.add_material_to_mesh_by_name(material_manager, "material", &meshes.items[0]);
-        try sf.MaterialManager.add_material_to_mesh_by_name(material_manager, "material1", &meshes.items[1]);
+        var meshes = std.ArrayList(sf.Mesh).init(allocator);
+        try meshes.ensureTotalCapacity(128);
+        var vertices = std.ArrayList(sf.Vertex).init(arena);
+        defer vertices.deinit();
+        try vertices.ensureTotalCapacity(256);
+        var indices = std.ArrayList(u32).init(arena);
+        defer indices.deinit();
+        try indices.ensureTotalCapacity(256);
+        try sf.MeshAsset.load_mesh("project/meshes/cube.json", &meshes, &vertices, &indices);
+        try sf.MeshAsset.load_mesh("project/meshes/helmet.json", &meshes, &vertices, &indices);
+        var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
+        // Create an index buffer.
+        const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
+
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
             .gctx = gctx,
