@@ -67,9 +67,9 @@ pub const SimpleScene = struct {
         defer parse_arena.deinit();
         const scene_asset = try SceneAsset.create(arena.allocator(), parse_arena.allocator(), config_path);
         // manager inits can be jobified
-        var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items[0..]);
-        var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items[0..]);
-        var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items[0..]);
+        var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
+        var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
+        var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
 
         // Texture loading
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
@@ -108,7 +108,7 @@ pub const SimpleScene = struct {
                 zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
                 zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
             }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
-            var mat0 = matman.materials.getPtr(sf.AssetManager.generate_guid("project/materials/material.json")).?;
+            var mat0 = matman.materials.getPtr(sf.AssetManager.generate_guid(path)).?;
             try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat0);
         }
 
