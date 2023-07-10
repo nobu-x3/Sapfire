@@ -6,6 +6,16 @@ const sf = struct {
     usingnamespace @import("texture.zig");
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("../core/asset_manager.zig");
+    usingnamespace @import("material.zig");
+};
+
+pub const Mesh = struct {
+    index_offset: u32,
+    vertex_offset: i32,
+    num_indices: u32,
+    num_vertices: u32,
+    transform: sf.Transform = sf.Transform.init(),
+    material: *sf.Material,
 };
 
 pub const MeshAsset = struct {
@@ -16,7 +26,7 @@ pub const MeshAsset = struct {
     uvs: std.ArrayList([2]f32),
     parse_success: bool,
 
-    pub fn load_mesh(path: [:0]const u8, out_meshes: *std.ArrayList(sf.Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !void {
+    pub fn load_mesh(path: [:0]const u8, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !void {
         const guid = sf.AssetManager.generate_guid(path);
         var manager = sf.AssetManager.mesh_manager();
         const data = manager.mesh_assets_map.get(guid) orelse {
@@ -26,6 +36,36 @@ pub const MeshAsset = struct {
         const matman = sf.AssetManager.material_manager();
         const material = matman.materials.getPtr(data.material_guid) orelse {
             log.err("Loading failed mesh at path {s} failed. Material at given path is not present in the material database.", .{path});
+            return;
+        };
+        try out_meshes.append(.{
+            .material = material,
+            .index_offset = @intCast(u32, out_indices.items.len),
+            .vertex_offset = @intCast(i32, out_vertices.items.len),
+            .num_indices = @intCast(u32, data.indices.items.len),
+            .num_vertices = @intCast(u32, data.positions.items.len),
+        });
+        try matman.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
+        for (data.indices.items) |index| {
+            try out_indices.append(index);
+        }
+        for (data.positions.items, 0..) |_, index| {
+            try out_vertices.append(.{
+                .position = data.positions.items[index],
+                .uv = data.uvs.items[index],
+            });
+        }
+    }
+
+    pub fn load_mesh_by_guid(guid: [64]u8, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) void {
+        var manager = sf.AssetManager.mesh_manager();
+        const data = manager.mesh_assets_map.get(guid) orelse {
+            log.err("Mesh with guid {d} is not present in the asset database. Loading failed.", .{guid});
+            return;
+        };
+        const matman = sf.AssetManager.material_manager();
+        const material = matman.materials.getPtr(data.material_guid) orelse {
+            log.err("Loading failed mesh with guid {d} failed. Material at given path is not present in the material database.", .{guid});
             return;
         };
         try out_meshes.append(.{

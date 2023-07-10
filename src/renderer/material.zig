@@ -7,6 +7,7 @@ const sf = struct {
     usingnamespace @import("pipeline.zig");
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("texture.zig");
+    usingnamespace @import("mesh.zig");
 };
 
 pub const MaterialManager = struct {

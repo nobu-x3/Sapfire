@@ -41,8 +41,6 @@ pub const RendererState = struct {
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         });
         defer gctx.releaseResource(global_uniform_bgl);
-        const transform = sf.Transform.init();
-        _ = transform;
         var texture_system = sf.AssetManager.texture_manager();
         try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "cobblestone.png", gctx, .{ .texture_binding = true, .copy_dst = true });
         try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
@@ -117,6 +115,8 @@ pub const RendererState = struct {
         // (Async) Create a render pipeline.
         return renderer_state;
     }
+
+    // pub fn load_scene(state: *RendererState, scene_config: []const u8) void {}
 
     pub fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
         renderer_state.meshes.deinit();

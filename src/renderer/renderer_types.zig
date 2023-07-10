@@ -2,23 +2,10 @@ const zm = @import("zmath");
 const log = @import("../core/logger.zig");
 const std = @import("std");
 const mat = @import("material.zig");
+
 pub const Vertex = extern struct {
     position: [3]f32,
     uv: [2]f32,
-};
-
-pub const SimpleScene = struct {
-    guid: [64]u8,
-    meshes: std.ArrayList(Mesh),
-};
-
-pub const Mesh = struct {
-    index_offset: u32,
-    vertex_offset: i32,
-    num_indices: u32,
-    num_vertices: u32,
-    transform: Transform = Transform.init(),
-    material: *mat.Material,
 };
 
 pub const Uniforms = extern struct {

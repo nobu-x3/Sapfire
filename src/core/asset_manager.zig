@@ -8,6 +8,7 @@ const sf = struct {
     usingnamespace @import("../renderer/texture.zig");
     usingnamespace @import("../renderer/mesh.zig");
     usingnamespace @import("../renderer/material.zig");
+    usingnamespace @import("../renderer/scene.zig");
 };
 
 // TODO: add SceneAssetManager.
@@ -18,6 +19,7 @@ pub const AssetManager = struct {
     texture_manager: sf.TextureManager,
     material_manager: sf.MaterialManager,
     mesh_manager: sf.MeshManager,
+    scene_manager: sf.SceneManager,
 
     pub fn texture_manager() *sf.TextureManager {
         return &instance.texture_manager;
@@ -29,6 +31,10 @@ pub const AssetManager = struct {
 
     pub fn mesh_manager() *sf.MeshManager {
         return &instance.mesh_manager;
+    }
+
+    pub fn scene_manager() *sf.SceneManager {
+        return &instance.scene_manager();
     }
 
     // TODO: takes in path to "project" serialization which contains paths to each subsystem's serialization file.
@@ -48,6 +54,7 @@ pub const AssetManager = struct {
             texture_config: []const u8,
             material_config: []const u8,
             mesh_config: []const u8,
+            scene_config: []const u8,
         };
         const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
         defer json.parseFree(Config, arena.allocator(), config);
@@ -102,6 +109,7 @@ pub const AssetManager = struct {
             }
         }{});
         jobs.JobsManager.jobs().join();
+        instance.scene_manager = try sf.SceneManager.init(allocator, config.scene_config);
     }
 
     pub fn deinit() void {
@@ -131,6 +139,7 @@ const AssetType = enum {
     Texture,
     Material,
     Mesh,
+    Scene,
 };
 
 var instance: AssetManager = undefined;
