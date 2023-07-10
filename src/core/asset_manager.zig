@@ -116,6 +116,7 @@ pub const AssetManager = struct {
         sf.MaterialManager.deinit(&instance.material_manager);
         sf.MeshManager.deinit(&instance.mesh_manager);
         sf.TextureManager.deinit(&instance.texture_manager);
+        sf.SceneManager.deinit(&instance.scene_manager);
     }
 
     // TODO: this should be used to import raw files and generate .sf* format assets

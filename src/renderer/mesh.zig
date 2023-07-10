@@ -116,7 +116,6 @@ pub const MeshManager = struct {
                 return e;
             };
         }
-        // try parse_pngs(arena_alloc, config.database, &asset_map);
         return MeshManager{
             .arena = arena,
             .mesh_assets_map = asset_map,
@@ -157,6 +156,6 @@ pub const MeshManager = struct {
             .parse_success = true,
         };
         try out_map.put(guid, asset);
-        log.info("Mesh at {s} added to asset map", .{path});
+        log.info("Mesh at {s} added to asset map with guid\n{d}", .{ path, guid });
     }
 };

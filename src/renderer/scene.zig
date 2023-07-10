@@ -36,6 +36,10 @@ pub const SceneManager = struct {
             .asset_map = asset_map,
         };
     }
+
+    pub fn deinit(self: *SceneManager) void {
+        self.arena_allocator.deinit();
+    }
 };
 
 pub const SimpleScene = struct {
@@ -78,6 +82,7 @@ pub const SimpleScene = struct {
 const SceneAsset = struct {
     guid: [64]u8,
     mesh_guids: [][64]u8,
+
     fn create(parse_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
         const scene_guid = sf.AssetManager.generate_guid(path);
         const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
