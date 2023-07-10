@@ -26,15 +26,13 @@ pub const MeshAsset = struct {
     uvs: std.ArrayList([2]f32),
     parse_success: bool,
 
-    pub fn load_mesh(path: [:0]const u8, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !void {
+    pub fn load_mesh(path: [:0]const u8, mesh_manager: *MeshManager, material_manager: *sf.MaterialManager, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !void {
         const guid = sf.AssetManager.generate_guid(path);
-        var manager = sf.AssetManager.mesh_manager();
-        const data = manager.mesh_assets_map.get(guid) orelse {
+        const data = mesh_manager.mesh_assets_map.get(guid) orelse {
             log.err("Mesh at path {s} is not present in the asset database. Loading failed.", .{path});
             return;
         };
-        const matman = sf.AssetManager.material_manager();
-        const material = matman.materials.getPtr(data.material_guid) orelse {
+        const material = material_manager.materials.getPtr(data.material_guid) orelse {
             log.err("Loading failed mesh at path {s} failed. Material at given path is not present in the material database.", .{path});
             return;
         };
@@ -45,7 +43,7 @@ pub const MeshAsset = struct {
             .num_indices = @intCast(u32, data.indices.items.len),
             .num_vertices = @intCast(u32, data.positions.items.len),
         });
-        try matman.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
+        try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
         for (data.indices.items) |index| {
             try out_indices.append(index);
         }
@@ -57,14 +55,12 @@ pub const MeshAsset = struct {
         }
     }
 
-    pub fn load_mesh_by_guid(guid: [64]u8, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) void {
-        var manager = sf.AssetManager.mesh_manager();
-        const data = manager.mesh_assets_map.get(guid) orelse {
+    pub fn load_mesh_by_guid(guid: [64]u8, mesh_manager: *MeshManager, material_manager: *sf.MaterialManager, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) *Mesh {
+        const data = mesh_manager.mesh_assets_map.get(guid) orelse {
             log.err("Mesh with guid {d} is not present in the asset database. Loading failed.", .{guid});
             return;
         };
-        const matman = sf.AssetManager.material_manager();
-        const material = matman.materials.getPtr(data.material_guid) orelse {
+        const material = material_manager.materials.getPtr(data.material_guid) orelse {
             log.err("Loading failed mesh with guid {d} failed. Material at given path is not present in the material database.", .{guid});
             return;
         };
@@ -75,7 +71,7 @@ pub const MeshAsset = struct {
             .num_indices = @intCast(u32, data.indices.items.len),
             .num_vertices = @intCast(u32, data.positions.items.len),
         });
-        try matman.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
+        try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
         for (data.indices.items) |index| {
             try out_indices.append(index);
         }
@@ -122,13 +118,34 @@ pub const MeshManager = struct {
         };
     }
 
+    pub fn init_from_slice(allocator: std.mem.Allocator, paths: [][:0]const u8) !MeshManager {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        var arena_alloc = arena.allocator();
+        var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        defer parse_arena.deinit();
+        zmesh.init(parse_arena.allocator());
+        defer zmesh.deinit();
+        var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
+        try asset_map.ensureTotalCapacity(@intCast(u32, paths.len));
+        for (paths) |path| {
+            create_mesh_asset(arena_alloc, parse_arena.allocator(), path, &asset_map) catch |e| {
+                log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
+                return e;
+            };
+        }
+        return MeshManager{
+            .arena = arena,
+            .mesh_assets_map = asset_map,
+        };
+    }
+
     pub fn deinit(manager: *MeshManager) void {
         manager.arena.deinit();
     }
 
-    fn create_mesh_asset(arena: std.mem.Allocator, parse_arena: std.mem.Allocator, path: [:0]const u8, out_map: *std.AutoHashMap([64]u8, MeshAsset)) !void {
-        const config_data = std.fs.cwd().readFileAlloc(parse_arena, path, 512 * 16) catch |e| {
-            log.err("Failed to parse mesh config file. Given path:{s}", .{path});
+    fn create_mesh_asset(arena: std.mem.Allocator, parse_arena: std.mem.Allocator, config_path: [:0]const u8, out_map: *std.AutoHashMap([64]u8, MeshAsset)) !void {
+        const config_data = std.fs.cwd().readFileAlloc(parse_arena, config_path, 512 * 16) catch |e| {
+            log.err("Failed to parse mesh config file. Given path:{s}", .{config_path});
             return e;
         };
         const Config = struct {
@@ -146,7 +163,7 @@ pub const MeshManager = struct {
         var uvs = std.ArrayList([2]f32).init(arena);
         try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
         const material_guid = sf.AssetManager.generate_guid(config.material_path);
-        const guid = sf.AssetManager.generate_guid(path);
+        const guid = sf.AssetManager.generate_guid(config_path);
         const asset = MeshAsset{
             .guid = guid,
             .material_guid = material_guid,
@@ -156,6 +173,6 @@ pub const MeshManager = struct {
             .parse_success = true,
         };
         try out_map.put(guid, asset);
-        log.info("Mesh at {s} added to asset map with guid\n{d}", .{ path, guid });
+        log.info("Mesh at {s} added to asset map with guid\n{d}", .{ config_path, guid });
     }
 };

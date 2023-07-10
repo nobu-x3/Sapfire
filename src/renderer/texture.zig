@@ -159,6 +159,23 @@ pub const TextureManager = struct {
         };
     }
 
+    pub fn init_from_slice(allocator: std.mem.Allocator, paths: [][:0]const u8) !TextureManager {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        var arena_alloc = arena.allocator();
+        var map = std.AutoHashMap([64]u8, Texture).init(arena_alloc);
+        try map.ensureTotalCapacity(256);
+        var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        defer parse_arena.deinit();
+        var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
+        try asset_map.ensureTotalCapacity(@intCast(u32, paths.len));
+        try parse_pngs(arena_alloc, paths, &asset_map);
+        return TextureManager{
+            .arena = arena,
+            .map = map,
+            .texture_assets_map = asset_map,
+        };
+    }
+
     pub fn deinit(system: *TextureManager) void {
         // system.map.deinit();
         system.arena.deinit();

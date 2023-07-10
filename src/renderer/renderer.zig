@@ -10,6 +10,7 @@ const sf = struct {
     usingnamespace @import("mesh.zig");
     usingnamespace @import("buffer.zig");
     usingnamespace @import("pipeline.zig");
+    usingnamespace @import("scene.zig");
     usingnamespace @import("material.zig");
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("../core/asset_manager.zig");
@@ -18,14 +19,9 @@ const sf = struct {
 
 pub const RendererState = struct {
     gctx: *zgpu.GraphicsContext,
-    global_uniform_bind_group: zgpu.BindGroupHandle,
-    vertex_buffer: zgpu.BufferHandle,
-    index_buffer: zgpu.BufferHandle,
-    pipeline_system: sf.PipelineSystem,
     depth_texture: sf.Texture,
-    // current_scene: sf.SimpleScene,
+    current_scene: sf.SimpleScene,
     mip_level: i32 = 0,
-    meshes: std.ArrayList(sf.Mesh),
     camera: sf.Camera = .{},
     mouse: struct {
         cursor_pos: [2]f64 = .{ 0, 0 },
@@ -34,73 +30,12 @@ pub const RendererState = struct {
     // TODO: runtime dependent assets should be multithreaded here. Probably pass a pointer to scene asset here.
     pub fn create(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
         const gctx = try zgpu.GraphicsContext.create(allocator, window);
-        var arena_state = std.heap.ArenaAllocator.init(allocator);
-        defer arena_state.deinit();
-        const arena = arena_state.allocator();
-        const global_uniform_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-        });
-        defer gctx.releaseResource(global_uniform_bgl);
-        var texture_system = sf.AssetManager.texture_manager();
-        try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "cobblestone.png", gctx, .{ .texture_binding = true, .copy_dst = true });
-        try sf.TextureManager.add_texture(texture_system, "assets/textures/" ++ "genart_0025_5.png", gctx, .{ .texture_binding = true, .copy_dst = true });
         const depth_texture = sf.Texture.create_depth(gctx);
-        const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
-            .{
-                .binding = 0,
-                .buffer_handle = gctx.uniforms.buffer,
-                .offset = 0,
-                .size = @sizeOf(sf.GlobalUniforms),
-            },
-        });
-        const local_bgl = gctx.createBindGroupLayout(
-            &.{
-                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-            },
-        );
-        defer gctx.releaseResource(local_bgl);
-        var pipeline_system = try sf.PipelineSystem.init(allocator);
-        var pipeline = try sf.PipelineSystem.add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
-        // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
-        var material_manager = sf.AssetManager.material_manager();
-        try sf.MaterialManager.add_material(material_manager, "project/materials/material.json", gctx, texture_system, &.{
-            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-            zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-            zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-        }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "cobblestone.png");
-        try sf.MaterialManager.add_material(material_manager, "project/materials/material.json", gctx, texture_system, &.{
-            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-            zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-            zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-        }, @sizeOf(sf.Uniforms), "assets/textures/" ++ "genart_0025_5.png");
-        var mat0 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("project/materials/material.json")).?;
-        var mat1 = material_manager.materials.getPtr(sf.AssetManager.generate_guid("project/materials/material.json")).?;
-        try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat0);
-        try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat1);
-        var meshes = std.ArrayList(sf.Mesh).init(allocator);
-        try meshes.ensureTotalCapacity(128);
-        var vertices = std.ArrayList(sf.Vertex).init(arena);
-        defer vertices.deinit();
-        try vertices.ensureTotalCapacity(256);
-        var indices = std.ArrayList(u32).init(arena);
-        defer indices.deinit();
-        try indices.ensureTotalCapacity(256);
-        try sf.MeshAsset.load_mesh("project/meshes/cube.json", &meshes, &vertices, &indices);
-        try sf.MeshAsset.load_mesh("project/meshes/helmet.json", &meshes, &vertices, &indices);
-        var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
-        // Create an index buffer.
-        const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
-
+        const scene = try sf.SimpleScene.create(allocator, "project/scenes/simple_scene.json", gctx);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
+            .current_scene = scene,
             .gctx = gctx,
-            .vertex_buffer = vertex_buffer,
-            .index_buffer = index_buffer,
-            .pipeline_system = pipeline_system,
-            .global_uniform_bind_group = global_uniform_bg,
-            .meshes = meshes,
             .depth_texture = depth_texture,
         };
         // Generate mipmaps on the GPU.
@@ -119,8 +54,7 @@ pub const RendererState = struct {
     // pub fn load_scene(state: *RendererState, scene_config: []const u8) void {}
 
     pub fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
-        renderer_state.meshes.deinit();
-        sf.PipelineSystem.deinit(&renderer_state.pipeline_system);
+        renderer_state.current_scene.destroy();
         renderer_state.gctx.destroy(allocator);
         allocator.destroy(renderer_state);
     }
@@ -131,8 +65,8 @@ pub const RendererState = struct {
         const delta_y = @floatCast(f32, cursor_pos[1] - renderer_state.mouse.cursor_pos[1]);
         renderer_state.mouse.cursor_pos = cursor_pos;
         if (window.getMouseButton(.left) == .press) {
-            renderer_state.meshes.items[0].transform.rotate(delta_y * 0.0025, .{ 1.0, 0.0, 0.0 });
-            renderer_state.meshes.items[0].transform.rotate(delta_x * 0.0025, .{ 0.0, 1.0, 0.0 });
+            renderer_state.current_scene.meshes.items[0].transform.rotate(delta_y * 0.0025, .{ 1.0, 0.0, 0.0 });
+            renderer_state.current_scene.meshes.items[0].transform.rotate(delta_x * 0.0025, .{ 0.0, 1.0, 0.0 });
         } else if (window.getMouseButton(.right) == .press) {
             renderer_state.camera.pitch += 0.0025 * delta_y;
             renderer_state.camera.yaw += 0.0025 * delta_x;
@@ -160,9 +94,9 @@ pub const RendererState = struct {
             cam_pos -= right;
         }
         zm.storeArr3(&renderer_state.camera.position, cam_pos);
-        for (renderer_state.meshes.items, 0..) |_, index| {
+        for (renderer_state.current_scene.meshes.items, 0..) |_, index| {
             // renderer_state.meshes.items[index].transform.update();
-            sf.Transform.update(&renderer_state.meshes.items[index].transform);
+            sf.Transform.update(&renderer_state.current_scene.meshes.items[index].transform);
         }
     }
 
@@ -189,10 +123,10 @@ pub const RendererState = struct {
             defer encoder.release();
             // Main pass.
             pass: {
-                const vb_info = gctx.lookupResourceInfo(renderer_state.vertex_buffer) orelse break :pass;
-                const ib_info = gctx.lookupResourceInfo(renderer_state.index_buffer) orelse break :pass;
+                const vb_info = gctx.lookupResourceInfo(renderer_state.current_scene.vertex_buffer) orelse break :pass;
+                const ib_info = gctx.lookupResourceInfo(renderer_state.current_scene.index_buffer) orelse break :pass;
                 const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
-                const global_uniform_bind_group = gctx.lookupResource(renderer_state.global_uniform_bind_group) orelse break :pass;
+                const global_uniform_bind_group = gctx.lookupResource(renderer_state.current_scene.global_uniform_bind_group) orelse break :pass;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
                     .view = back_buffer_view,
                     .load_op = .clear,
@@ -222,12 +156,12 @@ pub const RendererState = struct {
                 glob.slice[0] = .{
                     .view_projection = zm.transpose(cam_world_to_clip),
                 };
-                for (renderer_state.pipeline_system.pipelines.items) |pipe| {
+                for (renderer_state.current_scene.pipeline_system.pipelines.items) |pipe| {
                     const pipeline = gctx.lookupResource(pipe.handle) orelse break :pass;
                     pass.setPipeline(pipeline);
                     for (pipe.materials.items) |material| {
                         const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
-                        const meshes = sf.AssetManager.material_manager().map.getPtr(material.*).?;
+                        const meshes = renderer_state.current_scene.material_manager.map.getPtr(material.*).?;
                         for (meshes.items) |item| {
                             const object_to_world = item.transform.matrix;
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
