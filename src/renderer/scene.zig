@@ -70,7 +70,6 @@ pub const SimpleScene = struct {
         var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
         var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
         var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
-
         // Texture loading
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -79,7 +78,6 @@ pub const SimpleScene = struct {
         for (scene_asset.texture_paths.items) |path| {
             try sf.TextureManager.add_texture(&texman, path, gctx, .{ .texture_binding = true, .copy_dst = true });
         }
-
         // Material loading
         const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
             .{
@@ -145,6 +143,7 @@ pub const SimpleScene = struct {
     }
 
     pub fn destroy(scene: *SimpleScene) void {
+        scene.pipeline_system.deinit();
         scene.arena.deinit();
     }
 };
