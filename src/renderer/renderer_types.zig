@@ -26,6 +26,12 @@ pub const Camera = struct {
     yaw: f32 = 0.0,
 };
 
+pub const SRT = struct {
+    scale: [3]f32 = .{ 1.0, 1.0, 1.0 },
+    euler_angles: [3]f32 = .{ 0.0, 0.0, 0.0 },
+    position: [3]f32 = .{ 0.0, 0.0, 0.0 },
+};
+
 pub const Transform = struct {
     position: [3]f32 = .{ 0.0, 0.0, 0.0 },
     euler_angles: [3]f32 = .{ 0.0, 0.0, 0.0 },
@@ -36,6 +42,27 @@ pub const Transform = struct {
     pub fn init() Transform {
         var srt = zm.mul(zm.matFromQuat(zm.qidentity()), zm.translation(0.0, 0.0, 0.0));
         return Transform{
+            .matrix = srt,
+        };
+    }
+
+    pub fn init_from_mat(matrix: []const f32) Transform {
+        return Transform{
+            .matrix = zm.loadMat(matrix),
+        };
+    }
+
+    pub fn init_from_srt(position: [3]f32, euler_angles: [3]f32, scale: [3]f32) Transform {
+        const scaling: zm.Mat = zm.scaling(scale[0], scale[1], scale[2]);
+        const euler_to_quat: zm.Quat = zm.quatFromRollPitchYaw(euler_angles[0], euler_angles[1], euler_angles[2]);
+        const matFromQuat: zm.Mat = zm.matFromQuat(euler_to_quat);
+        const rotation: zm.Mat = zm.mul(scaling, matFromQuat);
+        var srt: zm.Mat = zm.mul(rotation, zm.translationV(zm.loadArr3(position)));
+        return Transform{
+            .position = position,
+            .euler_angles = euler_angles,
+            .rotation = euler_to_quat,
+            .scale = scale,
             .matrix = srt,
         };
     }

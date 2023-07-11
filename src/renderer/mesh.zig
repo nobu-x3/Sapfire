@@ -26,7 +26,7 @@ pub const MeshAsset = struct {
     uvs: std.ArrayList([2]f32),
     parse_success: bool,
 
-    pub fn load_mesh(path: [:0]const u8, mesh_manager: *MeshManager, material_manager: *sf.MaterialManager, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !void {
+    pub fn load_mesh(path: [:0]const u8, mesh_manager: *MeshManager, material_manager: *sf.MaterialManager, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32), srt: sf.SRT) !void {
         const guid = sf.AssetManager.generate_guid(path);
         const data = mesh_manager.mesh_assets_map.get(guid) orelse {
             log.err("Mesh at path {s} is not present in the asset database. Loading failed.", .{path});
@@ -42,6 +42,7 @@ pub const MeshAsset = struct {
             .vertex_offset = @intCast(i32, out_vertices.items.len),
             .num_indices = @intCast(u32, data.indices.items.len),
             .num_vertices = @intCast(u32, data.positions.items.len),
+            .transform = sf.Transform.init_from_srt(srt.position, srt.euler_angles, srt.scale),
         });
         try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
         for (data.indices.items) |index| {

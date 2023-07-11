@@ -1,6 +1,7 @@
 const std = @import("std");
 const json = std.json;
 const zgpu = @import("zgpu");
+const zm = @import("zmath");
 const sf = struct {
     usingnamespace @import("../core/asset_manager.zig");
     usingnamespace @import("../renderer/mesh.zig");
@@ -119,8 +120,8 @@ pub const SimpleScene = struct {
         var indices = std.ArrayList(u32).init(arena.allocator());
         defer indices.deinit();
         try indices.ensureTotalCapacity(256);
-        for (scene_asset.geometry_paths.items) |path| {
-            try sf.MeshAsset.load_mesh(path, &meshman, &matman, &meshes, &vertices, &indices);
+        for (scene_asset.geometry_paths.items, 0..) |path, index| {
+            try sf.MeshAsset.load_mesh(path, &meshman, &matman, &meshes, &vertices, &indices, scene_asset.srts.items[index]);
         }
         var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
         // Create an index buffer.
@@ -153,6 +154,7 @@ const SceneAsset = struct {
     texture_paths: std.ArrayList([:0]const u8),
     material_paths: std.ArrayList([:0]const u8),
     geometry_paths: std.ArrayList([:0]const u8),
+    srts: std.ArrayList(sf.SRT),
 
     fn create(database_allocator: std.mem.Allocator, parse_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
         const scene_guid = sf.AssetManager.generate_guid(path);
@@ -164,6 +166,7 @@ const SceneAsset = struct {
             geometry_path: [:0]const u8,
             material_path: [:0]const u8,
             texture_path: [:0]const u8,
+            srt: sf.SRT,
         };
         const Config = struct {
             meshes: []const MeshParser,
@@ -172,16 +175,19 @@ const SceneAsset = struct {
         var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
         var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
         var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
+        var srts = try std.ArrayList(sf.SRT).initCapacity(database_allocator, config.meshes.len);
         for (config.meshes) |mesh| {
             try texture_paths.append(mesh.texture_path);
             try geometry_paths.append(mesh.geometry_path);
             try material_paths.append(mesh.material_path);
+            try srts.append(mesh.srt);
         }
         return SceneAsset{
             .guid = scene_guid,
             .texture_paths = texture_paths,
             .material_paths = material_paths,
             .geometry_paths = geometry_paths,
+            .srts = srts,
         };
     }
 
@@ -189,5 +195,6 @@ const SceneAsset = struct {
         database_allocator.free(self.texture_paths);
         database_allocator.free(self.material_paths);
         database_allocator.free(self.geometry_paths);
+        database_allocator.free(self.transforms);
     }
 };
