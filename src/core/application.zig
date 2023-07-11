@@ -63,7 +63,7 @@ pub const Application = struct {
             try config.game.update(config.game, sf.Time.delta_time());
             sf.RendererState.update(renderer_state, window);
             try config.game.render(config.game, sf.Time.delta_time());
-            sf.RendererState.draw(renderer_state);
+            try sf.RendererState.draw(renderer_state);
         }
     }
 };

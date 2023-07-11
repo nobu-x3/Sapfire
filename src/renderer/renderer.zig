@@ -18,6 +18,7 @@ const sf = struct {
 };
 
 pub const RendererState = struct {
+    arena: std.heap.ArenaAllocator,
     gctx: *zgpu.GraphicsContext,
     depth_texture: sf.Texture,
     current_scene: sf.SimpleScene,
@@ -29,14 +30,16 @@ pub const RendererState = struct {
 
     // TODO: runtime dependent assets should be multithreaded here. Probably pass a pointer to scene asset here.
     pub fn create(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
-        const gctx = try zgpu.GraphicsContext.create(allocator, window);
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        const gctx = try zgpu.GraphicsContext.create(arena.allocator(), window);
         const depth_texture = sf.Texture.create_depth(gctx);
-        const scene = try sf.SimpleScene.create(allocator, "project/scenes/simple_scene.json", gctx);
+        const scene = try sf.SimpleScene.create(arena.allocator(), "project/scenes/simple_scene.json", gctx);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
             .current_scene = scene,
             .gctx = gctx,
             .depth_texture = depth_texture,
+            .arena = arena,
         };
         // Generate mipmaps on the GPU.
         // const commands = commands: {
@@ -54,8 +57,9 @@ pub const RendererState = struct {
     // pub fn load_scene(state: *RendererState, scene_config: []const u8) void {}
 
     pub fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
-        renderer_state.current_scene.destroy();
-        renderer_state.gctx.destroy(allocator);
+        // renderer_state.current_scene.destroy();
+        // renderer_state.gctx.destroy(allocator);
+        renderer_state.arena.deinit();
         allocator.destroy(renderer_state);
     }
 
@@ -100,7 +104,7 @@ pub const RendererState = struct {
         }
     }
 
-    pub fn draw(renderer_state: *RendererState) void {
+    pub fn draw(renderer_state: *RendererState) !void {
         const gctx = renderer_state.gctx;
         const fb_width = gctx.swapchain_descriptor.width;
         const fb_height = gctx.swapchain_descriptor.height;
@@ -186,6 +190,14 @@ pub const RendererState = struct {
                         "Average :  {d:.3} ms/frame ({d:.1} fps)",
                         .{ renderer_state.gctx.stats.average_cpu_time, renderer_state.gctx.stats.fps },
                     );
+                }
+                zgui.end();
+                if (zgui.begin("Scene switching", .{ .flags = .{ .always_auto_resize = true } })) {
+                    if (zgui.button("Scene 1", .{ .w = 100.0, .h = 100.0 })) {
+                        renderer_state.current_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene.json", renderer_state.gctx);
+                    } else if (zgui.button("Scene 2", .{ .w = 100.0, .h = 100.0 })) {
+                        renderer_state.current_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene1.json", renderer_state.gctx);
+                    }
                 }
                 zgui.end();
                 zgui.backend.draw(gui_pass);
