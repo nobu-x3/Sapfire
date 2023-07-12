@@ -5,7 +5,7 @@
       "filetypes": [ "zig" ],
       "configuration": {
         "request": "launch",
-        "program": "${workspaceRoot}/zig-out/bin/Sapfire",
+        "program": "${workspaceRoot}/zig-out/bin/Sapling",
         "cwd": "${workspaceRoot}/"
       }
     }
