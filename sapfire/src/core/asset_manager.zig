@@ -136,7 +136,7 @@ pub const AssetManager = struct {
     }
 };
 
-const AssetType = enum {
+pub const AssetType = enum {
     Texture,
     Material,
     Mesh,

@@ -1,6 +1,6 @@
 const std = @import("std");
 const zjobs = @import("zjobs");
-const Jobs = zjobs.JobQueue(.{});
+pub const Jobs = zjobs.JobQueue(.{});
 pub const JobId = zjobs.JobId;
 
 pub const JobsManager = struct {

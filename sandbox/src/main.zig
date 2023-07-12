@@ -6,13 +6,13 @@ pub fn main() !void {
         .update = &update,
         .render = &render,
     };
-    const config = sf.core.app.ApplicationConfig{
+    const config = sf.core.ApplicationConfig{
         .window_width = 800,
         .window_height = 600,
         .window_name = "Sapfire",
         .game = &game,
     };
-    var application = try sf.core.app.Application.create(config);
+    var application = try sf.core.Application.create(config);
     _ = application;
 }
 

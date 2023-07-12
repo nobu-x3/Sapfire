@@ -149,14 +149,14 @@ pub const SimpleScene = struct {
     }
 };
 
-const SceneAsset = struct {
+pub const SceneAsset = struct {
     guid: [64]u8,
     texture_paths: std.ArrayList([:0]const u8),
     material_paths: std.ArrayList([:0]const u8),
     geometry_paths: std.ArrayList([:0]const u8),
     srts: std.ArrayList(sf.SRT),
 
-    fn create(database_allocator: std.mem.Allocator, parse_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
+    pub fn create(database_allocator: std.mem.Allocator, parse_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
         const scene_guid = sf.AssetManager.generate_guid(path);
         const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
             log.err("Failed to parse scene config file. Given path:{s}", .{path});
@@ -191,7 +191,7 @@ const SceneAsset = struct {
         };
     }
 
-    fn destroy(self: *SceneAsset, database_allocator: std.mem.Allocator) void {
+    pub fn destroy(self: *SceneAsset, database_allocator: std.mem.Allocator) void {
         database_allocator.free(self.texture_paths);
         database_allocator.free(self.material_paths);
         database_allocator.free(self.geometry_paths);

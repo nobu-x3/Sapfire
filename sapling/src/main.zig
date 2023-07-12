@@ -1,20 +1,6 @@
 const sf = @import("sapfire");
 
-pub fn main() !void {
-    var game = sf.Game{
-        .initialize = &initialize,
-        .update = &update,
-        .render = &render,
-    };
-    const config = sf.core.app.ApplicationConfig{
-        .window_width = 800,
-        .window_height = 600,
-        .window_name = "Sapfire",
-        .game = &game,
-    };
-    var application = try sf.core.app.Application.create(config);
-    _ = application;
-}
+pub fn main() !void {}
 
 pub fn update(game: *sf.Game, delta_time: f32) sf.GameError!void {
     _ = game;

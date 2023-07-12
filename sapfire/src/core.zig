@@ -1,5 +1,9 @@
-pub const app = @import("core/application.zig");
+pub const ApplicationConfig = @import("core/application.zig").ApplicationConfig;
+pub const Application = @import("core/application.zig").Application;
 pub const log = @import("core/logger.zig");
-pub const asset_manager = @import("core/asset_manager.zig");
-pub const jobs = @import("core/jobs.zig");
+pub const AssetManager = @import("core/asset_manager.zig").AssetManager;
+pub const AssetType = @import("core/asset_manager.zig").AssetType;
+pub const JobsManager = @import("core/jobs.zig").JobsManager;
+pub const JobId = @import("core/jobs.zig").JobId;
+pub const Jobs = @import("core/jobs.zig").Jobs;
 pub const Time = @import("core/time.zig").Time;
