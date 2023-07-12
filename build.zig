@@ -23,15 +23,6 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    const game_exe = b.addExecutable(.{
-        .name = "Sapfire",
-        // In this case the main source file is merely a path, however, in more
-        // complicated build scripts, this could be a generated file.
-        .root_source_file = .{ .path = "src/main.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-
     const zglfw_pkg = zglfw.package(b, target, optimize, .{});
     const zpool_pkg = zpool.package(b, target, optimize, .{});
     const zgpu_pkg = zgpu.package(b, target, optimize, .{
@@ -42,7 +33,26 @@ pub fn build(b: *std.Build) void {
     const zmath_pkg = zmath.package(b, target, optimize, .{});
     const zmesh_pkg = zmesh.package(b, target, optimize, .{});
     const zgui_pkg = zgui.package(b, target, optimize, .{ .options = .{ .backend = .glfw_wgpu } });
+    const sapfire_module = b.createModule(.{
+        .source_file = .{ .path = "sapfire/src/sapfire.zig" },
+    });
+    sapfire_module.dependencies.put("zgpu", zgpu_pkg.zgpu) catch {};
+    sapfire_module.dependencies.put("zglfw", zglfw_pkg.zglfw) catch {};
+    sapfire_module.dependencies.put("zpool", zpool_pkg.zpool) catch {};
+    sapfire_module.dependencies.put("zstbi", zstbi_pkg.zstbi) catch {};
+    sapfire_module.dependencies.put("zmath", zmath_pkg.zmath) catch {};
+    sapfire_module.dependencies.put("zjobs", zjobs_pkg.zjobs) catch {};
+    sapfire_module.dependencies.put("zgui", zgui_pkg.zgui) catch {};
+    sapfire_module.dependencies.put("zmesh", zmesh_pkg.zmesh) catch {};
 
+    const game_exe = b.addExecutable(.{
+        .name = "Sandbox",
+        // In this case the main source file is merely a path, however, in more
+        // complicated build scripts, this could be a generated file.
+        .root_source_file = .{ .path = "sandbox/src/main.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
     zgpu_pkg.link(game_exe);
     zglfw_pkg.link(game_exe);
     zpool_pkg.link(game_exe);
@@ -51,6 +61,7 @@ pub fn build(b: *std.Build) void {
     zmesh_pkg.link(game_exe);
     zjobs_pkg.link(game_exe);
     zgui_pkg.link(game_exe);
+    game_exe.addModule("sapfire", sapfire_module);
 
     const game_artifact = b.addInstallArtifact(game_exe);
     b.getInstallStep().dependOn(&game_artifact.step);
@@ -63,17 +74,6 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    const sapfire_module = b.createModule(.{
-        .source_file = .{ .path = "src/main.zig" },
-    });
-    sapfire_module.dependencies.put("zgpu", zgpu_pkg.zgpu) catch {};
-    sapfire_module.dependencies.put("zglfw", zglfw_pkg.zglfw) catch {};
-    sapfire_module.dependencies.put("zpool", zpool_pkg.zpool) catch {};
-    sapfire_module.dependencies.put("zstbi", zstbi_pkg.zstbi) catch {};
-    sapfire_module.dependencies.put("zmath", zmath_pkg.zmath) catch {};
-    sapfire_module.dependencies.put("zjobs", zjobs_pkg.zjobs) catch {};
-    sapfire_module.dependencies.put("zgui", zgui_pkg.zgui) catch {};
-    sapfire_module.dependencies.put("zmesh", zmesh_pkg.zmesh) catch {};
 
     zgpu_pkg.link(editor_exe);
     zglfw_pkg.link(editor_exe);
