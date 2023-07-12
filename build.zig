@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
-    const exe = b.addExecutable(.{
+    const game_exe = b.addExecutable(.{
         .name = "Sapfire",
         // In this case the main source file is merely a path, however, in more
         // complicated build scripts, this could be a generated file.
@@ -43,56 +43,87 @@ pub fn build(b: *std.Build) void {
     const zmesh_pkg = zmesh.package(b, target, optimize, .{});
     const zgui_pkg = zgui.package(b, target, optimize, .{ .options = .{ .backend = .glfw_wgpu } });
 
-    zgpu_pkg.link(exe);
-    zglfw_pkg.link(exe);
-    zpool_pkg.link(exe);
-    zstbi_pkg.link(exe);
-    zmath_pkg.link(exe);
-    zmesh_pkg.link(exe);
-    zjobs_pkg.link(exe);
-    zgui_pkg.link(exe);
+    zgpu_pkg.link(game_exe);
+    zglfw_pkg.link(game_exe);
+    zpool_pkg.link(game_exe);
+    zstbi_pkg.link(game_exe);
+    zmath_pkg.link(game_exe);
+    zmesh_pkg.link(game_exe);
+    zjobs_pkg.link(game_exe);
+    zgui_pkg.link(game_exe);
 
-    // This declares intent for the executable to be installed into the
-    // standard location when the user invokes the "install" step (the default
-    // step when running `zig build`).
-    b.installArtifact(exe);
+    const game_artifact = b.addInstallArtifact(game_exe);
+    b.getInstallStep().dependOn(&game_artifact.step);
+
+    const editor_exe = b.addExecutable(.{
+        .name = "Sapling",
+        // In this case the main source file is merely a path, however, in more
+        // complicated build scripts, this could be a generated file.
+        .root_source_file = .{ .path = "sapling/src/main.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    const sapfire_module = b.createModule(.{
+        .source_file = .{ .path = "src/main.zig" },
+    });
+    sapfire_module.dependencies.put("zgpu", zgpu_pkg.zgpu) catch {};
+    sapfire_module.dependencies.put("zglfw", zglfw_pkg.zglfw) catch {};
+    sapfire_module.dependencies.put("zpool", zpool_pkg.zpool) catch {};
+    sapfire_module.dependencies.put("zstbi", zstbi_pkg.zstbi) catch {};
+    sapfire_module.dependencies.put("zmath", zmath_pkg.zmath) catch {};
+    sapfire_module.dependencies.put("zjobs", zjobs_pkg.zjobs) catch {};
+    sapfire_module.dependencies.put("zgui", zgui_pkg.zgui) catch {};
+    sapfire_module.dependencies.put("zmesh", zmesh_pkg.zmesh) catch {};
+
+    zgpu_pkg.link(editor_exe);
+    zglfw_pkg.link(editor_exe);
+    zpool_pkg.link(editor_exe);
+    zstbi_pkg.link(editor_exe);
+    zmath_pkg.link(editor_exe);
+    zmesh_pkg.link(editor_exe);
+    zjobs_pkg.link(editor_exe);
+    zgui_pkg.link(editor_exe);
+    editor_exe.addModule("sapfire", sapfire_module);
+    const editor_artifact = b.addInstallArtifact(editor_exe);
+    b.getInstallStep().dependOn(&editor_artifact.step);
 
     // This *creates* a Run step in the build graph, to be executed when another
     // step is evaluated that depends on it. The next line below will establish
     // such a dependency.
-    const run_cmd = b.addRunArtifact(exe);
+    const run_cmd_game = b.addRunArtifact(game_exe);
 
     // By making the run step depend on the install step, it will be run from the
     // installation directory rather than directly from within the cache directory.
     // This is not necessary, however, if the application depends on other installed
     // files, this ensures they will be present and in the expected location.
-    run_cmd.step.dependOn(b.getInstallStep());
+    run_cmd_game.step.dependOn(&editor_artifact.step);
 
     // This allows the user to pass arguments to the application in the build
     // command itself, like this: `zig build run -- arg1 arg2 etc`
     if (b.args) |args| {
-        run_cmd.addArgs(args);
+        run_cmd_game.addArgs(args);
+    }
+    const run_game_step = b.step("run-game", "Run the sandbox");
+    run_game_step.dependOn(&run_cmd_game.step);
+
+    const run_cmd_editor = b.addRunArtifact(editor_exe);
+
+    // By making the run step depend on the install step, it will be run from the
+    // installation directory rather than directly from within the cache directory.
+    // This is not necessary, however, if the application depends on other installed
+    // files, this ensures they will be present and in the expected location.
+    run_cmd_editor.step.dependOn(b.getInstallStep());
+
+    // This allows the user to pass arguments to the application in the build
+    // command itself, like this: `zig build run -- arg1 arg2 etc`
+    if (b.args) |args| {
+        run_cmd_editor.addArgs(args);
     }
 
     // This creates a build step. It will be visible in the `zig build --help` menu,
     // and can be selected like this: `zig build run`
     // This will evaluate the `run` step rather than the default, which is "install".
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
 
-    // Creates a step for unit testing. This only builds the test executable
-    // but does not run it.
-    const unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/main.zig" },
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const run_unit_tests = b.addRunArtifact(unit_tests);
-
-    // Similar to creating the run step earlier, this exposes a `test` step to
-    // the `zig build --help` menu, providing a way for the user to request
-    // running the unit tests.
-    const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&run_unit_tests.step);
+    const run_editor_step = b.step("run-editor", "Run the editor");
+    run_editor_step.dependOn(&run_cmd_editor.step);
 }
