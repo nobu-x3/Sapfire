@@ -4,12 +4,17 @@ const zgpu = @import("zgpu");
 const glfw = @import("zglfw");
 const AssetManager = @import("sapfire").core.AssetManager;
 const JobsManager = @import("sapfire").core.JobsManager;
+const RendererState = @import("sapfire").rendering.RendererState;
+const Texture = @import("sapfire").rendering.Texture;
 const Time = @import("sapfire").core.Time;
 const log = @import("sapfire").core.log;
 
 pub const Editor = struct {
     window: *glfw.Window,
     gctx: *zgpu.GraphicsContext,
+    draw_list: zgui.DrawList,
+    game_renderer: *RendererState,
+    framebuffer: Texture,
 
     pub fn create(allocator: std.mem.Allocator, project_path: [:0]const u8) !Editor {
         JobsManager.init();
@@ -34,9 +39,21 @@ pub const Editor = struct {
             .{ .texture_filter_mode = .linear, .pipeline_multisample_count = 1 },
         );
         set_style();
+        const draw_list = zgui.createDrawList();
+        const renderer_state = try RendererState.create_with_gctx(allocator, gctx, "project/scenes/simple_scene.json");
+        const framebuffer = Texture.create_with_wgpu_format(gctx, .{
+            .render_attachment = true,
+            .texture_binding = true,
+        }, .{
+            .width = gctx.swapchain_descriptor.width,
+            .height = gctx.swapchain_descriptor.height,
+        }, gctx.swapchain_descriptor.format);
         return Editor{
             .window = window,
             .gctx = gctx,
+            .draw_list = draw_list,
+            .game_renderer = renderer_state,
+            .framebuffer = framebuffer,
         };
     }
 
@@ -44,7 +61,10 @@ pub const Editor = struct {
         while (!self.window.shouldClose() and self.window.getKey(.escape) != .press) {
             glfw.pollEvents();
             Time.update();
+            self.game_renderer.update(self.window);
             const gctx = self.gctx;
+            var color_view = gctx.lookupResource(self.framebuffer.view) orelse return;
+            try self.game_renderer.draw_to_texture(&color_view);
             { // gui update
                 zgui.backend.newFrame(
                     gctx.swapchain_descriptor.width,
@@ -57,6 +77,11 @@ pub const Editor = struct {
                         "Average :  {d:.3} ms/frame ({d:.1} fps)",
                         .{ gctx.stats.average_cpu_time, gctx.stats.fps },
                     );
+                }
+                zgui.end();
+
+                if (zgui.begin("Game View", .{})) {
+                    zgui.image(color_view, .{ .w = 400, .h = 400 });
                 }
                 zgui.end();
             }

@@ -21,7 +21,7 @@ pub const Texture = struct {
     handle: zgpu.TextureHandle,
     view: zgpu.TextureViewHandle,
 
-    fn create(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage, size: zgpu.wgpu.Extent3D, format: TextureFormat) Texture {
+    pub fn create(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage, size: zgpu.wgpu.Extent3D, format: TextureFormat) Texture {
         const handle = gctx.createTexture(.{
             .usage = usage,
             .size = size,
@@ -31,6 +31,17 @@ pub const Texture = struct {
                 format.is_hdr,
             ),
             .mip_level_count = std.math.log2_int(u32, std.math.max(size.width, size.height)) + 1,
+        });
+        const texture_view = gctx.createTextureView(handle, .{});
+        return Texture{ .handle = handle, .view = texture_view };
+    }
+
+    pub fn create_with_wgpu_format(gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage, size: zgpu.wgpu.Extent3D, format: zgpu.wgpu.TextureFormat) Texture {
+        const handle = gctx.createTexture(.{
+            .usage = usage,
+            .size = size,
+            .format = format,
+            .mip_level_count = 1,
         });
         const texture_view = gctx.createTextureView(handle, .{});
         return Texture{ .handle = handle, .view = texture_view };
