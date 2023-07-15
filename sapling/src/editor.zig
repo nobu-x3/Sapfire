@@ -12,7 +12,6 @@ const log = @import("sapfire").core.log;
 pub const Editor = struct {
     window: *glfw.Window,
     gctx: *zgpu.GraphicsContext,
-    draw_list: zgui.DrawList,
     game_renderer: *RendererState,
     framebuffer: Texture,
 
@@ -39,7 +38,6 @@ pub const Editor = struct {
             .{ .texture_filter_mode = .linear, .pipeline_multisample_count = 1 },
         );
         set_style();
-        const draw_list = zgui.createDrawList();
         const renderer_state = try RendererState.create_with_gctx(allocator, gctx, "project/scenes/simple_scene.json");
         const framebuffer = Texture.create_with_wgpu_format(gctx, .{
             .render_attachment = true,
@@ -51,7 +49,6 @@ pub const Editor = struct {
         return Editor{
             .window = window,
             .gctx = gctx,
-            .draw_list = draw_list,
             .game_renderer = renderer_state,
             .framebuffer = framebuffer,
         };
@@ -61,17 +58,13 @@ pub const Editor = struct {
         while (!self.window.shouldClose() and self.window.getKey(.escape) != .press) {
             glfw.pollEvents();
             Time.update();
-            self.game_renderer.update(self.window);
             const gctx = self.gctx;
             var color_view = gctx.lookupResource(self.framebuffer.view) orelse return;
-            try self.game_renderer.draw_to_texture(&color_view);
             { // gui update
                 zgui.backend.newFrame(
                     gctx.swapchain_descriptor.width,
                     gctx.swapchain_descriptor.height,
                 );
-                // zgui.setNextWindowPos(.{ .x = 20.0, .y = 20.0, .cond = .first_use_ever });
-                // zgui.setNextWindowSize(.{ .w = -1.0, .h = -1.0, .cond = .first_use_ever });
                 if (zgui.begin("Stats", .{ .flags = .{ .always_auto_resize = true } })) {
                     zgui.bulletText(
                         "Average :  {d:.3} ms/frame ({d:.1} fps)",
@@ -80,8 +73,18 @@ pub const Editor = struct {
                 }
                 zgui.end();
 
-                if (zgui.begin("Game View", .{})) {
-                    zgui.image(color_view, .{ .w = 400, .h = 400 });
+                if (zgui.begin("Game View", .{ .flags = .{
+                    .no_move = true,
+                    .no_focus_on_appearing = true,
+                    .no_scrollbar = true,
+                    .no_background = true,
+                } })) {
+                    if (zgui.isWindowFocused(.{})) {
+                        self.game_renderer.update(self.window);
+                    }
+                    const size = zgui.getWindowSize();
+                    try self.game_renderer.draw_to_texture(&color_view, @floatToInt(u32, size[0]), @floatToInt(u32, size[1]));
+                    zgui.image(color_view, .{ .w = size[0], .h = size[1] });
                 }
                 zgui.end();
             }
@@ -111,7 +114,6 @@ pub const Editor = struct {
     pub fn destroy(self: *Editor, allocator: std.mem.Allocator) void {
         self.gctx.releaseResource(self.framebuffer.handle);
         self.game_renderer.destroy(allocator);
-        zgui.destroyDrawList(self.draw_list);
         zgui.backend.deinit();
         zgui.deinit();
         self.gctx.destroy(allocator);

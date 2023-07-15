@@ -229,10 +229,8 @@ pub const RendererState = struct {
         }
     }
 
-    pub fn draw_to_texture(renderer_state: *RendererState, color_view: *zgpu.wgpu.TextureView) !void {
+    pub fn draw_to_texture(renderer_state: *RendererState, color_view: *zgpu.wgpu.TextureView, fb_width: u32, fb_height: u32) !void {
         const gctx = renderer_state.gctx;
-        const fb_width = gctx.swapchain_descriptor.width;
-        const fb_height = gctx.swapchain_descriptor.height;
         const cam_world_to_view = zm.lookAtLh(
             zm.loadArr3(renderer_state.camera.position),
             zm.loadArr3(renderer_state.camera.forward),
