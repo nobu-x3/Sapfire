@@ -52,7 +52,7 @@ pub const Application = struct {
             log.err("Failed to initialize renderer.", .{});
             return e;
         };
-        defer sf.RendererState.destroy(allocator, renderer_state);
+        defer renderer_state.destroy(allocator);
         zgui.init(allocator);
         defer zgui.deinit();
         zgui.backend.init(window, renderer_state.gctx.device, @enumToInt(renderer_state.gctx.swapchain_descriptor.format));

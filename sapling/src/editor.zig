@@ -109,6 +109,9 @@ pub const Editor = struct {
     }
 
     pub fn destroy(self: *Editor, allocator: std.mem.Allocator) void {
+        self.gctx.releaseResource(self.framebuffer.handle);
+        self.game_renderer.destroy(allocator);
+        zgui.destroyDrawList(self.draw_list);
         zgui.backend.deinit();
         zgui.deinit();
         self.gctx.destroy(allocator);

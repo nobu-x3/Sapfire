@@ -70,7 +70,7 @@ pub const RendererState = struct {
 
     // pub fn load_scene(state: *RendererState, scene_config: []const u8) void {}
 
-    pub fn destroy(allocator: std.mem.Allocator, renderer_state: *RendererState) void {
+    pub fn destroy(renderer_state: *RendererState, allocator: std.mem.Allocator) void {
         // renderer_state.current_scene.destroy();
         // renderer_state.gctx.destroy(allocator);
         renderer_state.arena.deinit();
