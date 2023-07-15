@@ -8,6 +8,7 @@ const zmesh = @import("libs/zig-gamedev/libs/zmesh/build.zig");
 const zgui = @import("libs/zig-gamedev/libs/zgui/build.zig");
 // TODO: implement our own job system based on fibers instead of threads
 const zjobs = @import("libs/zig-gamedev/libs/zjobs/build.zig");
+const nfd = @import("libs/nfd-zig/build.zig");
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
 // runner.
@@ -84,6 +85,53 @@ pub fn build(b: *std.Build) void {
     zjobs_pkg.link(editor_exe);
     zgui_pkg.link(editor_exe);
     editor_exe.addModule("sapfire", sapfire_module);
+
+    const nfd_path = "libs/nfd-zig/";
+    const nfd_module = b.createModule(.{
+        .source_file = .{ .path = nfd_path ++ "src/lib.zig" },
+    });
+    const nfd_lib = b.addStaticLibrary(.{
+        .name = "nfd",
+        .root_source_file = .{ .path = nfd_path ++ "src/lib.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    nfd_lib.setMainPkgPath(".");
+    nfd_lib.addModule("nfd", nfd_module);
+
+    const cflags = [_][]const u8{"-Wall"};
+    nfd_lib.addIncludePath(nfd_path ++ "nativefiledialog/src/include");
+    nfd_lib.addCSourceFile(nfd_path ++ "nativefiledialog/src/nfd_common.c", &cflags);
+    if (nfd_lib.target.isDarwin()) {
+        nfd_lib.addCSourceFile(nfd_path ++ "nativefiledialog/src/nfd_cocoa.m", &cflags);
+    } else if (nfd_lib.target.isWindows()) {
+        nfd_lib.addCSourceFile(nfd_path ++ "nativefiledialog/src/nfd_win.cpp", &cflags);
+    } else {
+        nfd_lib.addCSourceFile(nfd_path ++ "nativefiledialog/src/nfd_gtk.c", &cflags);
+    }
+
+    nfd_lib.linkLibC();
+    if (nfd_lib.target.isDarwin()) {
+        nfd_lib.linkFramework("AppKit");
+    } else if (nfd_lib.target.isWindows()) {
+        nfd_lib.linkSystemLibrary("shell32");
+        nfd_lib.linkSystemLibrary("ole32");
+        nfd_lib.linkSystemLibrary("uuid"); // needed by MinGW
+    } else {
+        nfd_lib.linkSystemLibrary("atk-1.0");
+        nfd_lib.linkSystemLibrary("gdk-3");
+        nfd_lib.linkSystemLibrary("gtk-3");
+        nfd_lib.linkSystemLibrary("glib-2.0");
+        nfd_lib.linkSystemLibrary("gobject-2.0");
+    }
+    nfd_lib.installHeadersDirectory(nfd_path ++ "nativefiledialog/src/include", ".");
+    b.installArtifact(nfd_lib);
+    editor_exe.addIncludePath("nativefiledialog/src/include");
+    editor_exe.addModule("nfd", nfd_module);
+    editor_exe.linkLibrary(nfd_lib);
+    const nfd_art = b.addInstallArtifact(nfd_lib);
+    b.getInstallStep().dependOn(&nfd_art.step);
+
     const editor_artifact = b.addInstallArtifact(editor_exe);
     b.getInstallStep().dependOn(&editor_artifact.step);
 

@@ -8,7 +8,7 @@ pub fn main() !void {
     var allocator = gpa.allocator();
     var editor = try Editor.create(allocator, "project/project_config.json");
     defer editor.destroy(allocator);
-    try editor.run();
+    try editor.run(allocator);
 }
 
 pub fn update(game: *sf.Game, delta_time: f32) sf.GameError!void {

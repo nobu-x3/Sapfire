@@ -2,12 +2,14 @@ const std = @import("std");
 const zgui = @import("zgui");
 const zgpu = @import("zgpu");
 const glfw = @import("zglfw");
-const AssetManager = @import("sapfire").core.AssetManager;
-const JobsManager = @import("sapfire").core.JobsManager;
-const RendererState = @import("sapfire").rendering.RendererState;
-const Texture = @import("sapfire").rendering.Texture;
-const Time = @import("sapfire").core.Time;
-const log = @import("sapfire").core.log;
+const sapfire = @import("sapfire");
+const AssetManager = sapfire.core.AssetManager;
+const JobsManager = sapfire.core.JobsManager;
+const RendererState = sapfire.rendering.RendererState;
+const Texture = sapfire.rendering.Texture;
+const Time = sapfire.core.Time;
+const log = sapfire.core.log;
+const nfd = @import("nfd");
 
 pub const Editor = struct {
     window: *glfw.Window,
@@ -54,7 +56,7 @@ pub const Editor = struct {
         };
     }
 
-    pub fn run(self: *Editor) !void {
+    pub fn run(self: *Editor, allocator: std.mem.Allocator) !void {
         while (!self.window.shouldClose() and self.window.getKey(.escape) != .press) {
             glfw.pollEvents();
             Time.update();
@@ -65,14 +67,9 @@ pub const Editor = struct {
                     gctx.swapchain_descriptor.width,
                     gctx.swapchain_descriptor.height,
                 );
-                if (zgui.begin("Stats", .{ .flags = .{ .always_auto_resize = true } })) {
-                    zgui.bulletText(
-                        "Average :  {d:.3} ms/frame ({d:.1} fps)",
-                        .{ gctx.stats.average_cpu_time, gctx.stats.fps },
-                    );
-                }
-                zgui.end();
 
+                zgui.setNextWindowPos(.{ .x = 0.0, .y = 0.0, .cond = .first_use_ever });
+                zgui.setNextWindowSize(.{ .w = 800, .h = 600, .cond = .first_use_ever });
                 if (zgui.begin("Game View", .{ .flags = .{
                     .no_move = true,
                     .no_focus_on_appearing = true,
@@ -87,10 +84,29 @@ pub const Editor = struct {
                     zgui.image(color_view, .{ .w = size[0], .h = size[1] });
                 }
                 zgui.end();
+                if (zgui.begin("Stats", .{ .flags = .{ .always_auto_resize = true } })) {
+                    zgui.bulletText(
+                        "Average :  {d:.3} ms/frame ({d:.1} fps)",
+                        .{ gctx.stats.average_cpu_time, gctx.stats.fps },
+                    );
+                }
+                zgui.end();
+                if (zgui.begin("Scene Controls", .{ .flags = .{ .always_auto_resize = true } })) {
+                    if (zgui.button("Open", .{})) {
+                        const open_path = try nfd.openFileDialog("json", ".");
+                        if (open_path) |path| {
+                            defer nfd.freePath(path);
+                            // TODO: fix scene deinit
+                            // self.game_renderer.current_scene.destroy();
+                            self.game_renderer.current_scene = try sapfire.rendering.SimpleScene.create(allocator, path, self.gctx);
+                        }
+                    }
+                }
+                zgui.end();
             }
+
             const swapchain_texv = gctx.swapchain.getCurrentTextureView();
             defer swapchain_texv.release();
-
             const commands = commands: {
                 const encoder = gctx.device.createCommandEncoder(null);
                 defer encoder.release();
