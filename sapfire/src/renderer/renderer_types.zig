@@ -68,13 +68,7 @@ pub const Transform = struct {
         };
     }
 
-    pub fn init_from_parent(parent: *Transform) Transform {
-        var transform = Transform.init();
-        transform.parent = parent;
-        return transform;
-    }
-
-    pub fn set_parent(self: *Transform, parent: *Transform) void {
+    pub fn set_parent(self: *Transform, parent: ?*Transform) void {
         self.parent = parent;
     }
 

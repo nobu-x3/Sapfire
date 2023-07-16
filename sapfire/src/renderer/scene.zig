@@ -124,6 +124,25 @@ pub const SimpleScene = struct {
         for (scene_asset.geometry_paths.items, 0..) |path, index| {
             try sf.MeshAsset.load_mesh(path, &meshman, &matman, &meshes, &vertices, &indices, scene_asset.srts.items[index]);
         }
+
+        // hierarchy
+        for (scene_asset.geometry_paths.items, 0..) |path, index| {
+            const parent_path = scene_asset.hierarchy.get(path);
+            var transform: ?*sf.Transform = null;
+            if (parent_path != null) {
+                const casted_path = parent_path.?;
+                if (casted_path != null) {
+                    for (scene_asset.geometry_paths.items, 0..) |inner, inner_index| {
+                        if (std.mem.eql(u8, casted_path.?, inner)) {
+                            transform = &meshes.items[inner_index].transform;
+                            break;
+                        }
+                    }
+                }
+            }
+            meshes.items[index].transform.set_parent(transform);
+        }
+
         var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
         // Create an index buffer.
         const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
@@ -156,6 +175,7 @@ pub const SceneAsset = struct {
     material_paths: std.ArrayList([:0]const u8),
     geometry_paths: std.ArrayList([:0]const u8),
     srts: std.ArrayList(sf.SRT),
+    hierarchy: std.StringHashMap(?[:0]const u8),
 
     pub fn create(database_allocator: std.mem.Allocator, parse_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
         const scene_guid = sf.AssetManager.generate_guid(path);
@@ -168,6 +188,7 @@ pub const SceneAsset = struct {
             material_path: [:0]const u8,
             texture_path: [:0]const u8,
             srt: sf.SRT,
+            parent_path: ?[:0]const u8,
         };
         const Config = struct {
             meshes: []const MeshParser,
@@ -177,11 +198,13 @@ pub const SceneAsset = struct {
         var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
         var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
         var srts = try std.ArrayList(sf.SRT).initCapacity(database_allocator, config.meshes.len);
+        var hierarchy = std.StringHashMap(?[:0]const u8).init(database_allocator);
         for (config.meshes) |mesh| {
             try texture_paths.append(mesh.texture_path);
             try geometry_paths.append(mesh.geometry_path);
             try material_paths.append(mesh.material_path);
             try srts.append(mesh.srt);
+            try hierarchy.put(mesh.geometry_path[0..], mesh.parent_path);
         }
         return SceneAsset{
             .guid = scene_guid,
@@ -189,6 +212,7 @@ pub const SceneAsset = struct {
             .material_paths = material_paths,
             .geometry_paths = geometry_paths,
             .srts = srts,
+            .hierarchy = hierarchy,
         };
     }
 

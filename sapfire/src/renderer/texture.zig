@@ -237,6 +237,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
     defer stbi.deinit();
     for (paths) |path| {
         const hash = sf.AssetManager.generate_guid(path);
+        if (out_map.contains(hash)) continue;
         var image = stbi.Image.loadFromFile(path, 4) catch {
             log.err("Error loading texture from path {s}.", .{path});
             const asset: TextureAsset = .{

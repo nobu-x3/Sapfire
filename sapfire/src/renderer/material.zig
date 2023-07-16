@@ -66,6 +66,8 @@ pub const MaterialManager = struct {
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
         try asset_map.ensureTotalCapacity(@intCast(u32, paths.len));
         for (paths) |path| {
+            const guid = sf.AssetManager.generate_guid(path);
+            if (asset_map.contains(guid)) continue;
             const material_asset = try MaterialAsset.create(parse_arena.allocator(), path);
             try asset_map.putNoClobber(material_asset.guid, material_asset);
         }

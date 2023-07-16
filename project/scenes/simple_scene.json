@@ -7,6 +7,18 @@
             "scale":[1, 1, 1],
             "euler_angles":[2.267505168914795, 0.6324998140335083, 0],
             "position":[0,0,0]
-        }
+        },
+        "parent_path":null
+    },
+    {
+        "geometry_path":"project/meshes/helmet.json",
+        "material_path":"project/materials/material.json",
+        "texture_path":"assets/textures/cobblestone.png",
+        "srt":{
+            "scale":[1, 1, 1],
+            "euler_angles":[2.267505168914795, 0.6324998140335083, 0],
+            "position":[0,0,0]
+        },
+        "parent_path":"project/meshes/cube.json"
     }]
 }
