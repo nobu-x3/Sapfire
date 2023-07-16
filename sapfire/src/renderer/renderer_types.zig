@@ -38,6 +38,7 @@ pub const Transform = struct {
     rotation: zm.Quat = zm.qidentity(),
     scale: [3]f32 = .{ 1.0, 1.0, 1.0 },
     matrix: zm.Mat,
+    parent: ?*Transform = null,
 
     pub fn init() Transform {
         var srt = zm.mul(zm.matFromQuat(zm.qidentity()), zm.translation(0.0, 0.0, 0.0));
@@ -65,6 +66,26 @@ pub const Transform = struct {
             .scale = scale,
             .matrix = srt,
         };
+    }
+
+    pub fn init_from_parent(parent: *Transform) Transform {
+        var transform = Transform.init();
+        transform.parent = parent;
+        return transform;
+    }
+
+    pub fn set_parent(self: *Transform, parent: *Transform) void {
+        self.parent = parent;
+    }
+
+    pub fn get_world_mat(self: *Transform) zm.Mat {
+        update(self);
+        var local = self.matrix;
+        if (self.parent != null) {
+            const parent_mat = self.parent.?.get_world_mat();
+            return zm.mul(local, parent_mat);
+        }
+        return local;
     }
 
     pub fn update(self: *Transform) void {

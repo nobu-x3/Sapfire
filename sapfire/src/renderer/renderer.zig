@@ -112,10 +112,10 @@ pub const RendererState = struct {
             cam_pos -= right;
         }
         zm.storeArr3(&renderer_state.camera.position, cam_pos);
-        for (renderer_state.current_scene.meshes.items, 0..) |_, index| {
-            // renderer_state.meshes.items[index].transform.update();
-            sf.Transform.update(&renderer_state.current_scene.meshes.items[index].transform);
-        }
+        // for (renderer_state.current_scene.meshes.items, 0..) |_, index| {
+        //     // renderer_state.meshes.items[index].transform.update();
+        //     sf.Transform.update(&renderer_state.current_scene.meshes.items[index].transform);
+        // }
     }
 
     pub fn draw(renderer_state: *RendererState) !void {
@@ -181,7 +181,7 @@ pub const RendererState = struct {
                         const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
                         const meshes = renderer_state.current_scene.material_manager.map.getPtr(material.*).?;
                         for (meshes.items) |item| {
-                            const object_to_world = item.transform.matrix;
+                            const object_to_world = item.transform.get_world_mat();
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
                             mem.slice[0] = .{
                                 .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
@@ -290,7 +290,7 @@ pub const RendererState = struct {
                         const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
                         const meshes = renderer_state.current_scene.material_manager.map.getPtr(material.*).?;
                         for (meshes.items) |item| {
-                            const object_to_world = item.transform.matrix;
+                            const object_to_world = item.transform.get_world_mat();
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
                             mem.slice[0] = .{
                                 .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),

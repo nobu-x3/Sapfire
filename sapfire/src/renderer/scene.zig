@@ -61,6 +61,7 @@ pub const SimpleScene = struct {
     global_uniform_bind_group: zgpu.BindGroupHandle,
     vertex_buffer: zgpu.BufferHandle,
     index_buffer: zgpu.BufferHandle,
+    transform: sf.Transform = sf.Transform.init(),
 
     pub fn create(allocator: std.mem.Allocator, config_path: [:0]const u8, gctx: *zgpu.GraphicsContext) !SimpleScene {
         var arena = std.heap.ArenaAllocator.init(allocator);
