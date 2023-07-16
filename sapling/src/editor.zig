@@ -68,6 +68,7 @@ pub const Editor = struct {
 
                 zgui.setNextWindowPos(.{ .x = 0.0, .y = 0.0, .cond = .first_use_ever });
                 zgui.setNextWindowSize(.{ .w = 800, .h = 600, .cond = .first_use_ever });
+                var size = [2]f32{ 0.0, 0.0 };
                 if (self.game_renderer != null) {
                     if (zgui.begin("Game View", .{ .flags = .{
                         .no_move = true,
@@ -78,7 +79,7 @@ pub const Editor = struct {
                         if (zgui.isWindowFocused(.{})) {
                             self.game_renderer.?.update(self.window);
                         }
-                        const size = zgui.getWindowSize();
+                        size = zgui.getWindowSize();
                         try self.game_renderer.?.draw_to_texture(&color_view, @floatToInt(u32, size[0]), @floatToInt(u32, size[1]));
                         zgui.image(color_view, .{ .w = size[0], .h = size[1] });
                     }
@@ -99,7 +100,7 @@ pub const Editor = struct {
                             // TODO: fix scene deinit
                             // self.game_renderer.current_scene.destroy();
                             if (self.game_renderer == null) {
-                                self.game_renderer = try RendererState.create_with_gctx(allocator, self.gctx, path);
+                                self.game_renderer = try RendererState.create_with_gctx(allocator, self.gctx, path, 800, 600);
                             } else {
                                 self.game_renderer.?.current_scene = try sapfire.rendering.SimpleScene.create(allocator, path, self.gctx);
                             }

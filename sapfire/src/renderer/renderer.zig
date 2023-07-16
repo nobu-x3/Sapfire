@@ -32,7 +32,7 @@ pub const RendererState = struct {
     pub fn create(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
         var arena = std.heap.ArenaAllocator.init(allocator);
         const gctx = try zgpu.GraphicsContext.create(arena.allocator(), window);
-        const depth_texture = sf.Texture.create_depth(gctx);
+        const depth_texture = sf.Texture.create_depth(gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
         const scene = try sf.SimpleScene.create(arena.allocator(), "project/scenes/simple_scene.json", gctx);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
@@ -54,9 +54,9 @@ pub const RendererState = struct {
         return renderer_state;
     }
 
-    pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, scene_path: [:0]const u8) !*RendererState {
+    pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, scene_path: [:0]const u8, fb_width: u32, fb_height: u32) !*RendererState {
         var arena = std.heap.ArenaAllocator.init(allocator);
-        const depth_texture = sf.Texture.create_depth(gctx);
+        const depth_texture = sf.Texture.create_depth(gctx, fb_width, fb_height);
         const scene = try sf.SimpleScene.create(arena.allocator(), scene_path, gctx);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
@@ -225,7 +225,7 @@ pub const RendererState = struct {
             gctx.releaseResource(renderer_state.depth_texture.view);
             gctx.destroyResource(renderer_state.depth_texture.handle);
             // Create a new depth texture to match the new window size.
-            renderer_state.depth_texture = sf.Texture.create_depth(gctx);
+            renderer_state.depth_texture = sf.Texture.create_depth(gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
         }
     }
 

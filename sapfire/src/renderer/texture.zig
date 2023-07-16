@@ -95,13 +95,13 @@ pub const Texture = struct {
         return new_texture;
     }
 
-    pub fn create_depth(gctx: *zgpu.GraphicsContext) Texture {
+    pub fn create_depth(gctx: *zgpu.GraphicsContext, width: u32, height: u32) Texture {
         const texture = gctx.createTexture(.{
             .usage = .{ .render_attachment = true },
             .dimension = .tdim_2d,
             .size = .{
-                .width = gctx.swapchain_descriptor.width,
-                .height = gctx.swapchain_descriptor.height,
+                .width = width,
+                .height = height,
                 .depth_or_array_layers = 1,
             },
             .format = .depth32_float,
