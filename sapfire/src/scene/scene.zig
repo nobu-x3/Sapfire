@@ -9,7 +9,6 @@ const Mesh = comps.Mesh;
 
 fn OnStart(it: *ecs.iter_t) callconv(.C) void {
     const world = it.world;
-    std.debug.print("Scene ID: {d}\n", .{world});
     const entities = it.entities();
     for (entities) |e| {
         std.debug.print("Entity ID: {d}\n", .{e});
@@ -19,7 +18,21 @@ fn OnStart(it: *ecs.iter_t) callconv(.C) void {
         }
         full_path_stage: {
             const path = ecs.get_path_w_sep(world, 0, e, ".", null) orelse break :full_path_stage;
-            std.debug.print("\tPath: {s}\n", .{path[0..512]});
+            // const len = val: {
+            //     var index: u32 = 0;
+            //     while (path[index] != '\0') {
+            //         index += 1;
+            //         std.debug.print("{d}\n", .{index});
+            //     }
+            //     break :val index;
+            // };
+            std.debug.print("\tPath: {s}\n", .{path[0..64]}); // this is a wild assumption but I cannot do anything with [*]
+        }
+        components_stage: {
+            const types = ecs.get_type(world, e);
+            const str = ecs.type_str(world, types) orelse break :components_stage;
+            const casted = std.mem.span(str);
+            std.debug.print("\tComponents: {s}\n", .{casted});
         }
     }
 }
@@ -44,8 +57,7 @@ pub const Scene = struct {
         }
         const scene_entity = world.entity_new("Root");
         var first_entt = world.entity_new_with_parent(scene_entity, "Child");
-        const path = ecs.get_path_w_sep(world.id, 0, first_entt, ".", null);
-        std.log.info("Path: {s}", .{path.?[0..10]});
+        _ = first_entt;
         _ = ecs.progress(world.id, 0);
 
         return Scene{
