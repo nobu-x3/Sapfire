@@ -6,6 +6,7 @@ const zstbi = @import("libs/zig-gamedev/libs/zstbi/build.zig");
 const zmath = @import("libs/zig-gamedev/libs/zmath/build.zig");
 const zmesh = @import("libs/zig-gamedev/libs/zmesh/build.zig");
 const zgui = @import("libs/zig-gamedev/libs/zgui/build.zig");
+const zflecs = @import("libs/zig-gamedev/libs/zflecs/build.zig");
 // TODO: implement our own job system based on fibers instead of threads
 const zjobs = @import("libs/zig-gamedev/libs/zjobs/build.zig");
 const nfd = @import("libs/nfd-zig/build.zig");
@@ -34,6 +35,7 @@ pub fn build(b: *std.Build) void {
     const zmath_pkg = zmath.package(b, target, optimize, .{});
     const zmesh_pkg = zmesh.package(b, target, optimize, .{});
     const zgui_pkg = zgui.package(b, target, optimize, .{ .options = .{ .backend = .glfw_wgpu } });
+    const zflecs_pkg = zflecs.package(b, target, optimize, .{});
     const sapfire_module = b.createModule(.{
         .source_file = .{ .path = "sapfire/src/sapfire.zig" },
     });
@@ -45,6 +47,7 @@ pub fn build(b: *std.Build) void {
     sapfire_module.dependencies.put("zjobs", zjobs_pkg.zjobs) catch {};
     sapfire_module.dependencies.put("zgui", zgui_pkg.zgui) catch {};
     sapfire_module.dependencies.put("zmesh", zmesh_pkg.zmesh) catch {};
+    sapfire_module.dependencies.put("zflecs", zflecs_pkg.zflecs) catch {};
 
     const game_exe = b.addExecutable(.{
         .name = "Sandbox",
@@ -62,6 +65,7 @@ pub fn build(b: *std.Build) void {
     zmesh_pkg.link(game_exe);
     zjobs_pkg.link(game_exe);
     zgui_pkg.link(game_exe);
+    zflecs_pkg.link(game_exe);
     game_exe.addModule("sapfire", sapfire_module);
 
     const game_artifact = b.addInstallArtifact(game_exe);
@@ -84,6 +88,7 @@ pub fn build(b: *std.Build) void {
     zmesh_pkg.link(editor_exe);
     zjobs_pkg.link(editor_exe);
     zgui_pkg.link(editor_exe);
+    zflecs_pkg.link(editor_exe);
     editor_exe.addModule("sapfire", sapfire_module);
 
     const nfd_path = "libs/nfd-zig/";
