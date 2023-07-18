@@ -12,13 +12,15 @@ const TestTag = struct {};
 fn OnStart(it: *ecs.iter_t) callconv(.C) void {
     const world = it.world;
     const entities = it.entities();
-    for (entities) |e| {
+    const transforms = ecs.field(it, Transform, 1).?;
+    for (entities, 0..) |e, i| {
         std.debug.print("Entity ID: {d}\n", .{e});
         const _name = ecs.get_name(world, e).?;
         std.debug.print("\tName: {s}\n", .{_name});
         const wrapped_world = World.wrap(world);
         const path = wrapped_world.entity_full_path(e, 0);
-        std.debug.print("\tPath: {s}\n", .{path}); // this is a wild assumption but I cannot do anything with [*]
+        std.debug.print("\tPath: {s}\n", .{path});
+        std.debug.print("\tTransform: {d}\n", .{transforms[i].matrix});
         components_stage: {
             const types = ecs.get_type(world, e).?;
             var comp_len: usize = 0;
