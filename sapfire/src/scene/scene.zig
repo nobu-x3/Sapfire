@@ -41,11 +41,71 @@ pub const Scene = struct {
         const filter = try ecs.filter_init(world.id, &filter_desc);
         var it = ecs.filter_iter(world.id, filter);
         while (ecs.filter_next(&it)) {
+            const world_id = it.world;
             const entities = it.entities();
+            // const transforms = ecs.field(&it, Transform, 1).?;
             for (entities) |e| {
-                if (!world.entity_is_scene_entity(e)) continue;
-                const json_entity = ecs.entity_to_json(world.id, e, &.{}).?;
-                std.debug.print("\n{s}", .{json_entity});
+                var wrapped_world = World.wrap(world_id);
+                if (!wrapped_world.entity_is_scene_entity(e)) continue;
+                std.debug.print("Entity ID: {d}\n", .{e});
+                const _name = ecs.get_name(world_id, e).?;
+                std.debug.print("\tName: {s}\n", .{_name});
+                const path = wrapped_world.entity_full_path(e, 0);
+                std.debug.print("\tPath: {s}\n", .{path});
+                // std.debug.print("\tTransform: {d}\n", .{transforms[i].matrix});
+                components_stage: {
+                    const types = ecs.get_type(world_id, e).?;
+                    var comp_len: usize = 0;
+                    const type_count = @intCast(usize, types.count);
+                    var components = types.array;
+                    for (types.array[0..type_count]) |comp| {
+                        if (ecs.id_is_pair(comp) or ecs.id_is_tag(world_id, comp)) {
+                            continue;
+                        }
+                        components[comp_len] = comp;
+                        comp_len += 1;
+                    }
+
+                    const component_types: ?*const ecs.type_t = &.{
+                        .array = components,
+                        .count = @intCast(i32, comp_len),
+                    };
+
+                    transform_comp: {
+                        const transform = ecs.get(world_id, e, Transform) orelse break :transform_comp;
+                        std.debug.print("\n{d}\n", .{transform.matrix});
+                    }
+
+                    const str_comps = ecs.type_str(world_id, component_types) orelse break :components_stage;
+                    const casted_comps = std.mem.span(str_comps);
+                    std.debug.print("\tComponents: {s}\n", .{casted_comps});
+                }
+                tags_stage: {
+                    const types = ecs.get_type(world_id, e).?;
+                    var tag_len: usize = 0;
+                    const type_count = @intCast(usize, types.count);
+                    var tags = types.array;
+                    for (types.array[0..type_count]) |comp| {
+                        if (ecs.id_is_pair(comp)) {
+                            continue;
+                        }
+                        if (ecs.id_is_tag(world_id, comp)) {
+                            tags[tag_len] = comp;
+                            tag_len += 1;
+                        }
+                    }
+                    const tags_types: ?*const ecs.type_t = &.{
+                        .array = tags,
+                        .count = @intCast(i32, tag_len),
+                    };
+                    const str_tags = ecs.type_str(world_id, tags_types) orelse {
+                        // no tags
+                        std.debug.print("\tTags:\n", .{});
+                        break :tags_stage;
+                    };
+                    const casted_tags = std.mem.span(str_tags);
+                    std.debug.print("\tTags: {s}\n", .{casted_tags});
+                }
             }
         }
         std.debug.print("\n", .{});
@@ -96,14 +156,14 @@ pub const World = struct {
     pub fn entity_new(self: *World, name: [*:0]const u8) ecs.entity_t {
         var entity = ecs.new_entity(self.id, name);
         _ = ecs.set(self.id, entity, Transform, .{});
-        _ = ecs.set(self.id, entity, Position, .{ .x = 0.0, .y = 1.0, .z = 0.0 });
+        _ = ecs.set(self.id, entity, Position, Position{ .x = 0.0, .y = 1.0, .z = 0.0 });
         return entity;
     }
 
     pub fn entity_new_with_parent(self: *World, parent: ecs.entity_t, name: [*:0]const u8) ecs.entity_t {
         var entity = ecs.new_w_id(self.id, ecs.pair(ecs.ChildOf, parent));
         _ = ecs.set(self.id, entity, Transform, .{});
-        _ = ecs.set(self.id, entity, Position, .{ .x = 0.0, .y = 1.0, .z = 0.0 });
+        _ = ecs.set(self.id, entity, Position, Position{ .x = 0.0, .y = 1.0, .z = 0.0 });
         _ = ecs.set_name(self.id, entity, name);
         return entity;
     }
