@@ -18,7 +18,7 @@ pub const Scene = struct {
 
     pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext) !Scene {
         var arena = std.heap.ArenaAllocator.init(allocator);
-        var world = World.init(allocator);
+        var world = World.init(arena.allocator());
         _ = gctx;
         try world.component_add(Transform);
         try world.component_add(Position);
@@ -47,8 +47,9 @@ pub const Scene = struct {
         };
     }
 
-    pub fn destroy(self: *Scene, allocator: std.mem.Allocator) void {
-        self.world.deinit(allocator);
+    pub fn destroy(self: *Scene) void {
+        self.world.deinit();
+        self.arena.deinit();
     }
 };
 
@@ -71,9 +72,10 @@ pub const World = struct {
         };
     }
 
-    pub fn deinit(self: *World, allocator: std.mem.Allocator) void {
-        allocator.free(self.component_id_map);
-        _ = ecs.fini(self.id);
+    pub fn deinit(self: *World) void {
+        _ = self;
+        // NOTE: this segfaults, so just leaving it here.
+        // _ = ecs.fini(self.id);
     }
 
     pub fn component_add(self: *World, comptime T: type) !void {
