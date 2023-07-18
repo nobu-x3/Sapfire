@@ -7,6 +7,8 @@ const asset = @import("../core.zig").AssetManager;
 const Transform = comps.Transform;
 const Mesh = comps.Mesh;
 
+const TestTag = struct {};
+
 fn OnStart(it: *ecs.iter_t) callconv(.C) void {
     const world = it.world;
     const entities = it.entities();
@@ -18,10 +20,51 @@ fn OnStart(it: *ecs.iter_t) callconv(.C) void {
         const path = wrapped_world.entity_full_path(e, 0);
         std.debug.print("\tPath: {s}\n", .{path}); // this is a wild assumption but I cannot do anything with [*]
         components_stage: {
-            const types = ecs.get_type(world, e);
-            const str = ecs.type_str(world, types) orelse break :components_stage;
-            const casted = std.mem.span(str);
-            std.debug.print("\tComponents: {s}\n", .{casted});
+            const types = ecs.get_type(world, e).?;
+            var comp_len: usize = 0;
+            const type_count = @intCast(usize, types.count);
+            var components = types.array;
+            for (types.array[0..type_count]) |comp| {
+                if (ecs.id_is_pair(comp) or ecs.id_is_tag(world, comp)) {
+                    continue;
+                }
+                components[comp_len] = comp;
+                comp_len += 1;
+            }
+            const component_types: ?*const ecs.type_t = &.{
+                .array = components,
+                .count = @intCast(i32, comp_len),
+            };
+
+            const str_comps = ecs.type_str(world, component_types) orelse break :components_stage;
+            const casted_comps = std.mem.span(str_comps);
+            std.debug.print("\tComponents: {s}\n", .{casted_comps});
+        }
+        tags_stage: {
+            const types = ecs.get_type(world, e).?;
+            var tag_len: usize = 0;
+            const type_count = @intCast(usize, types.count);
+            var tags = types.array;
+            for (types.array[0..type_count]) |comp| {
+                if (ecs.id_is_pair(comp)) {
+                    continue;
+                }
+                if (ecs.id_is_tag(world, comp)) {
+                    tags[tag_len] = comp;
+                    tag_len += 1;
+                }
+            }
+            const tags_types: ?*const ecs.type_t = &.{
+                .array = tags,
+                .count = @intCast(i32, tag_len),
+            };
+            const str_tags = ecs.type_str(world, tags_types) orelse {
+                // no tags
+                std.debug.print("\tTags:\n", .{});
+                break :tags_stage;
+            };
+            const casted_tags = std.mem.span(str_tags);
+            std.debug.print("\tTags: {s}\n", .{casted_tags});
         }
     }
 }
@@ -38,6 +81,7 @@ pub const Scene = struct {
         _ = gctx;
         world.component_add(Transform);
         world.component_add(Mesh);
+        world.tag_add(TestTag);
         {
             var sys_desc = ecs.system_desc_t{};
             sys_desc.callback = OnStart;
@@ -46,6 +90,7 @@ pub const Scene = struct {
         }
         const scene_entity = world.entity_new("Root");
         var first_entt = world.entity_new_with_parent(scene_entity, "Child");
+        _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
         _ = world.entity_new_with_parent(first_entt, "Grandchild");
         _ = ecs.progress(world.id, 0);
 
@@ -85,6 +130,10 @@ pub const World = struct {
 
     pub fn component_add(self: *World, comptime T: type) void {
         ecs.COMPONENT(self.id, T);
+    }
+
+    pub fn tag_add(self: *World, comptime T: type) void {
+        ecs.TAG(self.id, T);
     }
 
     pub fn entity_new(self: *World, name: [*:0]const u8) ecs.entity_t {

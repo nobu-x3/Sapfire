@@ -48,7 +48,7 @@ pub const Editor = struct {
             .height = gctx.swapchain_descriptor.height,
         }, gctx.swapchain_descriptor.format);
         var scene = sapfire.scene.Scene.create(allocator, gctx);
-        defer scene.destroy(allocator);
+        _ = scene;
         return Editor{
             .window = window,
             .gctx = gctx,
