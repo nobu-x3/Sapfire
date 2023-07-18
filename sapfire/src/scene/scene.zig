@@ -5,71 +5,10 @@ const json = std.json;
 const comps = @import("components.zig");
 const asset = @import("../core.zig").AssetManager;
 const Transform = comps.Transform;
+const Position = comps.Position;
 const Mesh = comps.Mesh;
 
 const TestTag = struct {};
-
-fn OnStart(it: *ecs.iter_t) callconv(.C) void {
-    const world = it.world;
-    const entities = it.entities();
-    const transforms = ecs.field(it, Transform, 1).?;
-    for (entities, 0..) |e, i| {
-        std.debug.print("Entity ID: {d}\n", .{e});
-        const _name = ecs.get_name(world, e).?;
-        std.debug.print("\tName: {s}\n", .{_name});
-        const wrapped_world = World.wrap(world);
-        const path = wrapped_world.entity_full_path(e, 0);
-        std.debug.print("\tPath: {s}\n", .{path});
-        std.debug.print("\tTransform: {d}\n", .{transforms[i].matrix});
-        components_stage: {
-            const types = ecs.get_type(world, e).?;
-            var comp_len: usize = 0;
-            const type_count = @intCast(usize, types.count);
-            var components = types.array;
-            for (types.array[0..type_count]) |comp| {
-                if (ecs.id_is_pair(comp) or ecs.id_is_tag(world, comp)) {
-                    continue;
-                }
-                components[comp_len] = comp;
-                comp_len += 1;
-            }
-            const component_types: ?*const ecs.type_t = &.{
-                .array = components,
-                .count = @intCast(i32, comp_len),
-            };
-
-            const str_comps = ecs.type_str(world, component_types) orelse break :components_stage;
-            const casted_comps = std.mem.span(str_comps);
-            std.debug.print("\tComponents: {s}\n", .{casted_comps});
-        }
-        tags_stage: {
-            const types = ecs.get_type(world, e).?;
-            var tag_len: usize = 0;
-            const type_count = @intCast(usize, types.count);
-            var tags = types.array;
-            for (types.array[0..type_count]) |comp| {
-                if (ecs.id_is_pair(comp)) {
-                    continue;
-                }
-                if (ecs.id_is_tag(world, comp)) {
-                    tags[tag_len] = comp;
-                    tag_len += 1;
-                }
-            }
-            const tags_types: ?*const ecs.type_t = &.{
-                .array = tags,
-                .count = @intCast(i32, tag_len),
-            };
-            const str_tags = ecs.type_str(world, tags_types) orelse {
-                // no tags
-                std.debug.print("\tTags:\n", .{});
-                break :tags_stage;
-            };
-            const casted_tags = std.mem.span(str_tags);
-            std.debug.print("\tTags: {s}\n", .{casted_tags});
-        }
-    }
-}
 
 pub const Scene = struct {
     guid: [64]u8,
@@ -77,24 +16,40 @@ pub const Scene = struct {
     arena: std.heap.ArenaAllocator,
     scene_entity: ecs.entity_t,
 
-    pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext) Scene {
+    pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext) !Scene {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var world = World.init();
         _ = gctx;
         world.component_add(Transform);
+        world.component_add(Position);
         world.component_add(Mesh);
         world.tag_add(TestTag);
-        {
-            var sys_desc = ecs.system_desc_t{};
-            sys_desc.callback = OnStart;
-            sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
-            ecs.SYSTEM(world.id, "On Start", ecs.OnStart, &sys_desc);
-        }
+        // {
+        //     var sys_desc = ecs.system_desc_t{};
+        //     sys_desc.callback = OnStart;
+        //     sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
+        //     ecs.SYSTEM(world.id, "On Start", ecs.OnStart, &sys_desc);
+        // }
         const scene_entity = world.entity_new("Root");
         var first_entt = world.entity_new_with_parent(scene_entity, "Child");
         _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
         _ = world.entity_new_with_parent(first_entt, "Grandchild");
-        _ = ecs.progress(world.id, 0);
+        // const json_world = ecs.world_to_json(world.id, &.{}).?;
+        // std.debug.print("\n{s}", .{json_world});
+        var filter_desc = ecs.filter_desc_t{};
+        filter_desc.terms[0] = .{ .id = ecs.Any };
+        const filter = try ecs.filter_init(world.id, &filter_desc);
+        var it = ecs.filter_iter(world.id, filter);
+        while (ecs.filter_next(&it)) {
+            const entities = it.entities();
+            for (entities) |e| {
+                if (!world.entity_is_scene_entity(e)) continue;
+                const json_entity = ecs.entity_to_json(world.id, e, &.{}).?;
+                std.debug.print("\n{s}", .{json_entity});
+            }
+        }
+        std.debug.print("\n", .{});
+        // _ = ecs.progress(world.id, 0);
 
         return Scene{
             .guid = asset.generate_guid("test_scene"),
@@ -141,14 +96,33 @@ pub const World = struct {
     pub fn entity_new(self: *World, name: [*:0]const u8) ecs.entity_t {
         var entity = ecs.new_entity(self.id, name);
         _ = ecs.set(self.id, entity, Transform, .{});
+        _ = ecs.set(self.id, entity, Position, .{ .x = 0.0, .y = 1.0, .z = 0.0 });
         return entity;
     }
 
     pub fn entity_new_with_parent(self: *World, parent: ecs.entity_t, name: [*:0]const u8) ecs.entity_t {
         var entity = ecs.new_w_id(self.id, ecs.pair(ecs.ChildOf, parent));
         _ = ecs.set(self.id, entity, Transform, .{});
+        _ = ecs.set(self.id, entity, Position, .{ .x = 0.0, .y = 1.0, .z = 0.0 });
         _ = ecs.set_name(self.id, entity, name);
         return entity;
+    }
+
+    pub fn entity_is_child_of(self: *World, target: ecs.entity_t, parent: ecs.entity_t) bool {
+        var it = ecs.children(self.id, parent);
+        while (ecs.children_next(&it)) {
+            for (it.entities()) |e| {
+                if (target == e) return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn entity_is_scene_entity(self: *World, entity: ecs.entity_t) bool {
+        const path = self.entity_full_path(entity, 0);
+        if (path.len < 6) return false;
+        if (!std.mem.eql(u8, path[0..5], "Root.")) return false;
+        return true;
     }
 
     pub fn entity_full_path(self: *const World, target: ecs.entity_t, from_parent: ecs.entity_t) []const u8 {
