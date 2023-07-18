@@ -12,22 +12,11 @@ fn OnStart(it: *ecs.iter_t) callconv(.C) void {
     const entities = it.entities();
     for (entities) |e| {
         std.debug.print("Entity ID: {d}\n", .{e});
-        name_stage: {
-            const name = ecs.get_name(world, e) orelse break :name_stage;
-            std.debug.print("\tName: {s}\n", .{name});
-        }
-        full_path_stage: {
-            const path = ecs.get_path_w_sep(world, 0, e, ".", null) orelse break :full_path_stage;
-            // const len = val: {
-            //     var index: u32 = 0;
-            //     while (path[index] != '\0') {
-            //         index += 1;
-            //         std.debug.print("{d}\n", .{index});
-            //     }
-            //     break :val index;
-            // };
-            std.debug.print("\tPath: {s}\n", .{path[0..64]}); // this is a wild assumption but I cannot do anything with [*]
-        }
+        const _name = ecs.get_name(world, e).?;
+        std.debug.print("\tName: {s}\n", .{_name});
+        const wrapped_world = World.wrap(world);
+        const path = wrapped_world.entity_full_path(e, 0);
+        std.debug.print("\tPath: {s}\n", .{path}); // this is a wild assumption but I cannot do anything with [*]
         components_stage: {
             const types = ecs.get_type(world, e);
             const str = ecs.type_str(world, types) orelse break :components_stage;
@@ -57,7 +46,7 @@ pub const Scene = struct {
         }
         const scene_entity = world.entity_new("Root");
         var first_entt = world.entity_new_with_parent(scene_entity, "Child");
-        _ = first_entt;
+        _ = world.entity_new_with_parent(first_entt, "Grandchild");
         _ = ecs.progress(world.id, 0);
 
         return Scene{
@@ -84,6 +73,12 @@ pub const World = struct {
         };
     }
 
+    pub fn wrap(id: *ecs.world_t) World {
+        return World{
+            .id = id,
+        };
+    }
+
     pub fn deinit(self: *World) void {
         _ = ecs.fini(self.id);
     }
@@ -103,5 +98,31 @@ pub const World = struct {
         _ = ecs.set(self.id, entity, Transform, .{});
         _ = ecs.set_name(self.id, entity, name);
         return entity;
+    }
+
+    pub fn entity_full_path(self: *const World, target: ecs.entity_t, from_parent: ecs.entity_t) []const u8 {
+        var name = name_stage: {
+            const _name = ecs.get_name(self.id, target) orelse break :name_stage "";
+            break :name_stage std.mem.span(_name);
+        };
+        const path = ecs.get_path_w_sep(self.id, from_parent, target, ".", null).?;
+        const len = val: {
+            var separator_index: u32 = 0;
+            while (true) {
+                if (path[separator_index] != '.' and separator_index == name.len) break :val separator_index;
+                separator_index += 1;
+                if (path[separator_index] == '.' and path[separator_index + 1] == name[0]) {
+                    separator_index += 1;
+                    var inner_index: u32 = 0;
+                    while (path[separator_index] == name[inner_index]) {
+                        inner_index += 1;
+                        separator_index += 1;
+                        if (inner_index == name.len) break :val separator_index;
+                    }
+                }
+            }
+            break :val separator_index;
+        };
+        return path[0..len];
     }
 };
