@@ -16,6 +16,7 @@ pub const Editor = struct {
     gctx: *zgpu.GraphicsContext,
     game_renderer: ?*RendererState = null,
     framebuffer: Texture,
+    current_scene: sapfire.scene.Scene,
 
     pub fn create(allocator: std.mem.Allocator, project_path: [:0]const u8) !Editor {
         JobsManager.init();
@@ -48,11 +49,11 @@ pub const Editor = struct {
             .height = gctx.swapchain_descriptor.height,
         }, gctx.swapchain_descriptor.format);
         var scene = try sapfire.scene.Scene.create(allocator, gctx);
-        defer scene.destroy();
         return Editor{
             .window = window,
             .gctx = gctx,
             .framebuffer = framebuffer,
+            .current_scene = scene,
         };
     }
 
@@ -71,6 +72,7 @@ pub const Editor = struct {
                 zgui.setNextWindowPos(.{ .x = 0.0, .y = 0.0, .cond = .first_use_ever });
                 zgui.setNextWindowSize(.{ .w = 800, .h = 600, .cond = .first_use_ever });
                 var size = [2]f32{ 0.0, 0.0 };
+                self.current_scene.update(gctx.stats.delta_time);
                 if (self.game_renderer != null) {
                     if (zgui.begin("Game View", .{ .flags = .{
                         .no_move = true,
@@ -135,6 +137,7 @@ pub const Editor = struct {
     }
 
     pub fn destroy(self: *Editor, allocator: std.mem.Allocator) void {
+        self.current_scene.destroy();
         self.gctx.releaseResource(self.framebuffer.handle);
         if (self.game_renderer != null) {
             self.game_renderer.?.destroy(allocator);

@@ -50,6 +50,9 @@ pub const Scene = struct {
             .scene_entity = scene_entity,
         };
     }
+    pub fn update(self: *Scene, delta_time: f32) void {
+        _ = ecs.progress(self.world.id, delta_time);
+    }
 
     fn update_world_transforms(it: *ecs.iter_t) callconv(.C) void {
         const transforms = ecs.field(it, Transform, 1).?;
