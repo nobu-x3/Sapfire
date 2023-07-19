@@ -21,7 +21,7 @@ pub const RendererState = struct {
     arena: std.heap.ArenaAllocator,
     gctx: *zgpu.GraphicsContext,
     depth_texture: sf.Texture,
-    current_scene: sf.SimpleScene,
+    current_simple_scene: sf.SimpleScene,
     mip_level: i32 = 0,
     camera: sf.Camera = .{},
     mouse: struct {
@@ -36,7 +36,7 @@ pub const RendererState = struct {
         const scene = try sf.SimpleScene.create(arena.allocator(), "project/scenes/simple_scene.json", gctx);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
-            .current_scene = scene,
+            .current_simple_scene = scene,
             .gctx = gctx,
             .depth_texture = depth_texture,
             .arena = arena,
@@ -60,7 +60,7 @@ pub const RendererState = struct {
         const scene = try sf.SimpleScene.create(arena.allocator(), scene_path, gctx);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
-            .current_scene = scene,
+            .current_simple_scene = scene,
             .gctx = gctx,
             .depth_texture = depth_texture,
             .arena = arena,
@@ -71,7 +71,7 @@ pub const RendererState = struct {
     // pub fn load_scene(state: *RendererState, scene_config: []const u8) void {}
 
     pub fn destroy(renderer_state: *RendererState, allocator: std.mem.Allocator) void {
-        // renderer_state.current_scene.destroy();
+        // renderer_state.current_simple_scene.destroy();
         // renderer_state.gctx.destroy(allocator);
         renderer_state.arena.deinit();
         allocator.destroy(renderer_state);
@@ -83,8 +83,8 @@ pub const RendererState = struct {
         const delta_y = @floatCast(f32, cursor_pos[1] - renderer_state.mouse.cursor_pos[1]);
         renderer_state.mouse.cursor_pos = cursor_pos;
         if (window.getMouseButton(.left) == .press) {
-            renderer_state.current_scene.meshes.items[0].transform.rotate(delta_y * 0.0025, .{ 1.0, 0.0, 0.0 });
-            renderer_state.current_scene.meshes.items[0].transform.rotate(delta_x * 0.0025, .{ 0.0, 1.0, 0.0 });
+            renderer_state.current_simple_scene.meshes.items[0].transform.rotate(delta_y * 0.0025, .{ 1.0, 0.0, 0.0 });
+            renderer_state.current_simple_scene.meshes.items[0].transform.rotate(delta_x * 0.0025, .{ 0.0, 1.0, 0.0 });
         } else if (window.getMouseButton(.right) == .press) {
             renderer_state.camera.pitch += 0.0025 * delta_y;
             renderer_state.camera.yaw += 0.0025 * delta_x;
@@ -112,9 +112,9 @@ pub const RendererState = struct {
             cam_pos -= right;
         }
         zm.storeArr3(&renderer_state.camera.position, cam_pos);
-        // for (renderer_state.current_scene.meshes.items, 0..) |_, index| {
+        // for (renderer_state.current_simple_scene.meshes.items, 0..) |_, index| {
         //     // renderer_state.meshes.items[index].transform.update();
-        //     sf.Transform.update(&renderer_state.current_scene.meshes.items[index].transform);
+        //     sf.Transform.update(&renderer_state.current_simple_scene.meshes.items[index].transform);
         // }
     }
 
@@ -141,10 +141,10 @@ pub const RendererState = struct {
             defer encoder.release();
             // Main pass.
             pass: {
-                const vb_info = gctx.lookupResourceInfo(renderer_state.current_scene.vertex_buffer) orelse break :pass;
-                const ib_info = gctx.lookupResourceInfo(renderer_state.current_scene.index_buffer) orelse break :pass;
+                const vb_info = gctx.lookupResourceInfo(renderer_state.current_simple_scene.vertex_buffer) orelse break :pass;
+                const ib_info = gctx.lookupResourceInfo(renderer_state.current_simple_scene.index_buffer) orelse break :pass;
                 const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
-                const global_uniform_bind_group = gctx.lookupResource(renderer_state.current_scene.global_uniform_bind_group) orelse break :pass;
+                const global_uniform_bind_group = gctx.lookupResource(renderer_state.current_simple_scene.global_uniform_bind_group) orelse break :pass;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
                     .view = back_buffer_view,
                     .load_op = .clear,
@@ -174,12 +174,12 @@ pub const RendererState = struct {
                 glob.slice[0] = .{
                     .view_projection = zm.transpose(cam_world_to_clip),
                 };
-                for (renderer_state.current_scene.pipeline_system.pipelines.items) |pipe| {
+                for (renderer_state.current_simple_scene.pipeline_system.pipelines.items) |pipe| {
                     const pipeline = gctx.lookupResource(pipe.handle) orelse break :pass;
                     pass.setPipeline(pipeline);
                     for (pipe.materials.items) |material| {
                         const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
-                        const meshes = renderer_state.current_scene.material_manager.map.getPtr(material.*).?;
+                        const meshes = renderer_state.current_simple_scene.material_manager.map.getPtr(material.*).?;
                         for (meshes.items) |item| {
                             const object_to_world = item.transform.get_world_mat();
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
@@ -208,9 +208,9 @@ pub const RendererState = struct {
                 zgui.end();
                 if (zgui.begin("Scene switching", .{ .flags = .{ .always_auto_resize = true } })) {
                     if (zgui.button("Scene 1", .{ .w = 100.0, .h = 100.0 })) {
-                        renderer_state.current_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene.json", renderer_state.gctx);
+                        renderer_state.current_simple_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene.json", renderer_state.gctx);
                     } else if (zgui.button("Scene 2", .{ .w = 100.0, .h = 100.0 })) {
-                        renderer_state.current_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene1.json", renderer_state.gctx);
+                        renderer_state.current_simple_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene1.json", renderer_state.gctx);
                     }
                 }
                 zgui.end();
@@ -250,10 +250,10 @@ pub const RendererState = struct {
             defer encoder.release();
             // Main pass.
             pass: {
-                const vb_info = gctx.lookupResourceInfo(renderer_state.current_scene.vertex_buffer) orelse break :pass;
-                const ib_info = gctx.lookupResourceInfo(renderer_state.current_scene.index_buffer) orelse break :pass;
+                const vb_info = gctx.lookupResourceInfo(renderer_state.current_simple_scene.vertex_buffer) orelse break :pass;
+                const ib_info = gctx.lookupResourceInfo(renderer_state.current_simple_scene.index_buffer) orelse break :pass;
                 const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
-                const global_uniform_bind_group = gctx.lookupResource(renderer_state.current_scene.global_uniform_bind_group) orelse break :pass;
+                const global_uniform_bind_group = gctx.lookupResource(renderer_state.current_simple_scene.global_uniform_bind_group) orelse break :pass;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
                     .view = color_view.*,
                     .load_op = .clear,
@@ -283,12 +283,12 @@ pub const RendererState = struct {
                 glob.slice[0] = .{
                     .view_projection = zm.transpose(cam_world_to_clip),
                 };
-                for (renderer_state.current_scene.pipeline_system.pipelines.items) |pipe| {
+                for (renderer_state.current_simple_scene.pipeline_system.pipelines.items) |pipe| {
                     const pipeline = gctx.lookupResource(pipe.handle) orelse break :pass;
                     pass.setPipeline(pipeline);
                     for (pipe.materials.items) |material| {
                         const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
-                        const meshes = renderer_state.current_scene.material_manager.map.getPtr(material.*).?;
+                        const meshes = renderer_state.current_simple_scene.material_manager.map.getPtr(material.*).?;
                         for (meshes.items) |item| {
                             const object_to_world = item.transform.get_world_mat();
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
@@ -317,9 +317,9 @@ pub const RendererState = struct {
             //     zgui.end();
             //     if (zgui.begin("Scene switching", .{ .flags = .{ .always_auto_resize = true } })) {
             //         if (zgui.button("Scene 1", .{ .w = 100.0, .h = 100.0 })) {
-            //             renderer_state.current_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene.json", renderer_state.gctx);
+            //             renderer_state.current_simple_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene.json", renderer_state.gctx);
             //         } else if (zgui.button("Scene 2", .{ .w = 100.0, .h = 100.0 })) {
-            //             renderer_state.current_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene1.json", renderer_state.gctx);
+            //             renderer_state.current_simple_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene1.json", renderer_state.gctx);
             //         }
             //     }
             //     zgui.end();

@@ -106,7 +106,7 @@ pub const Editor = struct {
                             if (self.game_renderer == null) {
                                 self.game_renderer = try RendererState.create_with_gctx(allocator, self.gctx, path, 800, 600);
                             } else {
-                                self.game_renderer.?.current_scene = try sapfire.rendering.SimpleScene.create(allocator, path, self.gctx);
+                                self.game_renderer.?.current_simple_scene = try sapfire.rendering.SimpleScene.create(allocator, path, self.gctx);
                             }
                         }
                     }

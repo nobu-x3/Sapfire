@@ -58,12 +58,10 @@ pub const Scene = struct {
         const transforms = ecs.field(it, Transform, 1).?;
         const entities = it.entities();
         for (0..it.count()) |i| {
-            std.debug.print("\nID {d}: ", .{entities[i]});
             const parent = World.entity_get_parent_world_id(it.world, entities[i]);
             if (parent > 0) { // This is to prevent root modification
                 const parent_transform = ecs.get(it.world, parent, Transform) orelse continue;
                 transforms[i].world = zm.mul(transforms[i].local, parent_transform.world);
-                std.debug.print("{d}\n", .{transforms[i].world});
             }
         }
     }
