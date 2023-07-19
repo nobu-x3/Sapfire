@@ -1,5 +1,6 @@
 const ecs = @import("zflecs");
 const zgpu = @import("zgpu");
+const zm = @import("zmath");
 const std = @import("std");
 const json = std.json;
 const comps = @import("components.zig");
@@ -7,6 +8,7 @@ const asset = @import("../core.zig").AssetManager;
 const Transform = comps.Transform;
 const Position = comps.Position;
 const Mesh = comps.Mesh;
+const fs = std.fs;
 
 const TestTag = struct {};
 
@@ -23,7 +25,7 @@ pub const Scene = struct {
         try world.component_add(Transform);
         try world.component_add(Position);
         try world.component_add(Mesh);
-        world.tag_add(TestTag);
+        try world.tag_add(TestTag);
         // {
         //     var sys_desc = ecs.system_desc_t{};
         //     sys_desc.callback = OnStart;
@@ -34,7 +36,9 @@ pub const Scene = struct {
         var first_entt = world.entity_new_with_parent(scene_entity, "Child");
         _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
         _ = world.entity_new_with_parent(first_entt, "Grandchild");
-        try world.serialize();
+        var file = try fs.cwd().createFile("project/scenes/test_scene.json", .{});
+        defer file.close();
+        try world.serialize(allocator, &file);
         // const json_world = ecs.world_to_json(world.id, &.{}).?;
         // std.debug.print("\n{s}", .{json_world});
         // _ = ecs.progress(world.id, 0);
@@ -56,13 +60,17 @@ pub const Scene = struct {
 pub const World = struct {
     id: *ecs.world_t,
     component_id_map: std.AutoHashMap(ecs.id_t, [:0]const u8),
+    tag_id_map: std.AutoHashMap(ecs.id_t, [:0]const u8),
 
     pub fn init(allocator: std.mem.Allocator) World {
         const id = ecs.init();
-        const map = std.AutoHashMap(ecs.id_t, [:0]const u8).init(allocator);
+        const component_id_map = std.AutoHashMap(ecs.id_t, [:0]const u8).init(allocator);
+        const tag_id_map = std.AutoHashMap(ecs.id_t, [:0]const u8).init(allocator);
+
         return World{
             .id = id,
-            .component_id_map = map,
+            .component_id_map = component_id_map,
+            .tag_id_map = tag_id_map,
         };
     }
 
@@ -82,11 +90,12 @@ pub const World = struct {
         ecs.COMPONENT(self.id, T);
         const id = ecs.id(T);
         try self.component_id_map.put(id, @typeName(T));
-        std.debug.print("{s}: ID {d}", .{ @typeName(T), ecs.id(T) });
     }
 
-    pub fn tag_add(self: *World, comptime T: type) void {
+    pub fn tag_add(self: *World, comptime T: type) !void {
         ecs.TAG(self.id, T);
+        const id = ecs.id(T);
+        try self.tag_id_map.put(id, @typeName(T));
     }
 
     pub fn entity_new(self: *World, name: [*:0]const u8) ecs.entity_t {
@@ -147,24 +156,45 @@ pub const World = struct {
         return path[0..len];
     }
 
-    pub fn serialize(self: *World) !void {
+    const ComponentValueTag = enum { matrix, vector };
+    const ParseComponent = struct {
+        name: []const u8,
+        value: union(ComponentValueTag) {
+            matrix: [16]f32,
+            vector: [3]f32,
+        },
+    };
+    const ParseEntity = struct {
+        name: [:0]const u8,
+        path: []const u8,
+        id: u64,
+        components: []const ParseComponent,
+        tags: [][:0]const u8,
+    };
+    const ParseWorld = struct { entities: []const ParseEntity };
+
+    pub fn serialize(self: *World, allocator: std.mem.Allocator, file: *fs.File) !void {
+        var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        defer parse_arena.deinit();
+        var writer = file.writer();
         var filter_desc = ecs.filter_desc_t{};
         filter_desc.terms[0] = .{ .id = ecs.Any };
         const filter = try ecs.filter_init(self.id, &filter_desc);
         var it = ecs.filter_iter(self.id, filter);
+        var entity_list = std.ArrayList(ParseEntity).init(parse_arena.allocator());
         while (ecs.filter_next(&it)) {
             const world_id = it.world;
             const entities = it.entities();
             // const transforms = ecs.field(&it, Transform, 1).?;
             for (entities) |e| {
+                var tag_list = std.ArrayList([:0]const u8).init(parse_arena.allocator());
                 if (!self.entity_is_scene_entity(e)) continue;
-                std.debug.print("Entity ID: {d}\n", .{e});
                 const _name = ecs.get_name(world_id, e).?;
-                std.debug.print("\tName: {s}\n", .{_name});
+                const entity_name = std.mem.span(_name);
                 const path = self.entity_full_path(e, 0);
-                std.debug.print("\tPath: {s}\n", .{path});
                 // std.debug.print("\tTransform: {d}\n", .{transforms[i].matrix});
-                components_stage: {
+                var component_list = std.ArrayList(ParseComponent).init(parse_arena.allocator());
+                {
                     const types = ecs.get_type(world_id, e).?;
                     var comp_len: usize = 0;
                     const type_count = @intCast(usize, types.count);
@@ -176,30 +206,21 @@ pub const World = struct {
                         components[comp_len] = comp;
                         comp_len += 1;
                     }
-
-                    const component_types: ?*const ecs.type_t = &.{
-                        .array = components,
-                        .count = @intCast(i32, comp_len),
-                    };
-
                     for (components, 0..comp_len) |comp, _| {
                         if (self.component_id_map.contains(comp)) {
                             const comp_name = self.component_id_map.get(comp).?;
                             if (std.mem.eql(u8, comp_name, "scene.components.Transform")) { // TODO: think of a better way of doing this
                                 const transform = ecs.get(world_id, e, Transform).?;
-                                std.debug.print("\n{d}\n", .{transform.matrix});
+                                var matrix = zm.matToArr(transform.matrix);
+                                try component_list.append(.{ .name = "scere.components.Transform", .value = .{ .matrix = matrix } });
                             } else if (std.mem.eql(u8, comp_name, "scene.components.Position")) {
                                 const pos = ecs.get(world_id, e, Position).?;
-                                std.debug.print("\n{d} {d} {d}\n", .{ pos.x, pos.y, pos.z });
+                                try component_list.append(.{ .name = "scene.components.Position", .value = .{ .vector = .{ pos.x, pos.y, pos.z } } });
                             }
                         }
                     }
-
-                    const str_comps = ecs.type_str(world_id, component_types) orelse break :components_stage;
-                    const casted_comps = std.mem.span(str_comps);
-                    std.debug.print("\tComponents: {s}\n", .{casted_comps});
                 }
-                tags_stage: {
+                {
                     const types = ecs.get_type(world_id, e).?;
                     var tag_len: usize = 0;
                     const type_count = @intCast(usize, types.count);
@@ -213,20 +234,16 @@ pub const World = struct {
                             tag_len += 1;
                         }
                     }
-                    const tags_types: ?*const ecs.type_t = &.{
-                        .array = tags,
-                        .count = @intCast(i32, tag_len),
-                    };
-                    const str_tags = ecs.type_str(world_id, tags_types) orelse {
-                        // no tags
-                        std.debug.print("\tTags:\n", .{});
-                        break :tags_stage;
-                    };
-                    const casted_tags = std.mem.span(str_tags);
-                    std.debug.print("\tTags: {s}\n", .{casted_tags});
+                    for (tags, 0..tag_len) |tag, _| {
+                        if (self.tag_id_map.contains(tag)) {
+                            const tag_name = self.tag_id_map.get(tag).?;
+                            try tag_list.append(tag_name);
+                        }
+                    }
                 }
+                try entity_list.append(.{ .name = entity_name, .path = path, .id = e, .components = component_list.items, .tags = tag_list.items });
             }
         }
-        std.debug.print("\n", .{});
+        try json.stringify(ParseWorld{ .entities = entity_list.items }, .{}, writer);
     }
 };
