@@ -26,12 +26,12 @@ pub const Scene = struct {
         try world.component_add(Position);
         try world.component_add(Mesh);
         try world.tag_add(TestTag);
-        // {
-        //     var sys_desc = ecs.system_desc_t{};
-        //     sys_desc.callback = OnStart;
-        //     sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
-        //     ecs.SYSTEM(world.id, "On Start", ecs.OnStart, &sys_desc);
-        // }
+        {
+            var sys_desc = ecs.system_desc_t{};
+            sys_desc.callback = Scene.update_world_transforms;
+            sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
+            ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &sys_desc);
+        }
         const scene_entity = world.entity_new("Root");
         var first_entt = world.entity_new_with_parent(scene_entity, "Child");
         _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
@@ -41,7 +41,7 @@ pub const Scene = struct {
         try world.serialize(allocator, &file);
         // const json_world = ecs.world_to_json(world.id, &.{}).?;
         // std.debug.print("\n{s}", .{json_world});
-        // _ = ecs.progress(world.id, 0);
+        _ = ecs.progress(world.id, 0);
 
         return Scene{
             .guid = asset.generate_guid("test_scene"),
@@ -49,6 +49,20 @@ pub const Scene = struct {
             .arena = arena,
             .scene_entity = scene_entity,
         };
+    }
+
+    fn update_world_transforms(it: *ecs.iter_t) callconv(.C) void {
+        const transforms = ecs.field(it, Transform, 1).?;
+        const entities = it.entities();
+        for (0..it.count()) |i| {
+            std.debug.print("\nID {d}: ", .{entities[i]});
+            const parent = World.entity_get_parent_world_id(it.world, entities[i]);
+            if (parent > 0) { // This is to prevent root modification
+                const parent_transform = ecs.get(it.world, parent, Transform) orelse continue;
+                transforms[i].world = zm.mul(transforms[i].local, parent_transform.world);
+                std.debug.print("{d}\n", .{transforms[i].world});
+            }
+        }
     }
 
     pub fn destroy(self: *Scene) void {
@@ -156,6 +170,14 @@ pub const World = struct {
         return path[0..len];
     }
 
+    pub fn entity_get_parent(self: *const World, target: ecs.entity_t) ecs.entity_t {
+        return ecs.get_target(self.id, target, ecs.ChildOf, 0);
+    }
+
+    pub fn entity_get_parent_world_id(world: *const ecs.world_t, target: ecs.entity_t) ecs.entity_t {
+        return ecs.get_target(world, target, ecs.ChildOf, 0);
+    }
+
     const ComponentValueTag = enum { matrix, vector };
     const ParseComponent = struct {
         name: []const u8,
@@ -211,7 +233,7 @@ pub const World = struct {
                             const comp_name = self.component_id_map.get(comp).?;
                             if (std.mem.eql(u8, comp_name, "scene.components.Transform")) { // TODO: think of a better way of doing this
                                 const transform = ecs.get(world_id, e, Transform).?;
-                                var matrix = zm.matToArr(transform.matrix);
+                                var matrix = zm.matToArr(transform.local);
                                 try component_list.append(.{ .name = "scere.components.Transform", .value = .{ .matrix = matrix } });
                             } else if (std.mem.eql(u8, comp_name, "scene.components.Position")) {
                                 const pos = ecs.get(world_id, e, Position).?;
