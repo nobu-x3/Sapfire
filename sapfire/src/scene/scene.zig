@@ -4,6 +4,7 @@ const zm = @import("zmath");
 const std = @import("std");
 const json = std.json;
 const comps = @import("components.zig");
+const log = @import("../core/logger.zig");
 const asset = @import("../core.zig").AssetManager;
 const Transform = comps.Transform;
 const Position = comps.Position;
@@ -12,36 +13,102 @@ const fs = std.fs;
 
 const TestTag = struct {};
 
+const ComponentValueTag = enum { matrix, vector };
+
+const ParseComponent = struct {
+    name: []const u8,
+    value: union(ComponentValueTag) {
+        matrix: [16]f32,
+        vector: [3]f32,
+    },
+};
+
+const ParseEntity = struct {
+    name: [:0]const u8,
+    path: []const u8,
+    id: u64,
+    components: []const ParseComponent,
+    tags: [][:0]const u8,
+};
+
+const ParseWorld = struct { entities: []const ParseEntity };
+
 pub const Scene = struct {
     guid: [64]u8,
     world: World,
     arena: std.heap.ArenaAllocator,
     scene_entity: ecs.entity_t,
 
-    pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext) !Scene {
+    pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var world = World.init(arena.allocator());
         _ = gctx;
-        try world.component_add(Transform);
+        var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        defer parse_arena.deinit();
+        const config_data = std.fs.cwd().readFileAlloc(parse_arena.allocator(), path, 512 * 16) catch |e| {
+            log.err("Failed to parse texture config file. Given path:{s}", .{path});
+            return e;
+        };
+        const parser_world = try json.parseFromSlice(ParseWorld, parse_arena.allocator(), config_data, .{});
+        try world.component_add(Transform); // temp
         try world.component_add(Position);
-        try world.component_add(Mesh);
-        try world.tag_add(TestTag);
-        {
-            var sys_desc = ecs.system_desc_t{};
-            sys_desc.callback = Scene.update_world_transforms;
-            sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
-            ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &sys_desc);
-        }
         const scene_entity = world.entity_new("Root");
-        var first_entt = world.entity_new_with_parent(scene_entity, "Child");
-        _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
-        _ = world.entity_new_with_parent(first_entt, "Grandchild");
-        var file = try fs.cwd().createFile("project/scenes/test_scene.json", .{});
+        for (parser_world.entities) |e| {
+            const entity = world.entity_new(e.name);
+            var path_iter = std.mem.splitBackwardsSequence(u8, e.path, ".");
+            _ = path_iter.first();
+            if (path_iter.next() != null) {
+                const parent = ecs.lookup(world.id, @ptrCast(?[*:0]const u8, path_iter.buffer));
+                if (parent > 0)
+                    _ = ecs.add_pair(world.id, entity, ecs.ChildOf, parent);
+            }
+            for (e.components) |comp| {
+                const comp_type = comps.name_type_map.get(comp.name).?;
+                switch (comp_type) {
+                    .transform => {
+                        try world.component_add(Transform);
+                        _ = ecs.set(world.id, entity, Transform, .{
+                            .local = zm.matFromArr(comp.value.matrix),
+                        });
+                    },
+                    .position => {
+                        try world.component_add(Position);
+                        _ = ecs.set(
+                            world.id,
+                            entity,
+                            Position,
+                            .{
+                                .x = comp.value.vector[0],
+                                .y = comp.value.vector[1],
+                                .z = comp.value.vector[2],
+                            },
+                        );
+                    },
+                    .mesh => {
+                        try world.component_add(Mesh);
+                    },
+                }
+            }
+        }
+        // try world.component_add(Transform);
+        // try world.component_add(Position);
+        // try world.component_add(Mesh);
+        // try world.tag_add(TestTag);
+        // {
+        //     var sys_desc = ecs.system_desc_t{};
+        //     sys_desc.callback = Scene.update_world_transforms;
+        //     sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
+        //     ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &sys_desc);
+        // }
+        // var first_entt = world.entity_new_with_parent(scene_entity, "Child");
+        // _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
+        // _ = world.entity_new_with_parent(first_entt, "Grandchild");
+        var file = try fs.cwd().createFile("project/scenes/test_scene_deser.json", .{});
         defer file.close();
         try world.serialize(allocator, &file);
         // const json_world = ecs.world_to_json(world.id, &.{}).?;
-        // std.debug.print("\n{s}", .{json_world});
-        _ = ecs.progress(world.id, 0);
+        // // std.debug.print("\n{s}", .{json_world});
+        // _ = ecs.progress(world.id, 0);
 
         return Scene{
             .guid = asset.generate_guid("test_scene"),
@@ -178,23 +245,6 @@ pub const World = struct {
     pub fn entity_get_parent_world_id(world: *const ecs.world_t, target: ecs.entity_t) ecs.entity_t {
         return ecs.get_target(world, target, ecs.ChildOf, 0);
     }
-
-    const ComponentValueTag = enum { matrix, vector };
-    const ParseComponent = struct {
-        name: []const u8,
-        value: union(ComponentValueTag) {
-            matrix: [16]f32,
-            vector: [3]f32,
-        },
-    };
-    const ParseEntity = struct {
-        name: [:0]const u8,
-        path: []const u8,
-        id: u64,
-        components: []const ParseComponent,
-        tags: [][:0]const u8,
-    };
-    const ParseWorld = struct { entities: []const ParseEntity };
 
     pub fn serialize(self: *World, allocator: std.mem.Allocator, file: *fs.File) !void {
         var parse_arena = std.heap.ArenaAllocator.init(allocator);

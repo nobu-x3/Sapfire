@@ -1,4 +1,17 @@
 const zm = @import("zmath");
+const std = @import("std");
+
+pub const ComponentTypes = enum {
+    transform,
+    position,
+    mesh,
+};
+
+pub const name_type_map = std.ComptimeStringMap(ComponentTypes, .{
+    .{ "scene.components.Transform", .transform },
+    .{ "scene.components.Position", .position },
+    .{ "scene.components.Mesh", .mesh },
+});
 
 pub const Transform = extern struct {
     local: zm.Mat = zm.mul(zm.matFromQuat(zm.qidentity()), zm.translation(0.0, 0.0, 0.0)),
