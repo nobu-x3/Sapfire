@@ -29,10 +29,9 @@ pub const SceneManager = struct {
         const Config = struct {
             database: [][:0]const u8,
         };
-        const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
-        defer json.parseFree(Config, parse_arena.allocator(), config);
+        const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var asset_map = std.AutoHashMap([64]u8, SceneAsset).init(arena_alloc);
-        try asset_map.ensureTotalCapacity(@intCast(u32, config.database.len));
+        try asset_map.ensureTotalCapacity(@intCast(config.database.len));
         for (config.database) |path| {
             const scene_asset = try SceneAsset.create(arena.allocator(), parse_arena.allocator(), path);
             try asset_map.putNoClobber(scene_asset.guid, scene_asset);
@@ -193,7 +192,7 @@ pub const SceneAsset = struct {
         const Config = struct {
             meshes: []const MeshParser,
         };
-        const config = try json.parseFromSlice(Config, database_allocator, config_data, .{});
+        const config = try json.parseFromSliceLeaky(Config, database_allocator, config_data, .{});
         var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
         var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
         var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);

@@ -55,7 +55,7 @@ pub const Application = struct {
         defer renderer_state.destroy(allocator);
         zgui.init(allocator);
         defer zgui.deinit();
-        zgui.backend.init(window, renderer_state.gctx.device, @enumToInt(renderer_state.gctx.swapchain_descriptor.format));
+        zgui.backend.init(window, renderer_state.gctx.device, @intFromEnum(renderer_state.gctx.swapchain_descriptor.format));
         defer zgui.backend.deinit();
         while (!window.shouldClose() and window.getKey(.escape) != .press) {
             glfw.pollEvents();

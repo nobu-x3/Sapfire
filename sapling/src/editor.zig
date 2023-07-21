@@ -37,7 +37,7 @@ pub const Editor = struct {
         zgui.backend.initWithConfig(
             window,
             gctx.device,
-            @enumToInt(zgpu.GraphicsContext.swapchain_format),
+            @intFromEnum(zgpu.GraphicsContext.swapchain_format),
             .{ .texture_filter_mode = .linear, .pipeline_multisample_count = 1 },
         );
         set_style();
@@ -84,7 +84,7 @@ pub const Editor = struct {
                             self.game_renderer.?.update(self.window);
                         }
                         size = zgui.getWindowSize();
-                        try self.game_renderer.?.draw_to_texture(&color_view, @floatToInt(u32, size[0]), @floatToInt(u32, size[1]));
+                        try self.game_renderer.?.draw_to_texture(&color_view, @intFromFloat(size[0]), @intFromFloat(size[1]));
                         zgui.image(color_view, .{ .w = size[0], .h = size[1] });
                     }
                     zgui.end();

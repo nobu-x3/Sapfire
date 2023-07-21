@@ -56,8 +56,7 @@ pub const AssetManager = struct {
             mesh_config: []const u8,
             scene_config: []const u8,
         };
-        const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
-        defer json.parseFree(Config, arena.allocator(), config);
+        const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
 
         _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
             allocator: std.mem.Allocator,

@@ -32,14 +32,13 @@ pub const MaterialManager = struct {
         const Config = struct {
             database: [][:0]const u8,
         };
-        const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
-        defer json.parseFree(Config, parse_arena.allocator(), config);
+        const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var map = std.AutoArrayHashMap(Material, std.ArrayList(*sf.Mesh)).init(alloc);
-        try map.ensureTotalCapacity(@intCast(u32, config.database.len));
+        try map.ensureTotalCapacity(@intCast(config.database.len));
         var materials = std.AutoHashMap([64]u8, Material).init(alloc);
-        try materials.ensureTotalCapacity(@intCast(u32, config.database.len));
+        try materials.ensureTotalCapacity(@intCast(config.database.len));
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
-        try asset_map.ensureTotalCapacity(@intCast(u32, config.database.len));
+        try asset_map.ensureTotalCapacity(@intCast(config.database.len));
         for (config.database) |path| {
             const material_asset = try MaterialAsset.create(parse_arena.allocator(), path);
             try asset_map.putNoClobber(material_asset.guid, material_asset);
@@ -60,11 +59,11 @@ pub const MaterialManager = struct {
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
         var map = std.AutoArrayHashMap(Material, std.ArrayList(*sf.Mesh)).init(alloc);
-        try map.ensureTotalCapacity(@intCast(u32, paths.len));
+        try map.ensureTotalCapacity(@intCast(paths.len));
         var materials = std.AutoHashMap([64]u8, Material).init(alloc);
-        try materials.ensureTotalCapacity(@intCast(u32, paths.len));
+        try materials.ensureTotalCapacity(@intCast(paths.len));
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
-        try asset_map.ensureTotalCapacity(@intCast(u32, paths.len));
+        try asset_map.ensureTotalCapacity(@intCast(paths.len));
         for (paths) |path| {
             const guid = sf.AssetManager.generate_guid(path);
             if (asset_map.contains(guid)) continue;
@@ -215,8 +214,7 @@ pub const MaterialAsset = struct {
         const Config = struct {
             texture_guid: ?[64]u8,
         };
-        const config = try json.parseFromSlice(Config, parse_allocator, config_data, .{});
-        defer json.parseFree(Config, parse_allocator, config);
+        const config = try json.parseFromSliceLeaky(Config, parse_allocator, config_data, .{});
         // const texture = tex.texture_manager_get_texture(asset_manager.texture_manager(), config.texture_guid.?);
         return MaterialAsset{
             .guid = material_guid,

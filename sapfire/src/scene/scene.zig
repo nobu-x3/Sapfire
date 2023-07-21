@@ -49,7 +49,7 @@ pub const Scene = struct {
             log.err("Failed to parse texture config file. Given path:{s}", .{path});
             return e;
         };
-        const parser_world = try json.parseFromSlice(ParseWorld, parse_arena.allocator(), config_data, .{});
+        const parser_world = try json.parseFromSliceLeaky(ParseWorld, parse_arena.allocator(), config_data, .{});
         try world.component_add(Transform); // temp
         try world.component_add(Position);
         const scene_entity = world.entity_new("Root");
@@ -57,8 +57,11 @@ pub const Scene = struct {
             const entity = world.entity_new(e.name);
             var path_iter = std.mem.splitBackwardsSequence(u8, e.path, ".");
             _ = path_iter.first();
-            if (path_iter.next() != null) {
-                const parent = ecs.lookup(world.id, @ptrCast(?[*:0]const u8, path_iter.buffer));
+            const parent_name = path_iter.next();
+            if (parent_name != null) {
+                const name: ?[*:0]const u8 = @ptrCast(parent_name.?);
+                const parent = ecs.lookup(world.id, name);
+                std.debug.print("\n{s}'s Parent: {s}", .{ e.name, name.? });
                 if (parent > 0)
                     _ = ecs.add_pair(world.id, entity, ecs.ChildOf, parent);
             }
@@ -270,7 +273,7 @@ pub const World = struct {
                 {
                     const types = ecs.get_type(world_id, e).?;
                     var comp_len: usize = 0;
-                    const type_count = @intCast(usize, types.count);
+                    const type_count: usize = @intCast(types.count);
                     var components = types.array;
                     for (types.array[0..type_count]) |comp| {
                         if (ecs.id_is_pair(comp) or ecs.id_is_tag(world_id, comp)) {
@@ -296,7 +299,7 @@ pub const World = struct {
                 {
                     const types = ecs.get_type(world_id, e).?;
                     var tag_len: usize = 0;
-                    const type_count = @intCast(usize, types.count);
+                    const type_count: usize = @intCast(types.count);
                     var tags = types.array;
                     for (types.array[0..type_count]) |comp| {
                         if (ecs.id_is_pair(comp)) {

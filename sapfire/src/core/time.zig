@@ -16,7 +16,7 @@ pub const Time = struct {
 
     pub fn update() void {
         instance.current_ts = time.microTimestamp();
-        instance.delta_time = @intToFloat(f32, instance.current_ts - instance.prev_ts) / @as(f32, time.us_per_s) * instance.time_scale;
+        instance.delta_time = @as(f32, @floatFromInt(instance.current_ts - instance.prev_ts)) / @as(f32, time.us_per_s) * instance.time_scale;
         instance.prev_ts = instance.current_ts;
     }
 

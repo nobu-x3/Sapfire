@@ -30,7 +30,7 @@ pub const Texture = struct {
                 format.components_width,
                 format.is_hdr,
             ),
-            .mip_level_count = std.math.log2_int(u32, std.math.max(size.width, size.height)) + 1,
+            .mip_level_count = std.math.log2_int(u32, @max(size.width, size.height)) + 1,
         });
         const texture_view = gctx.createTextureView(handle, .{});
         return Texture{ .handle = handle, .view = texture_view };
@@ -158,10 +158,9 @@ pub const TextureManager = struct {
         const Config = struct {
             database: [][:0]const u8,
         };
-        const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
-        defer json.parseFree(Config, parse_arena.allocator(), config);
+        const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
-        try asset_map.ensureTotalCapacity(@intCast(u32, config.database.len));
+        try asset_map.ensureTotalCapacity(@intCast(config.database.len));
         try parse_pngs(arena_alloc, config.database, &asset_map);
         return TextureManager{
             .arena = arena,
@@ -178,7 +177,7 @@ pub const TextureManager = struct {
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
         var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
-        try asset_map.ensureTotalCapacity(@intCast(u32, paths.len));
+        try asset_map.ensureTotalCapacity(@intCast(paths.len));
         try parse_pngs(arena_alloc, paths, &asset_map);
         return TextureManager{
             .arena = arena,

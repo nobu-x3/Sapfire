@@ -38,10 +38,10 @@ pub const MeshAsset = struct {
         };
         try out_meshes.append(.{
             .material = material,
-            .index_offset = @intCast(u32, out_indices.items.len),
-            .vertex_offset = @intCast(i32, out_vertices.items.len),
-            .num_indices = @intCast(u32, data.indices.items.len),
-            .num_vertices = @intCast(u32, data.positions.items.len),
+            .index_offset = @intCast(out_indices.items.len),
+            .vertex_offset = @intCast(out_vertices.items.len),
+            .num_indices = @intCast(data.indices.items.len),
+            .num_vertices = @intCast(data.positions.items.len),
             .transform = sf.Transform.init_from_srt(srt.position, srt.euler_angles, srt.scale),
         });
         try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
@@ -67,10 +67,10 @@ pub const MeshAsset = struct {
         };
         try out_meshes.append(.{
             .material = material,
-            .index_offset = @intCast(u32, out_indices.items.len),
-            .vertex_offset = @intCast(i32, out_vertices.items.len),
-            .num_indices = @intCast(u32, data.indices.items.len),
-            .num_vertices = @intCast(u32, data.positions.items.len),
+            .index_offset = @intCast(out_indices.items.len),
+            .vertex_offset = @intCast(out_vertices.items.len),
+            .num_indices = @intCast(data.indices.items.len),
+            .num_vertices = @intCast(data.positions.items.len),
         });
         try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
         for (data.indices.items) |index| {
@@ -103,10 +103,9 @@ pub const MeshManager = struct {
         const Config = struct {
             database: [][:0]const u8,
         };
-        const config = try json.parseFromSlice(Config, arena.allocator(), config_data, .{});
-        defer json.parseFree(Config, parse_arena.allocator(), config);
+        const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
-        try asset_map.ensureTotalCapacity(@intCast(u32, config.database.len));
+        try asset_map.ensureTotalCapacity(@intCast(config.database.len));
         for (config.database) |path| {
             create_mesh_asset(arena_alloc, parse_arena.allocator(), path, &asset_map) catch |e| {
                 log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
@@ -127,7 +126,7 @@ pub const MeshManager = struct {
         zmesh.init(parse_arena.allocator());
         defer zmesh.deinit();
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
-        try asset_map.ensureTotalCapacity(@intCast(u32, paths.len));
+        try asset_map.ensureTotalCapacity(@intCast(paths.len));
         for (paths) |path| {
             create_mesh_asset(arena_alloc, parse_arena.allocator(), path, &asset_map) catch |e| {
                 log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
@@ -153,7 +152,7 @@ pub const MeshManager = struct {
             geometry_path: [:0]const u8,
             material_path: [:0]const u8,
         };
-        const config = try json.parseFromSlice(Config, parse_arena, config_data, .{});
+        const config = try json.parseFromSliceLeaky(Config, parse_arena, config_data, .{});
         const data = zmesh.io.parseAndLoadFile(config.geometry_path) catch |e| {
             log.err("Error type: {s}", .{@typeName(@TypeOf(e))});
             return e;

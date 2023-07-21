@@ -79,8 +79,8 @@ pub const RendererState = struct {
 
     pub fn update(renderer_state: *RendererState, window: *glfw.Window) void {
         const cursor_pos = window.getCursorPos();
-        const delta_x = @floatCast(f32, cursor_pos[0] - renderer_state.mouse.cursor_pos[0]);
-        const delta_y = @floatCast(f32, cursor_pos[1] - renderer_state.mouse.cursor_pos[1]);
+        const delta_x: f32 = @floatCast(cursor_pos[0] - renderer_state.mouse.cursor_pos[0]);
+        const delta_y: f32 = @floatCast(cursor_pos[1] - renderer_state.mouse.cursor_pos[1]);
         renderer_state.mouse.cursor_pos = cursor_pos;
         if (window.getMouseButton(.left) == .press) {
             renderer_state.current_simple_scene.meshes.items[0].transform.rotate(delta_y * 0.0025, .{ 1.0, 0.0, 0.0 });
@@ -88,8 +88,8 @@ pub const RendererState = struct {
         } else if (window.getMouseButton(.right) == .press) {
             renderer_state.camera.pitch += 0.0025 * delta_y;
             renderer_state.camera.yaw += 0.0025 * delta_x;
-            renderer_state.camera.pitch = std.math.min(renderer_state.camera.pitch, 0.48 * std.math.pi);
-            renderer_state.camera.pitch = std.math.max(renderer_state.camera.pitch, -0.48 * std.math.pi);
+            renderer_state.camera.pitch = @min(renderer_state.camera.pitch, 0.48 * std.math.pi);
+            renderer_state.camera.pitch = @max(renderer_state.camera.pitch, -0.48 * std.math.pi);
             renderer_state.camera.yaw = zm.modAngle(renderer_state.camera.yaw);
         }
         const speed = zm.f32x4s(2.0);
@@ -129,7 +129,7 @@ pub const RendererState = struct {
         );
         const cam_view_to_clip = zm.perspectiveFovLh(
             0.25 * std.math.pi,
-            @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
+            @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
             0.01,
             200.0,
         );
@@ -184,8 +184,8 @@ pub const RendererState = struct {
                             const object_to_world = item.transform.get_world_mat();
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
                             mem.slice[0] = .{
-                                .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
-                                .mip_level = @intToFloat(f32, renderer_state.mip_level),
+                                .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
+                                .mip_level = @floatFromInt(renderer_state.mip_level),
                                 .model = zm.transpose(object_to_world),
                             };
                             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
@@ -238,7 +238,7 @@ pub const RendererState = struct {
         );
         const cam_view_to_clip = zm.perspectiveFovLh(
             0.25 * std.math.pi,
-            @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
+            @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
             0.01,
             200.0,
         );
@@ -293,8 +293,8 @@ pub const RendererState = struct {
                             const object_to_world = item.transform.get_world_mat();
                             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
                             mem.slice[0] = .{
-                                .aspect_ratio = @intToFloat(f32, fb_width) / @intToFloat(f32, fb_height),
-                                .mip_level = @intToFloat(f32, renderer_state.mip_level),
+                                .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
+                                .mip_level = @floatFromInt(renderer_state.mip_level),
                                 .model = zm.transpose(object_to_world),
                             };
                             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
