@@ -4,14 +4,14 @@ const zm = @import("zmath");
 const std = @import("std");
 const json = std.json;
 const comps = @import("components.zig");
+const tags = @import("tags.zig");
 const log = @import("../core/logger.zig");
 const asset = @import("../core.zig").AssetManager;
 const Transform = comps.Transform;
 const Position = comps.Position;
 const Mesh = comps.Mesh;
+const TestTag = tags.TestTag;
 const fs = std.fs;
-
-const TestTag = struct {};
 
 const ComponentValueTag = enum { matrix, vector };
 
@@ -31,7 +31,11 @@ const ParseEntity = struct {
     tags: [][:0]const u8,
 };
 
-const ParseWorld = struct { entities: []const ParseEntity };
+const ParseWorld = struct {
+    entities: []const ParseEntity,
+    tags: [][:0]const u8,
+    components: [][:0]const u8,
+};
 
 pub const Scene = struct {
     guid: [64]u8,
@@ -50,22 +54,49 @@ pub const Scene = struct {
             return e;
         };
         const parser_world = try json.parseFromSliceLeaky(ParseWorld, parse_arena.allocator(), config_data, .{});
-        try world.component_add(Transform); // temp
-        try world.component_add(Position);
+        for (parser_world.components) |comp| {
+            const comp_type = comps.name_type_map.get(comp).?;
+            switch (comp_type) {
+                .transform => {
+                    try world.component_add(Transform);
+                },
+                .position => {
+                    try world.component_add(Position);
+                },
+                .mesh => {
+                    try world.component_add(Mesh);
+                },
+            }
+        }
+        for (parser_world.tags) |tag| {
+            const tag_type = tags.name_type_map.get(tag).?;
+            switch (tag_type) {
+                .test_tag => {
+                    try world.tag_add(TestTag);
+                },
+            }
+        }
         const scene_entity = world.entity_new("Root");
         for (parser_world.entities) |e| {
             const entity = ecs.new_from_path_w_sep(world.id, 0, e.path, ".", null);
+            for (e.tags) |tag| {
+                const tag_type = tags.name_type_map.get(tag).?;
+                switch (tag_type) {
+                    .test_tag => {
+                        const id = ecs.id(TestTag);
+                        _ = ecs.add_id(world.id, entity, id);
+                    },
+                }
+            }
             for (e.components) |comp| {
                 const comp_type = comps.name_type_map.get(comp.name).?;
                 switch (comp_type) {
                     .transform => {
-                        try world.component_add(Transform);
                         _ = ecs.set(world.id, entity, Transform, .{
                             .local = zm.matFromArr(comp.value.matrix),
                         });
                     },
                     .position => {
-                        try world.component_add(Position);
                         _ = ecs.set(
                             world.id,
                             entity,
@@ -291,17 +322,17 @@ pub const World = struct {
                     const types = ecs.get_type(world_id, e).?;
                     var tag_len: usize = 0;
                     const type_count: usize = @intCast(types.count);
-                    var tags = types.array;
+                    var tags_arr = types.array;
                     for (types.array[0..type_count]) |comp| {
                         if (ecs.id_is_pair(comp)) {
                             continue;
                         }
                         if (ecs.id_is_tag(world_id, comp)) {
-                            tags[tag_len] = comp;
+                            tags_arr[tag_len] = comp;
                             tag_len += 1;
                         }
                     }
-                    for (tags, 0..tag_len) |tag, _| {
+                    for (tags_arr, 0..tag_len) |tag, _| {
                         if (self.tag_id_map.contains(tag)) {
                             const tag_name = self.tag_id_map.get(tag).?;
                             try tag_list.append(tag_name);
@@ -311,6 +342,20 @@ pub const World = struct {
                 try entity_list.append(.{ .name = entity_name, .path = path, .id = e, .components = component_list.items, .tags = tag_list.items });
             }
         }
-        try json.stringify(ParseWorld{ .entities = entity_list.items }, .{}, writer);
+        var components = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var comp_iter = self.component_id_map.valueIterator();
+        while (comp_iter.next()) |val| {
+            try components.append(val.*);
+        }
+        var tags_arr = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var tags_iter = self.tag_id_map.valueIterator();
+        while (tags_iter.next()) |val| {
+            try tags_arr.append(val.*);
+        }
+        try json.stringify(ParseWorld{
+            .entities = entity_list.items,
+            .components = components.items,
+            .tags = tags_arr.items,
+        }, .{}, writer);
     }
 };
