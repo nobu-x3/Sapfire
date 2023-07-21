@@ -49,71 +49,7 @@ pub const Scene = struct {
         _ = gctx;
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
-        const config_data = std.fs.cwd().readFileAlloc(parse_arena.allocator(), path, 512 * 16) catch |e| {
-            log.err("Failed to parse texture config file. Given path:{s}", .{path});
-            return e;
-        };
-        const parser_world = try json.parseFromSliceLeaky(ParseWorld, parse_arena.allocator(), config_data, .{});
-        for (parser_world.components) |comp| {
-            const comp_type = comps.name_type_map.get(comp).?;
-            switch (comp_type) {
-                .transform => {
-                    try world.component_add(Transform);
-                },
-                .position => {
-                    try world.component_add(Position);
-                },
-                .mesh => {
-                    try world.component_add(Mesh);
-                },
-            }
-        }
-        for (parser_world.tags) |tag| {
-            const tag_type = tags.name_type_map.get(tag).?;
-            switch (tag_type) {
-                .test_tag => {
-                    try world.tag_add(TestTag);
-                },
-            }
-        }
-        const scene_entity = world.entity_new("Root");
-        for (parser_world.entities) |e| {
-            const entity = ecs.new_from_path_w_sep(world.id, 0, e.path, ".", null);
-            for (e.tags) |tag| {
-                const tag_type = tags.name_type_map.get(tag).?;
-                switch (tag_type) {
-                    .test_tag => {
-                        const id = ecs.id(TestTag);
-                        _ = ecs.add_id(world.id, entity, id);
-                    },
-                }
-            }
-            for (e.components) |comp| {
-                const comp_type = comps.name_type_map.get(comp.name).?;
-                switch (comp_type) {
-                    .transform => {
-                        _ = ecs.set(world.id, entity, Transform, .{
-                            .local = zm.matFromArr(comp.value.matrix),
-                        });
-                    },
-                    .position => {
-                        _ = ecs.set(
-                            world.id,
-                            entity,
-                            Position,
-                            .{
-                                .x = comp.value.vector[0],
-                                .y = comp.value.vector[1],
-                                .z = comp.value.vector[2],
-                            },
-                        );
-                    },
-                    .mesh => {
-                        try world.component_add(Mesh);
-                    },
-                }
-            }
-        }
+        const scene_entity = try world.deserialize(parse_arena.allocator(), path);
         // try world.component_add(Transform);
         // try world.component_add(Position);
         // try world.component_add(Mesh);
@@ -357,5 +293,74 @@ pub const World = struct {
             .components = components.items,
             .tags = tags_arr.items,
         }, .{}, writer);
+    }
+
+    pub fn deserialize(self: *World, parse_allocator: std.mem.Allocator, path: [:0]const u8) !ecs.entity_t {
+        const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
+            log.err("Failed to parse texture config file. Given path:{s}", .{path});
+            return e;
+        };
+        const parser_world = try json.parseFromSliceLeaky(ParseWorld, parse_allocator, config_data, .{});
+        for (parser_world.components) |comp| {
+            const comp_type = comps.name_type_map.get(comp).?;
+            switch (comp_type) {
+                .transform => {
+                    try self.component_add(Transform);
+                },
+                .position => {
+                    try self.component_add(Position);
+                },
+                .mesh => {
+                    try self.component_add(Mesh);
+                },
+            }
+        }
+        for (parser_world.tags) |tag| {
+            const tag_type = tags.name_type_map.get(tag).?;
+            switch (tag_type) {
+                .test_tag => {
+                    try self.tag_add(TestTag);
+                },
+            }
+        }
+        const scene_entity = self.entity_new("Root");
+        for (parser_world.entities) |e| {
+            const entity = ecs.new_from_path_w_sep(self.id, 0, e.path, ".", null);
+            for (e.tags) |tag| {
+                const tag_type = tags.name_type_map.get(tag).?;
+                switch (tag_type) {
+                    .test_tag => {
+                        const id = ecs.id(TestTag);
+                        _ = ecs.add_id(self.id, entity, id);
+                    },
+                }
+            }
+            for (e.components) |comp| {
+                const comp_type = comps.name_type_map.get(comp.name).?;
+                switch (comp_type) {
+                    .transform => {
+                        _ = ecs.set(self.id, entity, Transform, .{
+                            .local = zm.matFromArr(comp.value.matrix),
+                        });
+                    },
+                    .position => {
+                        _ = ecs.set(
+                            self.id,
+                            entity,
+                            Position,
+                            .{
+                                .x = comp.value.vector[0],
+                                .y = comp.value.vector[1],
+                                .z = comp.value.vector[2],
+                            },
+                        );
+                    },
+                    .mesh => {
+                        try self.component_add(Mesh);
+                    },
+                }
+            }
+        }
+        return scene_entity;
     }
 };
