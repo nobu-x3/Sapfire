@@ -16,7 +16,7 @@ const TestTag = struct {};
 const ComponentValueTag = enum { matrix, vector };
 
 const ParseComponent = struct {
-    name: []const u8,
+    name: [:0]const u8,
     value: union(ComponentValueTag) {
         matrix: [16]f32,
         vector: [3]f32,
@@ -25,7 +25,7 @@ const ParseComponent = struct {
 
 const ParseEntity = struct {
     name: [:0]const u8,
-    path: []const u8,
+    path: [:0]const u8,
     id: u64,
     components: []const ParseComponent,
     tags: [][:0]const u8,
@@ -54,17 +54,7 @@ pub const Scene = struct {
         try world.component_add(Position);
         const scene_entity = world.entity_new("Root");
         for (parser_world.entities) |e| {
-            const entity = world.entity_new(e.name);
-            var path_iter = std.mem.splitBackwardsSequence(u8, e.path, ".");
-            _ = path_iter.first();
-            const parent_name = path_iter.next();
-            if (parent_name != null) {
-                const name: ?[*:0]const u8 = @ptrCast(parent_name.?);
-                const parent = ecs.lookup(world.id, name);
-                std.debug.print("\n{s}'s Parent: {s}", .{ e.name, name.? });
-                if (parent > 0)
-                    _ = ecs.add_pair(world.id, entity, ecs.ChildOf, parent);
-            }
+            const entity = ecs.new_from_path_w_sep(world.id, 0, e.path, ".", null);
             for (e.components) |comp| {
                 const comp_type = comps.name_type_map.get(comp.name).?;
                 switch (comp_type) {
@@ -215,7 +205,7 @@ pub const World = struct {
         return true;
     }
 
-    pub fn entity_full_path(self: *const World, target: ecs.entity_t, from_parent: ecs.entity_t) []const u8 {
+    pub fn entity_full_path(self: *const World, target: ecs.entity_t, from_parent: ecs.entity_t) [:0]const u8 {
         var name = name_stage: {
             const _name = ecs.get_name(self.id, target) orelse break :name_stage "";
             break :name_stage std.mem.span(_name);
@@ -238,7 +228,8 @@ pub const World = struct {
             }
             break :val separator_index;
         };
-        return path[0..len];
+        const casted: [:0]const u8 = @ptrCast(path[0..len]);
+        return casted;
     }
 
     pub fn entity_get_parent(self: *const World, target: ecs.entity_t) ecs.entity_t {
