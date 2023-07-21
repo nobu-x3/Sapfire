@@ -310,7 +310,7 @@ pub const World = struct {
                             if (std.mem.eql(u8, comp_name, "scene.components.Transform")) { // TODO: think of a better way of doing this
                                 const transform = ecs.get(world_id, e, Transform).?;
                                 var matrix = zm.matToArr(transform.local);
-                                try component_list.append(.{ .name = "scere.components.Transform", .value = .{ .matrix = matrix } });
+                                try component_list.append(.{ .name = "scene.components.Transform", .value = .{ .matrix = matrix } });
                             } else if (std.mem.eql(u8, comp_name, "scene.components.Position")) {
                                 const pos = ecs.get(world_id, e, Position).?;
                                 try component_list.append(.{ .name = "scene.components.Position", .value = .{ .vector = .{ pos.x, pos.y, pos.z } } });
