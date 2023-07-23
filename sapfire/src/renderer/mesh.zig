@@ -8,15 +8,7 @@ const sf = struct {
     usingnamespace @import("../core/asset_manager.zig");
     usingnamespace @import("material.zig");
 };
-
-pub const Mesh = struct {
-    index_offset: u32,
-    vertex_offset: i32,
-    num_indices: u32,
-    num_vertices: u32,
-    transform: sf.Transform = sf.Transform.init(),
-    material: *sf.Material,
-};
+const Mesh = @import("../scene/components.zig").Mesh;
 
 pub const MeshAsset = struct {
     guid: [64]u8,
@@ -26,25 +18,36 @@ pub const MeshAsset = struct {
     uvs: std.ArrayList([2]f32),
     parse_success: bool,
 
-    pub fn load_mesh(path: [:0]const u8, mesh_manager: *MeshManager, material_manager: *sf.MaterialManager, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32), srt: sf.SRT) !void {
+    pub fn load_mesh(path: [:0]const u8, mesh_manager: *MeshManager, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !Mesh {
         const guid = sf.AssetManager.generate_guid(path);
         const data = mesh_manager.mesh_assets_map.get(guid) orelse {
             log.err("Mesh at path {s} is not present in the asset database. Loading failed.", .{path});
-            return;
+            return error.InvalidValue;
         };
-        const material = material_manager.materials.getPtr(data.material_guid) orelse {
-            log.err("Loading failed mesh at path {s} failed. Material at given path is not present in the material database.", .{path});
-            return;
-        };
-        try out_meshes.append(.{
-            .material = material,
+        if (mesh_manager.mesh_map.contains(guid)) {
+            const mesh = mesh_manager.mesh_map.get(guid).?;
+            try out_meshes.append(mesh);
+            // try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
+            for (data.indices.items) |index| {
+                try out_indices.append(index);
+            }
+            for (data.positions.items, 0..) |_, index| {
+                try out_vertices.append(.{
+                    .position = data.positions.items[index],
+                    .uv = data.uvs.items[index],
+                });
+            }
+            return mesh;
+        }
+        const mesh: Mesh = .{
             .index_offset = @intCast(out_indices.items.len),
             .vertex_offset = @intCast(out_vertices.items.len),
             .num_indices = @intCast(data.indices.items.len),
             .num_vertices = @intCast(data.positions.items.len),
-            .transform = sf.Transform.init_from_srt(srt.position, srt.euler_angles, srt.scale),
-        });
-        try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
+        };
+        try mesh_manager.mesh_map.put(guid, mesh);
+        try out_meshes.append(mesh);
+        // try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
         for (data.indices.items) |index| {
             try out_indices.append(index);
         }
@@ -54,6 +57,7 @@ pub const MeshAsset = struct {
                 .uv = data.uvs.items[index],
             });
         }
+        return mesh;
     }
 
     pub fn load_mesh_by_guid(guid: [64]u8, mesh_manager: *MeshManager, material_manager: *sf.MaterialManager, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) *Mesh {
@@ -66,7 +70,6 @@ pub const MeshAsset = struct {
             return;
         };
         try out_meshes.append(.{
-            .material = material,
             .index_offset = @intCast(out_indices.items.len),
             .vertex_offset = @intCast(out_vertices.items.len),
             .num_indices = @intCast(data.indices.items.len),
@@ -88,6 +91,7 @@ pub const MeshAsset = struct {
 pub const MeshManager = struct {
     arena: std.heap.ArenaAllocator,
     mesh_assets_map: std.AutoHashMap([64]u8, MeshAsset),
+    mesh_map: std.AutoHashMap([64]u8, Mesh),
 
     pub fn init(allocator: std.mem.Allocator, config_path: []const u8) !MeshManager {
         var arena = std.heap.ArenaAllocator.init(allocator);
@@ -106,6 +110,8 @@ pub const MeshManager = struct {
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(@intCast(config.database.len));
+        var mesh_map = std.AutoHashMap([64]u8, Mesh).init(arena_alloc);
+        try mesh_map.ensureTotalCapacity(1024);
         for (config.database) |path| {
             create_mesh_asset(arena_alloc, parse_arena.allocator(), path, &asset_map) catch |e| {
                 log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
@@ -115,6 +121,7 @@ pub const MeshManager = struct {
         return MeshManager{
             .arena = arena,
             .mesh_assets_map = asset_map,
+            .mesh_map = mesh_map,
         };
     }
 
@@ -127,6 +134,8 @@ pub const MeshManager = struct {
         defer zmesh.deinit();
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(@intCast(paths.len));
+        var mesh_map = std.AutoHashMap([64]u8, Mesh).init(arena_alloc);
+        try mesh_map.ensureTotalCapacity(1024);
         for (paths) |path| {
             create_mesh_asset(arena_alloc, parse_arena.allocator(), path, &asset_map) catch |e| {
                 log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
@@ -136,6 +145,7 @@ pub const MeshManager = struct {
         return MeshManager{
             .arena = arena,
             .mesh_assets_map = asset_map,
+            .mesh_map = mesh_map,
         };
     }
 
@@ -174,5 +184,11 @@ pub const MeshManager = struct {
         };
         try out_map.put(guid, asset);
         log.info("Mesh at {s} added to asset map with guid\n{d}", .{ config_path, guid });
+    }
+
+    pub fn get_mesh(self: *MeshManager, guid: [64]u8) !Mesh {
+        return self.mesh_map.get(guid) orelse {
+            return error.InvalidValue;
+        };
     }
 };

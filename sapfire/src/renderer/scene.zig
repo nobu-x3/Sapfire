@@ -49,7 +49,6 @@ pub const SceneManager = struct {
 
 pub const SimpleScene = struct {
     guid: [64]u8,
-    meshes: std.ArrayList(sf.Mesh),
     vertices: std.ArrayList(sf.Vertex),
     indices: std.ArrayList(u32),
     arena: std.heap.ArenaAllocator,
@@ -62,105 +61,105 @@ pub const SimpleScene = struct {
     index_buffer: zgpu.BufferHandle,
     transform: sf.Transform = sf.Transform.init(),
 
-    pub fn create(allocator: std.mem.Allocator, config_path: [:0]const u8, gctx: *zgpu.GraphicsContext) !SimpleScene {
-        var arena = std.heap.ArenaAllocator.init(allocator);
-        var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        defer parse_arena.deinit();
-        const scene_asset = try SceneAsset.create(arena.allocator(), parse_arena.allocator(), config_path);
-        // manager inits can be jobified
-        var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
-        var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
-        var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
-        // Texture loading
-        const global_uniform_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-        });
-        defer gctx.releaseResource(global_uniform_bgl);
-        for (scene_asset.texture_paths.items) |path| {
-            try sf.TextureManager.add_texture(&texman, path, gctx, .{ .texture_binding = true, .copy_dst = true });
-        }
-        // Material loading
-        const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
-            .{
-                .binding = 0,
-                .buffer_handle = gctx.uniforms.buffer,
-                .offset = 0,
-                .size = @sizeOf(sf.GlobalUniforms),
-            },
-        });
-        const local_bgl = gctx.createBindGroupLayout(
-            &.{
-                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-            },
-        );
-        defer gctx.releaseResource(local_bgl);
-        var pipeline_system = try sf.PipelineSystem.init(allocator);
-        var pipeline = try sf.PipelineSystem.add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
-        // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
-        for (scene_asset.material_paths.items) |path| {
-            const material_asset = matman.material_asset_map.get(sf.AssetManager.generate_guid(path)).?;
-            // TODO: look into making multiple textures per material
-            try sf.MaterialManager.add_material(&matman, path, gctx, &texman, &.{
-                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-            }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
-            var mat0 = matman.materials.getPtr(sf.AssetManager.generate_guid(path)).?;
-            try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat0);
-        }
+    // pub fn create(allocator: std.mem.Allocator, config_path: [:0]const u8, gctx: *zgpu.GraphicsContext) !SimpleScene {
+    //     var arena = std.heap.ArenaAllocator.init(allocator);
+    //     var parse_arena = std.heap.ArenaAllocator.init(allocator);
+    //     defer parse_arena.deinit();
+    //     const scene_asset = try SceneAsset.create(arena.allocator(), parse_arena.allocator(), config_path);
+    //     // manager inits can be jobified
+    //     var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
+    //     var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
+    //     var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
+    //     // Texture loading
+    //     const global_uniform_bgl = gctx.createBindGroupLayout(&.{
+    //         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+    //     });
+    //     defer gctx.releaseResource(global_uniform_bgl);
+    //     for (scene_asset.texture_paths.items) |path| {
+    //         try sf.TextureManager.add_texture(&texman, path, gctx, .{ .texture_binding = true, .copy_dst = true });
+    //     }
+    //     // Material loading
+    //     const global_uniform_bg = gctx.createBindGroup(global_uniform_bgl, &.{
+    //         .{
+    //             .binding = 0,
+    //             .buffer_handle = gctx.uniforms.buffer,
+    //             .offset = 0,
+    //             .size = @sizeOf(sf.GlobalUniforms),
+    //         },
+    //     });
+    //     const local_bgl = gctx.createBindGroupLayout(
+    //         &.{
+    //             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+    //             zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+    //             zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+    //         },
+    //     );
+    //     defer gctx.releaseResource(local_bgl);
+    //     var pipeline_system = try sf.PipelineSystem.init(allocator);
+    //     var pipeline = try sf.PipelineSystem.add_pipeline(&pipeline_system, gctx, &.{ global_uniform_bgl, local_bgl }, false);
+    //     // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
+    //     for (scene_asset.material_paths.items) |path| {
+    //         const material_asset = matman.material_asset_map.get(sf.AssetManager.generate_guid(path)).?;
+    //         // TODO: look into making multiple textures per material
+    //         try sf.MaterialManager.add_material(&matman, path, gctx, &texman, &.{
+    //             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+    //             zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+    //             zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+    //         }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
+    //         var mat0 = matman.materials.getPtr(sf.AssetManager.generate_guid(path)).?;
+    //         try sf.PipelineSystem.add_material(&pipeline_system, pipeline, mat0);
+    //     }
 
-        // Mesh loading
-        var meshes = std.ArrayList(sf.Mesh).init(arena.allocator());
-        try meshes.ensureTotalCapacity(128);
-        var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
-        defer vertices.deinit();
-        try vertices.ensureTotalCapacity(256);
-        var indices = std.ArrayList(u32).init(arena.allocator());
-        defer indices.deinit();
-        try indices.ensureTotalCapacity(256);
-        for (scene_asset.geometry_paths.items, 0..) |path, index| {
-            try sf.MeshAsset.load_mesh(path, &meshman, &matman, &meshes, &vertices, &indices, scene_asset.srts.items[index]);
-        }
+    // Mesh loading
+    // var meshes = std.ArrayList(sf.Mesh).init(arena.allocator());
+    // try meshes.ensureTotalCapacity(128);
+    // var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
+    // defer vertices.deinit();
+    // try vertices.ensureTotalCapacity(256);
+    // var indices = std.ArrayList(u32).init(arena.allocator());
+    // defer indices.deinit();
+    // try indices.ensureTotalCapacity(256);
+    // // for (scene_asset.geometry_paths.items) |path| {
+    // //     try sf.MeshAsset.load_mesh(path, &meshman, &matman, &meshes, &vertices, &indices);
+    // // }
 
-        // hierarchy
-        for (scene_asset.geometry_paths.items, 0..) |path, index| {
-            const parent_path = scene_asset.hierarchy.get(path);
-            var transform: ?*sf.Transform = null;
-            if (parent_path != null) {
-                const casted_path = parent_path.?;
-                if (casted_path != null) {
-                    for (scene_asset.geometry_paths.items, 0..) |inner, inner_index| {
-                        if (std.mem.eql(u8, casted_path.?, inner)) {
-                            transform = &meshes.items[inner_index].transform;
-                            break;
-                        }
-                    }
-                }
-            }
-            meshes.items[index].transform.set_parent(transform);
-        }
+    // // hierarchy
+    // for (scene_asset.geometry_paths.items, 0..) |path, index| {
+    //     const parent_path = scene_asset.hierarchy.get(path);
+    //     var transform: ?*sf.Transform = null;
+    //     if (parent_path != null) {
+    //         const casted_path = parent_path.?;
+    //         if (casted_path != null) {
+    //             for (scene_asset.geometry_paths.items, 0..) |inner, inner_index| {
+    //                 if (std.mem.eql(u8, casted_path.?, inner)) {
+    //                     transform = &meshes.items[inner_index].transform;
+    //                     break;
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     meshes.items[index].transform.set_parent(transform);
+    // }
 
-        var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
-        // Create an index buffer.
-        const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
+    // var vertex_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
+    // // Create an index buffer.
+    // const index_buffer: zgpu.BufferHandle = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
 
-        return SimpleScene{
-            .guid = scene_asset.guid,
-            .meshes = meshes,
-            .vertices = vertices,
-            .indices = indices,
-            .arena = arena,
-            .pipeline_system = pipeline_system,
-            .mesh_manager = meshman,
-            .material_manager = matman,
-            .texture_manager = texman,
-            .vertex_buffer = vertex_buffer,
-            .index_buffer = index_buffer,
-            .global_uniform_bind_group = global_uniform_bg,
-        };
-    }
+    // return SimpleScene{
+    //     .guid = scene_asset.guid,
+    //     .meshes = meshes,
+    //     .vertices = vertices,
+    //     .indices = indices,
+    //     .arena = arena,
+    //     .pipeline_system = pipeline_system,
+    //     .mesh_manager = meshman,
+    //     .material_manager = matman,
+    //     .texture_manager = texman,
+    //     .vertex_buffer = vertex_buffer,
+    //     .index_buffer = index_buffer,
+    //     .global_uniform_bind_group = global_uniform_bg,
+    // };
+    // }
 
     pub fn destroy(scene: *SimpleScene) void {
         scene.pipeline_system.deinit();

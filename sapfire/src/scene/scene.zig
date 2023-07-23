@@ -10,16 +10,26 @@ const asset = @import("../core.zig").AssetManager;
 const Transform = comps.Transform;
 const Position = comps.Position;
 const Mesh = comps.Mesh;
+const Material = @import("../renderer/material.zig").Material;
 const TestTag = tags.TestTag;
 const fs = std.fs;
-
-const ComponentValueTag = enum { matrix, vector };
+const sf = struct {
+    usingnamespace @import("../core/asset_manager.zig");
+    usingnamespace @import("../renderer/mesh.zig");
+    usingnamespace @import("../renderer/renderer_types.zig");
+    usingnamespace @import("../renderer/material.zig");
+    usingnamespace @import("../renderer/buffer.zig");
+    usingnamespace @import("../renderer/texture.zig");
+    usingnamespace @import("../renderer/pipeline.zig");
+};
+const ComponentValueTag = enum { matrix, vector, path };
 
 const ParseComponent = struct {
     name: [:0]const u8,
     value: union(ComponentValueTag) {
         matrix: [16]f32,
         vector: [3]f32,
+        path: [:0]const u8,
     },
 };
 
@@ -37,48 +47,172 @@ const ParseWorld = struct {
     components: [][:0]const u8,
 };
 
+pub const SceneConfig = struct {
+    textures: [][:0]const u8,
+    materials: [][:0]const u8,
+    meshes: [][:0]const u8,
+    world: ParseWorld,
+};
+
+pub const SceneAsset = struct {
+    guid: [64]u8,
+    texture_paths: std.ArrayList([:0]const u8),
+    material_paths: std.ArrayList([:0]const u8),
+    geometry_paths: std.ArrayList([:0]const u8),
+    world: ParseWorld,
+
+    pub fn create(database_allocator: std.mem.Allocator, parse_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
+        const scene_guid = sf.AssetManager.generate_guid(path);
+        const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
+            log.err("Failed to parse scene config file. Given path:{s}", .{path});
+            return e;
+        };
+        const MeshParser = struct {
+            geometry_path: [:0]const u8,
+            material_path: [:0]const u8,
+            texture_path: [:0]const u8,
+        };
+        const Config = struct {
+            world: ParseWorld,
+            meshes: []const MeshParser,
+        };
+        const config = try json.parseFromSliceLeaky(Config, database_allocator, config_data, .{});
+        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
+        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
+        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
+        for (config.meshes) |mesh| {
+            try texture_paths.append(mesh.texture_path);
+            try geometry_paths.append(mesh.geometry_path);
+            try material_paths.append(mesh.material_path);
+        }
+        return SceneAsset{
+            .guid = scene_guid,
+            .texture_paths = texture_paths,
+            .material_paths = material_paths,
+            .geometry_paths = geometry_paths,
+            .world = config.world,
+        };
+    }
+};
+
 pub const Scene = struct {
     guid: [64]u8,
     world: World,
     arena: std.heap.ArenaAllocator,
     scene_entity: ecs.entity_t,
+    vertices: std.ArrayList(sf.Vertex),
+    indices: std.ArrayList(u32),
+    pipeline_system: sf.PipelineSystem,
+    mesh_manager: sf.MeshManager,
+    texture_manager: sf.TextureManager,
+    material_manager: sf.MaterialManager,
+    global_uniform_bind_group: zgpu.BindGroupHandle,
+    vertex_buffer: zgpu.BufferHandle,
+    index_buffer: zgpu.BufferHandle,
 
     pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
         var arena = std.heap.ArenaAllocator.init(allocator);
-        var world = World.init(arena.allocator());
-        _ = gctx;
+        var world = try World.init(arena.allocator());
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
-        const scene_entity = try world.deserialize(parse_arena.allocator(), path);
+        const scene_asset = try SceneAsset.create(arena.allocator(), parse_arena.allocator(), path);
+        // manager inits can be jobified
+        var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
+        var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
+        var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
+        // Mesh loading
+        var meshes = std.ArrayList(Mesh).init(arena.allocator()); // NOTE: we don't actually need to cache any of it after creating vert/ind buffers
+        try meshes.ensureTotalCapacity(128);
+        var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
+        defer vertices.deinit();
+        try vertices.ensureTotalCapacity(256);
+        var indices = std.ArrayList(u32).init(arena.allocator());
+        defer indices.deinit();
+        try indices.ensureTotalCapacity(256);
+        // Texture loading
+        // Material loading
+        var pipeline_system = try sf.PipelineSystem.init(arena.allocator());
+        const global_uniform_bgl = gctx.createBindGroupLayout(&.{
+            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+        });
+        defer gctx.releaseResource(global_uniform_bgl);
+        const global_uniform_bind_group = gctx.createBindGroup(global_uniform_bgl, &.{
+            .{
+                .binding = 0,
+                .buffer_handle = gctx.uniforms.buffer,
+                .offset = 0,
+                .size = @sizeOf(sf.GlobalUniforms),
+            },
+        });
+        const scene_entity = try world.deserialize(arena.allocator(), &scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
+        const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
+        // Create an index buffer.
+        const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
         // try world.component_add(Transform);
         // try world.component_add(Position);
         // try world.component_add(Mesh);
         // try world.tag_add(TestTag);
-        // {
-        //     var sys_desc = ecs.system_desc_t{};
-        //     sys_desc.callback = Scene.update_world_transforms;
-        //     sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
-        //     ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &sys_desc);
-        // }
+        {
+            var sys_desc = ecs.system_desc_t{};
+            sys_desc.callback = Scene.update_world_transforms;
+            sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
+            ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &sys_desc);
+        }
         // var first_entt = world.entity_new_with_parent(scene_entity, "Child");
         // _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
         // _ = world.entity_new_with_parent(first_entt, "Grandchild");
-        var file = try fs.cwd().createFile("project/scenes/test_scene_deser.json", .{});
-        defer file.close();
-        try world.serialize(allocator, &file);
+        // var file = try fs.cwd().createFile("project/scenes/test_scene_deser.json", .{});
+        // defer file.close();
+        // try world.serialize(allocator, &file);
         // const json_world = ecs.world_to_json(world.id, &.{}).?;
         // // std.debug.print("\n{s}", .{json_world});
         // _ = ecs.progress(world.id, 0);
-
         return Scene{
-            .guid = asset.generate_guid("test_scene"),
+            .guid = sf.AssetManager.generate_guid(path),
             .world = world,
             .arena = arena,
             .scene_entity = scene_entity,
+            .vertices = vertices,
+            .indices = indices,
+            .pipeline_system = pipeline_system,
+            .mesh_manager = meshman,
+            .texture_manager = texman,
+            .material_manager = matman,
+            .global_uniform_bind_group = global_uniform_bind_group,
+            .vertex_buffer = vertex_buffer,
+            .index_buffer = index_buffer,
         };
     }
-    pub fn update(self: *Scene, delta_time: f32) void {
+
+    pub fn update(self: *Scene, delta_time: f32) !void {
         _ = ecs.progress(self.world.id, delta_time);
+        var query_desc = ecs.query_desc_t{};
+        query_desc.filter.terms[0] = .{ .id = ecs.id(Transform) };
+        query_desc.filter.terms[1] = .{ .id = ecs.id(Material) };
+        query_desc.filter.terms[2] = .{ .id = ecs.id(Mesh) };
+        var q = try ecs.query_init(self.world.id, &query_desc);
+        var it = ecs.query_iter(self.world.id, q);
+        while (ecs.query_next(&it)) {
+            const transforms = ecs.field(&it, Transform, 1).?;
+            const materials = ecs.field(&it, Material, 2).?;
+            const meshes = ecs.field(&it, Mesh, 3).?;
+            const entities = it.entities();
+            // var current_pipeline: sf.Pipeline = undefined;
+            for (0..it.count()) |i| {
+                const mat = materials[i];
+                const pipe = self.pipeline_system.material_pipeline_map.get(&mat.name).?;
+                _ = pipe;
+                // if (pipe.handle.id != current_pipeline.handle.id) {
+                //     current_pipeline = pipe;
+                // TODO: bind
+                // }
+                // _ = mat;
+                // TODO: rest of rendering
+                _ = transforms;
+                _ = meshes;
+                _ = entities;
+            }
+        }
     }
 
     fn update_world_transforms(it: *ecs.iter_t) callconv(.C) void {
@@ -104,10 +238,12 @@ pub const World = struct {
     component_id_map: std.AutoHashMap(ecs.id_t, [:0]const u8),
     tag_id_map: std.AutoHashMap(ecs.id_t, [:0]const u8),
 
-    pub fn init(allocator: std.mem.Allocator) World {
+    pub fn init(allocator: std.mem.Allocator) !World {
         const id = ecs.init();
-        const component_id_map = std.AutoHashMap(ecs.id_t, [:0]const u8).init(allocator);
-        const tag_id_map = std.AutoHashMap(ecs.id_t, [:0]const u8).init(allocator);
+        var component_id_map = std.AutoHashMap(ecs.id_t, [:0]const u8).init(allocator);
+        try component_id_map.ensureTotalCapacity(256);
+        var tag_id_map = std.AutoHashMap(ecs.id_t, [:0]const u8).init(allocator);
+        try tag_id_map.ensureTotalCapacity(256);
 
         return World{
             .id = id,
@@ -295,12 +431,49 @@ pub const World = struct {
         }, .{}, writer);
     }
 
-    pub fn deserialize(self: *World, parse_allocator: std.mem.Allocator, path: [:0]const u8) !ecs.entity_t {
-        const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
-            log.err("Failed to parse texture config file. Given path:{s}", .{path});
-            return e;
-        };
-        const parser_world = try json.parseFromSliceLeaky(ParseWorld, parse_allocator, config_data, .{});
+    pub fn deserialize(
+        self: *World,
+        allocator: std.mem.Allocator,
+        scene_asset: *const SceneAsset,
+        gctx: *zgpu.GraphicsContext,
+        global_uniform_bgl: zgpu.BindGroupLayoutHandle,
+        pipeline_system: *sf.PipelineSystem,
+        texture_manager: *sf.TextureManager,
+        material_manager: *sf.MaterialManager,
+        mesh_manager: *sf.MeshManager,
+        meshes: *std.ArrayList(Mesh),
+        vertices: *std.ArrayList(sf.Vertex),
+        indices: *std.ArrayList(u32),
+    ) !ecs.entity_t {
+        for (scene_asset.texture_paths.items) |texture_path| {
+            try sf.TextureManager.add_texture(texture_manager, texture_path, gctx, .{ .texture_binding = true, .copy_dst = true });
+        }
+        const local_bgl = gctx.createBindGroupLayout(
+            &.{
+                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+                zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+                zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+            },
+        );
+        defer gctx.releaseResource(local_bgl);
+        var pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false);
+        // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
+        for (scene_asset.material_paths.items) |material_path| {
+            const material_asset = material_manager.material_asset_map.get(sf.AssetManager.generate_guid(material_path)).?;
+            // TODO: look into making multiple textures per material
+            try sf.MaterialManager.add_material(material_manager, allocator, material_path, gctx, texture_manager, &.{
+                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+                zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+                zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+            }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
+            // var mat0 = scene.material_manager.materials.getPtr(sf.AssetManager.generate_guid(material_path)).?;
+            // var mat0 = material_manager.materials.getPtr(material_path).?;
+            try pipeline_system.add_material(pipeline.*, material_path);
+        }
+        for (scene_asset.geometry_paths.items) |geometry_path| {
+            _ = try sf.MeshAsset.load_mesh(geometry_path, mesh_manager, meshes, vertices, indices);
+        }
+        const parser_world = scene_asset.world;
         for (parser_world.components) |comp| {
             const comp_type = comps.name_type_map.get(comp).?;
             switch (comp_type) {
@@ -312,6 +485,9 @@ pub const World = struct {
                 },
                 .mesh => {
                     try self.component_add(Mesh);
+                },
+                .material => {
+                    try self.component_add(Material);
                 },
             }
         }
@@ -356,7 +532,14 @@ pub const World = struct {
                         );
                     },
                     .mesh => {
-                        try self.component_add(Mesh);
+                        const guid = asset.generate_guid(comp.value.path);
+                        const mesh = try mesh_manager.get_mesh(guid);
+                        _ = ecs.set(self.id, entity, Mesh, mesh);
+                    },
+                    .material => {
+                        const guid = asset.generate_guid(comp.value.path);
+                        log.info("GUID is: {d}", .{guid});
+                        _ = ecs.set(self.id, entity, Material, material_manager.materials.get(comp.value.path).?);
                     },
                 }
             }

@@ -21,7 +21,8 @@ pub const Editor = struct {
     pub fn create(allocator: std.mem.Allocator, project_path: [:0]const u8) !Editor {
         JobsManager.init();
         try log.init();
-        try AssetManager.init(allocator, project_path);
+        // try AssetManager.init(allocator, project_path);
+        _ = project_path;
         Time.init();
         glfw.init() catch |e| {
             log.err("Failed to init glfw.", .{});
@@ -72,7 +73,7 @@ pub const Editor = struct {
                 zgui.setNextWindowPos(.{ .x = 0.0, .y = 0.0, .cond = .first_use_ever });
                 zgui.setNextWindowSize(.{ .w = 800, .h = 600, .cond = .first_use_ever });
                 var size = [2]f32{ 0.0, 0.0 };
-                self.current_scene.update(gctx.stats.delta_time);
+                try self.current_scene.update(gctx.stats.delta_time);
                 if (self.game_renderer != null) {
                     if (zgui.begin("Game View", .{ .flags = .{
                         .no_move = true,
@@ -106,7 +107,7 @@ pub const Editor = struct {
                             if (self.game_renderer == null) {
                                 self.game_renderer = try RendererState.create_with_gctx(allocator, self.gctx, path, 800, 600);
                             } else {
-                                self.game_renderer.?.current_simple_scene = try sapfire.rendering.SimpleScene.create(allocator, path, self.gctx);
+                                // self.game_renderer.?.current_simple_scene = try sapfire.rendering.SimpleScene.create(allocator, path, self.gctx);
                             }
                         }
                     }

@@ -11,8 +11,8 @@ const sf = struct {
 };
 
 pub const MaterialManager = struct {
-    map: std.AutoArrayHashMap(Material, std.ArrayList(*sf.Mesh)),
-    materials: std.AutoHashMap([64]u8, Material),
+    // materials: std.AutoHashMap([64]u8, Material),
+    materials: std.StringHashMap(Material),
     material_asset_map: std.AutoHashMap([64]u8, MaterialAsset),
     arena: std.heap.ArenaAllocator,
     asset_arena: std.heap.ArenaAllocator,
@@ -33,9 +33,8 @@ pub const MaterialManager = struct {
             database: [][:0]const u8,
         };
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
-        var map = std.AutoArrayHashMap(Material, std.ArrayList(*sf.Mesh)).init(alloc);
-        try map.ensureTotalCapacity(@intCast(config.database.len));
-        var materials = std.AutoHashMap([64]u8, Material).init(alloc);
+        // var materials = std.AutoHashMap([64]u8, Material).init(alloc);
+        var materials = std.StringHashMap(Material).init(alloc);
         try materials.ensureTotalCapacity(@intCast(config.database.len));
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
         try asset_map.ensureTotalCapacity(@intCast(config.database.len));
@@ -44,7 +43,6 @@ pub const MaterialManager = struct {
             try asset_map.putNoClobber(material_asset.guid, material_asset);
         }
         return MaterialManager{
-            .map = map,
             .materials = materials,
             .arena = arena,
             .material_asset_map = asset_map,
@@ -58,9 +56,8 @@ pub const MaterialManager = struct {
         var alloc = arena.allocator();
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
-        var map = std.AutoArrayHashMap(Material, std.ArrayList(*sf.Mesh)).init(alloc);
-        try map.ensureTotalCapacity(@intCast(paths.len));
-        var materials = std.AutoHashMap([64]u8, Material).init(alloc);
+        // var materials = std.AutoHashMap([64]u8, Material).init(alloc);
+        var materials = std.StringHashMap(Material).init(alloc);
         try materials.ensureTotalCapacity(@intCast(paths.len));
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
         try asset_map.ensureTotalCapacity(@intCast(paths.len));
@@ -71,7 +68,6 @@ pub const MaterialManager = struct {
             try asset_map.putNoClobber(material_asset.guid, material_asset);
         }
         return MaterialManager{
-            .map = map,
             .materials = materials,
             .arena = arena,
             .material_asset_map = asset_map,
@@ -84,17 +80,14 @@ pub const MaterialManager = struct {
         system.arena.deinit();
     }
 
-    pub fn add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !void {
+    pub fn add_material(system: *MaterialManager, allocator: std.mem.Allocator, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !void {
         if (system.default_material == null) {
             system.default_material = Material.create_default(texture_system, gctx);
         }
         const guid = sf.AssetManager.generate_guid(name);
-        if (!system.materials.contains(guid)) {
-            var arena = system.arena.allocator();
-            var material = Material.create(gctx, texture_system, layout, uniform_size, texture_guid);
-            try system.materials.putNoClobber(guid, material);
-            var meshes = try std.ArrayList(*sf.Mesh).initCapacity(arena, DEFAULT_MESH_LIST_CAPACITY);
-            try system.map.putNoClobber(material, meshes);
+        if (!system.materials.contains(name)) {
+            var material = try Material.create(allocator, gctx, name, texture_system, layout, uniform_size, texture_guid);
+            try system.materials.put(name, material);
             log.info("Added material at path {s} with guid\n{d}", .{ name, guid });
         }
     }
@@ -104,33 +97,21 @@ pub const MaterialManager = struct {
             system.default_material = Material.create_default(texture_system, gctx);
         }
         if (!system.materials.contains(guid)) {
-            var arena = system.arena.allocator();
-            var material = Material.create(gctx, texture_system, layout, uniform_size, texture_name);
-            try system.materials.putNoClobber(guid, material);
-            var meshes = try std.ArrayList(*sf.Mesh).initCapacity(arena, DEFAULT_MESH_LIST_CAPACITY);
-            try system.map.putNoClobber(material, meshes);
+            // TODO: material name
+            var material = Material.create(gctx, texture_name, texture_system, layout, uniform_size, texture_name);
+            try system.materials.putNoClobber("shhhh", material);
             log.info("Added material with guid\n{d}", .{guid});
         }
-    }
-
-    pub fn add_material_to_mesh(system: *MaterialManager, material: *Material, mesh: *sf.Mesh) !void {
-        var list = system.map.getPtr(material.*);
-        try list.?.append(mesh);
-    }
-
-    pub fn add_material_to_mesh_by_name(system: *MaterialManager, name: [:0]const u8, mesh: *sf.Mesh) !void {
-        const guid = sf.AssetManager.generate_guid(name);
-        const material = system.materials.getPtr(guid).?;
-        try add_material_to_mesh(system, material, mesh);
     }
 };
 
 pub const Material = struct {
+    name: [64]u8,
     bind_group: zgpu.BindGroupHandle,
     sampler: zgpu.SamplerHandle, // in case we need it later
 
     // TODO: make bind group configurable
-    pub fn create_tex_name(gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) Material {
+    pub fn create_tex_name(gctx: *zgpu.GraphicsContext, name: [:0]const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) Material {
         // bind group
         const local_bgl = gctx.createBindGroupLayout(layout);
         defer gctx.releaseResource(local_bgl);
@@ -145,14 +126,17 @@ pub const Material = struct {
             .{ .binding = 1, .texture_view_handle = sf.TextureManager.get_texture_by_name(texture_system, texture_name).view },
             .{ .binding = 2, .sampler_handle = sampler },
         });
+        var mat_name: [64]u8 = undefined;
+        std.mem.copyForwards(u8, &mat_name, name);
         var material = Material{
+            .name = mat_name,
             .bind_group = local_bg,
             .sampler = sampler,
         };
         return material;
     }
 
-    pub fn create(gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) Material {
+    pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, name: [:0]const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !Material {
         const local_bgl = gctx.createBindGroupLayout(layout);
         defer gctx.releaseResource(local_bgl);
         // Create a sampler.
@@ -166,7 +150,14 @@ pub const Material = struct {
             .{ .binding = 1, .texture_view_handle = sf.TextureManager.get_texture(texture_system, texture_guid).view },
             .{ .binding = 2, .sampler_handle = sampler },
         });
+        _ = allocator;
+        // var mat_name = try allocator.alloc(u8, name.len);
+        // @memcpy(mat_name, name);
+        var mat_name: [64]u8 = undefined;
+        std.mem.copyForwards(u8, &mat_name, name);
+        // std.mem.copyForwards(u8, mat_name, name);
         var material = Material{
+            .name = mat_name,
             .bind_group = local_bg,
             .sampler = sampler,
         };
@@ -193,7 +184,10 @@ pub const Material = struct {
             .{ .binding = 1, .texture_view_handle = texture_manager.default_texture.?.view },
             .{ .binding = 2, .sampler_handle = sampler },
         });
+        var mat_name: [64]u8 = undefined;
+        std.mem.copyForwards(u8, &mat_name, "defalt");
         var material = Material{
+            .name = mat_name,
             .bind_group = local_bg,
             .sampler = sampler,
         };

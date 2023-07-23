@@ -1,16 +1,19 @@
 const zm = @import("zmath");
 const std = @import("std");
+const zgpu = @import("zgpu");
 
 pub const ComponentTypes = enum {
     transform,
     position,
     mesh,
+    material,
 };
 
 pub const name_type_map = std.ComptimeStringMap(ComponentTypes, .{
     .{ "scene.components.Transform", .transform },
     .{ "scene.components.Position", .position },
     .{ "scene.components.Mesh", .mesh },
+    .{ "renderer.material.Material", .material },
 });
 
 pub const Transform = extern struct {

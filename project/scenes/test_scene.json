@@ -1,1 +1,123 @@
-{"entities":[{"name":"Child","path":"Root.Child","id":519,"components":[{"name":"scene.components.Transform","value":{"matrix":[1.0e+00,0.0e+00,0.0e+00,0.0e+00,0.0e+00,1.0e+00,0.0e+00,0.0e+00,0.0e+00,0.0e+00,1.0e+00,0.0e+00,0.0e+00,0.0e+00,0.0e+00,1.0e+00]}},{"name":"scene.components.Position","value":{"vector":[0.0e+00,1.0e+00,0.0e+00]}}],"tags":["scene.tags.TestTag"]},{"name":"Grandchild","path":"Root.Child.Grandchild","id":520,"components":[{"name":"scene.components.Transform","value":{"matrix":[1.0e+00,0.0e+00,0.0e+00,0.0e+00,0.0e+00,1.0e+00,0.0e+00,0.0e+00,0.0e+00,0.0e+00,1.0e+00,0.0e+00,0.0e+00,0.0e+00,0.0e+00,1.0e+00]}},{"name":"scene.components.Position","value":{"vector":[0.0e+00,1.0e+00,0.0e+00]}}],"tags":["scene.tags.TestTag"]}], "tags":["scene.tags.TestTag"],"components":["scene.components.Transform", "scene.components.Position"]}
+{
+    "world": {
+        "entities": [
+            {
+                "name": "Child",
+                "path": "Root.Child",
+                "id": 519,
+                "components": [
+                    {
+                        "name": "scene.components.Transform",
+                        "value": {
+                            "matrix": [
+                                1.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                1.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                1.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                1.0e+00
+                            ]
+                        }
+                    },
+                    {
+                        "name": "scene.components.Position",
+                        "value": {
+                            "vector": [
+                                0.0e+00,
+                                1.0e+00,
+                                0.0e+00
+                            ]
+                        }
+                    },
+                    {
+                        "name": "renderer.material.Material",
+                        "value": {
+                            "path": "project/materials/material.json"
+                        }
+                    },
+                    {
+                        "name": "scene.components.Mesh",
+                        "value": {
+                            "path": "project/meshes/cube.json"
+                        }
+                    }
+                ],
+                "tags": [
+                    "scene.tags.TestTag"
+                ]
+            },
+            {
+                "name": "Grandchild",
+                "path": "Root.Child.Grandchild",
+                "id": 520,
+                "components": [
+                    {
+                        "name": "scene.components.Transform",
+                        "value": {
+                            "matrix": [
+                                1.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                1.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                1.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                0.0e+00,
+                                1.0e+00
+                            ]
+                        }
+                    },
+                    {
+                        "name": "scene.components.Position",
+                        "value": {
+                            "vector": [
+                                0.0e+00,
+                                1.0e+00,
+                                0.0e+00
+                            ]
+                        }
+                    }
+                ],
+                "tags": [
+                    "scene.tags.TestTag"
+                ]
+            }
+        ],
+        "tags": [
+            "scene.tags.TestTag"
+        ],
+        "components": [
+            "scene.components.Transform",
+            "scene.components.Position",
+            "scene.components.Mesh",
+            "renderer.material.Material"
+        ]
+    },
+    "meshes":[{
+        "geometry_path":"project/meshes/cube.json",
+        "material_path":"project/materials/material.json",
+        "texture_path":"assets/textures/cobblestone.png"
+    },
+    {
+        "geometry_path":"project/meshes/helmet.json",
+        "material_path":"project/materials/material.json",
+        "texture_path":"assets/textures/cobblestone.png"
+    }]
+}

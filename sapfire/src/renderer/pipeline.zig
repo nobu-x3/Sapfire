@@ -48,12 +48,16 @@ const wgsl_fs = wgsl_common ++
 
 pub const PipelineSystem = struct {
     pipelines: std.ArrayList(Pipeline),
+    material_pipeline_map: std.StringHashMap(Pipeline),
     arena: std.heap.ArenaAllocator,
 
     pub fn init(allocator: std.mem.Allocator) !PipelineSystem {
         var arena = std.heap.ArenaAllocator.init(allocator);
-        var pipelines = try std.ArrayList(Pipeline).initCapacity(arena.allocator(), 8);
+        var material_pipeline_map = std.StringHashMap(Pipeline).init(allocator);
+        try material_pipeline_map.ensureTotalCapacity(256);
+        var pipelines = std.ArrayList(Pipeline).init(allocator);
         return PipelineSystem{
+            .material_pipeline_map = material_pipeline_map,
             .arena = arena,
             .pipelines = pipelines,
         };
@@ -76,33 +80,21 @@ pub const PipelineSystem = struct {
         var pipeline: Pipeline = undefined;
         // pipeline_create(system.arena, gctx, bgls[0..layout.len], async_shader_compilation, &pipeline.handle);
         Pipeline.create(system.arena.allocator(), gctx, layout, async_shader_compilation, &pipeline.handle);
-        pipeline.materials = std.ArrayList(*const mat.Material).init(system.arena.allocator());
         try system.pipelines.append(pipeline);
         return &system.pipelines.items[system.pipelines.items.len - 1];
     }
 
-    pub fn add_material(system: *PipelineSystem, pipeline: *const Pipeline, material: *const mat.Material) !void {
-        var found: bool = false;
-        var pipeline_index: usize = 0;
-        for (system.pipelines.items, 0..) |pipe, index| {
-            if (pipe.handle.id == pipeline.handle.id) {
-                // try pipe.materials.append(material);
-                pipeline_index = index;
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            try system.pipelines.items[pipeline_index].materials.append(material);
-            return;
-        }
-        log.err("Non-existent pipeline passed to pipeline_system_add_material()", .{});
+    pub fn add_material(system: *PipelineSystem, pipeline: Pipeline, name: [:0]const u8) !void {
+        if (system.material_pipeline_map.contains(name[0..])) return;
+        try system.material_pipeline_map.put(name[0..], pipeline);
+        const p = system.material_pipeline_map.get(name[0..]).?;
+        _ = p;
+        std.log.info("Added.", .{});
     }
 };
 
 pub const Pipeline = struct {
     handle: zgpu.RenderPipelineHandle,
-    materials: std.ArrayList(*const mat.Material),
 
     // TODO: make shader modules configurable
     pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, bind_group_layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool, out_pipeline_handle: *zgpu.RenderPipelineHandle) void {
