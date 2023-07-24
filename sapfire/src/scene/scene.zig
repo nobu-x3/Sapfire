@@ -144,7 +144,7 @@ pub const Scene = struct {
                 .size = @sizeOf(sf.GlobalUniforms),
             },
         });
-        const scene_entity = try world.deserialize(arena.allocator(), &scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
+        const scene_entity = try world.deserialize(&scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
         const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
         // Create an index buffer.
         const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
@@ -197,16 +197,14 @@ pub const Scene = struct {
             const materials = ecs.field(&it, Material, 2).?;
             const meshes = ecs.field(&it, Mesh, 3).?;
             const entities = it.entities();
-            // var current_pipeline: sf.Pipeline = undefined;
+            var current_pipeline: sf.Pipeline = undefined;
             for (0..it.count()) |i| {
                 const mat = materials[i];
-                const pipe = self.pipeline_system.material_pipeline_map.get(&mat.name).?;
-                _ = pipe;
-                // if (pipe.handle.id != current_pipeline.handle.id) {
-                //     current_pipeline = pipe;
-                // TODO: bind
-                // }
-                // _ = mat;
+                const pipe = self.pipeline_system.material_pipeline_map.get(mat.guid).?;
+                if (pipe.handle.id != current_pipeline.handle.id) {
+                    current_pipeline = pipe;
+                    // TODO: bind
+                }
                 // TODO: rest of rendering
                 _ = transforms;
                 _ = meshes;
@@ -433,7 +431,6 @@ pub const World = struct {
 
     pub fn deserialize(
         self: *World,
-        allocator: std.mem.Allocator,
         scene_asset: *const SceneAsset,
         gctx: *zgpu.GraphicsContext,
         global_uniform_bgl: zgpu.BindGroupLayoutHandle,
@@ -461,15 +458,15 @@ pub const World = struct {
         for (scene_asset.material_paths.items) |material_path| {
             const material_asset = material_manager.material_asset_map.get(sf.AssetManager.generate_guid(material_path)).?;
             // TODO: look into making multiple textures per material
-            try sf.MaterialManager.add_material(material_manager, allocator, material_path, gctx, texture_manager, &.{
+            try sf.MaterialManager.add_material(material_manager, material_path, gctx, texture_manager, &.{
                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                 zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
                 zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
             }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
-            // var mat0 = scene.material_manager.materials.getPtr(sf.AssetManager.generate_guid(material_path)).?;
-            // var mat0 = material_manager.materials.getPtr(material_path).?;
-            try pipeline_system.add_material(pipeline.*, material_path);
+            try pipeline_system.add_material(pipeline.*, sf.AssetManager.generate_guid(material_path));
         }
+        try self.component_add(*sf.PipelineSystem);
+        _ = ecs.set(self.id, ecs.id(*sf.PipelineSystem), *sf.PipelineSystem, pipeline_system);
         for (scene_asset.geometry_paths.items) |geometry_path| {
             _ = try sf.MeshAsset.load_mesh(geometry_path, mesh_manager, meshes, vertices, indices);
         }

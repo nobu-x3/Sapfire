@@ -80,13 +80,13 @@ pub const MaterialManager = struct {
         system.arena.deinit();
     }
 
-    pub fn add_material(system: *MaterialManager, allocator: std.mem.Allocator, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !void {
+    pub fn add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !void {
         if (system.default_material == null) {
             system.default_material = Material.create_default(texture_system, gctx);
         }
         const guid = sf.AssetManager.generate_guid(name);
         if (!system.materials.contains(name)) {
-            var material = try Material.create(allocator, gctx, name, texture_system, layout, uniform_size, texture_guid);
+            var material = try Material.create(gctx, name, texture_system, layout, uniform_size, texture_guid);
             try system.materials.put(name, material);
             log.info("Added material at path {s} with guid\n{d}", .{ name, guid });
         }
@@ -106,7 +106,7 @@ pub const MaterialManager = struct {
 };
 
 pub const Material = struct {
-    name: [64]u8,
+    guid: [64]u8,
     bind_group: zgpu.BindGroupHandle,
     sampler: zgpu.SamplerHandle, // in case we need it later
 
@@ -126,17 +126,15 @@ pub const Material = struct {
             .{ .binding = 1, .texture_view_handle = sf.TextureManager.get_texture_by_name(texture_system, texture_name).view },
             .{ .binding = 2, .sampler_handle = sampler },
         });
-        var mat_name: [64]u8 = undefined;
-        std.mem.copyForwards(u8, &mat_name, name);
         var material = Material{
-            .name = mat_name,
+            .guid = sf.AssetManager.generate_guid(name),
             .bind_group = local_bg,
             .sampler = sampler,
         };
         return material;
     }
 
-    pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, name: [:0]const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !Material {
+    pub fn create(gctx: *zgpu.GraphicsContext, name: [:0]const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !Material {
         const local_bgl = gctx.createBindGroupLayout(layout);
         defer gctx.releaseResource(local_bgl);
         // Create a sampler.
@@ -150,14 +148,8 @@ pub const Material = struct {
             .{ .binding = 1, .texture_view_handle = sf.TextureManager.get_texture(texture_system, texture_guid).view },
             .{ .binding = 2, .sampler_handle = sampler },
         });
-        _ = allocator;
-        // var mat_name = try allocator.alloc(u8, name.len);
-        // @memcpy(mat_name, name);
-        var mat_name: [64]u8 = undefined;
-        std.mem.copyForwards(u8, &mat_name, name);
-        // std.mem.copyForwards(u8, mat_name, name);
         var material = Material{
-            .name = mat_name,
+            .guid = sf.AssetManager.generate_guid(name),
             .bind_group = local_bg,
             .sampler = sampler,
         };
@@ -184,10 +176,8 @@ pub const Material = struct {
             .{ .binding = 1, .texture_view_handle = texture_manager.default_texture.?.view },
             .{ .binding = 2, .sampler_handle = sampler },
         });
-        var mat_name: [64]u8 = undefined;
-        std.mem.copyForwards(u8, &mat_name, "defalt");
         var material = Material{
-            .name = mat_name,
+            .guid = sf.AssetManager.generate_guid("default"),
             .bind_group = local_bg,
             .sampler = sampler,
         };

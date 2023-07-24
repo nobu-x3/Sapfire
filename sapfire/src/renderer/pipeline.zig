@@ -48,12 +48,12 @@ const wgsl_fs = wgsl_common ++
 
 pub const PipelineSystem = struct {
     pipelines: std.ArrayList(Pipeline),
-    material_pipeline_map: std.StringHashMap(Pipeline),
+    material_pipeline_map: std.AutoHashMap([64]u8, Pipeline),
     arena: std.heap.ArenaAllocator,
 
     pub fn init(allocator: std.mem.Allocator) !PipelineSystem {
         var arena = std.heap.ArenaAllocator.init(allocator);
-        var material_pipeline_map = std.StringHashMap(Pipeline).init(allocator);
+        var material_pipeline_map = std.AutoHashMap([64]u8, Pipeline).init(allocator);
         try material_pipeline_map.ensureTotalCapacity(256);
         var pipelines = std.ArrayList(Pipeline).init(allocator);
         return PipelineSystem{
@@ -84,12 +84,9 @@ pub const PipelineSystem = struct {
         return &system.pipelines.items[system.pipelines.items.len - 1];
     }
 
-    pub fn add_material(system: *PipelineSystem, pipeline: Pipeline, name: [:0]const u8) !void {
-        if (system.material_pipeline_map.contains(name[0..])) return;
-        try system.material_pipeline_map.put(name[0..], pipeline);
-        const p = system.material_pipeline_map.get(name[0..]).?;
-        _ = p;
-        std.log.info("Added.", .{});
+    pub fn add_material(system: *PipelineSystem, pipeline: Pipeline, guid: [64]u8) !void {
+        if (system.material_pipeline_map.contains(guid)) return;
+        try system.material_pipeline_map.put(guid, pipeline);
     }
 };
 
