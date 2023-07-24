@@ -195,31 +195,6 @@ pub const Scene = struct {
 
     pub fn update(self: *Scene, delta_time: f32) !void {
         _ = ecs.progress(self.world.id, delta_time);
-        var query_desc = ecs.query_desc_t{};
-        query_desc.filter.terms[0] = .{ .id = ecs.id(Transform) };
-        query_desc.filter.terms[1] = .{ .id = ecs.id(Material) };
-        query_desc.filter.terms[2] = .{ .id = ecs.id(Mesh) };
-        var q = try ecs.query_init(self.world.id, &query_desc);
-        var it = ecs.query_iter(self.world.id, q);
-        while (ecs.query_next(&it)) {
-            const transforms = ecs.field(&it, Transform, 1).?;
-            const materials = ecs.field(&it, Material, 2).?;
-            const meshes = ecs.field(&it, Mesh, 3).?;
-            const entities = it.entities();
-            var current_pipeline: sf.Pipeline = undefined;
-            for (0..it.count()) |i| {
-                const mat = materials[i];
-                const pipe = self.pipeline_system.material_pipeline_map.get(mat.guid).?;
-                if (pipe.handle.id != current_pipeline.handle.id) {
-                    current_pipeline = pipe;
-                    // TODO: bind
-                }
-                // TODO: rest of rendering
-                _ = transforms;
-                _ = meshes;
-                _ = entities;
-            }
-        }
     }
 
     fn update_world_transforms(it: *ecs.iter_t) callconv(.C) void {

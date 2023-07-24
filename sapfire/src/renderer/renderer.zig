@@ -1,5 +1,6 @@
 const std = @import("std");
 const zgpu = @import("zgpu");
+const ecs = @import("zflecs");
 const glfw = @import("zglfw");
 const stbi = @import("zstbi");
 const zm = @import("zmath");
@@ -15,13 +16,13 @@ const sf = struct {
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("../core/asset_manager.zig");
     usingnamespace @import("../core/time.zig");
+    usingnamespace @import("../scene.zig");
 };
 
 pub const RendererState = struct {
     arena: std.heap.ArenaAllocator,
     gctx: *zgpu.GraphicsContext,
     depth_texture: sf.Texture,
-    // current_simple_scene: sf.SimpleScene,
     mip_level: i32 = 0,
     camera: sf.Camera = .{},
     mouse: struct {
@@ -33,10 +34,8 @@ pub const RendererState = struct {
         var arena = std.heap.ArenaAllocator.init(allocator);
         const gctx = try zgpu.GraphicsContext.create(arena.allocator(), window);
         const depth_texture = sf.Texture.create_depth(gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
-        // const scene = try sf.SimpleScene.create(arena.allocator(), "project/scenes/simple_scene.json", gctx);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
-            // .current_simple_scene = scene,
             .gctx = gctx,
             .depth_texture = depth_texture,
             .arena = arena,
@@ -54,14 +53,11 @@ pub const RendererState = struct {
         return renderer_state;
     }
 
-    pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, scene_path: [:0]const u8, fb_width: u32, fb_height: u32) !*RendererState {
+    pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, fb_width: u32, fb_height: u32) !*RendererState {
         var arena = std.heap.ArenaAllocator.init(allocator);
         const depth_texture = sf.Texture.create_depth(gctx, fb_width, fb_height);
-        // const scene = try sf.SimpleScene.create(arena.allocator(), scene_path, gctx);
-        _ = scene_path;
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
-            // .current_simple_scene = scene,
             .gctx = gctx,
             .depth_texture = depth_texture,
             .arena = arena,
@@ -72,8 +68,6 @@ pub const RendererState = struct {
     // pub fn load_scene(state: *RendererState, scene_config: []const u8) void {}
 
     pub fn destroy(renderer_state: *RendererState, allocator: std.mem.Allocator) void {
-        // renderer_state.current_simple_scene.destroy();
-        // renderer_state.gctx.destroy(allocator);
         renderer_state.arena.deinit();
         allocator.destroy(renderer_state);
     }
@@ -113,10 +107,6 @@ pub const RendererState = struct {
             cam_pos -= right;
         }
         zm.storeArr3(&renderer_state.camera.position, cam_pos);
-        // for (renderer_state.current_simple_scene.meshes.items, 0..) |_, index| {
-        //     // renderer_state.meshes.items[index].transform.update();
-        //     sf.Transform.update(&renderer_state.current_simple_scene.meshes.items[index].transform);
-        // }
     }
 
     pub fn draw(renderer_state: *RendererState) !void {
@@ -175,47 +165,6 @@ pub const RendererState = struct {
                 glob.slice[0] = .{
                     .view_projection = zm.transpose(cam_world_to_clip),
                 };
-                // for (renderer_state.current_simple_scene.pipeline_system.pipelines.items) |pipe| {
-                //     const pipeline = gctx.lookupResource(pipe.handle) orelse break :pass;
-                //     pass.setPipeline(pipeline);
-                //     for (pipe.materials.items) |material| {
-                //         const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
-                //         const meshes = renderer_state.current_simple_scene.material_manager.map.getPtr(material.*).?;
-                //         for (meshes.items) |item| {
-                //             const object_to_world = item.transform.get_world_mat();
-                //             const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
-                //             mem.slice[0] = .{
-                //                 .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
-                //                 .mip_level = @floatFromInt(renderer_state.mip_level),
-                //                 .model = zm.transpose(object_to_world),
-                //             };
-                //             // pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
-                //             pass.setBindGroup(1, bind_group, &.{mem.offset});
-                //             pass.drawIndexed(item.num_indices, 1, item.index_offset, item.vertex_offset, 0);
-                //         }
-                //     }
-                // }
-            }
-            { // gui pass
-                const gui_pass = zgpu.beginRenderPassSimple(encoder, .load, back_buffer_view, null, null, null);
-                defer zgpu.endReleasePass(gui_pass);
-                zgui.backend.newFrame(fb_width, fb_height);
-                if (zgui.begin("Stats", .{ .flags = .{ .always_auto_resize = true } })) {
-                    zgui.bulletText(
-                        "Average :  {d:.3} ms/frame ({d:.1} fps)",
-                        .{ renderer_state.gctx.stats.average_cpu_time, renderer_state.gctx.stats.fps },
-                    );
-                }
-                zgui.end();
-                if (zgui.begin("Scene switching", .{ .flags = .{ .always_auto_resize = true } })) {
-                    // if (zgui.button("Scene 1", .{ .w = 100.0, .h = 100.0 })) {
-                    //     renderer_state.current_simple_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene.json", renderer_state.gctx);
-                    // } else if (zgui.button("Scene 2", .{ .w = 100.0, .h = 100.0 })) {
-                    //     renderer_state.current_simple_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene1.json", renderer_state.gctx);
-                    // }
-                }
-                zgui.end();
-                zgui.backend.draw(gui_pass);
             }
             break :commands encoder.finish(null);
         };
@@ -230,7 +179,7 @@ pub const RendererState = struct {
         }
     }
 
-    pub fn draw_to_texture(renderer_state: *RendererState, color_view: *zgpu.wgpu.TextureView, fb_width: u32, fb_height: u32) !void {
+    pub fn draw_to_texture(renderer_state: *RendererState, color_view: *zgpu.wgpu.TextureView, fb_width: u32, fb_height: u32, scene: *sf.Scene) !void {
         const gctx = renderer_state.gctx;
         const cam_world_to_view = zm.lookAtLh(
             zm.loadArr3(renderer_state.camera.position),
@@ -244,90 +193,88 @@ pub const RendererState = struct {
             200.0,
         );
         const cam_world_to_clip = zm.mul(cam_world_to_view, cam_view_to_clip);
-        _ = color_view;
-        _ = cam_world_to_clip;
         const back_buffer_view = gctx.swapchain.getCurrentTextureView();
         defer back_buffer_view.release();
         const commands = commands: {
             const encoder = gctx.device.createCommandEncoder(null);
             defer encoder.release();
             // Main pass.
-            // pass: {
-            //     const vb_info = gctx.lookupResourceInfo(renderer_state.current_simple_scene.vertex_buffer) orelse break :pass;
-            //     const ib_info = gctx.lookupResourceInfo(renderer_state.current_simple_scene.index_buffer) orelse break :pass;
-            //     const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
-            //     const global_uniform_bind_group = gctx.lookupResource(renderer_state.current_simple_scene.global_uniform_bind_group) orelse break :pass;
-            //     const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
-            //         .view = color_view.*,
-            //         .load_op = .clear,
-            //         .store_op = .store,
-            //     }};
-            //     const depth_attachment = zgpu.wgpu.RenderPassDepthStencilAttachment{
-            //         .view = depth_view,
-            //         .depth_load_op = .clear,
-            //         .depth_store_op = .store,
-            //         .depth_clear_value = 1.0,
-            //     };
-            //     const render_pass_info = zgpu.wgpu.RenderPassDescriptor{
-            //         .color_attachment_count = color_attachments.len,
-            //         .color_attachments = &color_attachments,
-            //         .depth_stencil_attachment = &depth_attachment,
-            //     };
-            //     const pass = encoder.beginRenderPass(render_pass_info);
-            //     defer {
-            //         pass.end();
-            //         pass.release();
-            //     }
-            //     pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
-            //     pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
-            //     // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
+            pass: {
+                const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer) orelse break :pass;
+                const ib_info = gctx.lookupResourceInfo(scene.index_buffer) orelse break :pass;
+                const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
+                const global_uniform_bind_group = gctx.lookupResource(scene.global_uniform_bind_group) orelse break :pass;
+                const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
+                    .view = color_view.*,
+                    .load_op = .clear,
+                    .store_op = .store,
+                }};
+                const depth_attachment = zgpu.wgpu.RenderPassDepthStencilAttachment{
+                    .view = depth_view,
+                    .depth_load_op = .clear,
+                    .depth_store_op = .store,
+                    .depth_clear_value = 1.0,
+                };
+                const render_pass_info = zgpu.wgpu.RenderPassDescriptor{
+                    .color_attachment_count = color_attachments.len,
+                    .color_attachments = &color_attachments,
+                    .depth_stencil_attachment = &depth_attachment,
+                };
+                const pass = encoder.beginRenderPass(render_pass_info);
+                defer {
+                    pass.end();
+                    pass.release();
+                }
+                pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
+                pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
+                // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
 
-            //     const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
-            //     glob.slice[0] = .{
-            //         .view_projection = zm.transpose(cam_world_to_clip),
-            //     };
-            //     for (renderer_state.current_simple_scene.pipeline_system.pipelines.items) |pipe| {
-            //         const pipeline = gctx.lookupResource(pipe.handle) orelse break :pass;
-            //         pass.setPipeline(pipeline);
-            //         for (pipe.materials.items) |material| {
-            //             const bind_group = gctx.lookupResource(material.bind_group) orelse break :pass;
-            //             const meshes = renderer_state.current_simple_scene.material_manager.map.getPtr(material.*).?;
-            //             for (meshes.items) |item| {
-            //                 const object_to_world = item.transform.get_world_mat();
-            //                 const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
-            //                 mem.slice[0] = .{
-            //                     .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
-            //                     .mip_level = @floatFromInt(renderer_state.mip_level),
-            //                     .model = zm.transpose(object_to_world),
-            //                 };
-            //                 pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
-            //                 pass.setBindGroup(1, bind_group, &.{mem.offset});
-            //                 pass.drawIndexed(item.num_indices, 1, item.index_offset, item.vertex_offset, 0);
-            //             }
-            //         }
-            //     }
-            // }
-            // { // gui pass
-            //     const gui_pass = zgpu.beginRenderPassSimple(encoder, .load, back_buffer_view, null, null, null);
-            //     defer zgpu.endReleasePass(gui_pass);
-            //     zgui.backend.newFrame(fb_width, fb_height);
-            //     if (zgui.begin("Stats", .{ .flags = .{ .always_auto_resize = true } })) {
-            //         zgui.bulletText(
-            //             "Average :  {d:.3} ms/frame ({d:.1} fps)",
-            //             .{ renderer_state.gctx.stats.average_cpu_time, renderer_state.gctx.stats.fps },
-            //         );
-            //     }
-            //     zgui.end();
-            //     if (zgui.begin("Scene switching", .{ .flags = .{ .always_auto_resize = true } })) {
-            //         if (zgui.button("Scene 1", .{ .w = 100.0, .h = 100.0 })) {
-            //             renderer_state.current_simple_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene.json", renderer_state.gctx);
-            //         } else if (zgui.button("Scene 2", .{ .w = 100.0, .h = 100.0 })) {
-            //             renderer_state.current_simple_scene = try sf.SimpleScene.create(renderer_state.arena.allocator(), "project/scenes/simple_scene1.json", renderer_state.gctx);
-            //         }
-            //     }
-            //     zgui.end();
-            //     zgui.backend.draw(gui_pass);
-            // }
+                const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
+                glob.slice[0] = .{
+                    .view_projection = zm.transpose(cam_world_to_clip),
+                };
+                pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
+                var query_desc = ecs.query_desc_t{};
+                query_desc.filter.terms[0] = .{ .id = ecs.id(sf.Components.Transform) };
+                query_desc.filter.terms[1] = .{ .id = ecs.id(sf.Material) };
+                query_desc.filter.terms[2] = .{ .id = ecs.id(sf.Components.Mesh) };
+                var q = try ecs.query_init(scene.world.id, &query_desc);
+                var it = ecs.query_iter(scene.world.id, q);
+                while (ecs.query_next(&it)) {
+                    const transforms = ecs.field(&it, sf.Components.Transform, 1).?;
+                    const materials = ecs.field(&it, sf.Material, 2).?;
+                    const meshes = ecs.field(&it, sf.Components.Mesh, 3).?;
+                    var current_pipeline: sf.Pipeline = undefined;
+                    var current_material: sf.Material = undefined;
+                    for (0..it.count()) |i| {
+                        const mat = materials[i];
+                        const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
+                        if (pipe.handle.id != current_pipeline.handle.id) {
+                            current_pipeline = pipe;
+                            const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
+                            pass.setPipeline(pipeline);
+                        }
+                        var should_bind_group = false;
+
+                        if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
+                            current_material = mat;
+                            should_bind_group = true;
+                        }
+                        const object_to_world = transforms[i].world;
+                        const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
+                        mem.slice[0] = .{
+                            .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
+                            .mip_level = @floatFromInt(renderer_state.mip_level),
+                            .model = zm.transpose(object_to_world),
+                        };
+                        if (should_bind_group) {
+                            const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
+                            pass.setBindGroup(1, bind_group, &.{mem.offset});
+                        }
+                        pass.drawIndexed(meshes[i].num_indices, 1, meshes[i].index_offset, meshes[i].vertex_offset, 0);
+                    }
+                }
+            }
             break :commands encoder.finish(null);
         };
         defer commands.release();

@@ -50,11 +50,13 @@ pub const Editor = struct {
             .height = gctx.swapchain_descriptor.height,
         }, gctx.swapchain_descriptor.format);
         var scene = try sapfire.scene.Scene.create(allocator, gctx, "project/scenes/test_scene.json");
+        var game_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
         return Editor{
             .window = window,
             .gctx = gctx,
             .framebuffer = framebuffer,
             .current_scene = scene,
+            .game_renderer = game_renderer,
         };
     }
 
@@ -85,7 +87,7 @@ pub const Editor = struct {
                             self.game_renderer.?.update(self.window);
                         }
                         size = zgui.getWindowSize();
-                        try self.game_renderer.?.draw_to_texture(&color_view, @intFromFloat(size[0]), @intFromFloat(size[1]));
+                        try self.game_renderer.?.draw_to_texture(&color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
                         zgui.image(color_view, .{ .w = size[0], .h = size[1] });
                     }
                     zgui.end();
@@ -104,11 +106,10 @@ pub const Editor = struct {
                             defer nfd.freePath(path);
                             // TODO: fix scene deinit
                             // self.game_renderer.current_scene.destroy();
-                            if (self.game_renderer == null) {
-                                self.game_renderer = try RendererState.create_with_gctx(allocator, self.gctx, path, 800, 600);
-                            } else {
-                                // self.game_renderer.?.current_simple_scene = try sapfire.rendering.SimpleScene.create(allocator, path, self.gctx);
-                            }
+                            self.current_scene.destroy();
+                            self.current_scene = try sapfire.scene.Scene.create(allocator, gctx, path);
+                            self.game_renderer.?.destroy(allocator);
+                            self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, 800, 600);
                         }
                     }
                 }
