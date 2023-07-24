@@ -158,6 +158,15 @@ pub const Scene = struct {
             sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
             ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &sys_desc);
         }
+        // {
+        //     var sys_desc = ecs.system_desc_t{};
+        //     sys_desc.callback = Scene.render;
+        //     sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
+        //     sys_desc.query.filter.terms[1] = .{ .id = ecs.id(Mesh) };
+        //     sys_desc.query.filter.terms[2] = .{ .id = ecs.id(Material) };
+        //     sys_desc.query.filter.terms[3] = .{ .id = ecs.id(sf.PipelineSystem), .src = .{ .id = ecs.id(sf.PipelineSystem) } };
+        //     ecs.SYSTEM(world.id, "Render", ecs.PreFrame, &sys_desc);
+        // }
         // var first_entt = world.entity_new_with_parent(scene_entity, "Child");
         // _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
         // _ = world.entity_new_with_parent(first_entt, "Grandchild");
@@ -224,6 +233,28 @@ pub const Scene = struct {
             }
         }
     }
+
+    // fn render(it: *ecs.iter_t) callconv(.C) void {
+    //     // const pipeline_system = ecs.get(it.world, ecs.id(sf.PipelineSystem), sf.PipelineSystem).?;
+    //     const transforms = ecs.field(it, Transform, 1).?;
+    //     const materials = ecs.field(it, Material, 2).?;
+    //     const meshes = ecs.field(it, Mesh, 3).?;
+    //     const pipeline_system = ecs.field(it, sf.PipelineSystem, 4).?[0];
+    //     const entities = it.entities();
+    //     var current_pipeline: sf.Pipeline = undefined;
+    //     for (0..it.count()) |i| {
+    //         const mat = materials[i];
+    //         const pipe = pipeline_system.material_pipeline_map.get(mat.guid).?;
+    //         if (pipe.handle.id != current_pipeline.handle.id) {
+    //             current_pipeline = pipe;
+    //             // TODO: bind
+    //         }
+    //         // TODO: rest of rendering
+    //         _ = transforms;
+    //         _ = meshes;
+    //         _ = entities;
+    //     }
+    // }
 
     pub fn destroy(self: *Scene) void {
         self.world.deinit();
@@ -465,8 +496,9 @@ pub const World = struct {
             }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
             try pipeline_system.add_material(pipeline.*, sf.AssetManager.generate_guid(material_path));
         }
-        try self.component_add(*sf.PipelineSystem);
-        _ = ecs.set(self.id, ecs.id(*sf.PipelineSystem), *sf.PipelineSystem, pipeline_system);
+        // try self.component_add(sf.PipelineSystem);
+        // ecs.add(self.id, ecs.id(sf.PipelineSystem), sf.PipelineSystem);
+        // _ = ecs.set(self.id, ecs.id(sf.PipelineSystem), sf.PipelineSystem, pipeline_system.*);
         for (scene_asset.geometry_paths.items) |geometry_path| {
             _ = try sf.MeshAsset.load_mesh(geometry_path, mesh_manager, meshes, vertices, indices);
         }
