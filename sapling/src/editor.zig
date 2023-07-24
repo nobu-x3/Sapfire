@@ -73,7 +73,6 @@ pub const Editor = struct {
                 zgui.setNextWindowPos(.{ .x = 0.0, .y = 0.0, .cond = .first_use_ever });
                 zgui.setNextWindowSize(.{ .w = 800, .h = 600, .cond = .first_use_ever });
                 var size = [2]f32{ 0.0, 0.0 };
-                try self.current_scene.update(gctx.stats.delta_time);
                 if (self.game_renderer != null) {
                     if (zgui.begin("Game View", .{ .flags = .{
                         .no_move = true,
@@ -82,6 +81,7 @@ pub const Editor = struct {
                         .no_background = true,
                     } })) {
                         if (zgui.isWindowFocused(.{})) {
+                            try self.current_scene.update(gctx.stats.delta_time);
                             self.game_renderer.?.update(self.window);
                         }
                         size = zgui.getWindowSize();
