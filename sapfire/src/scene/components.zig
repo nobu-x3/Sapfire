@@ -28,6 +28,7 @@ pub const Position = extern struct {
 };
 
 pub const Mesh = struct {
+    guid: [64]u8,
     index_offset: u32,
     vertex_offset: i32,
     num_indices: u32,

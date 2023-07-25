@@ -40,6 +40,7 @@ pub const MeshAsset = struct {
             return mesh;
         }
         const mesh: Mesh = .{
+            .guid = guid,
             .index_offset = @intCast(out_indices.items.len),
             .vertex_offset = @intCast(out_vertices.items.len),
             .num_indices = @intCast(data.indices.items.len),

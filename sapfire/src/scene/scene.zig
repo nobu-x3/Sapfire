@@ -22,7 +22,7 @@ const sf = struct {
     usingnamespace @import("../renderer/texture.zig");
     usingnamespace @import("../renderer/pipeline.zig");
 };
-const ComponentValueTag = enum { matrix, vector, path };
+const ComponentValueTag = enum { matrix, vector, path, guid };
 
 const ParseComponent = struct {
     name: [:0]const u8,
@@ -30,6 +30,7 @@ const ParseComponent = struct {
         matrix: [16]f32,
         vector: [3]f32,
         path: [:0]const u8,
+        guid: [64]u8,
     },
 };
 
@@ -392,6 +393,12 @@ pub const World = struct {
                             } else if (std.mem.eql(u8, comp_name, "scene.components.Position")) {
                                 const pos = ecs.get(world_id, e, Position).?;
                                 try component_list.append(.{ .name = "scene.components.Position", .value = .{ .vector = .{ pos.x, pos.y, pos.z } } });
+                            } else if (std.mem.eql(u8, comp_name, "scene.components.Mesh")) {
+                                const mesh = ecs.get(world_id, e, Mesh).?;
+                                try component_list.append(.{ .name = "scene.components.Mesh", .value = .{ .guid = mesh.guid } });
+                            } else if (std.mem.eql(u8, comp_name, "renderer.material.Material")) {
+                                const material = ecs.get(world_id, e, Material).?;
+                                try component_list.append(.{ .name = "renderer.material.Material", .value = .{ .guid = material.guid } });
                             }
                         }
                     }
@@ -538,14 +545,11 @@ pub const World = struct {
                         );
                     },
                     .mesh => {
-                        const guid = asset.generate_guid(comp.value.path);
-                        const mesh = try mesh_manager.get_mesh(guid);
+                        const mesh = try mesh_manager.get_mesh(comp.value.guid);
                         _ = ecs.set(self.id, entity, Mesh, mesh);
                     },
                     .material => {
-                        const guid = asset.generate_guid(comp.value.path);
-                        log.info("GUID is: {d}", .{guid});
-                        _ = ecs.set(self.id, entity, Material, material_manager.materials.get(comp.value.path).?);
+                        _ = ecs.set(self.id, entity, Material, material_manager.materials.get(comp.value.guid).?);
                     },
                 }
             }

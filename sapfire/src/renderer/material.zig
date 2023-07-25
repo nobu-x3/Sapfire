@@ -11,8 +11,7 @@ const sf = struct {
 };
 
 pub const MaterialManager = struct {
-    // materials: std.AutoHashMap([64]u8, Material),
-    materials: std.StringHashMap(Material),
+    materials: std.AutoHashMap([64]u8, Material),
     material_asset_map: std.AutoHashMap([64]u8, MaterialAsset),
     arena: std.heap.ArenaAllocator,
     asset_arena: std.heap.ArenaAllocator,
@@ -33,8 +32,7 @@ pub const MaterialManager = struct {
             database: [][:0]const u8,
         };
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
-        // var materials = std.AutoHashMap([64]u8, Material).init(alloc);
-        var materials = std.StringHashMap(Material).init(alloc);
+        var materials = std.AutoHashMap([64]u8, Material).init(alloc);
         try materials.ensureTotalCapacity(@intCast(config.database.len));
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
         try asset_map.ensureTotalCapacity(@intCast(config.database.len));
@@ -56,8 +54,7 @@ pub const MaterialManager = struct {
         var alloc = arena.allocator();
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
-        // var materials = std.AutoHashMap([64]u8, Material).init(alloc);
-        var materials = std.StringHashMap(Material).init(alloc);
+        var materials = std.AutoHashMap([64]u8, Material).init(alloc);
         try materials.ensureTotalCapacity(@intCast(paths.len));
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
         try asset_map.ensureTotalCapacity(@intCast(paths.len));
@@ -85,9 +82,9 @@ pub const MaterialManager = struct {
             system.default_material = Material.create_default(texture_system, gctx);
         }
         const guid = sf.AssetManager.generate_guid(name);
-        if (!system.materials.contains(name)) {
+        if (!system.materials.contains(guid)) {
             var material = try Material.create(gctx, name, texture_system, layout, uniform_size, texture_guid);
-            try system.materials.put(name, material);
+            try system.materials.put(guid, material);
             log.info("Added material at path {s} with guid\n{d}", .{ name, guid });
         }
     }
@@ -99,7 +96,7 @@ pub const MaterialManager = struct {
         if (!system.materials.contains(guid)) {
             // TODO: material name
             var material = Material.create(gctx, texture_name, texture_system, layout, uniform_size, texture_name);
-            try system.materials.putNoClobber("shhhh", material);
+            try system.materials.putNoClobber(guid, material);
             log.info("Added material with guid\n{d}", .{guid});
         }
     }
