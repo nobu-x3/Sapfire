@@ -347,9 +347,11 @@ pub const World = struct {
         return ecs.get_target(world, target, ecs.ChildOf, 0);
     }
 
-    pub fn serialize(self: *World, allocator: std.mem.Allocator, file: *fs.File) !void {
+    pub fn serialize(self: *World, allocator: std.mem.Allocator, file_path: [:0]const u8) !void {
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
+        var file = try fs.cwd().createFile(file_path, .{});
+        defer file.close();
         var writer = file.writer();
         var filter_desc = ecs.filter_desc_t{};
         filter_desc.terms[0] = .{ .id = ecs.Any };

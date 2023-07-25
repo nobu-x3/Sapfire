@@ -17,6 +17,7 @@ pub const Editor = struct {
     game_renderer: ?*RendererState = null,
     framebuffer: Texture,
     current_scene: sapfire.scene.Scene,
+    current_scene_path: ?[:0]const u8 = null,
 
     pub fn create(allocator: std.mem.Allocator, project_path: [:0]const u8) !Editor {
         JobsManager.init();
@@ -71,10 +72,54 @@ pub const Editor = struct {
                     gctx.swapchain_descriptor.width,
                     gctx.swapchain_descriptor.height,
                 );
-
                 zgui.setNextWindowPos(.{ .x = 0.0, .y = 0.0, .cond = .first_use_ever });
                 zgui.setNextWindowSize(.{ .w = 800, .h = 600, .cond = .first_use_ever });
                 var size = [2]f32{ 0.0, 0.0 };
+                if (zgui.beginMainMenuBar()) {
+                    if (zgui.beginMenu("Scene", true)) {
+                        if (zgui.menuItem("Open", .{})) {
+                            const open_path = try nfd.openFileDialog("json", null);
+                            if (open_path) |path| {
+                                if (self.current_scene_path != null) {
+                                    nfd.freePath(self.current_scene_path.?);
+                                    self.current_scene_path = null;
+                                }
+                                // TODO: fix scene deinit
+                                // self.game_renderer.current_scene.destroy();
+                                self.current_scene.destroy();
+                                self.current_scene = try sapfire.scene.Scene.create(allocator, gctx, path);
+                                self.game_renderer.?.destroy(allocator);
+                                self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, 800, 600);
+                                self.current_scene_path = path;
+                            }
+                        }
+                        if (zgui.menuItem("Save", .{})) {
+                            if (self.current_scene_path == null) {
+                                const open_path = try nfd.saveFileDialog("json", null);
+                                if (open_path) |path| {
+                                    try self.current_scene.world.serialize(allocator, path);
+                                    self.current_scene_path = path;
+                                }
+                            } else {
+                                try self.current_scene.world.serialize(allocator, self.current_scene_path.?);
+                            }
+                        }
+                        if (zgui.menuItem("Save as...", .{})) {
+                            const open_path = try nfd.saveFileDialog("json", null);
+                            if (open_path) |path| {
+                                if (self.current_scene_path != null) {
+                                    nfd.freePath(self.current_scene_path.?);
+                                    self.current_scene_path = null;
+                                }
+                                self.current_scene_path = path;
+                                try self.current_scene.world.serialize(allocator, path);
+                            }
+                        }
+                        zgui.endMenu();
+                    }
+                }
+                zgui.endMainMenuBar();
+
                 if (self.game_renderer != null) {
                     if (zgui.begin("Game View", .{ .flags = .{
                         .no_move = true,
@@ -99,21 +144,6 @@ pub const Editor = struct {
                     );
                 }
                 zgui.end();
-                if (zgui.begin("Scene Controls", .{ .flags = .{ .always_auto_resize = true } })) {
-                    if (zgui.button("Open", .{})) {
-                        const open_path = try nfd.openFileDialog("json", null);
-                        if (open_path) |path| {
-                            defer nfd.freePath(path);
-                            // TODO: fix scene deinit
-                            // self.game_renderer.current_scene.destroy();
-                            self.current_scene.destroy();
-                            self.current_scene = try sapfire.scene.Scene.create(allocator, gctx, path);
-                            self.game_renderer.?.destroy(allocator);
-                            self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, 800, 600);
-                        }
-                    }
-                }
-                zgui.end();
             }
 
             const swapchain_texv = gctx.swapchain.getCurrentTextureView();
@@ -121,7 +151,6 @@ pub const Editor = struct {
             const commands = commands: {
                 const encoder = gctx.device.createCommandEncoder(null);
                 defer encoder.release();
-
                 // Gui pass.
                 {
                     const pass = zgpu.beginRenderPassSimple(encoder, .load, swapchain_texv, null, null, null);
@@ -140,6 +169,10 @@ pub const Editor = struct {
 
     pub fn destroy(self: *Editor, allocator: std.mem.Allocator) void {
         self.current_scene.destroy();
+        if (self.current_scene_path != null) {
+            nfd.freePath(self.current_scene_path.?);
+            self.current_scene_path = null;
+        }
         self.gctx.releaseResource(self.framebuffer.handle);
         if (self.game_renderer != null) {
             self.game_renderer.?.destroy(allocator);
