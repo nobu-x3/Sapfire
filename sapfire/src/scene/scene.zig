@@ -1,5 +1,6 @@
 const ecs = @import("zflecs");
 const zgpu = @import("zgpu");
+const zgui = @import("zgui");
 const zm = @import("zmath");
 const std = @import("std");
 const json = std.json;
@@ -176,6 +177,33 @@ pub const Scene = struct {
     pub fn destroy(self: *Scene) void {
         self.world.deinit();
         self.arena.deinit();
+    }
+
+    pub fn draw_scene_hierarchy(self: *Scene) void {
+        if (zgui.begin("Hierarchy", .{})) {
+            const root_entity = ecs.lookup(self.world.id, "Root");
+            if (root_entity > 0) {
+                if (zgui.treeNodeFlags("Root", .{})) {
+                    draw_children_nodes(self, root_entity);
+                    zgui.treePop();
+                }
+            }
+        }
+        zgui.end();
+    }
+
+    fn draw_children_nodes(self: *Scene, entity: ecs.entity_t) void {
+        var iter = ecs.children(self.world.id, entity);
+        while (ecs.children_next(&iter)) {
+            for (iter.entities()) |e| {
+                const name = ecs.get_name(self.world.id, e) orelse break;
+                const casted_name: [:0]const u8 = std.mem.span(name);
+                if (zgui.treeNodeFlags(casted_name, .{})) {
+                    draw_children_nodes(self, e);
+                    zgui.treePop();
+                }
+            }
+        }
     }
 };
 
