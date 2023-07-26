@@ -241,37 +241,43 @@ pub const RendererState = struct {
                 var q = try ecs.query_init(scene.world.id, &query_desc);
                 var it = ecs.query_iter(scene.world.id, q);
                 while (ecs.query_next(&it)) {
-                    const transforms = ecs.field(&it, sf.Components.Transform, 1).?;
-                    const materials = ecs.field(&it, sf.Material, 2).?;
-                    const meshes = ecs.field(&it, sf.Components.Mesh, 3).?;
-                    var current_pipeline: sf.Pipeline = undefined;
-                    var current_material: sf.Material = undefined;
-                    for (0..it.count()) |i| {
-                        const mat = materials[i];
-                        const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
-                        if (pipe.handle.id != current_pipeline.handle.id) {
-                            current_pipeline = pipe;
-                            const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
-                            pass.setPipeline(pipeline);
-                        }
-                        var should_bind_group = false;
+                    var i: usize = 0;
+                    while (i < it.count()) : (i += 1) {
+                        var current_pipeline: sf.Pipeline = undefined;
+                        var current_material: sf.Material = undefined;
+                        if (ecs.field(&it, sf.Material, 2)) |materials| {
+                            const mat = materials[i];
+                            const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
+                            if (pipe.handle.id != current_pipeline.handle.id) {
+                                current_pipeline = pipe;
+                                const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
+                                pass.setPipeline(pipeline);
+                            }
+                            var should_bind_group = false;
 
-                        if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
-                            current_material = mat;
-                            should_bind_group = true;
+                            if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
+                                current_material = mat;
+                                should_bind_group = true;
+                            }
+                            if (ecs.field(&it, sf.Components.Transform, 1)) |transforms| {
+                                const transform = transforms[i];
+                                if (ecs.field(&it, sf.Components.Mesh, 3)) |meshes| {
+                                    const mesh_comp = meshes[i];
+                                    const object_to_world = transform.world;
+                                    const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
+                                    mem.slice[0] = .{
+                                        .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
+                                        .mip_level = @floatFromInt(renderer_state.mip_level),
+                                        .model = zm.transpose(object_to_world),
+                                    };
+                                    if (should_bind_group) {
+                                        const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
+                                        pass.setBindGroup(1, bind_group, &.{mem.offset});
+                                    }
+                                    pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
+                                }
+                            }
                         }
-                        const object_to_world = transforms[i].world;
-                        const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
-                        mem.slice[0] = .{
-                            .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
-                            .mip_level = @floatFromInt(renderer_state.mip_level),
-                            .model = zm.transpose(object_to_world),
-                        };
-                        if (should_bind_group) {
-                            const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
-                            pass.setBindGroup(1, bind_group, &.{mem.offset});
-                        }
-                        pass.drawIndexed(meshes[i].num_indices, 1, meshes[i].index_offset, meshes[i].vertex_offset, 0);
                     }
                 }
             }
