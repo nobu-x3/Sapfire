@@ -155,14 +155,10 @@ pub const Scene = struct {
         // try world.component_add(Position);
         // try world.component_add(Mesh);
         // try world.tag_add(TestTag);
-        {
-            var sys_desc = ecs.system_desc_t{};
-            sys_desc.callback = Scene.update_world_transforms;
-            sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
-            ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &sys_desc);
-        }
+        var update_transforms_system = @import("systems/update_transforms_system.zig").system();
+        ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
         var render_color_system = @import("systems/render_color_system.zig").system();
-        ecs.SYSTEM(world.id, "render", ecs.OnUpdate, &render_color_system);
+        ecs.SYSTEM(world.id, "render", ecs.PostUpdate, &render_color_system);
         // {
         //     var sys_desc = ecs.system_desc_t{};
         //     sys_desc.callback = Scene.render;
@@ -200,18 +196,6 @@ pub const Scene = struct {
 
     pub fn update(self: *Scene, delta_time: f32) !void {
         _ = ecs.progress(self.world.id, delta_time);
-    }
-
-    fn update_world_transforms(it: *ecs.iter_t) callconv(.C) void {
-        const transforms = ecs.field(it, Transform, 1).?;
-        const entities = it.entities();
-        for (0..it.count()) |i| {
-            const parent = World.entity_get_parent_world_id(it.world, entities[i]);
-            if (parent > 0) { // This is to prevent root modification
-                const parent_transform = ecs.get(it.world, parent, Transform) orelse continue;
-                transforms[i].world = zm.mul(transforms[i].local, parent_transform.world);
-            }
-        }
     }
 
     // fn render(it: *ecs.iter_t) callconv(.C) void {
