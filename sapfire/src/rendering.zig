@@ -1,5 +1,4 @@
 pub const Vertex = @import("renderer/renderer_types.zig").Vertex;
-pub const SRT = @import("renderer/renderer_types.zig").SRT;
 pub const Camera = @import("renderer/renderer_types.zig").Camera;
 pub const Uniforms = @import("renderer/renderer_types.zig").Uniforms;
 pub const GlobalUniforms = @import("renderer/renderer_types.zig").GlobalUniforms;
@@ -13,9 +12,6 @@ pub const MaterialAsset = @import("renderer/material.zig").MaterialAsset;
 pub const MaterialManager = @import("renderer/material.zig").MaterialManager;
 pub const Pipeline = @import("renderer/pipeline.zig").Pipeline;
 pub const PipelineSystem = @import("renderer/pipeline.zig").PipelineSystem;
-pub const SceneManager = @import("renderer/scene.zig").SceneManager;
-pub const SimpleScene = @import("renderer/scene.zig").SimpleScene;
-pub const SceneAsset = @import("renderer/scene.zig").SceneAsset;
 pub const Texture = @import("renderer/texture.zig").Texture;
 pub const TextureAsset = @import("renderer/texture.zig").TextureAsset;
 pub const TextureFormat = @import("renderer/texture.zig").TextureFormat;

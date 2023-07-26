@@ -8,7 +8,7 @@ const sf = struct {
     usingnamespace @import("../renderer/texture.zig");
     usingnamespace @import("../renderer/mesh.zig");
     usingnamespace @import("../renderer/material.zig");
-    usingnamespace @import("../renderer/scene.zig");
+    usingnamespace @import("../scene/scene.zig");
 };
 
 // TODO: add SceneAssetManager.

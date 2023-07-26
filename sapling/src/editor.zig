@@ -152,6 +152,7 @@ pub const Editor = struct {
                     );
                 }
                 zgui.end();
+                zgui.showDemoWindow(null);
             }
 
             const swapchain_texv = gctx.swapchain.getCurrentTextureView();

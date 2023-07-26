@@ -11,12 +11,11 @@ const sf = struct {
     usingnamespace @import("mesh.zig");
     usingnamespace @import("buffer.zig");
     usingnamespace @import("pipeline.zig");
-    usingnamespace @import("scene.zig");
+    usingnamespace @import("../scene/scene.zig");
     usingnamespace @import("material.zig");
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("../core/asset_manager.zig");
     usingnamespace @import("../core/time.zig");
-    usingnamespace @import("../scene.zig");
 };
 
 pub const RendererState = struct {
@@ -238,7 +237,6 @@ pub const RendererState = struct {
                 }
                 pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
                 pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
-                // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
 
                 const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
                 glob.slice[0] = .{

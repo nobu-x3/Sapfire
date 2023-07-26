@@ -498,3 +498,37 @@ pub const World = struct {
         return scene_entity;
     }
 };
+
+pub const SceneManager = struct {
+    arena_allocator: std.heap.ArenaAllocator,
+    asset_map: std.AutoHashMap([64]u8, SceneAsset),
+
+    pub fn init(allocator: std.mem.Allocator, config_path: []const u8) !SceneManager {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        var arena_alloc = arena.allocator();
+        var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        defer parse_arena.deinit();
+        const config_data = std.fs.cwd().readFileAlloc(parse_arena.allocator(), config_path, 512 * 16) catch |e| {
+            log.err("Failed to parse texture config file. Given path:{s}", .{config_path});
+            return e;
+        };
+        const Config = struct {
+            database: [][:0]const u8,
+        };
+        const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
+        var asset_map = std.AutoHashMap([64]u8, SceneAsset).init(arena_alloc);
+        try asset_map.ensureTotalCapacity(@intCast(config.database.len));
+        for (config.database) |path| {
+            const scene_asset = try SceneAsset.create(arena.allocator(), parse_arena.allocator(), path);
+            try asset_map.putNoClobber(scene_asset.guid, scene_asset);
+        }
+        return SceneManager{
+            .arena_allocator = arena,
+            .asset_map = asset_map,
+        };
+    }
+
+    pub fn deinit(self: *SceneManager) void {
+        self.arena_allocator.deinit();
+    }
+};
