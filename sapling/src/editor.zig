@@ -50,10 +50,10 @@ pub const Editor = struct {
             .width = gctx.swapchain_descriptor.width,
             .height = gctx.swapchain_descriptor.height,
         }, gctx.swapchain_descriptor.format);
-        var current_scene = try sapfire.scene.Scene.create(allocator, gctx, "project/scenes/test_scene.json");
-        sapfire.scene.Scene.scene = &current_scene;
         var game_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
         RendererState.renderer = game_renderer;
+        var current_scene = try sapfire.scene.Scene.create(allocator, gctx, "project/scenes/test_scene.json");
+        sapfire.scene.Scene.scene = &current_scene;
         return Editor{
             .window = window,
             .gctx = gctx,
@@ -137,6 +137,7 @@ pub const Editor = struct {
                         RendererState.color_view = &color_view;
                         RendererState.fb_width = @intFromFloat(size[0]);
                         RendererState.fb_height = @intFromFloat(size[1]);
+                        sapfire.scene.Scene.scene = &self.current_scene;
                         // try self.game_renderer.?.draw_to_texture(&color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
                         try self.current_scene.update(gctx.stats.delta_time);
                         zgui.image(color_view, .{ .w = size[0], .h = size[1] });

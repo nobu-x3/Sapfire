@@ -5,23 +5,18 @@ const zgpu = @import("zgpu");
 const components = @import("../components.zig");
 const Material = @import("../../renderer/material.zig").Material;
 const renderer = @import("../../renderer/renderer.zig").RendererState;
+const Pipeline = @import("../../renderer/pipeline.zig").Pipeline;
 const sf = struct {
-    usingnamespace @import("../../core/asset_manager.zig");
-    usingnamespace @import("../../renderer/mesh.zig");
     usingnamespace @import("../../renderer/renderer_types.zig");
-    usingnamespace @import("../../renderer/material.zig");
-    usingnamespace @import("../../renderer/buffer.zig");
-    usingnamespace @import("../../renderer/texture.zig");
-    usingnamespace @import("../../renderer/pipeline.zig");
 };
 
 pub fn system() ecs.system_desc_t {
     var desc: ecs.system_desc_t = .{};
     desc.query.filter.terms[0] = .{ .id = ecs.id(Material) };
-    desc.query.filter.terms[1] = .{ .id = ecs.id(components.Transform), .oper = ecs.oper_kind_t.Optional };
-    desc.query.filter.terms[2] = .{ .id = ecs.id(components.Mesh), .oper = ecs.oper_kind_t.Optional };
+    desc.query.filter.terms[1] = .{ .id = ecs.id(components.Transform) };
+    desc.query.filter.terms[2] = .{ .id = ecs.id(components.Mesh) };
     desc.query.order_by_component = ecs.id(Material);
-    desc.run = run;
+    desc.callback = run;
     return desc;
 }
 
@@ -85,42 +80,40 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
                 .view_projection = zm.transpose(cam_world_to_clip),
             };
             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
-            while (ecs.query_next(it)) {
-                var i: usize = 0;
-                while (i < it.count()) : (i += 1) {
-                    var current_pipeline: sf.Pipeline = undefined;
-                    var current_material: sf.Material = undefined;
-                    if (ecs.field(it, sf.Material, 2)) |materials| {
-                        const mat = materials[i];
-                        const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
-                        if (pipe.handle.id != current_pipeline.handle.id) {
-                            current_pipeline = pipe;
-                            const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
-                            pass.setPipeline(pipeline);
-                        }
-                        var should_bind_group = false;
+            var i: usize = 0;
+            while (i < it.count()) : (i += 1) {
+                var current_pipeline: Pipeline = undefined;
+                var current_material: Material = undefined;
+                if (ecs.field(it, Material, 1)) |materials| {
+                    const mat = materials[i];
+                    const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
+                    if (pipe.handle.id != current_pipeline.handle.id) {
+                        current_pipeline = pipe;
+                        const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
+                        pass.setPipeline(pipeline);
+                    }
+                    var should_bind_group = false;
 
-                        if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
-                            current_material = mat;
-                            should_bind_group = true;
-                        }
-                        if (ecs.field(it, components.Transform, 1)) |transforms| {
-                            const transform = transforms[i];
-                            if (ecs.field(it, components.Mesh, 3)) |meshes| {
-                                const mesh_comp = meshes[i];
-                                const object_to_world = transform.world;
-                                const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
-                                mem.slice[0] = .{
-                                    .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
-                                    .mip_level = @floatFromInt(renderer_state.mip_level),
-                                    .model = zm.transpose(object_to_world),
-                                };
-                                if (should_bind_group) {
-                                    const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
-                                    pass.setBindGroup(1, bind_group, &.{mem.offset});
-                                }
-                                pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
+                    if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
+                        current_material = mat;
+                        should_bind_group = true;
+                    }
+                    if (ecs.field(it, components.Transform, 2)) |transforms| {
+                        const transform = transforms[i];
+                        if (ecs.field(it, components.Mesh, 3)) |meshes| {
+                            const mesh_comp = meshes[i];
+                            const object_to_world = transform.world;
+                            const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
+                            mem.slice[0] = .{
+                                .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
+                                .mip_level = @floatFromInt(renderer_state.mip_level),
+                                .model = zm.transpose(object_to_world),
+                            };
+                            if (should_bind_group) {
+                                const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
+                                pass.setBindGroup(1, bind_group, &.{mem.offset});
                             }
+                            pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                         }
                     }
                 }

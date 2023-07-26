@@ -7,7 +7,6 @@ pub fn system() ecs.system_desc_t {
     var desc = ecs.system_desc_t{};
     desc.callback = run;
     desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
-    desc.run = run;
     return desc;
 }
 

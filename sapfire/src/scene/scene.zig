@@ -123,7 +123,6 @@ pub const Scene = struct {
         var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
         var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
         var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
-        // Mesh loading
         var meshes = std.ArrayList(Mesh).init(arena.allocator()); // NOTE: we don't actually need to cache any of it after creating vert/ind buffers
         try meshes.ensureTotalCapacity(128);
         var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
@@ -132,8 +131,6 @@ pub const Scene = struct {
         var indices = std.ArrayList(u32).init(arena.allocator());
         defer indices.deinit();
         try indices.ensureTotalCapacity(256);
-        // Texture loading
-        // Material loading
         var pipeline_system = try sf.PipelineSystem.init(arena.allocator());
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -151,32 +148,10 @@ pub const Scene = struct {
         const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
         // Create an index buffer.
         const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
-        // try world.component_add(Transform);
-        // try world.component_add(Position);
-        // try world.component_add(Mesh);
-        // try world.tag_add(TestTag);
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
         ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
         var render_color_system = @import("systems/render_color_system.zig").system();
         ecs.SYSTEM(world.id, "render", ecs.PostUpdate, &render_color_system);
-        // {
-        //     var sys_desc = ecs.system_desc_t{};
-        //     sys_desc.callback = Scene.render;
-        //     sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
-        //     sys_desc.query.filter.terms[1] = .{ .id = ecs.id(Mesh) };
-        //     sys_desc.query.filter.terms[2] = .{ .id = ecs.id(Material) };
-        //     sys_desc.query.filter.terms[3] = .{ .id = ecs.id(sf.PipelineSystem), .src = .{ .id = ecs.id(sf.PipelineSystem) } };
-        //     ecs.SYSTEM(world.id, "Render", ecs.PreFrame, &sys_desc);
-        // }
-        // var first_entt = world.entity_new_with_parent(scene_entity, "Child");
-        // _ = ecs.add_id(world.id, first_entt, ecs.id(TestTag));
-        // _ = world.entity_new_with_parent(first_entt, "Grandchild");
-        // var file = try fs.cwd().createFile("project/scenes/test_scene_deser.json", .{});
-        // defer file.close();
-        // try world.serialize(allocator, &file);
-        // const json_world = ecs.world_to_json(world.id, &.{}).?;
-        // // std.debug.print("\n{s}", .{json_world});
-        // _ = ecs.progress(world.id, 0);
         return Scene{
             .guid = sf.AssetManager.generate_guid(path),
             .world = world,
@@ -197,28 +172,6 @@ pub const Scene = struct {
     pub fn update(self: *Scene, delta_time: f32) !void {
         _ = ecs.progress(self.world.id, delta_time);
     }
-
-    // fn render(it: *ecs.iter_t) callconv(.C) void {
-    //     // const pipeline_system = ecs.get(it.world, ecs.id(sf.PipelineSystem), sf.PipelineSystem).?;
-    //     const transforms = ecs.field(it, Transform, 1).?;
-    //     const materials = ecs.field(it, Material, 2).?;
-    //     const meshes = ecs.field(it, Mesh, 3).?;
-    //     const pipeline_system = ecs.field(it, sf.PipelineSystem, 4).?[0];
-    //     const entities = it.entities();
-    //     var current_pipeline: sf.Pipeline = undefined;
-    //     for (0..it.count()) |i| {
-    //         const mat = materials[i];
-    //         const pipe = pipeline_system.material_pipeline_map.get(mat.guid).?;
-    //         if (pipe.handle.id != current_pipeline.handle.id) {
-    //             current_pipeline = pipe;
-    //             // TODO: bind
-    //         }
-    //         // TODO: rest of rendering
-    //         _ = transforms;
-    //         _ = meshes;
-    //         _ = entities;
-    //     }
-    // }
 
     pub fn destroy(self: *Scene) void {
         self.world.deinit();
