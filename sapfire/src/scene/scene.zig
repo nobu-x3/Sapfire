@@ -111,6 +111,8 @@ pub const Scene = struct {
     vertex_buffer: zgpu.BufferHandle,
     index_buffer: zgpu.BufferHandle,
 
+    pub var scene: ?*Scene = null;
+
     pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var world = try World.init(arena.allocator());
@@ -159,6 +161,8 @@ pub const Scene = struct {
             sys_desc.query.filter.terms[0] = .{ .id = ecs.id(Transform) };
             ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &sys_desc);
         }
+        var render_color_system = @import("systems/render_color_system.zig").system();
+        ecs.SYSTEM(world.id, "render", ecs.OnUpdate, &render_color_system);
         // {
         //     var sys_desc = ecs.system_desc_t{};
         //     sys_desc.callback = Scene.render;

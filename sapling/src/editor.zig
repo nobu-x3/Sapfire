@@ -50,13 +50,15 @@ pub const Editor = struct {
             .width = gctx.swapchain_descriptor.width,
             .height = gctx.swapchain_descriptor.height,
         }, gctx.swapchain_descriptor.format);
-        var scene = try sapfire.scene.Scene.create(allocator, gctx, "project/scenes/test_scene.json");
+        var current_scene = try sapfire.scene.Scene.create(allocator, gctx, "project/scenes/test_scene.json");
+        sapfire.scene.Scene.scene = &current_scene;
         var game_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
+        RendererState.renderer = game_renderer;
         return Editor{
             .window = window,
             .gctx = gctx,
             .framebuffer = framebuffer,
-            .current_scene = scene,
+            .current_scene = current_scene,
             .game_renderer = game_renderer,
         };
     }
@@ -128,15 +130,20 @@ pub const Editor = struct {
                         .no_background = true,
                     } })) {
                         if (zgui.isWindowFocused(.{})) {
-                            try self.current_scene.update(gctx.stats.delta_time);
-                            self.game_renderer.?.update(self.window);
+                            // try self.current_scene.update(gctx.stats.delta_time);
+                            // self.game_renderer.?.update(self.window);
                         }
                         size = zgui.getWindowSize();
-                        try self.game_renderer.?.draw_to_texture(&color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
+                        RendererState.color_view = &color_view;
+                        RendererState.fb_width = @intFromFloat(size[0]);
+                        RendererState.fb_height = @intFromFloat(size[1]);
+                        // try self.game_renderer.?.draw_to_texture(&color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
+                        try self.current_scene.update(gctx.stats.delta_time);
                         zgui.image(color_view, .{ .w = size[0], .h = size[1] });
                     }
                     zgui.end();
                 }
+
                 if (zgui.begin("Stats", .{ .flags = .{ .always_auto_resize = true } })) {
                     zgui.bulletText(
                         "Average :  {d:.3} ms/frame ({d:.1} fps)",

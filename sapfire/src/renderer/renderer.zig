@@ -29,6 +29,11 @@ pub const RendererState = struct {
         cursor_pos: [2]f64 = .{ 0, 0 },
     } = .{},
 
+    pub var renderer: ?*RendererState = null;
+    pub var color_view: ?*zgpu.wgpu.TextureView = null;
+    pub var fb_width: u32 = 800;
+    pub var fb_height: u32 = 600;
+
     // TODO: runtime dependent assets should be multithreaded here. Probably pass a pointer to scene asset here.
     pub fn create(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
         var arena = std.heap.ArenaAllocator.init(allocator);
@@ -50,12 +55,15 @@ pub const RendererState = struct {
         // defer commands.release();
         // gctx.submit(&.{commands});
         // (Async) Create a render pipeline.
+        renderer = renderer_state;
         return renderer_state;
     }
 
-    pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, fb_width: u32, fb_height: u32) !*RendererState {
+    pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, fb_width_passed: u32, fb_height_passed: u32) !*RendererState {
         var arena = std.heap.ArenaAllocator.init(allocator);
-        const depth_texture = sf.Texture.create_depth(gctx, fb_width, fb_height);
+        const depth_texture = sf.Texture.create_depth(gctx, fb_width_passed, fb_height_passed);
+        fb_width = fb_width_passed;
+        fb_height = fb_height_passed;
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
             .gctx = gctx,
@@ -111,8 +119,8 @@ pub const RendererState = struct {
 
     pub fn draw(renderer_state: *RendererState) !void {
         const gctx = renderer_state.gctx;
-        const fb_width = gctx.swapchain_descriptor.width;
-        const fb_height = gctx.swapchain_descriptor.height;
+        fb_width = gctx.swapchain_descriptor.width;
+        fb_height = gctx.swapchain_descriptor.height;
         const cam_world_to_view = zm.lookAtLh(
             zm.loadArr3(renderer_state.camera.position),
             zm.loadArr3(renderer_state.camera.forward),
@@ -179,8 +187,11 @@ pub const RendererState = struct {
         }
     }
 
-    pub fn draw_to_texture(renderer_state: *RendererState, color_view: *zgpu.wgpu.TextureView, fb_width: u32, fb_height: u32, scene: *sf.Scene) !void {
+    pub fn draw_to_texture(renderer_state: *RendererState, color_view_passed: *zgpu.wgpu.TextureView, fb_width_passed: u32, fb_height_passed: u32, scene: *sf.Scene) !void {
         const gctx = renderer_state.gctx;
+        color_view = color_view_passed;
+        fb_width = fb_width_passed;
+        fb_height = fb_height_passed;
         const cam_world_to_view = zm.lookAtLh(
             zm.loadArr3(renderer_state.camera.position),
             zm.loadArr3(renderer_state.camera.forward),
@@ -188,7 +199,7 @@ pub const RendererState = struct {
         );
         const cam_view_to_clip = zm.perspectiveFovLh(
             0.25 * std.math.pi,
-            @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
+            @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
             0.01,
             200.0,
         );
@@ -205,7 +216,7 @@ pub const RendererState = struct {
                 const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
                 const global_uniform_bind_group = gctx.lookupResource(scene.global_uniform_bind_group) orelse break :pass;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
-                    .view = color_view.*,
+                    .view = color_view_passed.*,
                     .load_op = .clear,
                     .store_op = .store,
                 }};
@@ -266,7 +277,7 @@ pub const RendererState = struct {
                                     const object_to_world = transform.world;
                                     const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
                                     mem.slice[0] = .{
-                                        .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
+                                        .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
                                         .mip_level = @floatFromInt(renderer_state.mip_level),
                                         .model = zm.transpose(object_to_world),
                                     };
