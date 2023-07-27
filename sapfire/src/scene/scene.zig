@@ -148,6 +148,7 @@ pub const Scene = struct {
             },
         });
         const scene_entity = try world.deserialize(&scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
+        currently_selected_entity = scene_entity;
         const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
         // Create an index buffer.
         const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
@@ -191,6 +192,25 @@ pub const Scene = struct {
                     draw_children_nodes(self, root_entity);
                     zgui.treePop();
                 }
+            }
+        }
+        zgui.end();
+    }
+
+    pub fn draw_inspector(self: *Scene) void {
+        if (zgui.begin("Inspector", .{})) {
+            const name = ecs.get_name(self.world.id, currently_selected_entity) orelse {
+                zgui.end();
+                return;
+            };
+            const span_name = std.mem.span(name);
+            var buf = [_]u8{0} ** 128;
+            std.mem.copyForwards(u8, &buf, span_name);
+            if (zgui.inputText("Name: ", .{
+                .buf = &buf,
+                .flags = .{ .enter_returns_true = true, .read_only = currently_selected_entity == self.scene_entity },
+            })) {
+                _ = ecs.set_name(self.world.id, currently_selected_entity, @ptrCast(&buf));
             }
         }
         zgui.end();
