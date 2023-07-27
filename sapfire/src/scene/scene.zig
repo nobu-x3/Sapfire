@@ -23,6 +23,7 @@ const sf = struct {
     usingnamespace @import("../renderer/texture.zig");
     usingnamespace @import("../renderer/pipeline.zig");
 };
+
 const ComponentValueTag = enum { matrix, vector, path, guid };
 
 const ParseComponent = struct {
@@ -199,11 +200,11 @@ pub const Scene = struct {
 
     pub fn draw_inspector(self: *Scene) void {
         if (zgui.begin("Inspector", .{})) {
-            const name = ecs.get_name(self.world.id, currently_selected_entity) orelse {
+            const entity_name = ecs.get_name(self.world.id, currently_selected_entity) orelse {
                 zgui.end();
                 return;
             };
-            const span_name = std.mem.span(name);
+            const span_name = std.mem.span(entity_name);
             var buf = [_]u8{0} ** 128;
             std.mem.copyForwards(u8, &buf, span_name);
             if (zgui.inputText("Name: ", .{
@@ -212,8 +213,48 @@ pub const Scene = struct {
             })) {
                 _ = ecs.set_name(self.world.id, currently_selected_entity, @ptrCast(&buf));
             }
+            if (currently_selected_entity != self.scene_entity) {
+                const types = ecs.get_type(self.world.id, currently_selected_entity).?;
+                for (0..@intCast(types.count)) |i| {
+                    if (ecs.id_is_pair(types.array[i]) or ecs.id_is_tag(self.world.id, types.array[i])) {
+                        continue;
+                    }
+                    const type_info = ecs.get_type_info(self.world.id, types.array[i]);
+                    if (type_info.name) |name| {
+                        const span_type_name: []const u8 = std.mem.span(name);
+                        if (comps.name_type_map.get(span_type_name)) |type_enum| {
+                            switch (type_enum) {
+                                .transform => {
+                                    if (ecs.get(self.world.id, currently_selected_entity, Transform)) |transform| {
+                                        var transform_copy = transform.*;
+                                        self.draw_entity_components(Transform, &transform_copy);
+                                    }
+                                },
+                                else => {},
+                            }
+                        }
+                    }
+                }
+            }
         }
         zgui.end();
+    }
+
+    pub fn draw_entity_components(self: *Scene, comptime T: type, component: *T) void {
+        if (T == Transform) {
+            zgui.text("Position:", .{});
+            zgui.indent(.{});
+            if (zgui.dragFloat("X", .{ .v = &component.local[0][3] })) {
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            if (zgui.dragFloat("Y", .{ .v = &component.local[1][3] })) {
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            if (zgui.dragFloat("Z", .{ .v = &component.local[2][3] })) {
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            zgui.unindent(.{});
+        }
     }
 
     fn draw_children_nodes(self: *Scene, entity: ecs.entity_t) void {
