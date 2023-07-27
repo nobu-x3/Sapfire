@@ -3,6 +3,7 @@ const zgui = @import("zgui");
 const zgpu = @import("zgpu");
 const glfw = @import("zglfw");
 const sapfire = @import("sapfire");
+// NOTE: for some reason editor cannot find zflecs
 const AssetManager = sapfire.core.AssetManager;
 const JobsManager = sapfire.core.JobsManager;
 const RendererState = sapfire.rendering.RendererState;

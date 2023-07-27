@@ -113,6 +113,7 @@ pub const Scene = struct {
     index_buffer: zgpu.BufferHandle,
 
     pub var scene: ?*Scene = null;
+    pub var currently_selected_entity: ecs.entity_t = undefined;
 
     pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
         var arena = std.heap.ArenaAllocator.init(allocator);
@@ -196,9 +197,16 @@ pub const Scene = struct {
         var iter = ecs.children(self.world.id, entity);
         while (ecs.children_next(&iter)) {
             for (iter.entities()) |e| {
+                var selected = false;
+                if (e == currently_selected_entity) {
+                    selected = true;
+                }
                 const name = ecs.get_name(self.world.id, e) orelse break;
                 const casted_name: [:0]const u8 = std.mem.span(name);
-                if (zgui.treeNodeFlags(casted_name, .{})) {
+                if (zgui.treeNodeFlags(casted_name, .{ .selected = selected, .open_on_arrow = true })) {
+                    if (zgui.isItemClicked(.left)) {
+                        currently_selected_entity = e;
+                    }
                     draw_children_nodes(self, e);
                     zgui.treePop();
                 }
