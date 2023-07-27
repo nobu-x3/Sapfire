@@ -53,7 +53,7 @@ pub const Editor = struct {
         }, gctx.swapchain_descriptor.format);
         var game_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
         RendererState.renderer = game_renderer;
-        var current_scene = try sapfire.scene.Scene.create(allocator, gctx, "project/scenes/test_scene.json");
+        var current_scene = try sapfire.scene.Scene.create(allocator, gctx, "test.json");
         sapfire.scene.Scene.scene = &current_scene;
         return Editor{
             .window = window,
@@ -100,11 +100,11 @@ pub const Editor = struct {
                             if (self.current_scene_path == null) {
                                 const open_path = try nfd.saveFileDialog("json", null);
                                 if (open_path) |path| {
-                                    try self.current_scene.world.serialize(allocator, path);
+                                    try self.current_scene.serialize(allocator, path);
                                     self.current_scene_path = path;
                                 }
                             } else {
-                                try self.current_scene.world.serialize(allocator, self.current_scene_path.?);
+                                try self.current_scene.serialize(allocator, self.current_scene_path.?);
                             }
                         }
                         if (zgui.menuItem("Save as...", .{})) {
@@ -115,7 +115,7 @@ pub const Editor = struct {
                                     self.current_scene_path = null;
                                 }
                                 self.current_scene_path = path;
-                                try self.current_scene.world.serialize(allocator, path);
+                                try self.current_scene.serialize(allocator, path);
                             }
                         }
                         zgui.endMenu();
