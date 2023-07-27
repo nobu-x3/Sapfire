@@ -53,7 +53,7 @@ pub const Editor = struct {
         }, gctx.swapchain_descriptor.format);
         var game_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
         RendererState.renderer = game_renderer;
-        var current_scene = try sapfire.scene.Scene.create(allocator, gctx, "test.json");
+        var current_scene = try sapfire.scene.Scene.create(allocator, gctx, "project/scenes/test_scene.json");
         sapfire.scene.Scene.scene = &current_scene;
         return Editor{
             .window = window,
