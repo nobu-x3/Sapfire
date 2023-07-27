@@ -180,6 +180,7 @@ pub const Scene = struct {
         self.arena.deinit();
     }
 
+    // TODO: this should be in the editor
     pub fn draw_scene_hierarchy(self: *Scene) void {
         if (zgui.begin("Hierarchy", .{})) {
             const root_entity = ecs.lookup(self.world.id, "Root");
@@ -203,9 +204,25 @@ pub const Scene = struct {
                 }
                 const name = ecs.get_name(self.world.id, e) orelse break;
                 const casted_name: [:0]const u8 = std.mem.span(name);
+
                 if (zgui.treeNodeFlags(casted_name, .{ .selected = selected, .open_on_arrow = true })) {
                     if (zgui.isItemClicked(.left)) {
                         currently_selected_entity = e;
+                    }
+
+                    if (zgui.beginPopupContextItem()) {
+                        currently_selected_entity = e;
+                        // TODO: add rename
+                        if (zgui.selectable("New", .{})) {
+                            _ = self.world.entity_new_with_parent(e, "New Entity");
+                            zgui.closeCurrentPopup();
+                        }
+                        if (zgui.selectable("Delete", .{})) {
+                            self.world.entity_delete(e);
+                            zgui.closeCurrentPopup();
+                        }
+
+                        zgui.endPopup();
                     }
                     draw_children_nodes(self, e);
                     zgui.treePop();
@@ -315,6 +332,16 @@ pub const World = struct {
         };
         const casted: [:0]const u8 = @ptrCast(path[0..len]);
         return casted;
+    }
+
+    pub fn entity_delete(self: *World, target: ecs.entity_t) void {
+        var iter = ecs.children(self.id, target);
+        while (ecs.children_next(&iter)) {
+            for (iter.entities()) |e| {
+                entity_delete(self, e);
+            }
+        }
+        ecs.delete(self.id, target);
     }
 
     pub fn entity_get_parent(self: *const World, target: ecs.entity_t) ecs.entity_t {
