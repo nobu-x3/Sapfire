@@ -244,13 +244,13 @@ pub const Scene = struct {
         if (T == Transform) {
             zgui.text("Position:", .{});
             zgui.indent(.{});
-            if (zgui.dragFloat("X", .{ .v = &component.local[0][3] })) {
+            if (zgui.dragFloat("X", .{ .v = &component.local[3][0] })) {
                 _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
             }
-            if (zgui.dragFloat("Y", .{ .v = &component.local[1][3] })) {
+            if (zgui.dragFloat("Y", .{ .v = &component.local[3][1] })) {
                 _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
             }
-            if (zgui.dragFloat("Z", .{ .v = &component.local[2][3] })) {
+            if (zgui.dragFloat("Z", .{ .v = &component.local[3][2] })) {
                 _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
             }
             zgui.unindent(.{});
