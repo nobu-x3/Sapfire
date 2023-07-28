@@ -30,12 +30,12 @@
                         }
                     },
                     {
-                        "name": "scene.components.Position",
+                        "name": "scene.components.Scale",
                         "value": {
                             "vector": [
-                                0.0e+00,
                                 1.0e+00,
-                                0.0e+00
+                                1.0e+00,
+                                1.0e+00
                             ]
                         }
                     },
@@ -150,12 +150,12 @@
                         }
                     },
                     {
-                        "name": "scene.components.Position",
+                        "name": "scene.components.Scale",
                         "value": {
                             "vector": [
-                                0.0e+00,
                                 1.0e+00,
-                                0.0e+00
+                                1.0e+00,
+                                1.0e+00
                             ]
                         }
                     }
@@ -170,7 +170,7 @@
         ],
         "components": [
             "scene.components.Transform",
-            "scene.components.Position",
+            "scene.components.Scale",
             "scene.components.Mesh",
             "renderer.material.Material"
         ]
