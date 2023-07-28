@@ -266,6 +266,51 @@ pub const Scene = struct {
                 _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
             }
             zgui.unindent(.{});
+            zgui.text("Rotation:", .{});
+            zgui.indent(.{});
+            var quat = zm.quatFromMat(component.local);
+            const rpy = zm.quatToRollPitchYaw(quat);
+            var x_angle_deg = std.math.radiansToDegrees(f32, rpy[0]);
+            var y_angle_deg = std.math.radiansToDegrees(f32, rpy[1]);
+            var z_angle_deg = std.math.radiansToDegrees(f32, rpy[2]);
+            const scale = [3]f32{ component.local[0][0], component.local[1][1], component.local[2][2] };
+            if (zgui.dragFloat("Pitch", .{ .v = &x_angle_deg })) {
+                var new_rot: zm.Quat = zm.quatFromRollPitchYaw(std.math.degreesToRadians(f32, x_angle_deg), std.math.degreesToRadians(f32, y_angle_deg), std.math.degreesToRadians(f32, z_angle_deg));
+                var rot_mat: zm.Mat = zm.matFromQuat(new_rot);
+                const scaling: zm.Mat = zm.scaling(scale[0], scale[1], scale[2]);
+                const rotation: zm.Mat = zm.mul(scaling, rot_mat);
+                const pos = [3]f32{ component.local[3][0], component.local[3][1], component.local[3][2] };
+                component.local = zm.mul(rotation, zm.translationV(zm.loadArr3(pos)));
+                component.local[0][0] = scale[0];
+                component.local[1][1] = scale[1];
+                component.local[2][2] = scale[2];
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            if (zgui.dragFloat("Yaw", .{ .v = &y_angle_deg })) {
+                var new_rot: zm.Quat = zm.quatFromRollPitchYaw(std.math.degreesToRadians(f32, x_angle_deg), std.math.degreesToRadians(f32, y_angle_deg), std.math.degreesToRadians(f32, z_angle_deg));
+                var rot_mat: zm.Mat = zm.matFromQuat(new_rot);
+                const scaling: zm.Mat = zm.scaling(scale[0], scale[1], scale[2]);
+                const rotation: zm.Mat = zm.mul(scaling, rot_mat);
+                const pos = [3]f32{ component.local[3][0], component.local[3][1], component.local[3][2] };
+                component.local = zm.mul(rotation, zm.translationV(zm.loadArr3(pos)));
+                component.local[0][0] = scale[0];
+                component.local[1][1] = scale[1];
+                component.local[2][2] = scale[2];
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            if (zgui.dragFloat("Roll", .{ .v = &z_angle_deg })) {
+                var new_rot: zm.Quat = zm.quatFromRollPitchYaw(std.math.degreesToRadians(f32, x_angle_deg), std.math.degreesToRadians(f32, y_angle_deg), std.math.degreesToRadians(f32, z_angle_deg));
+                var rot_mat: zm.Mat = zm.matFromQuat(new_rot);
+                const scaling: zm.Mat = zm.scaling(scale[0], scale[1], scale[2]);
+                const rotation: zm.Mat = zm.mul(scaling, rot_mat);
+                const pos = [3]f32{ component.local[3][0], component.local[3][1], component.local[3][2] };
+                component.local = zm.mul(rotation, zm.translationV(zm.loadArr3(pos)));
+                component.local[0][0] = scale[0];
+                component.local[1][1] = scale[1];
+                component.local[2][2] = scale[2];
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            zgui.unindent(.{});
         }
     }
 
