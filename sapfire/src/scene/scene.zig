@@ -244,13 +244,25 @@ pub const Scene = struct {
         if (T == Transform) {
             zgui.text("Position:", .{});
             zgui.indent(.{});
-            if (zgui.dragFloat("X", .{ .v = &component.local[3][0] })) {
+            if (zgui.dragFloat("Pos X", .{ .v = &component.local[3][0] })) {
                 _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
             }
-            if (zgui.dragFloat("Y", .{ .v = &component.local[3][1] })) {
+            if (zgui.dragFloat("Pos Y", .{ .v = &component.local[3][1] })) {
                 _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
             }
-            if (zgui.dragFloat("Z", .{ .v = &component.local[3][2] })) {
+            if (zgui.dragFloat("Pos Z", .{ .v = &component.local[3][2] })) {
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            zgui.unindent(.{});
+            zgui.text("Scale:", .{});
+            zgui.indent(.{});
+            if (zgui.dragFloat("Scale X", .{ .v = &component.local[0][0] })) {
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            if (zgui.dragFloat("Scale Y", .{ .v = &component.local[1][1] })) {
+                _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
+            }
+            if (zgui.dragFloat("Scale Z", .{ .v = &component.local[2][2] })) {
                 _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
             }
             zgui.unindent(.{});
