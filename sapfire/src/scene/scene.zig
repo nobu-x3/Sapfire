@@ -198,6 +198,7 @@ pub const Scene = struct {
         zgui.end();
     }
 
+    var component_selection = false;
     pub fn draw_inspector(self: *Scene) void {
         if (zgui.begin("Inspector", .{})) {
             const entity_name = ecs.get_name(self.world.id, currently_selected_entity) orelse {
@@ -234,6 +235,17 @@ pub const Scene = struct {
                             }
                         }
                     }
+                }
+                if (zgui.button("Add Component", .{}) or component_selection) {
+                    component_selection = true;
+                    if (zgui.beginListBox("Component List", .{})) {
+                        if (zgui.selectable("Transform_select", .{ .flags = .{ .allow_double_click = true } })) {
+                            _ = ecs.set(self.world.id, currently_selected_entity, Transform, .{});
+                            _ = ecs.set(self.world.id, currently_selected_entity, Scale, .{});
+                            component_selection = false;
+                        }
+                    }
+                    zgui.endListBox();
                 }
             }
         }
@@ -332,6 +344,8 @@ pub const Scene = struct {
                 zgui.unindent(.{});
             }
         }
+        zgui.spacing();
+        zgui.separator();
     }
 
     fn draw_children_nodes(self: *Scene, entity: ecs.entity_t) void {
