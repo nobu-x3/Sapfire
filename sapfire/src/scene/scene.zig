@@ -217,27 +217,7 @@ pub const Scene = struct {
                 _ = ecs.set_name(self.world.id, currently_selected_entity, @ptrCast(&buf));
             }
             if (currently_selected_entity != self.scene_entity) {
-                const types = ecs.get_type(self.world.id, currently_selected_entity).?;
-                for (0..@intCast(types.count)) |i| {
-                    if (ecs.id_is_pair(types.array[i]) or ecs.id_is_tag(self.world.id, types.array[i])) {
-                        continue;
-                    }
-                    const type_info = ecs.get_type_info(self.world.id, types.array[i]);
-                    if (type_info.name) |name| {
-                        const span_type_name: []const u8 = std.mem.span(name);
-                        if (comps.name_type_map.get(span_type_name)) |type_enum| {
-                            switch (type_enum) {
-                                .transform => {
-                                    if (ecs.get(self.world.id, currently_selected_entity, Transform)) |transform| {
-                                        var transform_copy = transform.*;
-                                        self.draw_entity_components(Transform, &transform_copy);
-                                    }
-                                },
-                                else => {},
-                            }
-                        }
-                    }
-                }
+                comps.inspect_entity_components(self.world.id, currently_selected_entity);
                 if (zgui.button("Add Component", .{}) or component_selection) {
                     component_selection = true;
                     if (zgui.beginListBox("Component List", .{})) {
@@ -252,102 +232,6 @@ pub const Scene = struct {
             }
         }
         zgui.end();
-    }
-
-    pub fn draw_entity_components(self: *Scene, comptime T: type, component: *T) void {
-        if (T == Transform) {
-            {
-                zgui.text("Position:", .{});
-                zgui.indent(.{});
-                if (zgui.dragFloat("Pos X", .{ .v = &component.local[3][0] })) {
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                if (zgui.dragFloat("Pos Y", .{ .v = &component.local[3][1] })) {
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                if (zgui.dragFloat("Pos Z", .{ .v = &component.local[3][2] })) {
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                zgui.unindent(.{});
-            }
-            {
-                zgui.text("Scale:", .{});
-                zgui.indent(.{});
-                const ro_scale = ecs.get(self.world.id, currently_selected_entity, Scale).?;
-                var scale = ro_scale.*;
-                if (zgui.dragFloat("Scale X", .{ .v = &scale.scale[0] })) {
-                    _ = ecs.set(self.world.id, currently_selected_entity, Scale, scale);
-                    var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
-                    var quat: zm.Quat = zm.quatFromMat(component.local);
-                    var rot: zm.Mat = zm.matFromQuat(quat);
-                    var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
-                    var translate: zm.Mat = zm.translation(component.local[3][0], component.local[3][1], component.local[3][2]);
-                    component.local = zm.mul(rot_mat, translate);
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                if (zgui.dragFloat("Scale Y", .{ .v = &scale.scale[1] })) {
-                    _ = ecs.set(self.world.id, currently_selected_entity, Scale, scale);
-                    var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
-                    var quat: zm.Quat = zm.quatFromMat(component.local);
-                    var rot: zm.Mat = zm.matFromQuat(quat);
-                    var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
-                    var translate: zm.Mat = zm.translation(component.local[3][0], component.local[3][1], component.local[3][2]);
-                    component.local = zm.mul(rot_mat, translate);
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                if (zgui.dragFloat("Scale Z", .{ .v = &scale.scale[2] })) {
-                    _ = ecs.set(self.world.id, currently_selected_entity, Scale, scale);
-                    var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
-                    var quat: zm.Quat = zm.quatFromMat(component.local);
-                    var rot: zm.Mat = zm.matFromQuat(quat);
-                    var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
-                    var translate: zm.Mat = zm.translation(component.local[3][0], component.local[3][1], component.local[3][2]);
-                    component.local = zm.mul(rot_mat, translate);
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                zgui.unindent(.{});
-            }
-            {
-                zgui.text("Rotation:", .{});
-                zgui.indent(.{});
-                var quat = zm.quatFromMat(component.local);
-                const rpy = zm.quatToRollPitchYaw(quat);
-                var x_angle_deg = std.math.radiansToDegrees(f32, rpy[0]);
-                var y_angle_deg = std.math.radiansToDegrees(f32, rpy[1]);
-                var z_angle_deg = std.math.radiansToDegrees(f32, rpy[2]);
-                const scale = ecs.get(self.world.id, currently_selected_entity, Scale).?.scale;
-                if (zgui.dragFloat("Pitch", .{ .v = &x_angle_deg })) {
-                    var new_rot: zm.Quat = zm.quatFromRollPitchYaw(std.math.degreesToRadians(f32, x_angle_deg), std.math.degreesToRadians(f32, y_angle_deg), std.math.degreesToRadians(f32, z_angle_deg));
-                    var rot_mat: zm.Mat = zm.matFromQuat(new_rot);
-                    const scaling: zm.Mat = zm.scaling(scale[0], scale[1], scale[2]);
-                    const rotation: zm.Mat = zm.mul(scaling, rot_mat);
-                    const pos = [3]f32{ component.local[3][0], component.local[3][1], component.local[3][2] };
-                    component.local = zm.mul(rotation, zm.translationV(zm.loadArr3(pos)));
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                if (zgui.dragFloat("Yaw", .{ .v = &y_angle_deg })) {
-                    var new_rot: zm.Quat = zm.quatFromRollPitchYaw(std.math.degreesToRadians(f32, x_angle_deg), std.math.degreesToRadians(f32, y_angle_deg), std.math.degreesToRadians(f32, z_angle_deg));
-                    var rot_mat: zm.Mat = zm.matFromQuat(new_rot);
-                    const scaling: zm.Mat = zm.scaling(scale[0], scale[1], scale[2]);
-                    const rotation: zm.Mat = zm.mul(scaling, rot_mat);
-                    const pos = [3]f32{ component.local[3][0], component.local[3][1], component.local[3][2] };
-                    component.local = zm.mul(rotation, zm.translationV(zm.loadArr3(pos)));
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                if (zgui.dragFloat("Roll", .{ .v = &z_angle_deg })) {
-                    var new_rot: zm.Quat = zm.quatFromRollPitchYaw(std.math.degreesToRadians(f32, x_angle_deg), std.math.degreesToRadians(f32, y_angle_deg), std.math.degreesToRadians(f32, z_angle_deg));
-                    var rot_mat: zm.Mat = zm.matFromQuat(new_rot);
-                    const scaling: zm.Mat = zm.scaling(scale[0], scale[1], scale[2]);
-                    const rotation: zm.Mat = zm.mul(scaling, rot_mat);
-                    const pos = [3]f32{ component.local[3][0], component.local[3][1], component.local[3][2] };
-                    component.local = zm.mul(rotation, zm.translationV(zm.loadArr3(pos)));
-                    _ = ecs.set(self.world.id, currently_selected_entity, Transform, component.*);
-                }
-                zgui.unindent(.{});
-            }
-        }
-        zgui.spacing();
-        zgui.separator();
     }
 
     fn draw_children_nodes(self: *Scene, entity: ecs.entity_t) void {
