@@ -81,7 +81,9 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
             };
             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
             var i: usize = 0;
+            const entities = it.entities();
             while (i < it.count()) : (i += 1) {
+                if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
                 var current_pipeline: Pipeline = undefined;
                 var current_material: Material = undefined;
                 if (ecs.field(it, Material, 1)) |materials| {

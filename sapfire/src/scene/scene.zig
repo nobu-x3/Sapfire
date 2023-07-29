@@ -194,6 +194,8 @@ pub const Scene = struct {
                     zgui.treePop();
                 }
             }
+            if (!ecs.is_valid(self.world.id, currently_selected_entity) or !ecs.is_alive(self.world.id, currently_selected_entity))
+                currently_selected_entity = self.scene_entity;
         }
         zgui.end();
     }
