@@ -25,6 +25,17 @@ pub const Transform = extern struct {
     pub fn draw_inspect(self: *Transform, world: *ecs.world_t, entity: ecs.entity_t) void {
         {
             zgui.text("Position:", .{});
+            zgui.sameLine(.{ .spacing = 200.0 });
+            if (zgui.button("...", .{})) {
+                zgui.openPopup("Component Context", .{});
+            }
+            if (zgui.beginPopup("Component Context")) {
+                if (zgui.selectable("Delete", .{})) {
+                    ecs.remove(world, entity, Transform);
+                    zgui.closeCurrentPopup();
+                }
+                zgui.endPopup();
+            }
             zgui.indent(.{});
             if (zgui.dragFloat("Pos X", .{ .v = &self.local[3][0] })) {
                 _ = ecs.set(world, entity, Transform, self.*);

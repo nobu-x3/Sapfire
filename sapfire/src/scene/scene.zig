@@ -221,6 +221,9 @@ pub const Scene = struct {
                 if (zgui.button("Add Component", .{}) or component_selection) {
                     component_selection = true;
                     if (zgui.beginListBox("Component List", .{})) {
+                        if (zgui.isMouseClicked(.left) and !zgui.isItemHovered(.{})) {
+                            component_selection = false;
+                        }
                         if (zgui.selectable("Transform_select", .{ .flags = .{ .allow_double_click = true } })) {
                             _ = ecs.set(self.world.id, currently_selected_entity, Transform, .{});
                             _ = ecs.set(self.world.id, currently_selected_entity, Scale, .{});
