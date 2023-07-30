@@ -215,9 +215,9 @@ pub const Scene = struct {
             })) {
                 _ = ecs.set_name(self.world.id, currently_selected_entity, @ptrCast(&buf));
             }
-            zgui.text("Tags:", .{});
-            tags.inspect_entity_tags(self.world.id, currently_selected_entity);
             if (currently_selected_entity != self.scene_entity) {
+                zgui.text("Tags:", .{});
+                tags.inspect_entity_tags(self.world.id, currently_selected_entity);
                 comps.inspect_entity_components(self.world.id, currently_selected_entity);
                 if (zgui.button("Add Component", .{})) {
                     zgui.openPopup("Add Component Popup", .{});

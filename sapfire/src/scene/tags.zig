@@ -21,6 +21,16 @@ pub const name_type_map = std.ComptimeStringMap(TagTypes, .{
 pub fn inspect_entity_tags(world: *ecs.world_t, entity: ecs.entity_t) void {
     zgui.separator();
     inspect_tag(TestTag, world, entity);
+    zgui.sameLine(.{});
+    if (zgui.button("+", .{})) {
+        zgui.openPopup("Tag add", .{});
+    }
+    if (zgui.beginPopup("Tag add", .{})) {
+        if (zgui.selectable("TestTag", .{})) {
+            _ = ecs.add(world, entity, TestTag);
+        }
+        zgui.endPopup();
+    }
 }
 
 fn inspect_tag(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t) void {
