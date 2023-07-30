@@ -93,6 +93,7 @@ pub const Editor = struct {
                                 self.current_scene = try sapfire.scene.Scene.create(allocator, gctx, path);
                                 self.game_renderer.?.destroy(allocator);
                                 self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, 800, 600);
+                                RendererState.renderer = self.game_renderer;
                                 self.current_scene_path = path;
                             }
                         }
@@ -125,21 +126,15 @@ pub const Editor = struct {
 
                 if (self.game_renderer != null) {
                     if (zgui.begin("Game View", .{ .flags = .{
-                        .no_move = true,
                         .no_focus_on_appearing = true,
                         .no_scrollbar = true,
                         .no_background = true,
                     } })) {
-                        if (zgui.isWindowFocused(.{})) {
-                            // try self.current_scene.update(gctx.stats.delta_time);
-                            // self.game_renderer.?.update(self.window);
-                        }
                         size = zgui.getWindowSize();
                         RendererState.color_view = &color_view;
                         RendererState.fb_width = @intFromFloat(size[0]);
                         RendererState.fb_height = @intFromFloat(size[1]);
                         sapfire.scene.Scene.scene = &self.current_scene;
-                        // try self.game_renderer.?.draw_to_texture(&color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
                         try self.current_scene.update(gctx.stats.delta_time);
                         zgui.image(color_view, .{ .w = size[0], .h = size[1] });
                     }

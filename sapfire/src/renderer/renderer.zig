@@ -72,8 +72,6 @@ pub const RendererState = struct {
         return renderer_state;
     }
 
-    // pub fn load_scene(state: *RendererState, scene_config: []const u8) void {}
-
     pub fn destroy(renderer_state: *RendererState, allocator: std.mem.Allocator) void {
         renderer_state.arena.deinit();
         allocator.destroy(renderer_state);

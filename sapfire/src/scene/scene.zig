@@ -408,9 +408,8 @@ pub const World = struct {
     }
 
     pub fn deinit(self: *World) void {
-        _ = self;
         // NOTE: this segfaults, so just leaving it here.
-        // _ = ecs.fini(self.id);
+        _ = ecs.fini(self.id);
     }
 
     pub fn component_add(self: *World, comptime T: type) !void {
