@@ -200,7 +200,6 @@ pub const Scene = struct {
         zgui.end();
     }
 
-    var component_selection = false;
     pub fn draw_inspector(self: *Scene) void {
         if (zgui.begin("Inspector", .{})) {
             const entity_name = ecs.get_name(self.world.id, currently_selected_entity) orelse {
@@ -218,19 +217,18 @@ pub const Scene = struct {
             }
             if (currently_selected_entity != self.scene_entity) {
                 comps.inspect_entity_components(self.world.id, currently_selected_entity);
-                if (zgui.button("Add Component", .{}) or component_selection) {
-                    component_selection = true;
-                    if (zgui.beginListBox("Component List", .{})) {
-                        if (zgui.isMouseClicked(.left) and !zgui.isItemHovered(.{})) {
-                            component_selection = false;
-                        }
-                        if (zgui.selectable("Transform_select", .{ .flags = .{ .allow_double_click = true } })) {
-                            _ = ecs.set(self.world.id, currently_selected_entity, Transform, .{});
-                            _ = ecs.set(self.world.id, currently_selected_entity, Scale, .{});
-                            component_selection = false;
-                        }
+                if (zgui.button("Add Component", .{})) {
+                    zgui.openPopup("Add Component Popup", .{});
+                }
+                if (zgui.beginPopup("Add Component Popup")) {
+                    if (zgui.selectable("Transform", .{ .flags = .{ .allow_double_click = true } })) {
+                        ecs.add(self.world.id, currently_selected_entity, Scale);
+                        _ = ecs.set(self.world.id, currently_selected_entity, Scale, .{});
+                        ecs.add(self.world.id, currently_selected_entity, Transform);
+                        _ = ecs.set(self.world.id, currently_selected_entity, Transform, .{});
+                        zgui.closeCurrentPopup();
                     }
-                    zgui.endListBox();
+                    zgui.endPopup();
                 }
             }
         }

@@ -30,8 +30,14 @@ pub const Transform = extern struct {
                 zgui.openPopup("Component Context", .{});
             }
             if (zgui.beginPopup("Component Context")) {
+                if (zgui.selectable("Reset", .{})) {
+                    _ = ecs.set(world, entity, Transform, .{});
+                    _ = ecs.set(world, entity, Scale, .{});
+                    zgui.closeCurrentPopup();
+                }
                 if (zgui.selectable("Delete", .{})) {
                     ecs.remove(world, entity, Transform);
+                    ecs.remove(world, entity, Scale);
                     zgui.closeCurrentPopup();
                 }
                 zgui.endPopup();
@@ -51,39 +57,40 @@ pub const Transform = extern struct {
         {
             zgui.text("Scale:", .{});
             zgui.indent(.{});
-            const ro_scale = ecs.get(world, entity, Scale).?;
-            var scale = ro_scale.*;
-            if (zgui.dragFloat("Scale X", .{ .v = &scale.scale[0] })) {
-                _ = ecs.set(world, entity, Scale, scale);
-                var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
-                var quat: zm.Quat = zm.quatFromMat(self.local);
-                var rot: zm.Mat = zm.matFromQuat(quat);
-                var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
-                var translate: zm.Mat = zm.translation(self.local[3][0], self.local[3][1], self.local[3][2]);
-                self.local = zm.mul(rot_mat, translate);
-                _ = ecs.set(world, entity, Transform, self.*);
-            }
-            if (zgui.dragFloat("Scale Y", .{ .v = &scale.scale[1] })) {
-                _ = ecs.set(world, entity, Scale, scale);
-                var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
-                var quat: zm.Quat = zm.quatFromMat(self.local);
-                var rot: zm.Mat = zm.matFromQuat(quat);
-                var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
-                var translate: zm.Mat = zm.translation(self.local[3][0], self.local[3][1], self.local[3][2]);
-                self.local = zm.mul(rot_mat, translate);
-                _ = ecs.set(world, entity, Transform, self.*);
-            }
-            if (zgui.dragFloat("Scale Z", .{ .v = &scale.scale[2] })) {
-                _ = ecs.set(world, entity, Scale, scale);
-                var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
-                var quat: zm.Quat = zm.quatFromMat(self.local);
-                var rot: zm.Mat = zm.matFromQuat(quat);
-                var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
-                var translate: zm.Mat = zm.translation(self.local[3][0], self.local[3][1], self.local[3][2]);
-                self.local = zm.mul(rot_mat, translate);
-                _ = ecs.set(world, entity, Transform, self.*);
-            }
-            zgui.unindent(.{});
+            if (ecs.get(world, entity, Scale)) |ro_scale| {
+                var scale = ro_scale.*;
+                if (zgui.dragFloat("Scale X", .{ .v = &scale.scale[0] })) {
+                    _ = ecs.set(world, entity, Scale, scale);
+                    var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
+                    var quat: zm.Quat = zm.quatFromMat(self.local);
+                    var rot: zm.Mat = zm.matFromQuat(quat);
+                    var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
+                    var translate: zm.Mat = zm.translation(self.local[3][0], self.local[3][1], self.local[3][2]);
+                    self.local = zm.mul(rot_mat, translate);
+                    _ = ecs.set(world, entity, Transform, self.*);
+                }
+                if (zgui.dragFloat("Scale Y", .{ .v = &scale.scale[1] })) {
+                    _ = ecs.set(world, entity, Scale, scale);
+                    var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
+                    var quat: zm.Quat = zm.quatFromMat(self.local);
+                    var rot: zm.Mat = zm.matFromQuat(quat);
+                    var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
+                    var translate: zm.Mat = zm.translation(self.local[3][0], self.local[3][1], self.local[3][2]);
+                    self.local = zm.mul(rot_mat, translate);
+                    _ = ecs.set(world, entity, Transform, self.*);
+                }
+                if (zgui.dragFloat("Scale Z", .{ .v = &scale.scale[2] })) {
+                    _ = ecs.set(world, entity, Scale, scale);
+                    var scale_mat: zm.Mat = zm.scaling(scale.scale[0], scale.scale[1], scale.scale[2]);
+                    var quat: zm.Quat = zm.quatFromMat(self.local);
+                    var rot: zm.Mat = zm.matFromQuat(quat);
+                    var rot_mat: zm.Mat = zm.mul(scale_mat, rot);
+                    var translate: zm.Mat = zm.translation(self.local[3][0], self.local[3][1], self.local[3][2]);
+                    self.local = zm.mul(rot_mat, translate);
+                    _ = ecs.set(world, entity, Transform, self.*);
+                }
+                zgui.unindent(.{});
+            } else return;
         }
         {
             zgui.text("Rotation:", .{});
@@ -148,6 +155,7 @@ pub fn inspect_entity_components(world: *ecs.world_t, entity: ecs.entity_t) void
 
 fn inspect_components(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t) void {
     if (ecs.get(world, entity, T)) |val| {
+        if (!ecs.is_valid(world, entity) or !ecs.is_alive(world, entity)) return;
         var val_copy = val.*;
         val_copy.draw_inspect(world, entity);
     }
