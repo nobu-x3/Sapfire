@@ -220,7 +220,7 @@ pub const Scene = struct {
                 if (zgui.button("Add Component", .{})) {
                     zgui.openPopup("Add Component Popup", .{});
                 }
-                if (zgui.beginPopup("Add Component Popup")) {
+                if (zgui.beginPopup("Add Component Popup", .{})) {
                     if (zgui.selectable("Transform", .{ .flags = .{ .allow_double_click = true } })) {
                         ecs.add(self.world.id, currently_selected_entity, Scale);
                         _ = ecs.set(self.world.id, currently_selected_entity, Scale, .{});

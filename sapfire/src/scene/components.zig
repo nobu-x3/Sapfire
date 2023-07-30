@@ -29,7 +29,7 @@ pub const Transform = extern struct {
             if (zgui.button("...", .{})) {
                 zgui.openPopup("Component Context", .{});
             }
-            if (zgui.beginPopup("Component Context")) {
+            if (zgui.beginPopup("Component Context", .{})) {
                 if (zgui.selectable("Reset", .{})) {
                     _ = ecs.set(world, entity, Transform, .{});
                     _ = ecs.set(world, entity, Scale, .{});
