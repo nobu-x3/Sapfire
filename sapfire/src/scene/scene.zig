@@ -156,7 +156,7 @@ pub const Scene = struct {
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
         ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
         var render_color_system = @import("systems/render_color_system.zig").system();
-        ecs.SYSTEM(world.id, "render", ecs.PostUpdate, &render_color_system);
+        ecs.SYSTEM(world.id, "render", ecs.OnStore, &render_color_system);
         return Scene{
             .guid = sf.AssetManager.generate_guid(path),
             .world = world,
