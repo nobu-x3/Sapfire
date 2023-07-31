@@ -23,4 +23,4 @@ crates/*/target/
 zig-out/
 zig-cache/
 logs/
-# imgui.ini
+imgui.ini
