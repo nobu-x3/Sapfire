@@ -9,7 +9,6 @@ const tags = @import("tags.zig");
 const log = @import("../core/logger.zig");
 const asset = @import("../core.zig").AssetManager;
 const Transform = comps.Transform;
-const Scale = comps.Scale;
 const Mesh = comps.Mesh;
 const Material = @import("../renderer/material.zig").Material;
 const TestTag = tags.TestTag;
@@ -24,12 +23,13 @@ const sf = struct {
     usingnamespace @import("../renderer/pipeline.zig");
 };
 
-const ComponentValueTag = enum { matrix, vector, path, guid };
+const ComponentValueTag = enum { matrix, vector, path, guid, matrix3 };
 
 const ParseComponent = struct {
     name: [:0]const u8,
     value: union(ComponentValueTag) {
         matrix: [16]f32,
+        matrix3: [9]f32,
         vector: [3]f32,
         path: [:0]const u8,
         guid: [64]u8,
@@ -224,8 +224,6 @@ pub const Scene = struct {
                 }
                 if (zgui.beginPopup("Add Component Popup", .{})) {
                     if (zgui.selectable("Transform", .{ .flags = .{ .allow_double_click = true } })) {
-                        ecs.add(self.world.id, currently_selected_entity, Scale);
-                        _ = ecs.set(self.world.id, currently_selected_entity, Scale, .{});
                         ecs.add(self.world.id, currently_selected_entity, Transform);
                         _ = ecs.set(self.world.id, currently_selected_entity, Transform, .{});
                         zgui.closeCurrentPopup();
@@ -287,7 +285,6 @@ pub const Scene = struct {
         while (ecs.filter_next(&it)) {
             const world_id = it.world;
             const entities = it.entities();
-            // const transforms = ecs.field(&it, Transform, 1).?;
             for (entities) |e| {
                 var tag_list = std.ArrayList([:0]const u8).init(parse_arena.allocator());
                 if (!self.world.entity_is_scene_entity(e)) continue;
@@ -313,11 +310,17 @@ pub const Scene = struct {
                             const comp_name = self.world.component_id_map.get(comp).?;
                             if (std.mem.eql(u8, comp_name, "scene.components.Transform")) { // TODO: think of a better way of doing this
                                 const transform = ecs.get(world_id, e, Transform).?;
-                                var matrix = zm.matToArr(transform.local);
-                                try component_list.append(.{ .name = "scene.components.Transform", .value = .{ .matrix = matrix } });
-                            } else if (std.mem.eql(u8, comp_name, "scene.components.Scale")) {
-                                const scale = ecs.get(world_id, e, Scale).?;
-                                try component_list.append(.{ .name = "scene.components.Scale", .value = .{ .vector = .{ scale.scale[0], scale.scale[1], scale.scale[2] } } });
+                                try component_list.append(.{ .name = "scene.components.Transform", .value = .{ .matrix3 = .{
+                                    transform.scale[0],
+                                    transform.scale[1],
+                                    transform.scale[1],
+                                    transform.euler_angles[0],
+                                    transform.euler_angles[1],
+                                    transform.euler_angles[2],
+                                    transform.position[0],
+                                    transform.position[1],
+                                    transform.position[2],
+                                } } });
                             } else if (std.mem.eql(u8, comp_name, "scene.components.Mesh")) {
                                 const mesh = ecs.get(world_id, e, Mesh).?;
                                 try component_list.append(.{ .name = "scene.components.Mesh", .value = .{ .guid = mesh.guid } });
@@ -427,14 +430,12 @@ pub const World = struct {
     pub fn entity_new(self: *World, name: [*:0]const u8) ecs.entity_t {
         var entity = ecs.new_entity(self.id, name);
         _ = ecs.set(self.id, entity, Transform, .{});
-        _ = ecs.set(self.id, entity, Scale, Scale{});
         return entity;
     }
 
     pub fn entity_new_with_parent(self: *World, parent: ecs.entity_t, name: [*:0]const u8) ecs.entity_t {
         var entity = ecs.new_w_id(self.id, ecs.pair(ecs.ChildOf, parent));
         _ = ecs.set(self.id, entity, Transform, .{});
-        _ = ecs.set(self.id, entity, Scale, Scale{});
         _ = ecs.set_name(self.id, entity, name);
         return entity;
     }
@@ -550,9 +551,6 @@ pub const World = struct {
                 .transform => {
                     try self.component_add(Transform);
                 },
-                .scale => {
-                    try self.component_add(Scale);
-                },
                 .mesh => {
                     try self.component_add(Mesh);
                 },
@@ -585,21 +583,14 @@ pub const World = struct {
                 const comp_type = comps.name_type_map.get(comp.name).?;
                 switch (comp_type) {
                     .transform => {
-                        _ = ecs.set(self.id, entity, Transform, .{
-                            .local = zm.matFromArr(comp.value.matrix),
-                        });
-                    },
-                    .scale => {
-                        _ = ecs.set(
-                            self.id,
-                            entity,
-                            Scale,
-                            .{ .scale = .{
-                                comp.value.vector[0],
-                                comp.value.vector[1],
-                                comp.value.vector[2],
-                            } },
-                        );
+                        var transform: Transform = .{
+                            .position = .{ comp.value.matrix3[6], comp.value.matrix3[7], comp.value.matrix3[8], 0 },
+                            .euler_angles = .{ comp.value.matrix3[3], comp.value.matrix3[4], comp.value.matrix3[5] },
+                            .scale = .{ comp.value.matrix3[0], comp.value.matrix3[1], comp.value.matrix3[2], 0 },
+                            .rot_dirty = true,
+                        };
+                        transform.calculate_local();
+                        _ = ecs.set(self.id, entity, Transform, transform);
                     },
                     .mesh => {
                         const mesh = try mesh_manager.get_mesh(comp.value.guid);

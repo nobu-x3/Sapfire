@@ -9,34 +9,7 @@
                     {
                         "name": "scene.components.Transform",
                         "value": {
-                            "matrix": [
-                                1.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                1.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                1.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                1.0e+00
-                            ]
-                        }
-                    },
-                    {
-                        "name": "scene.components.Scale",
-                        "value": {
-                            "vector": [
-                                1.0e+00,
-                                1.0e+00,
-                                1.0e+00
-                            ]
+                            "matrix3": [1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
                         }
                     },
                     {
@@ -129,34 +102,7 @@
                     {
                         "name": "scene.components.Transform",
                         "value": {
-                            "matrix": [
-                                1.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                1.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                1.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                0.0e+00,
-                                1.0e+00
-                            ]
-                        }
-                    },
-                    {
-                        "name": "scene.components.Scale",
-                        "value": {
-                            "vector": [
-                                1.0e+00,
-                                1.0e+00,
-                                1.0e+00
-                            ]
+                            "matrix3": [1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
                         }
                     }
                 ],
@@ -170,7 +116,6 @@
         ],
         "components": [
             "scene.components.Transform",
-            "scene.components.Scale",
             "scene.components.Mesh",
             "renderer.material.Material"
         ]
