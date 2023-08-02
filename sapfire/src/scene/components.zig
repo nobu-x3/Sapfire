@@ -73,15 +73,15 @@ pub const Transform = extern struct {
         {
             zgui.text("Rotation:", .{});
             zgui.indent(.{});
-            if (zgui.dragFloat("Pitch", .{ .v = &self.euler_angles[0] })) {
+            if (zgui.dragFloat("Pitch", .{ .v = &self.euler_angles[0], .min = -360.0, .max = 360.0 })) {
                 to_set = true;
                 self.rot_dirty = true;
             }
-            if (zgui.dragFloat("Yaw", .{ .v = &self.euler_angles[1] })) {
+            if (zgui.dragFloat("Yaw", .{ .v = &self.euler_angles[1], .min = -360.0, .max = 360.0 })) {
                 to_set = true;
                 self.rot_dirty = true;
             }
-            if (zgui.dragFloat("Roll", .{ .v = &self.euler_angles[2] })) {
+            if (zgui.dragFloat("Roll", .{ .v = &self.euler_angles[2], .min = -360.0, .max = 360.0 })) {
                 to_set = true;
                 self.rot_dirty = true;
             }
