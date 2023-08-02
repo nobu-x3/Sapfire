@@ -3,6 +3,7 @@ const zgui = @import("zgui");
 const std = @import("std");
 const zgpu = @import("zgpu");
 const ecs = @import("zflecs");
+const generate_guid = @import("../core/asset_manager.zig").AssetManager.generate_guid;
 
 pub const ComponentTypes = enum {
     transform,
@@ -112,11 +113,45 @@ pub const Mesh = struct {
     vertex_offset: i32,
     num_indices: u32,
     num_vertices: u32,
+
+    pub fn draw_inspect(self: *Mesh, world: *ecs.world_t, entity: ecs.entity_t) void {
+        zgui.text("Mesh:", .{});
+        zgui.sameLine(.{ .spacing = 200.0 });
+        if (zgui.button("...", .{})) {
+            zgui.openPopup("Component Context", .{});
+        }
+        if (zgui.beginPopup("Component Context", .{})) {
+            if (zgui.selectable("Delete", .{})) {
+                ecs.remove(world, entity, Mesh);
+                zgui.closeCurrentPopup();
+            }
+            zgui.endPopup();
+        }
+        const maybe_scene = @import("scene.zig").Scene.scene;
+        if (maybe_scene) |scene| {
+            for (scene.asset.geometry_paths.items) |path| {
+                if (std.mem.eql(u8, &self.guid, &generate_guid(path))) {
+                    if (zgui.button(path, .{})) {
+                        zgui.openPopup("Mesh menu", .{});
+                    }
+                }
+            }
+            if (zgui.beginPopup("Mesh menu", .{})) {
+                for (scene.asset.geometry_paths.items) |path| {
+                    if (zgui.selectable(path, .{})) {
+                        _ = ecs.set(world, entity, Mesh, scene.mesh_manager.mesh_map.get(generate_guid(path)).?);
+                    }
+                }
+                zgui.endPopup();
+            }
+        }
+    }
 };
 
 // This must be populated with all inspectable components
 pub fn inspect_entity_components(world: *ecs.world_t, entity: ecs.entity_t) void {
     inspect_components(Transform, world, entity);
+    inspect_components(Mesh, world, entity);
 }
 
 fn inspect_components(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t) void {
