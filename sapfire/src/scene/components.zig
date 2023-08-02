@@ -74,15 +74,15 @@ pub const Transform = extern struct {
         {
             zgui.text("Rotation:", .{});
             zgui.indent(.{});
-            if (zgui.dragFloat("Pitch", .{ .v = &self.euler_angles[0] })) {
+            if (zgui.dragFloat("Pitch", .{ .v = &self.euler_angles[0], .min = -360.0, .max = 360.0 })) {
                 to_set = true;
                 self.rot_dirty = true;
             }
-            if (zgui.dragFloat("Yaw", .{ .v = &self.euler_angles[1] })) {
+            if (zgui.dragFloat("Yaw", .{ .v = &self.euler_angles[1], .min = -360.0, .max = 360.0 })) {
                 to_set = true;
                 self.rot_dirty = true;
             }
-            if (zgui.dragFloat("Roll", .{ .v = &self.euler_angles[2] })) {
+            if (zgui.dragFloat("Roll", .{ .v = &self.euler_angles[2], .min = -360.0, .max = 360.0 })) {
                 to_set = true;
                 self.rot_dirty = true;
             }
@@ -99,7 +99,7 @@ pub const Transform = extern struct {
     pub fn calculate_local(self: *Transform) void {
         const scaling: zm.Mat = zm.scaling(self.scale[0], self.scale[1], self.scale[2]);
         if (self.rot_dirty) {
-            self.rotation = zm.quatFromRollPitchYaw(self.euler_angles[0], self.euler_angles[1], self.euler_angles[2]);
+            self.rotation = zm.quatFromRollPitchYaw(std.math.degreesToRadians(f32, self.euler_angles[0]), std.math.degreesToRadians(f32, self.euler_angles[1]), std.math.degreesToRadians(f32, self.euler_angles[2]));
         }
         const matFromQuat: zm.Mat = zm.matFromQuat(self.rotation);
         const rotation: zm.Mat = zm.mul(scaling, matFromQuat);
