@@ -4,6 +4,7 @@ const std = @import("std");
 const zgpu = @import("zgpu");
 const ecs = @import("zflecs");
 const generate_guid = @import("../core/asset_manager.zig").AssetManager.generate_guid;
+const Material = @import("../rendering.zig").Material;
 
 pub const ComponentTypes = enum {
     transform,
@@ -30,11 +31,10 @@ pub const Transform = extern struct {
         var to_set = false;
         {
             zgui.text("Position:", .{});
-            zgui.sameLine(.{ .spacing = 200.0 });
-            if (zgui.button("...", .{})) {
-                zgui.openPopup("Component Context", .{});
+            if (zgui.button("Transform Options", .{})) {
+                zgui.openPopup("Transform Component Context", .{});
             }
-            if (zgui.beginPopup("Component Context", .{})) {
+            if (zgui.beginPopup("Transform Component Context", .{})) {
                 if (zgui.selectable("Reset", .{})) {
                     _ = ecs.set(world, entity, Transform, .{});
                     zgui.closeCurrentPopup();
@@ -94,6 +94,7 @@ pub const Transform = extern struct {
         }
         zgui.spacing();
         zgui.separator();
+        zgui.dummy(.{ .h = 5, .w = 0 });
     }
 
     pub fn calculate_local(self: *Transform) void {
@@ -116,11 +117,10 @@ pub const Mesh = struct {
 
     pub fn draw_inspect(self: *Mesh, world: *ecs.world_t, entity: ecs.entity_t) void {
         zgui.text("Mesh:", .{});
-        zgui.sameLine(.{ .spacing = 200.0 });
-        if (zgui.button("...", .{})) {
-            zgui.openPopup("Component Context", .{});
+        if (zgui.button("Mesh Options", .{})) {
+            zgui.openPopup("Mesh Component Context", .{});
         }
-        if (zgui.beginPopup("Component Context", .{})) {
+        if (zgui.beginPopup("Mesh Component Context", .{})) {
             if (zgui.selectable("Delete", .{})) {
                 ecs.remove(world, entity, Mesh);
                 zgui.closeCurrentPopup();
@@ -145,6 +145,9 @@ pub const Mesh = struct {
                 zgui.endPopup();
             }
         }
+        zgui.spacing();
+        zgui.separator();
+        zgui.dummy(.{ .h = 5, .w = 0 });
     }
 };
 
@@ -152,6 +155,7 @@ pub const Mesh = struct {
 pub fn inspect_entity_components(world: *ecs.world_t, entity: ecs.entity_t) void {
     inspect_components(Transform, world, entity);
     inspect_components(Mesh, world, entity);
+    inspect_components(Material, world, entity);
 }
 
 fn inspect_components(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t) void {

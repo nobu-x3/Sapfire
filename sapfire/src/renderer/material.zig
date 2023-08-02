@@ -1,4 +1,6 @@
 const zgpu = @import("zgpu");
+const zgui = @import("zgui");
+const ecs = @import("zflecs");
 const std = @import("std");
 const log = @import("../core/logger.zig");
 const json = std.json;
@@ -106,6 +108,42 @@ pub const Material = struct {
     guid: [64]u8,
     bind_group: zgpu.BindGroupHandle,
     sampler: zgpu.SamplerHandle, // in case we need it later
+
+    pub fn draw_inspect(self: *Material, world: *ecs.world_t, entity: ecs.entity_t) void {
+        zgui.text("Material:", .{});
+        if (zgui.button("Mat. Options", .{})) {
+            zgui.openPopup("Material Component Context", .{});
+        }
+        if (zgui.beginPopup("Material Component Context", .{})) {
+            if (zgui.selectable("Delete", .{})) {
+                ecs.remove(world, entity, Material);
+                zgui.closeCurrentPopup();
+            }
+            zgui.endPopup();
+        }
+        const maybe_scene = @import("../scene/scene.zig").Scene.scene;
+        if (maybe_scene) |scene| {
+            for (scene.asset.material_paths.items) |path| {
+                if (std.mem.eql(u8, &self.guid, &sf.AssetManager.generate_guid(path))) {
+                    if (zgui.button(path, .{})) {
+                        zgui.openPopup("Material menu", .{});
+                    }
+                    break;
+                }
+            }
+            if (zgui.beginPopup("Material menu", .{})) {
+                for (scene.asset.material_paths.items) |path| {
+                    if (zgui.selectable(path, .{})) {
+                        _ = ecs.set(world, entity, Material, scene.material_manager.materials.get(sf.AssetManager.generate_guid(path)).?);
+                    }
+                }
+                zgui.endPopup();
+            }
+        }
+        zgui.spacing();
+        zgui.separator();
+        zgui.dummy(.{ .h = 5, .w = 0 });
+    }
 
     // TODO: make bind group configurable
     pub fn create_tex_name(gctx: *zgpu.GraphicsContext, name: [:0]const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) Material {
