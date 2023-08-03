@@ -230,6 +230,16 @@ pub const Scene = struct {
                         _ = ecs.set(self.world.id, currently_selected_entity, Transform, .{});
                         zgui.closeCurrentPopup();
                     }
+                    if (zgui.selectable("Mesh", .{ .flags = .{ .allow_double_click = true } })) {
+                        ecs.add(self.world.id, currently_selected_entity, Mesh);
+                        _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0])).?);
+                        zgui.closeCurrentPopup();
+                    }
+                    if (zgui.selectable("Material", .{ .flags = .{ .allow_double_click = true } })) {
+                        ecs.add(self.world.id, currently_selected_entity, Material);
+                        _ = ecs.set(self.world.id, currently_selected_entity, Material, self.material_manager.materials.get(sf.AssetManager.generate_guid(self.asset.material_paths.items[0])).?);
+                        zgui.closeCurrentPopup();
+                    }
                     zgui.endPopup();
                 }
             }
