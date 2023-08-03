@@ -200,7 +200,10 @@ pub const Scene = struct {
         zgui.end();
     }
 
-    pub fn draw_inspector(self: *Scene) void {
+    pub fn draw_inspector(
+        self: *Scene,
+        asset_manager: *sf.AssetManager,
+    ) void {
         if (zgui.begin("Inspector", .{})) {
             const entity_name = ecs.get_name(self.world.id, currently_selected_entity) orelse {
                 zgui.end();
@@ -220,7 +223,7 @@ pub const Scene = struct {
                 zgui.text("Tags:", .{});
                 tags.inspect_entity_tags(self.world.id, currently_selected_entity);
                 zgui.dummy(.{ .h = 5, .w = 0 });
-                comps.inspect_entity_components(self.world.id, currently_selected_entity);
+                comps.inspect_entity_components(self.world.id, currently_selected_entity, asset_manager);
                 if (zgui.button("Add Component", .{})) {
                     zgui.openPopup("Add Component Popup", .{});
                 }

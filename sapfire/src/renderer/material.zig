@@ -109,7 +109,8 @@ pub const Material = struct {
     bind_group: zgpu.BindGroupHandle,
     sampler: zgpu.SamplerHandle, // in case we need it later
 
-    pub fn draw_inspect(self: *Material, world: *ecs.world_t, entity: ecs.entity_t) void {
+    pub fn draw_inspect(self: *Material, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *sf.AssetManager) void {
+        _ = asset_manager;
         zgui.text("Material:", .{});
         if (zgui.button("Mat. Options", .{})) {
             zgui.openPopup("Material Component Context", .{});
@@ -223,6 +224,7 @@ pub const Material = struct {
 pub const MaterialAsset = struct {
     guid: [64]u8,
     texture_guid: ?[64]u8,
+    path: [:0]const u8,
 
     fn create(parse_allocator: std.mem.Allocator, path: [:0]const u8) !MaterialAsset {
         const material_guid = sf.AssetManager.generate_guid(path);
@@ -234,8 +236,10 @@ pub const MaterialAsset = struct {
             texture_guid: ?[64]u8,
         };
         const config = try json.parseFromSliceLeaky(Config, parse_allocator, config_data, .{});
-        // const texture = tex.texture_manager_get_texture(asset_manager.texture_manager(), config.texture_guid.?);
+        var path_cpy = try parse_allocator.allocSentinel(u8, path.len, 0);
+        @memcpy(path_cpy, path);
         return MaterialAsset{
+            .path = path_cpy,
             .guid = material_guid,
             .texture_guid = config.texture_guid,
         };

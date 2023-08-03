@@ -12,6 +12,7 @@ const Mesh = @import("../scene/components.zig").Mesh;
 
 pub const MeshAsset = struct {
     guid: [64]u8,
+    path: [:0]const u8,
     material_guid: [64]u8,
     indices: std.ArrayList(u32),
     positions: std.ArrayList([3]f32),
@@ -175,7 +176,10 @@ pub const MeshManager = struct {
         try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
         const material_guid = sf.AssetManager.generate_guid(config.material_path);
         const guid = sf.AssetManager.generate_guid(config_path);
+        var path_cpy = try arena.allocSentinel(u8, config_path.len, 0);
+        @memcpy(path_cpy, config_path);
         const asset = MeshAsset{
+            .path = path_cpy,
             .guid = guid,
             .material_guid = material_guid,
             .indices = indices,

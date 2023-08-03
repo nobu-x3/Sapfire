@@ -143,3 +143,6 @@ pub const AssetType = enum {
 };
 
 var instance: AssetManager = undefined;
+pub fn asset_manager() *AssetManager {
+    return &instance;
+}

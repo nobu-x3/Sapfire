@@ -3,7 +3,9 @@ const zgui = @import("zgui");
 const std = @import("std");
 const zgpu = @import("zgpu");
 const ecs = @import("zflecs");
-const generate_guid = @import("../core/asset_manager.zig").AssetManager.generate_guid;
+const asset = @import("../core/asset_manager.zig");
+const AssetManager = asset.AssetManager;
+const generate_guid = AssetManager.generate_guid;
 const Material = @import("../rendering.zig").Material;
 
 pub const ComponentTypes = enum {
@@ -27,7 +29,8 @@ pub const Transform = extern struct {
     local: zm.Mat = zm.mul(zm.matFromQuat(zm.qidentity()), zm.translation(0.0, 0.0, 0.0)),
     world: zm.Mat = zm.mul(zm.matFromQuat(zm.qidentity()), zm.translation(0.0, 0.0, 0.0)),
 
-    pub fn draw_inspect(self: *Transform, world: *ecs.world_t, entity: ecs.entity_t) void {
+    pub fn draw_inspect(self: *Transform, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) void {
+        _ = asset_manager;
         var to_set = false;
         {
             zgui.text("Position:", .{});
@@ -115,7 +118,7 @@ pub const Mesh = struct {
     num_indices: u32,
     num_vertices: u32,
 
-    pub fn draw_inspect(self: *Mesh, world: *ecs.world_t, entity: ecs.entity_t) void {
+    pub fn draw_inspect(self: *Mesh, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) void {
         zgui.text("Mesh:", .{});
         if (zgui.button("Mesh Options", .{})) {
             zgui.openPopup("Mesh Component Context", .{});
@@ -137,9 +140,18 @@ pub const Mesh = struct {
                 }
             }
             if (zgui.beginPopup("Mesh menu", .{})) {
-                for (scene.asset.geometry_paths.items) |path| {
-                    if (zgui.selectable(path, .{})) {
-                        _ = ecs.set(world, entity, Mesh, scene.mesh_manager.mesh_map.get(generate_guid(path)).?);
+                var it = asset_manager.mesh_manager.mesh_assets_map.iterator();
+                while (it.next()) |entry| {
+                    if (zgui.selectable(entry.value_ptr.path, .{})) {
+                        const result = scene.mesh_manager.mesh_map.getOrPut(entry.value_ptr.guid) catch |e| {
+                            std.log.err("Error: {s}", .{@typeName(@TypeOf(e))});
+                            zgui.endPopup();
+                            return;
+                        };
+                        if (!result.found_existing) {
+                            result.value_ptr.* = asset_manager.mesh_manager.mesh_map.get(entry.value_ptr.guid).?;
+                        }
+                        _ = ecs.set(world, entity, Mesh, result.value_ptr.*);
                     }
                 }
                 zgui.endPopup();
@@ -152,16 +164,16 @@ pub const Mesh = struct {
 };
 
 // This must be populated with all inspectable components
-pub fn inspect_entity_components(world: *ecs.world_t, entity: ecs.entity_t) void {
-    inspect_components(Transform, world, entity);
-    inspect_components(Mesh, world, entity);
-    inspect_components(Material, world, entity);
+pub fn inspect_entity_components(world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) void {
+    inspect_components(Transform, world, entity, asset_manager);
+    inspect_components(Mesh, world, entity, asset_manager);
+    inspect_components(Material, world, entity, asset_manager);
 }
 
-fn inspect_components(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t) void {
+fn inspect_components(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) void {
     if (ecs.get(world, entity, T)) |val| {
         if (!ecs.is_valid(world, entity) or !ecs.is_alive(world, entity)) return;
         var val_copy = val.*;
-        val_copy.draw_inspect(world, entity);
+        val_copy.draw_inspect(world, entity, asset_manager);
     }
 }
