@@ -19,7 +19,7 @@ pub const MeshAsset = struct {
     uvs: std.ArrayList([2]f32),
     parse_success: bool,
 
-    pub fn load_mesh(path: [:0]const u8, mesh_manager: *MeshManager, out_meshes: *std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !Mesh {
+    pub fn load_mesh(path: [:0]const u8, mesh_manager: *MeshManager, out_meshes: ?*std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !Mesh {
         const guid = sf.AssetManager.generate_guid(path);
         const data = mesh_manager.mesh_assets_map.get(guid) orelse {
             log.err("Mesh at path {s} is not present in the asset database. Loading failed.", .{path});
@@ -27,8 +27,8 @@ pub const MeshAsset = struct {
         };
         if (mesh_manager.mesh_map.contains(guid)) {
             const mesh = mesh_manager.mesh_map.get(guid).?;
-            try out_meshes.append(mesh);
-            // try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
+            if (out_meshes != null)
+                try out_meshes.?.append(mesh);
             for (data.indices.items) |index| {
                 try out_indices.append(index);
             }
@@ -48,8 +48,8 @@ pub const MeshAsset = struct {
             .num_vertices = @intCast(data.positions.items.len),
         };
         try mesh_manager.mesh_map.put(guid, mesh);
-        try out_meshes.append(mesh);
-        // try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
+        if (out_meshes != null)
+            try out_meshes.?.append(mesh);
         for (data.indices.items) |index| {
             try out_indices.append(index);
         }
@@ -92,6 +92,7 @@ pub const MeshAsset = struct {
 
 pub const MeshManager = struct {
     arena: std.heap.ArenaAllocator,
+    parse_arena: std.heap.ArenaAllocator,
     mesh_assets_map: std.AutoHashMap([64]u8, MeshAsset),
     mesh_map: std.AutoHashMap([64]u8, Mesh),
 
@@ -99,7 +100,6 @@ pub const MeshManager = struct {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var arena_alloc = arena.allocator();
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        defer parse_arena.deinit();
         zmesh.init(parse_arena.allocator());
         defer zmesh.deinit();
         const config_data = std.fs.cwd().readFileAlloc(parse_arena.allocator(), config_path, 512 * 16) catch |e| {
@@ -121,6 +121,7 @@ pub const MeshManager = struct {
             };
         }
         return MeshManager{
+            .parse_arena = parse_arena,
             .arena = arena,
             .mesh_assets_map = asset_map,
             .mesh_map = mesh_map,
@@ -131,7 +132,6 @@ pub const MeshManager = struct {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var arena_alloc = arena.allocator();
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        defer parse_arena.deinit();
         zmesh.init(parse_arena.allocator());
         defer zmesh.deinit();
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
@@ -145,6 +145,7 @@ pub const MeshManager = struct {
             };
         }
         return MeshManager{
+            .parse_arena = parse_arena,
             .arena = arena,
             .mesh_assets_map = asset_map,
             .mesh_map = mesh_map,
@@ -152,6 +153,7 @@ pub const MeshManager = struct {
     }
 
     pub fn deinit(manager: *MeshManager) void {
+        manager.parse_arena.deinit();
         manager.arena.deinit();
     }
 

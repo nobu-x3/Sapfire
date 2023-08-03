@@ -21,6 +21,7 @@ const sf = struct {
     usingnamespace @import("../renderer/buffer.zig");
     usingnamespace @import("../renderer/texture.zig");
     usingnamespace @import("../renderer/pipeline.zig");
+    usingnamespace @import("../renderer/renderer.zig");
 };
 
 const ComponentValueTag = enum { matrix, vector, path, guid, matrix3 };
@@ -127,14 +128,14 @@ pub const Scene = struct {
         var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
         var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
         var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
-        var meshes = std.ArrayList(Mesh).init(arena.allocator()); // NOTE: we don't actually need to cache any of it after creating vert/ind buffers
+        var meshes = std.ArrayList(Mesh).init(arena.allocator());
         try meshes.ensureTotalCapacity(128);
         var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
         defer vertices.deinit();
-        try vertices.ensureTotalCapacity(256);
+        try vertices.ensureTotalCapacity(99999);
         var indices = std.ArrayList(u32).init(arena.allocator());
         defer indices.deinit();
-        try indices.ensureTotalCapacity(256);
+        try indices.ensureTotalCapacity(99999);
         var pipeline_system = try sf.PipelineSystem.init(arena.allocator());
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -151,7 +152,6 @@ pub const Scene = struct {
         const scene_entity = try world.deserialize(&scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
         currently_selected_entity = scene_entity;
         const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
-        // Create an index buffer.
         const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
         ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
@@ -173,6 +173,14 @@ pub const Scene = struct {
             .vertex_buffer = vertex_buffer,
             .index_buffer = index_buffer,
         };
+    }
+
+    pub fn recreate_buffers(self: *Scene) void {
+        const gctx = sf.RendererState.renderer.?.gctx;
+        gctx.releaseResource(self.index_buffer);
+        gctx.releaseResource(self.vertex_buffer);
+        self.vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, self.vertices.items);
+        self.index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, self.indices.items);
     }
 
     pub fn update(self: *Scene, delta_time: f32) !void {
@@ -553,9 +561,6 @@ pub const World = struct {
             }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
             try pipeline_system.add_material(pipeline.*, sf.AssetManager.generate_guid(material_path));
         }
-        // try self.component_add(sf.PipelineSystem);
-        // ecs.add(self.id, ecs.id(sf.PipelineSystem), sf.PipelineSystem);
-        // _ = ecs.set(self.id, ecs.id(sf.PipelineSystem), sf.PipelineSystem, pipeline_system.*);
         for (scene_asset.geometry_paths.items) |geometry_path| {
             _ = try sf.MeshAsset.load_mesh(geometry_path, mesh_manager, meshes, vertices, indices);
         }

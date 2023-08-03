@@ -6,7 +6,8 @@ const ecs = @import("zflecs");
 const asset = @import("../core/asset_manager.zig");
 const AssetManager = asset.AssetManager;
 const generate_guid = AssetManager.generate_guid;
-const Material = @import("../rendering.zig").Material;
+const rendering = @import("../rendering.zig");
+const Material = rendering.Material;
 
 pub const ComponentTypes = enum {
     transform,
@@ -143,15 +144,23 @@ pub const Mesh = struct {
                 var it = asset_manager.mesh_manager.mesh_assets_map.iterator();
                 while (it.next()) |entry| {
                     if (zgui.selectable(entry.value_ptr.path, .{})) {
-                        const result = scene.mesh_manager.mesh_map.getOrPut(entry.value_ptr.guid) catch |e| {
-                            std.log.err("Error: {s}", .{@typeName(@TypeOf(e))});
-                            zgui.endPopup();
-                            return;
-                        };
-                        if (!result.found_existing) {
-                            result.value_ptr.* = asset_manager.mesh_manager.mesh_map.get(entry.value_ptr.guid).?;
+                        if (!scene.mesh_manager.mesh_map.contains(entry.value_ptr.guid)) {
+                            const mesh = asset_manager.mesh_manager.mesh_map.get(entry.value_ptr.guid) orelse val: {
+                                const mesh = rendering.MeshAsset.load_mesh(entry.value_ptr.path, &asset_manager.mesh_manager, null, &scene.vertices, &scene.indices) catch |e| {
+                                    std.log.err("Failed to add mesh asset to the editor manager. {s}.", .{@typeName(@TypeOf(e))});
+                                    zgui.endPopup();
+                                    return;
+                                };
+                                break :val mesh;
+                            };
+                            scene.mesh_manager.mesh_map.put(mesh.guid, mesh) catch |e| {
+                                std.log.err("Failed to add a new mesh to scene asset manager, {s}.", .{@typeName(@TypeOf(e))});
+                                zgui.endPopup();
+                                return;
+                            };
+                            scene.recreate_buffers();
                         }
-                        _ = ecs.set(world, entity, Mesh, result.value_ptr.*);
+                        _ = ecs.set(world, entity, Mesh, scene.mesh_manager.mesh_map.get(entry.value_ptr.guid).?);
                     }
                 }
                 zgui.endPopup();
