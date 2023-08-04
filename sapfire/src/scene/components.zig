@@ -133,9 +133,10 @@ pub const Mesh = struct {
         }
         const maybe_scene = @import("scene.zig").Scene.scene;
         if (maybe_scene) |scene| {
-            for (scene.asset.geometry_paths.items) |path| {
-                if (std.mem.eql(u8, &self.guid, &generate_guid(path))) {
-                    if (zgui.button(path, .{})) {
+            var iter = asset_manager.mesh_manager.mesh_assets_map.iterator();
+            while (iter.next()) |entry| {
+                if (std.mem.eql(u8, &self.guid, entry.key_ptr)) {
+                    if (zgui.button(entry.value_ptr.path, .{})) {
                         zgui.openPopup("Mesh menu", .{});
                     }
                 }
