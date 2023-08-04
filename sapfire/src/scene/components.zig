@@ -139,6 +139,7 @@ pub const Mesh = struct {
                     if (zgui.button(entry.value_ptr.path, .{})) {
                         zgui.openPopup("Mesh menu", .{});
                     }
+                    break;
                 }
             }
             if (zgui.beginPopup("Mesh menu", .{})) {

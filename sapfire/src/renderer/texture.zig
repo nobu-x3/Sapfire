@@ -47,7 +47,7 @@ pub const Texture = struct {
         return Texture{ .handle = handle, .view = texture_view };
     }
 
-    fn generate_default(gctx: *zgpu.GraphicsContext) !Texture {
+    pub fn generate_default(gctx: *zgpu.GraphicsContext) !Texture {
         // Generate default texture
         @setEvalBranchQuota(256 * 256 * 4);
         const dimensions: u32 = 256;
