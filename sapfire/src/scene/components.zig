@@ -162,7 +162,6 @@ pub const Mesh = struct {
                             };
                             scene.recreate_buffers();
                             try scene.asset.geometry_paths.append(entry.value_ptr.path);
-                            std.log.info("HAI", .{});
                         }
                         _ = ecs.set(world, entity, Mesh, scene.mesh_manager.mesh_map.get(entry.value_ptr.guid).?);
                     }

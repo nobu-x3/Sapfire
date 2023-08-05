@@ -182,6 +182,7 @@ pub const Material = struct {
                                 return;
                             };
                             try scene.asset.material_paths.append(entry.value_ptr.path);
+                            try scene.asset.texture_paths.append(asset_manager.texture_manager.texture_assets_map.get(entry.value_ptr.texture_guid.?).?.path);
                         }
                         _ = ecs.set(world, entity, Material, scene.material_manager.materials.get(entry.key_ptr.*).?);
                     }

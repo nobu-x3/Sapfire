@@ -81,9 +81,9 @@ pub const SceneAsset = struct {
             return e;
         };
         const config = try json.parseFromSliceLeaky(ParseScene, database_allocator, config_data, .{});
-        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
-        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
-        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
+        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
+        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
+        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
         for (config.meshes) |mesh| {
             try texture_paths.append(mesh.texture_path);
             try geometry_paths.append(mesh.geometry_path);
