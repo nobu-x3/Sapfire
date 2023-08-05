@@ -112,7 +112,7 @@ pub const Material = struct {
     bind_group: zgpu.BindGroupHandle,
     sampler: zgpu.SamplerHandle, // in case we need it later
 
-    pub fn draw_inspect(self: *Material, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *sf.AssetManager) void {
+    pub fn draw_inspect(self: *Material, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *sf.AssetManager) !void {
         const gctx = sf.RendererState.renderer.?.gctx;
         zgui.text("Material:", .{});
         if (zgui.button("Mat. Options", .{})) {
@@ -181,6 +181,7 @@ pub const Material = struct {
                                 zgui.endPopup();
                                 return;
                             };
+                            try scene.asset.material_paths.append(entry.value_ptr.path);
                         }
                         _ = ecs.set(world, entity, Material, scene.material_manager.materials.get(entry.key_ptr.*).?);
                     }

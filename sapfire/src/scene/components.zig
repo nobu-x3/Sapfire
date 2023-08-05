@@ -30,7 +30,7 @@ pub const Transform = extern struct {
     local: zm.Mat = zm.mul(zm.matFromQuat(zm.qidentity()), zm.translation(0.0, 0.0, 0.0)),
     world: zm.Mat = zm.mul(zm.matFromQuat(zm.qidentity()), zm.translation(0.0, 0.0, 0.0)),
 
-    pub fn draw_inspect(self: *Transform, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) void {
+    pub fn draw_inspect(self: *Transform, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) !void {
         _ = asset_manager;
         var to_set = false;
         {
@@ -119,7 +119,7 @@ pub const Mesh = struct {
     num_indices: u32,
     num_vertices: u32,
 
-    pub fn draw_inspect(self: *Mesh, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) void {
+    pub fn draw_inspect(self: *Mesh, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) !void {
         zgui.text("Mesh:", .{});
         if (zgui.button("Mesh Options", .{})) {
             zgui.openPopup("Mesh Component Context", .{});
@@ -161,6 +161,8 @@ pub const Mesh = struct {
                                 return;
                             };
                             scene.recreate_buffers();
+                            try scene.asset.geometry_paths.append(entry.value_ptr.path);
+                            std.log.info("HAI", .{});
                         }
                         _ = ecs.set(world, entity, Mesh, scene.mesh_manager.mesh_map.get(entry.value_ptr.guid).?);
                     }
@@ -175,16 +177,16 @@ pub const Mesh = struct {
 };
 
 // This must be populated with all inspectable components
-pub fn inspect_entity_components(world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) void {
-    inspect_components(Transform, world, entity, asset_manager);
-    inspect_components(Mesh, world, entity, asset_manager);
-    inspect_components(Material, world, entity, asset_manager);
+pub fn inspect_entity_components(world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) !void {
+    try inspect_components(Transform, world, entity, asset_manager);
+    try inspect_components(Mesh, world, entity, asset_manager);
+    try inspect_components(Material, world, entity, asset_manager);
 }
 
-fn inspect_components(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) void {
+fn inspect_components(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) !void {
     if (ecs.get(world, entity, T)) |val| {
         if (!ecs.is_valid(world, entity) or !ecs.is_alive(world, entity)) return;
         var val_copy = val.*;
-        val_copy.draw_inspect(world, entity, asset_manager);
+        try val_copy.draw_inspect(world, entity, asset_manager);
     }
 }

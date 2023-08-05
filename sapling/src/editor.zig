@@ -149,7 +149,7 @@ pub const Editor = struct {
                 }
                 zgui.end();
                 self.current_scene.draw_scene_hierarchy();
-                self.current_scene.draw_inspector(asset_manager());
+                try self.current_scene.draw_inspector(asset_manager());
             }
 
             const swapchain_texv = gctx.swapchain.getCurrentTextureView();

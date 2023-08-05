@@ -211,7 +211,7 @@ pub const Scene = struct {
     pub fn draw_inspector(
         self: *Scene,
         asset_manager: *sf.AssetManager,
-    ) void {
+    ) !void {
         if (zgui.begin("Inspector", .{})) {
             const entity_name = ecs.get_name(self.world.id, currently_selected_entity) orelse {
                 zgui.end();
@@ -231,7 +231,7 @@ pub const Scene = struct {
                 zgui.text("Tags:", .{});
                 tags.inspect_entity_tags(self.world.id, currently_selected_entity);
                 zgui.dummy(.{ .h = 5, .w = 0 });
-                comps.inspect_entity_components(self.world.id, currently_selected_entity, asset_manager);
+                try comps.inspect_entity_components(self.world.id, currently_selected_entity, asset_manager);
                 if (zgui.button("Add Component", .{})) {
                     zgui.openPopup("Add Component Popup", .{});
                 }
@@ -242,8 +242,43 @@ pub const Scene = struct {
                         zgui.closeCurrentPopup();
                     }
                     if (zgui.selectable("Mesh", .{ .flags = .{ .allow_double_click = true } })) {
-                        ecs.add(self.world.id, currently_selected_entity, Mesh);
-                        _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0])).?);
+                        { // Mesh
+                            ecs.add(self.world.id, currently_selected_entity, Mesh);
+                            _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0])).?);
+                            _ = sf.MeshAsset.load_mesh(self.asset.geometry_paths.items[0], &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
+                                std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
+                                zgui.closeCurrentPopup();
+                                return;
+                            };
+                            self.recreate_buffers();
+                        }
+                        { // Material
+                            ecs.add(self.world.id, currently_selected_entity, Material);
+                            _ = ecs.set(self.world.id, currently_selected_entity, Material, self.material_manager.materials.get(sf.AssetManager.generate_guid(self.asset.material_paths.items[0])).?);
+                            const gctx = sf.RendererState.renderer.?.gctx;
+                            const global_uniform_bgl = gctx.createBindGroupLayout(&.{
+                                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+                            });
+                            defer gctx.releaseResource(global_uniform_bgl);
+                            const local_bgl = gctx.createBindGroupLayout(
+                                &.{
+                                    zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+                                    zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+                                    zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+                                },
+                            );
+                            defer gctx.releaseResource(local_bgl);
+                            const new_pipeline = self.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false) catch |e| {
+                                std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
+                                zgui.endPopup();
+                                return;
+                            };
+                            self.pipeline_system.add_material(new_pipeline.*, sf.AssetManager.generate_guid(self.asset.material_paths.items[0])) catch |e| {
+                                std.log.err("Error when adding material to the newly created pipeline. {s}.", .{@typeName(@TypeOf(e))});
+                                zgui.endPopup();
+                                return;
+                            };
+                        }
                         zgui.closeCurrentPopup();
                     }
                     if (zgui.selectable("Material", .{ .flags = .{ .allow_double_click = true } })) {
