@@ -36,7 +36,7 @@ pub const RendererState = struct {
     // TODO: runtime dependent assets should be multithreaded here. Probably pass a pointer to scene asset here.
     pub fn create(allocator: std.mem.Allocator, window: *glfw.Window) !*RendererState {
         var arena = std.heap.ArenaAllocator.init(allocator);
-        const gctx = try zgpu.GraphicsContext.create(arena.allocator(), window);
+        const gctx = try zgpu.GraphicsContext.create(arena.allocator(), window, .{});
         const depth_texture = sf.Texture.create_depth(gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{

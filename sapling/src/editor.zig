@@ -35,7 +35,7 @@ pub const Editor = struct {
             return e;
         };
         window.setSizeLimits(400, 400, -1, -1);
-        var gctx = try zgpu.GraphicsContext.create(allocator, window);
+        var gctx = try zgpu.GraphicsContext.create(allocator, window, .{});
         zgui.init(allocator);
         zgui.backend.initWithConfig(
             window,
