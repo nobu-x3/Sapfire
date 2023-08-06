@@ -80,9 +80,9 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
                 .view_projection = zm.transpose(cam_world_to_clip),
             };
             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
-            var i: usize = 0;
             while (ecs.query_next(it)) {
                 const entities = it.entities();
+                var i: usize = 0;
                 while (i < it.count()) : (i += 1) {
                     if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
                     var current_pipeline: Pipeline = undefined;

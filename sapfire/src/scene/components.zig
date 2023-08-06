@@ -161,10 +161,10 @@ pub const Mesh = struct {
                                 return;
                             };
                             try scene.asset.geometry_paths.append(entry.value_ptr.path);
+                            scene.recreate_buffers();
                         }
                         const mesh = scene.mesh_manager.mesh_map.get(entry.value_ptr.guid).?;
                         _ = ecs.set(world, entity, Mesh, mesh);
-                        scene.recreate_buffers();
                     }
                 }
                 zgui.endPopup();
