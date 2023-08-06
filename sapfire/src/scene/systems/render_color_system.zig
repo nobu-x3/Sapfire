@@ -73,8 +73,6 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
             }
             pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
             pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
-            // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
-
             const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
             glob.slice[0] = .{
                 .view_projection = zm.transpose(cam_world_to_clip),

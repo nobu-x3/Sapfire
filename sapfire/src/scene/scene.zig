@@ -131,10 +131,8 @@ pub const Scene = struct {
         var meshes = std.ArrayList(Mesh).init(arena.allocator());
         try meshes.ensureTotalCapacity(128);
         var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
-        defer vertices.deinit();
         try vertices.ensureTotalCapacity(99999);
         var indices = std.ArrayList(u32).init(arena.allocator());
-        defer indices.deinit();
         try indices.ensureTotalCapacity(99999);
         var pipeline_system = try sf.PipelineSystem.init(arena.allocator());
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
@@ -188,6 +186,8 @@ pub const Scene = struct {
     }
 
     pub fn destroy(self: *Scene) void {
+        self.vertices.deinit();
+        self.indices.deinit();
         self.world.deinit();
         self.arena.deinit();
     }
