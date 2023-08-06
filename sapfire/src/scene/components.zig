@@ -114,10 +114,10 @@ pub const Transform = extern struct {
 
 pub const Mesh = struct {
     guid: [64]u8,
-    index_offset: u32,
-    vertex_offset: i32,
-    num_indices: u32,
-    num_vertices: u32,
+    index_offset: u32 = 0,
+    vertex_offset: i32 = 0,
+    num_indices: u32 = 0,
+    num_vertices: u32 = 0,
 
     pub fn draw_inspect(self: *Mesh, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *AssetManager) !void {
         zgui.text("Mesh:", .{});
@@ -160,10 +160,11 @@ pub const Mesh = struct {
                                 zgui.endPopup();
                                 return;
                             };
-                            scene.recreate_buffers();
                             try scene.asset.geometry_paths.append(entry.value_ptr.path);
                         }
-                        _ = ecs.set(world, entity, Mesh, scene.mesh_manager.mesh_map.get(entry.value_ptr.guid).?);
+                        const mesh = scene.mesh_manager.mesh_map.get(entry.value_ptr.guid).?;
+                        _ = ecs.set(world, entity, Mesh, mesh);
+                        scene.recreate_buffers();
                     }
                 }
                 zgui.endPopup();
