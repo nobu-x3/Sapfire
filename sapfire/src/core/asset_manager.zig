@@ -1,8 +1,10 @@
 const std = @import("std");
+const zgui = @import("zgui");
 const log = @import("logger.zig");
 const crypto = std.crypto;
 const json = std.json;
 const jobs = @import("jobs.zig");
+const nfd = @import("nfd");
 
 const sf = struct {
     usingnamespace @import("../renderer/texture.zig");
@@ -132,6 +134,13 @@ pub const AssetManager = struct {
         var guid: [64]u8 = undefined;
         crypto.hash.sha2.Sha512.hash(path, &guid, .{});
         return guid;
+    }
+
+    pub fn draw_explorer() void {
+        if (zgui.begin("Asset explorer", .{})) {
+            if (zgui.button("Add", .{})) {}
+        }
+        zgui.end();
     }
 };
 
