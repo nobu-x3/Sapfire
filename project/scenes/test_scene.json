@@ -125,11 +125,11 @@
             "geometry_path": "project/meshes/cube.json",
             "material_path": "project/materials/material.json",
             "texture_path": "assets/textures/cobblestone.png"
-        },
-        {
-            "geometry_path": "project/meshes/helmet.json",
+        },{
+            "geometry_path": "project/meshes/cube.json",
             "material_path": "project/materials/material.json",
             "texture_path": "assets/textures/cobblestone.png"
         }
+
     ]
 }

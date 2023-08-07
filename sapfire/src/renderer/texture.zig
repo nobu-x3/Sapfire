@@ -47,7 +47,7 @@ pub const Texture = struct {
         return Texture{ .handle = handle, .view = texture_view };
     }
 
-    fn generate_default(gctx: *zgpu.GraphicsContext) !Texture {
+    pub fn generate_default(gctx: *zgpu.GraphicsContext) !Texture {
         // Generate default texture
         @setEvalBranchQuota(256 * 256 * 4);
         const dimensions: u32 = 256;
@@ -129,6 +129,7 @@ pub const Texture = struct {
 
 pub const TextureAsset = struct {
     guid: [64]u8,
+    path: [:0]const u8,
     data: []u8,
     parse_success: bool,
     width: u32,
@@ -237,10 +238,13 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
     for (paths) |path| {
         const hash = sf.AssetManager.generate_guid(path);
         if (out_map.contains(hash)) continue;
+        var path_cpy = try allocator.allocSentinel(u8, path.len, 0);
+        @memcpy(path_cpy, path);
         var image = stbi.Image.loadFromFile(path, 4) catch {
             log.err("Error loading texture from path {s}.", .{path});
             const asset: TextureAsset = .{
                 .guid = hash,
+                .path = path,
                 .data = undefined,
                 .parse_success = false,
                 .width = 0,
@@ -262,6 +266,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
         @memcpy(data, image.data);
         const asset: TextureAsset = .{
             .guid = hash,
+            .path = path,
             .data = data,
             .parse_success = true,
             .width = image.width,

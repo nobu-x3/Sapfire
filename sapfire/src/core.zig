@@ -7,3 +7,4 @@ pub const JobsManager = @import("core/jobs.zig").JobsManager;
 pub const JobId = @import("core/jobs.zig").JobId;
 pub const Jobs = @import("core/jobs.zig").Jobs;
 pub const Time = @import("core/time.zig").Time;
+pub const asset_manager = @import("core/asset_manager.zig").asset_manager;

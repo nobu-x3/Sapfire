@@ -21,6 +21,7 @@ const sf = struct {
     usingnamespace @import("../renderer/buffer.zig");
     usingnamespace @import("../renderer/texture.zig");
     usingnamespace @import("../renderer/pipeline.zig");
+    usingnamespace @import("../renderer/renderer.zig");
 };
 
 const ComponentValueTag = enum { matrix, vector, path, guid, matrix3 };
@@ -80,9 +81,9 @@ pub const SceneAsset = struct {
             return e;
         };
         const config = try json.parseFromSliceLeaky(ParseScene, database_allocator, config_data, .{});
-        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
-        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
-        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len);
+        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
+        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
+        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
         for (config.meshes) |mesh| {
             try texture_paths.append(mesh.texture_path);
             try geometry_paths.append(mesh.geometry_path);
@@ -127,14 +128,12 @@ pub const Scene = struct {
         var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
         var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
         var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
-        var meshes = std.ArrayList(Mesh).init(arena.allocator()); // NOTE: we don't actually need to cache any of it after creating vert/ind buffers
+        var meshes = std.ArrayList(Mesh).init(arena.allocator());
         try meshes.ensureTotalCapacity(128);
         var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
-        defer vertices.deinit();
-        try vertices.ensureTotalCapacity(256);
+        try vertices.ensureTotalCapacity(99999);
         var indices = std.ArrayList(u32).init(arena.allocator());
-        defer indices.deinit();
-        try indices.ensureTotalCapacity(256);
+        try indices.ensureTotalCapacity(99999);
         var pipeline_system = try sf.PipelineSystem.init(arena.allocator());
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -151,7 +150,6 @@ pub const Scene = struct {
         const scene_entity = try world.deserialize(&scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
         currently_selected_entity = scene_entity;
         const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
-        // Create an index buffer.
         const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
         ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
@@ -175,11 +173,21 @@ pub const Scene = struct {
         };
     }
 
+    pub fn recreate_buffers(self: *Scene) void {
+        const gctx = sf.RendererState.renderer.?.gctx;
+        gctx.releaseResource(self.index_buffer);
+        gctx.releaseResource(self.vertex_buffer);
+        self.vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, self.vertices.items);
+        self.index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, self.indices.items);
+    }
+
     pub fn update(self: *Scene, delta_time: f32) !void {
         _ = ecs.progress(self.world.id, delta_time);
     }
 
     pub fn destroy(self: *Scene) void {
+        self.vertices.deinit();
+        self.indices.deinit();
         self.world.deinit();
         self.arena.deinit();
     }
@@ -200,7 +208,10 @@ pub const Scene = struct {
         zgui.end();
     }
 
-    pub fn draw_inspector(self: *Scene) void {
+    pub fn draw_inspector(
+        self: *Scene,
+        asset_manager: *sf.AssetManager,
+    ) !void {
         if (zgui.begin("Inspector", .{})) {
             const entity_name = ecs.get_name(self.world.id, currently_selected_entity) orelse {
                 zgui.end();
@@ -216,9 +227,11 @@ pub const Scene = struct {
                 _ = ecs.set_name(self.world.id, currently_selected_entity, @ptrCast(&buf));
             }
             if (currently_selected_entity != self.scene_entity) {
+                zgui.dummy(.{ .h = 5, .w = 0 });
                 zgui.text("Tags:", .{});
                 tags.inspect_entity_tags(self.world.id, currently_selected_entity);
-                comps.inspect_entity_components(self.world.id, currently_selected_entity);
+                zgui.dummy(.{ .h = 5, .w = 0 });
+                try comps.inspect_entity_components(self.world.id, currently_selected_entity, asset_manager);
                 if (zgui.button("Add Component", .{})) {
                     zgui.openPopup("Add Component Popup", .{});
                 }
@@ -226,6 +239,53 @@ pub const Scene = struct {
                     if (zgui.selectable("Transform", .{ .flags = .{ .allow_double_click = true } })) {
                         ecs.add(self.world.id, currently_selected_entity, Transform);
                         _ = ecs.set(self.world.id, currently_selected_entity, Transform, .{});
+                        zgui.closeCurrentPopup();
+                    }
+                    if (zgui.selectable("Mesh", .{ .flags = .{ .allow_double_click = true } })) {
+                        { // Mesh
+                            ecs.add(self.world.id, currently_selected_entity, Mesh);
+                            // _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0])).?);
+                            // _ = sf.MeshAsset.load_mesh(self.asset.geometry_paths.items[0], &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
+                            //     std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
+                            //     zgui.closeCurrentPopup();
+                            //     return;
+                            // };
+                            // self.recreate_buffers();
+
+                            _ = ecs.set(self.world.id, currently_selected_entity, Mesh, .{ .guid = sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0]) });
+                        }
+                        { // Material
+                            ecs.add(self.world.id, currently_selected_entity, Material);
+                            _ = ecs.set(self.world.id, currently_selected_entity, Material, self.material_manager.materials.get(sf.AssetManager.generate_guid(self.asset.material_paths.items[0])).?);
+                            const gctx = sf.RendererState.renderer.?.gctx;
+                            const global_uniform_bgl = gctx.createBindGroupLayout(&.{
+                                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+                            });
+                            defer gctx.releaseResource(global_uniform_bgl);
+                            const local_bgl = gctx.createBindGroupLayout(
+                                &.{
+                                    zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+                                    zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+                                    zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+                                },
+                            );
+                            defer gctx.releaseResource(local_bgl);
+                            const new_pipeline = self.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false) catch |e| {
+                                std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
+                                zgui.endPopup();
+                                return;
+                            };
+                            self.pipeline_system.add_material(new_pipeline.*, sf.AssetManager.generate_guid(self.asset.material_paths.items[0])) catch |e| {
+                                std.log.err("Error when adding material to the newly created pipeline. {s}.", .{@typeName(@TypeOf(e))});
+                                zgui.endPopup();
+                                return;
+                            };
+                        }
+                        zgui.closeCurrentPopup();
+                    }
+                    if (zgui.selectable("Material", .{ .flags = .{ .allow_double_click = true } })) {
+                        ecs.add(self.world.id, currently_selected_entity, Material);
+                        _ = ecs.set(self.world.id, currently_selected_entity, Material, self.material_manager.materials.get(sf.AssetManager.generate_guid(self.asset.material_paths.items[0])).?);
                         zgui.closeCurrentPopup();
                     }
                     zgui.endPopup();
@@ -538,9 +598,6 @@ pub const World = struct {
             }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
             try pipeline_system.add_material(pipeline.*, sf.AssetManager.generate_guid(material_path));
         }
-        // try self.component_add(sf.PipelineSystem);
-        // ecs.add(self.id, ecs.id(sf.PipelineSystem), sf.PipelineSystem);
-        // _ = ecs.set(self.id, ecs.id(sf.PipelineSystem), sf.PipelineSystem, pipeline_system.*);
         for (scene_asset.geometry_paths.items) |geometry_path| {
             _ = try sf.MeshAsset.load_mesh(geometry_path, mesh_manager, meshes, vertices, indices);
         }

@@ -16,7 +16,7 @@ pub fn system() ecs.system_desc_t {
     desc.query.filter.terms[1] = .{ .id = ecs.id(components.Transform) };
     desc.query.filter.terms[2] = .{ .id = ecs.id(components.Mesh) };
     desc.query.order_by_component = ecs.id(Material);
-    desc.callback = run;
+    desc.run = run;
     return desc;
 }
 
@@ -73,49 +73,49 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
             }
             pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
             pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
-            // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
-
             const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
             glob.slice[0] = .{
                 .view_projection = zm.transpose(cam_world_to_clip),
             };
             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
-            var i: usize = 0;
-            const entities = it.entities();
-            while (i < it.count()) : (i += 1) {
-                if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
-                var current_pipeline: Pipeline = undefined;
-                var current_material: Material = undefined;
-                if (ecs.field(it, Material, 1)) |materials| {
-                    const mat = materials[i];
-                    const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
-                    if (pipe.handle.id != current_pipeline.handle.id) {
-                        current_pipeline = pipe;
-                        const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
-                        pass.setPipeline(pipeline);
-                    }
-                    var should_bind_group = false;
+            while (ecs.query_next(it)) {
+                const entities = it.entities();
+                var i: usize = 0;
+                while (i < it.count()) : (i += 1) {
+                    if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
+                    var current_pipeline: Pipeline = undefined;
+                    var current_material: Material = undefined;
+                    if (ecs.field(it, Material, 1)) |materials| {
+                        const mat = materials[i];
+                        const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
+                        if (pipe.handle.id != current_pipeline.handle.id) {
+                            current_pipeline = pipe;
+                            const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
+                            pass.setPipeline(pipeline);
+                        }
+                        var should_bind_group = false;
 
-                    if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
-                        current_material = mat;
-                        should_bind_group = true;
-                    }
-                    if (ecs.field(it, components.Transform, 2)) |transforms| {
-                        const transform = transforms[i];
-                        if (ecs.field(it, components.Mesh, 3)) |meshes| {
-                            const mesh_comp = meshes[i];
-                            const object_to_world = transform.world;
-                            const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
-                            mem.slice[0] = .{
-                                .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
-                                .mip_level = @floatFromInt(renderer_state.mip_level),
-                                .model = zm.transpose(object_to_world),
-                            };
-                            if (should_bind_group) {
-                                const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
-                                pass.setBindGroup(1, bind_group, &.{mem.offset});
+                        if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
+                            current_material = mat;
+                            should_bind_group = true;
+                        }
+                        if (ecs.field(it, components.Transform, 2)) |transforms| {
+                            const transform = transforms[i];
+                            if (ecs.field(it, components.Mesh, 3)) |meshes| {
+                                const mesh_comp = meshes[i];
+                                const object_to_world = transform.world;
+                                const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
+                                mem.slice[0] = .{
+                                    .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
+                                    .mip_level = @floatFromInt(renderer_state.mip_level),
+                                    .model = zm.transpose(object_to_world),
+                                };
+                                if (should_bind_group) {
+                                    const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
+                                    pass.setBindGroup(1, bind_group, &.{mem.offset});
+                                }
+                                pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                             }
-                            pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                         }
                     }
                 }
