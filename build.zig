@@ -16,6 +16,10 @@ pub fn build(b: *std.Build) void {
 
     const optimize = b.standardOptimizeOption(.{});
 
+    const nfd_path = "libs/nfd-zig/";
+    const nfd_module = b.createModule(.{
+        .source_file = .{ .path = nfd_path ++ "src/lib.zig" },
+    });
     const zglfw_pkg = zglfw.package(b, target, optimize, .{});
     const zpool_pkg = zpool.package(b, target, optimize, .{});
     const zgpu_pkg = zgpu.package(b, target, optimize, .{
@@ -39,6 +43,7 @@ pub fn build(b: *std.Build) void {
     sapfire_module.dependencies.put("zgui", zgui_pkg.zgui) catch {};
     sapfire_module.dependencies.put("zmesh", zmesh_pkg.zmesh) catch {};
     sapfire_module.dependencies.put("zflecs", zflecs_pkg.zflecs) catch {};
+    sapfire_module.dependencies.put("nfd", nfd_module) catch {};
 
     const game_exe = b.addExecutable(.{
         .name = "Sandbox",
@@ -78,10 +83,6 @@ pub fn build(b: *std.Build) void {
     zflecs_pkg.link(editor_exe);
     editor_exe.addModule("sapfire", sapfire_module);
 
-    const nfd_path = "libs/nfd-zig/";
-    const nfd_module = b.createModule(.{
-        .source_file = .{ .path = nfd_path ++ "src/lib.zig" },
-    });
     const nfd_lib = b.addStaticLibrary(.{
         .name = "nfd",
         .root_source_file = .{ .path = nfd_path ++ "src/lib.zig" },
