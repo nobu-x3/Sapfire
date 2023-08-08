@@ -162,8 +162,8 @@ pub const AssetManager = struct {
                 }
                 zgui.endPopup();
             }
-            zgui.end();
         }
+        zgui.end();
     }
 };
 
