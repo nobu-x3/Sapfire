@@ -1,4 +1,5 @@
 const std = @import("std");
+const AssetManager = @import("../core/asset_manager.zig").AssetManager;
 const zmesh = @import("zmesh");
 const log = @import("../core/logger.zig");
 const json = std.json;
@@ -90,11 +91,16 @@ pub const MeshAsset = struct {
     }
 };
 
+const Config = struct {
+    database: [][:0]const u8,
+};
+
 pub const MeshManager = struct {
     arena: std.heap.ArenaAllocator,
     parse_arena: std.heap.ArenaAllocator,
     mesh_assets_map: std.AutoHashMap([64]u8, MeshAsset),
     mesh_map: std.AutoHashMap([64]u8, Mesh),
+    path_database: std.ArrayList([:0]const u8),
 
     pub fn init(allocator: std.mem.Allocator, config_path: []const u8) !MeshManager {
         var arena = std.heap.ArenaAllocator.init(allocator);
@@ -106,9 +112,7 @@ pub const MeshManager = struct {
             log.err("Failed to parse texture config file. Given path:{s}", .{config_path});
             return e;
         };
-        const Config = struct {
-            database: [][:0]const u8,
-        };
+        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(@intCast(config.database.len));
@@ -119,12 +123,14 @@ pub const MeshManager = struct {
                 log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
                 return e;
             };
+            try path_database.append(path);
         }
         return MeshManager{
             .parse_arena = parse_arena,
             .arena = arena,
             .mesh_assets_map = asset_map,
             .mesh_map = mesh_map,
+            .path_database = path_database,
         };
     }
 
@@ -138,17 +144,20 @@ pub const MeshManager = struct {
         try asset_map.ensureTotalCapacity(@intCast(paths.len));
         var mesh_map = std.AutoHashMap([64]u8, Mesh).init(arena_alloc);
         try mesh_map.ensureTotalCapacity(1024);
+        var config = std.ArrayList([:0]const u8).init(parse_arena.allocator());
         for (paths) |path| {
             create_mesh_asset(arena_alloc, parse_arena.allocator(), path, &asset_map) catch |e| {
                 log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
                 return e;
             };
+            try config.append(path);
         }
         return MeshManager{
             .parse_arena = parse_arena,
             .arena = arena,
             .mesh_assets_map = asset_map,
             .mesh_map = mesh_map,
+            .path_database = config,
         };
     }
 
@@ -157,16 +166,17 @@ pub const MeshManager = struct {
         manager.arena.deinit();
     }
 
+    const MeshConfig = struct {
+        geometry_path: [:0]const u8,
+        material_path: [:0]const u8,
+    };
+
     fn create_mesh_asset(arena: std.mem.Allocator, parse_arena: std.mem.Allocator, config_path: [:0]const u8, out_map: *std.AutoHashMap([64]u8, MeshAsset)) !void {
         const config_data = std.fs.cwd().readFileAlloc(parse_arena, config_path, 512 * 16) catch |e| {
             log.err("Failed to parse mesh config file. Given path:{s}", .{config_path});
             return e;
         };
-        const Config = struct {
-            geometry_path: [:0]const u8,
-            material_path: [:0]const u8,
-        };
-        const config = try json.parseFromSliceLeaky(Config, parse_arena, config_data, .{});
+        const config = try json.parseFromSliceLeaky(MeshConfig, parse_arena, config_data, .{});
         const data = zmesh.io.parseAndLoadFile(config.geometry_path) catch |e| {
             log.err("Error type: {s}", .{@typeName(@TypeOf(e))});
             return e;
@@ -191,6 +201,56 @@ pub const MeshManager = struct {
         };
         try out_map.put(guid, asset);
         log.info("Mesh at {s} added to asset map with guid\n{d}", .{ config_path, guid });
+    }
+
+    pub fn import_mesh(self: *MeshManager, path: [:0]const u8) !void {
+        zmesh.init(self.parse_arena.allocator());
+        defer zmesh.deinit();
+        const data = zmesh.io.parseAndLoadFile(path) catch |e| {
+            log.err("Error type: {s}", .{@typeName(@TypeOf(e))});
+            return e;
+        };
+        defer zmesh.io.freeData(data);
+        var indices = std.ArrayList(u32).init(self.arena.allocator());
+        var positions = std.ArrayList([3]f32).init(self.arena.allocator());
+        var uvs = std.ArrayList([2]f32).init(self.arena.allocator());
+        try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
+        var iter = AssetManager.material_manager().material_asset_map.iterator();
+        const material_asset = iter.next().?.value_ptr;
+        const material_guid = material_asset.guid;
+        var split = std.mem.splitAny(u8, path, "/");
+        var name = split.first();
+        while (split.peek() != null) {
+            name = split.rest();
+            _ = split.next();
+        }
+        const mesh_json_path = try std.mem.concatWithSentinel(self.parse_arena.allocator(), u8, &.{ "project/meshes/", name, ".json" }, 0);
+        const guid = sf.AssetManager.generate_guid(mesh_json_path);
+        var path_cpy = try self.arena.allocator().allocSentinel(u8, mesh_json_path.len, 0);
+        @memcpy(path_cpy, mesh_json_path);
+        const asset = MeshAsset{
+            .path = path_cpy,
+            .guid = guid,
+            .material_guid = material_guid,
+            .indices = indices,
+            .positions = positions,
+            .uvs = uvs,
+            .parse_success = true,
+        };
+        try self.mesh_assets_map.put(guid, asset);
+        try self.path_database.append(mesh_json_path);
+        { // new mesh .json
+            var file = try std.fs.cwd().createFile(mesh_json_path, .{});
+            defer file.close();
+            var writer = file.writer();
+            try json.stringify(MeshConfig{ .geometry_path = path, .material_path = material_asset.path }, .{}, writer);
+        }
+        { // serialize mesh_config.json
+            var file = try std.fs.cwd().createFile("project/mesh_config.json", .{});
+            defer file.close();
+            var writer = file.writer();
+            try json.stringify(Config{ .database = self.path_database.items }, .{}, writer);
+        }
     }
 
     pub fn get_mesh(self: *MeshManager, guid: [64]u8) !Mesh {

@@ -1,8 +1,10 @@
 const std = @import("std");
+const zgui = @import("zgui");
 const log = @import("logger.zig");
 const crypto = std.crypto;
 const json = std.json;
 const jobs = @import("jobs.zig");
+const nfd = @import("nfd");
 
 const sf = struct {
     usingnamespace @import("../renderer/texture.zig");
@@ -16,6 +18,7 @@ const sf = struct {
 // Editor asset manager will load ALL assets to memory, while runtime asset manager will only load those used in the scene.
 pub const AssetManager = struct {
     allocator: std.mem.Allocator,
+    parse_arena: std.heap.ArenaAllocator,
     texture_manager: sf.TextureManager,
     material_manager: sf.MaterialManager,
     mesh_manager: sf.MeshManager,
@@ -109,6 +112,7 @@ pub const AssetManager = struct {
         }{});
         jobs.JobsManager.jobs().join();
         instance.scene_manager = try sf.SceneManager.init(allocator, config.scene_config);
+        instance.parse_arena = std.heap.ArenaAllocator.init(allocator);
     }
 
     pub fn deinit() void {
@@ -132,6 +136,34 @@ pub const AssetManager = struct {
         var guid: [64]u8 = undefined;
         crypto.hash.sha2.Sha512.hash(path, &guid, .{});
         return guid;
+    }
+
+    var selected_asset_type: AssetType = .Mesh;
+    var asset_modal_open: bool = false;
+    pub fn draw_explorer() !void {
+        if (zgui.begin("Asset explorer", .{})) {
+            if (zgui.button("Add", .{})) {
+                asset_modal_open = true;
+                zgui.openPopup("Asset import modal", .{});
+            }
+            if (zgui.beginPopupModal("Asset import modal", .{ .popen = &asset_modal_open })) {
+                if (zgui.comboFromEnum("Asset type", &selected_asset_type)) {}
+                if (zgui.button("Import", .{})) {
+                    switch (selected_asset_type) {
+                        .Mesh => {
+                            const open_path = try nfd.openFileDialog("gltf", null);
+                            if (open_path) |path| {
+                                try instance.mesh_manager.import_mesh(path);
+                                asset_modal_open = false;
+                            }
+                        },
+                        else => {},
+                    }
+                }
+                zgui.endPopup();
+            }
+            zgui.end();
+        }
     }
 };
 
