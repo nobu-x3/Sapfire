@@ -242,6 +242,10 @@ pub const AssetManager = struct {
                             selected_explorer_category = .Mesh;
                             selected_asset_guid = entry.value_ptr.guid;
                         }
+                        if (zgui.isItemClicked(.right)) {
+                            selected_explorer_category = .Mesh;
+                            selected_asset_guid = entry.value_ptr.guid;
+                        }
                     }
                 }
                 { // Materials
@@ -251,6 +255,10 @@ pub const AssetManager = struct {
                     var it = self.material_manager.material_asset_map.iterator();
                     while (it.next()) |entry| {
                         if (zgui.selectable(entry.value_ptr.path, .{ .selected = selected_asset_guid != null and std.mem.eql(u8, &entry.value_ptr.guid, &selected_asset_guid.?) })) {
+                            selected_explorer_category = .Material;
+                            selected_asset_guid = entry.value_ptr.guid;
+                        }
+                        if (zgui.isItemClicked(.right)) {
                             selected_explorer_category = .Material;
                             selected_asset_guid = entry.value_ptr.guid;
                         }
@@ -266,7 +274,80 @@ pub const AssetManager = struct {
                             selected_explorer_category = .Texture;
                             selected_asset_guid = entry.value_ptr.guid;
                         }
+                        if (zgui.isItemClicked(.right)) {
+                            selected_explorer_category = .Texture;
+                            selected_asset_guid = entry.value_ptr.guid;
+                        }
                     }
+                }
+                if (zgui.isMouseClicked(.right)) {
+                    zgui.openPopup("Asset context menu", .{});
+                }
+
+                if (selected_asset_guid != null and zgui.isWindowFocused(.{ .root_window = true, .child_windows = true }) and zgui.beginPopup("Asset context menu", .{})) {
+                    if (zgui.selectable("Delete", .{})) {
+                        switch (selected_explorer_category) {
+                            .Material => {
+                                var mat = self.material_manager.material_asset_map.get(selected_asset_guid.?).?;
+                                try std.fs.cwd().deleteFile(mat.path);
+                                var index_to_remove: usize = 0;
+                                for (self.material_manager.path_database.items, 0..) |path, index| {
+                                    if (std.mem.eql(u8, path, mat.path)) {
+                                        index_to_remove = index;
+                                        break;
+                                    }
+                                }
+                                _ = self.material_manager.material_asset_map.remove(selected_asset_guid.?);
+                                _ = self.material_manager.path_database.swapRemove(index_to_remove);
+                                { // serialize material_config.json
+                                    var file = try std.fs.cwd().createFile("project/material_config.json", .{});
+                                    defer file.close();
+                                    var writer = file.writer();
+                                    try json.stringify(sf.MaterialManager.Config{ .database = self.material_manager.path_database.items }, .{}, writer);
+                                }
+                            },
+                            .Texture => { // TODO: If the texture is used, it'll crash
+                                var tex = self.texture_manager.texture_assets_map.get(selected_asset_guid.?).?;
+                                var index_to_remove: usize = 0;
+                                for (self.texture_manager.path_database.items, 0..) |path, index| {
+                                    if (std.mem.eql(u8, path, tex.path)) {
+                                        index_to_remove = index;
+                                        break;
+                                    }
+                                }
+                                _ = self.texture_manager.texture_assets_map.remove(selected_asset_guid.?);
+                                _ = self.texture_manager.path_database.swapRemove(index_to_remove);
+                                { // serialize material_config.json
+                                    var file = try std.fs.cwd().createFile("project/texture_config.json", .{});
+                                    defer file.close();
+                                    var writer = file.writer();
+                                    try json.stringify(sf.MaterialManager.Config{ .database = self.material_manager.path_database.items }, .{}, writer);
+                                }
+                            },
+                            .Mesh => {
+                                var mesh = self.mesh_manager.mesh_assets_map.get(selected_asset_guid.?).?;
+                                try std.fs.cwd().deleteFile(mesh.path);
+                                var index_to_remove: usize = 0;
+                                for (self.mesh_manager.path_database.items, 0..) |path, index| {
+                                    if (std.mem.eql(u8, path, mesh.path)) {
+                                        index_to_remove = index;
+                                        break;
+                                    }
+                                }
+                                _ = self.mesh_manager.mesh_assets_map.remove(selected_asset_guid.?);
+                                _ = self.mesh_manager.path_database.swapRemove(index_to_remove);
+                                { // serialize material_config.json
+                                    var file = try std.fs.cwd().createFile("project/mesh_config.json", .{});
+                                    defer file.close();
+                                    var writer = file.writer();
+                                    try json.stringify(sf.MaterialManager.Config{ .database = self.material_manager.path_database.items }, .{}, writer);
+                                }
+                            },
+                            else => {},
+                        }
+                        zgui.closeCurrentPopup();
+                    }
+                    zgui.endPopup();
                 }
                 zgui.endListBox();
             }
