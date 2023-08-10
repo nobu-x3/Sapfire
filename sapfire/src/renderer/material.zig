@@ -20,6 +20,11 @@ pub const MaterialManager = struct {
     asset_arena: std.heap.ArenaAllocator,
     parse_arena: std.heap.ArenaAllocator,
     default_material: ?Material = null,
+    path_database: std.ArrayList([:0]const u8), // TODO: serialize material_asset_map paths instead
+
+    pub const Config = struct {
+        database: [][:0]const u8,
+    };
 
     // TODO: parse config file
     pub fn init(allocator: std.mem.Allocator, config_path: []const u8) !MaterialManager {
@@ -27,12 +32,10 @@ pub const MaterialManager = struct {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var alloc = arena.allocator();
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
         const config_data = std.fs.cwd().readFileAlloc(parse_arena.allocator(), config_path, 512 * 16) catch |e| {
             log.err("Failed to parse material manager config file. Given path:{s}", .{config_path});
             return e;
-        };
-        const Config = struct {
-            database: [][:0]const u8,
         };
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var materials = std.AutoHashMap([64]u8, Material).init(alloc);
@@ -42,6 +45,7 @@ pub const MaterialManager = struct {
         for (config.database) |path| {
             const material_asset = try MaterialAsset.create(parse_arena.allocator(), path);
             try asset_map.putNoClobber(material_asset.guid, material_asset);
+            try path_database.append(path);
         }
         return MaterialManager{
             .parse_arena = parse_arena,
@@ -49,6 +53,7 @@ pub const MaterialManager = struct {
             .arena = arena,
             .material_asset_map = asset_map,
             .asset_arena = asset_arena,
+            .path_database = path_database,
         };
     }
 
@@ -57,6 +62,7 @@ pub const MaterialManager = struct {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var alloc = arena.allocator();
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
         var materials = std.AutoHashMap([64]u8, Material).init(alloc);
         try materials.ensureTotalCapacity(@intCast(paths.len));
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
@@ -66,6 +72,7 @@ pub const MaterialManager = struct {
             if (asset_map.contains(guid)) continue;
             const material_asset = try MaterialAsset.create(parse_arena.allocator(), path);
             try asset_map.putNoClobber(material_asset.guid, material_asset);
+            try path_database.append(path);
         }
         return MaterialManager{
             .parse_arena = parse_arena,
@@ -73,10 +80,12 @@ pub const MaterialManager = struct {
             .arena = arena,
             .material_asset_map = asset_map,
             .asset_arena = asset_arena,
+            .path_database = path_database,
         };
     }
 
     pub fn deinit(system: *MaterialManager) void {
+        system.path_database.deinit();
         system.parse_arena.deinit();
         system.asset_arena.deinit();
         system.arena.deinit();
@@ -282,14 +291,15 @@ pub const MaterialAsset = struct {
     texture_guid: ?[64]u8,
     path: [:0]const u8,
 
+    pub const Config = struct {
+        texture_guid: ?[64]u8,
+    };
+
     fn create(parse_allocator: std.mem.Allocator, path: [:0]const u8) !MaterialAsset {
         const material_guid = sf.AssetManager.generate_guid(path);
         const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
             log.err("Failed to parse material config file. Given path:{s}", .{path});
             return e;
-        };
-        const Config = struct {
-            texture_guid: ?[64]u8,
         };
         const config = try json.parseFromSliceLeaky(Config, parse_allocator, config_data, .{});
         var path_cpy = try parse_allocator.allocSentinel(u8, path.len, 0);

@@ -138,32 +138,140 @@ pub const AssetManager = struct {
         return guid;
     }
 
-    var selected_asset_type: AssetType = .Mesh;
+    var selected_import_asset_type: AssetType = .Mesh;
+    var selected_texture_in_asset_creation: ?[64]u8 = null;
     var asset_modal_open: bool = false;
-    pub fn draw_explorer() !void {
+    var new_asset_name_buf = [_]u8{0} ** 128;
+
+    var selected_explorer_category: AssetType = .Mesh;
+    var selected_asset_guid: ?[64]u8 = null;
+
+    pub fn draw_explorer(self: *AssetManager) !void {
         if (zgui.begin("Asset explorer", .{})) {
             if (zgui.button("Add", .{})) {
                 asset_modal_open = true;
+                selected_texture_in_asset_creation = null;
+                new_asset_name_buf = [_]u8{0} ** 128;
                 zgui.openPopup("Asset import modal", .{});
             }
             if (zgui.beginPopupModal("Asset import modal", .{ .popen = &asset_modal_open })) {
-                if (zgui.comboFromEnum("Asset type", &selected_asset_type)) {}
-                if (zgui.button("Import", .{})) {
-                    switch (selected_asset_type) {
-                        .Mesh => {
+                if (zgui.comboFromEnum("Asset type", &selected_import_asset_type)) {}
+                switch (selected_import_asset_type) {
+                    .Mesh => {
+                        if (zgui.button("Import", .{})) {
                             const open_path = try nfd.openFileDialog("gltf", null);
                             if (open_path) |path| {
-                                try instance.mesh_manager.import_mesh(path);
+                                try self.mesh_manager.import_mesh(path);
                                 asset_modal_open = false;
                             }
-                        },
-                        else => {},
-                    }
+                        }
+                    },
+                    .Texture => {
+                        if (zgui.button("Import", .{})) {
+                            const open_path = try nfd.openFileDialog("png", null);
+                            if (open_path) |path| {
+                                try self.texture_manager.import_texture_asset(path);
+                                asset_modal_open = false;
+                            }
+                        }
+                    },
+                    .Material => {
+                        if (zgui.inputText("Name: ", .{
+                            .buf = &new_asset_name_buf,
+                            .flags = .{
+                                .enter_returns_true = true,
+                            },
+                        })) {}
+
+                        if (zgui.beginListBox("Texture:", .{})) {
+                            var it = self.texture_manager.texture_assets_map.iterator();
+                            while (it.next()) |entry| {
+                                if (zgui.selectable(entry.value_ptr.path, .{ .selected = selected_texture_in_asset_creation != null and std.mem.eql(u8, &entry.value_ptr.guid, &selected_texture_in_asset_creation.?) })) {
+                                    selected_texture_in_asset_creation = entry.value_ptr.guid;
+                                }
+                            }
+                            zgui.endListBox();
+                        }
+                        if (zgui.button("Add Material", .{})) {
+                            var size: usize = 0;
+                            for (0..128) |i| {
+                                if (new_asset_name_buf[i] == 0) {
+                                    size = i;
+                                    break;
+                                }
+                            }
+                            if (size > 0) {
+                                const material_path_json = try std.mem.concatWithSentinel(self.parse_arena.allocator(), u8, &.{ "project/materials/", new_asset_name_buf[0..size], ".json" }, 0);
+                                const guid = generate_guid(material_path_json);
+                                var material_asset = sf.MaterialAsset{
+                                    .texture_guid = selected_texture_in_asset_creation,
+                                    .path = material_path_json,
+                                    .guid = guid,
+                                };
+                                try self.material_manager.material_asset_map.put(guid, material_asset);
+                                { // new material .json
+                                    var file = try std.fs.cwd().createFile(material_path_json, .{});
+                                    defer file.close();
+                                    var writer = file.writer();
+                                    try json.stringify(sf.MaterialAsset.Config{ .texture_guid = material_asset.texture_guid }, .{}, writer);
+                                }
+                                { // serialize material_config.json
+                                    try self.material_manager.path_database.append(material_path_json);
+                                    var file = try std.fs.cwd().createFile("project/material_config.json", .{});
+                                    defer file.close();
+                                    var writer = file.writer();
+                                    try json.stringify(sf.MaterialManager.Config{ .database = self.material_manager.path_database.items }, .{}, writer);
+                                }
+                                asset_modal_open = false;
+                            }
+                        }
+                    },
+                    else => {},
                 }
                 zgui.endPopup();
             }
-            zgui.end();
+
+            if (zgui.beginListBox("Asset List", .{})) {
+                { // Mesh
+                    zgui.dummy(.{ .w = 0.0, .h = 5.0 });
+                    zgui.text("Meshes:", .{});
+                    zgui.separator();
+                    var it = self.mesh_manager.mesh_assets_map.iterator();
+                    while (it.next()) |entry| {
+                        if (zgui.selectable(entry.value_ptr.path, .{ .selected = selected_asset_guid != null and std.mem.eql(u8, &entry.value_ptr.guid, &selected_asset_guid.?) })) {
+                            selected_explorer_category = .Mesh;
+                            selected_asset_guid = entry.value_ptr.guid;
+                        }
+                    }
+                }
+                { // Materials
+                    zgui.dummy(.{ .w = 0.0, .h = 5.0 });
+                    zgui.text("Materials:", .{});
+                    zgui.separator();
+                    var it = self.material_manager.material_asset_map.iterator();
+                    while (it.next()) |entry| {
+                        if (zgui.selectable(entry.value_ptr.path, .{ .selected = selected_asset_guid != null and std.mem.eql(u8, &entry.value_ptr.guid, &selected_asset_guid.?) })) {
+                            selected_explorer_category = .Material;
+                            selected_asset_guid = entry.value_ptr.guid;
+                        }
+                    }
+                }
+                { // Materials
+                    zgui.dummy(.{ .w = 0.0, .h = 5.0 });
+                    zgui.text("Textures:", .{});
+                    zgui.separator();
+                    var it = self.texture_manager.texture_assets_map.iterator();
+                    while (it.next()) |entry| {
+                        if (zgui.selectable(entry.value_ptr.path, .{ .selected = selected_asset_guid != null and std.mem.eql(u8, &entry.value_ptr.guid, &selected_asset_guid.?) })) {
+                            selected_explorer_category = .Texture;
+                            selected_asset_guid = entry.value_ptr.guid;
+                        }
+                    }
+                }
+                zgui.endListBox();
+            }
         }
+        zgui.end();
     }
 };
 

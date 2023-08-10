@@ -137,11 +137,17 @@ pub const TextureAsset = struct {
     format: TextureFormat,
 };
 
+const Config = struct {
+    database: [][:0]const u8,
+};
+
 pub const TextureManager = struct {
     map: std.AutoHashMap([64]u8, Texture),
     arena: std.heap.ArenaAllocator,
     default_texture: ?Texture = null,
     texture_assets_map: std.AutoHashMap([64]u8, TextureAsset),
+    parse_arena: std.heap.ArenaAllocator,
+    path_database: std.ArrayList([:0]const u8),
 
     // Config loads assets to texture_assets_map, renderer will load it from
     // texture_assets_map using guid and then make image & view
@@ -151,15 +157,15 @@ pub const TextureManager = struct {
         var map = std.AutoHashMap([64]u8, Texture).init(arena_alloc);
         try map.ensureTotalCapacity(256);
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        defer parse_arena.deinit();
+        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
         const config_data = std.fs.cwd().readFileAlloc(parse_arena.allocator(), config_path, 512 * 16) catch |e| {
             log.err("Failed to parse texture config file. Given path:{s}", .{config_path});
             return e;
         };
-        const Config = struct {
-            database: [][:0]const u8,
-        };
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
+        for (config.database) |path| {
+            try path_database.append(path);
+        }
         var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(@intCast(config.database.len));
         try parse_pngs(arena_alloc, config.database, &asset_map);
@@ -167,6 +173,8 @@ pub const TextureManager = struct {
             .arena = arena,
             .map = map,
             .texture_assets_map = asset_map,
+            .parse_arena = parse_arena,
+            .path_database = path_database,
         };
     }
 
@@ -176,7 +184,10 @@ pub const TextureManager = struct {
         var map = std.AutoHashMap([64]u8, Texture).init(arena_alloc);
         try map.ensureTotalCapacity(256);
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        defer parse_arena.deinit();
+        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        for (paths) |path| {
+            try path_database.append(path);
+        }
         var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(@intCast(paths.len));
         try parse_pngs(arena_alloc, paths, &asset_map);
@@ -184,11 +195,15 @@ pub const TextureManager = struct {
             .arena = arena,
             .map = map,
             .texture_assets_map = asset_map,
+            .parse_arena = parse_arena,
+            .path_database = path_database,
         };
     }
 
     pub fn deinit(system: *TextureManager) void {
         // system.map.deinit();
+        system.path_database.deinit();
+        system.parse_arena.deinit();
         system.arena.deinit();
     }
 
@@ -227,6 +242,71 @@ pub const TextureManager = struct {
     pub fn get_texture(system: *TextureManager, guid: [64]u8) Texture {
         return system.map.get(guid) orelse system.default_texture.?;
     }
+
+    // TODO: pass an allocator instead of caching parse_arena
+    pub fn import_texture_asset(self: *TextureManager, path: [:0]const u8) !void {
+        stbi.init(self.parse_arena.allocator());
+        defer stbi.deinit();
+        var split = std.mem.splitAny(u8, path, "/");
+        var name = split.first();
+        while (split.next() != null) {
+            if (split.peek() != null and std.mem.eql(u8, split.peek().?, "assets")) {
+                name = split.buffer[split.index.?..];
+                break;
+            }
+        }
+        const texture_json_path = try std.mem.concatWithSentinel(self.parse_arena.allocator(), u8, &.{name}, 0);
+        const guid = sf.AssetManager.generate_guid(texture_json_path);
+        if (self.texture_assets_map.contains(guid)) return;
+        var path_cpy = try self.parse_arena.allocator().allocSentinel(u8, texture_json_path.len, 0);
+        @memcpy(path_cpy, texture_json_path);
+        var image = stbi.Image.loadFromFile(path, 4) catch {
+            log.err("Error loading texture from path {s}.", .{path});
+            const asset: TextureAsset = .{
+                .guid = guid,
+                .path = path_cpy,
+                .data = undefined,
+                .parse_success = false,
+                .width = 0,
+                .height = 0,
+                .format = .{
+                    .components_count = 0,
+                    .components_width = 0,
+                    .bytes_per_row = 0,
+                    .is_hdr = false,
+                },
+            };
+            try self.texture_assets_map.put(guid, asset);
+            return;
+        };
+        defer image.deinit();
+        // WARNING: if not using arena allocator do not forget to clean up
+        var data: []u8 = try self.parse_arena.allocator().alloc(u8, image.data.len);
+        @memcpy(data, image.data);
+        const asset: TextureAsset = .{
+            .guid = guid,
+            .path = texture_json_path,
+            .data = data,
+            .parse_success = true,
+            .width = image.width,
+            .height = image.height,
+            .format = .{
+                .components_count = image.num_components,
+                .components_width = image.bytes_per_component,
+                .bytes_per_row = image.bytes_per_row,
+                .is_hdr = image.is_hdr,
+            },
+        };
+        try self.texture_assets_map.put(guid, asset);
+        try self.path_database.append(texture_json_path);
+        { // serialize mesh_config.json
+            var file = try std.fs.cwd().createFile("project/texture_config.json", .{});
+            defer file.close();
+            var writer = file.writer();
+            try json.stringify(Config{ .database = self.path_database.items }, .{}, writer);
+        }
+        log.info("Adding texture at path {s} with guid \n{d} to database.", .{ texture_json_path, guid });
+    }
 };
 
 // TODO: temp function
@@ -236,14 +316,14 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
     stbi.init(arena.allocator());
     defer stbi.deinit();
     for (paths) |path| {
-        const hash = sf.AssetManager.generate_guid(path);
-        if (out_map.contains(hash)) continue;
+        const guid = sf.AssetManager.generate_guid(path);
+        if (out_map.contains(guid)) continue;
         var path_cpy = try allocator.allocSentinel(u8, path.len, 0);
         @memcpy(path_cpy, path);
         var image = stbi.Image.loadFromFile(path, 4) catch {
             log.err("Error loading texture from path {s}.", .{path});
             const asset: TextureAsset = .{
-                .guid = hash,
+                .guid = guid,
                 .path = path,
                 .data = undefined,
                 .parse_success = false,
@@ -256,7 +336,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
                     .is_hdr = false,
                 },
             };
-            try out_map.putNoClobber(hash, asset);
+            try out_map.putNoClobber(guid, asset);
             continue;
         };
         defer image.deinit();
@@ -265,7 +345,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
         var data: []u8 = try allocator.alloc(u8, image.data.len); // idk but this was damn hard to find
         @memcpy(data, image.data);
         const asset: TextureAsset = .{
-            .guid = hash,
+            .guid = guid,
             .path = path,
             .data = data,
             .parse_success = true,
@@ -278,7 +358,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
                 .is_hdr = image.is_hdr,
             },
         };
-        try out_map.putNoClobber(hash, asset);
-        log.info("Adding texture at path {s} with guid \n{d} to database.", .{ path, hash });
+        try out_map.putNoClobber(guid, asset);
+        log.info("Adding texture at path {s} with guid \n{d} to database.", .{ path, guid });
     }
 }
