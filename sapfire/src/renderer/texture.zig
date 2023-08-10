@@ -149,6 +149,26 @@ pub const TextureManager = struct {
     parse_arena: std.heap.ArenaAllocator,
     path_database: std.ArrayList([:0]const u8),
 
+    const INIT_TEXTURE_MAP_SIZE = 16;
+
+    pub fn init_empty(allocator: std.mem.Allocator) !TextureManager {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        var arena_alloc = arena.allocator();
+        var map = std.AutoHashMap([64]u8, Texture).init(arena_alloc);
+        try map.ensureTotalCapacity(256);
+        var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
+        try asset_map.ensureTotalCapacity(INIT_TEXTURE_MAP_SIZE);
+        var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        return TextureManager{
+            .arena = arena,
+            .map = map,
+            .texture_assets_map = asset_map,
+            .parse_arena = parse_arena,
+            .path_database = path_database,
+        };
+    }
+
     // Config loads assets to texture_assets_map, renderer will load it from
     // texture_assets_map using guid and then make image & view
     pub fn init(allocator: std.mem.Allocator, config_path: []const u8) !TextureManager {

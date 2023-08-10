@@ -72,7 +72,20 @@ pub const SceneAsset = struct {
     texture_paths: std.ArrayList([:0]const u8),
     material_paths: std.ArrayList([:0]const u8),
     geometry_paths: std.ArrayList([:0]const u8),
-    world: ParseWorld,
+    world: ?ParseWorld = null,
+
+    pub fn create_empty(database_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
+        const scene_guid = sf.AssetManager.generate_guid(path);
+        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
+        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
+        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
+        return SceneAsset{
+            .guid = scene_guid,
+            .texture_paths = texture_paths,
+            .material_paths = material_paths,
+            .geometry_paths = geometry_paths,
+        };
+    }
 
     pub fn create(database_allocator: std.mem.Allocator, parse_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
         const scene_guid = sf.AssetManager.generate_guid(path);
@@ -117,6 +130,61 @@ pub const Scene = struct {
 
     pub var scene: ?*Scene = null;
     pub var currently_selected_entity: ecs.entity_t = undefined;
+
+    const INIT_INDEX_ARRAY_CAPACITY = 262144;
+    const INIT_VERTEX_ARRAY_CAPACITY = 262144;
+
+    pub fn create_new(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        const scene_asset = try SceneAsset.create_empty(arena.allocator(), path);
+        var world = try World.init(arena.allocator());
+        var texman = try sf.TextureManager.init_empty(arena.allocator());
+        var matman = try sf.MaterialManager.init_empty(arena.allocator());
+        var meshman = try sf.MeshManager.init_empty(arena.allocator());
+        var meshes = std.ArrayList(Mesh).init(arena.allocator());
+        try meshes.ensureTotalCapacity(128);
+        var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
+        var pipeline_system = try sf.PipelineSystem.init(arena.allocator());
+        try vertices.ensureTotalCapacity(INIT_VERTEX_ARRAY_CAPACITY);
+        var indices = std.ArrayList(u32).init(arena.allocator());
+        try indices.ensureTotalCapacity(INIT_INDEX_ARRAY_CAPACITY);
+        const global_uniform_bgl = gctx.createBindGroupLayout(&.{
+            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+        });
+        defer gctx.releaseResource(global_uniform_bgl);
+        const global_uniform_bind_group = gctx.createBindGroup(global_uniform_bgl, &.{
+            .{
+                .binding = 0,
+                .buffer_handle = gctx.uniforms.buffer,
+                .offset = 0,
+                .size = @sizeOf(sf.GlobalUniforms),
+            },
+        });
+        const scene_entity = try world.deserialize(&scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
+        currently_selected_entity = scene_entity;
+        const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
+        const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
+        var update_transforms_system = @import("systems/update_transforms_system.zig").system();
+        ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
+        var render_color_system = @import("systems/render_color_system.zig").system();
+        ecs.SYSTEM(world.id, "render", ecs.OnStore, &render_color_system);
+        return Scene{
+            .guid = sf.AssetManager.generate_guid(path),
+            .world = world,
+            .asset = scene_asset,
+            .arena = arena,
+            .scene_entity = scene_entity,
+            .vertices = vertices,
+            .indices = indices,
+            .pipeline_system = pipeline_system,
+            .mesh_manager = meshman,
+            .texture_manager = texman,
+            .material_manager = matman,
+            .global_uniform_bind_group = global_uniform_bind_group,
+            .vertex_buffer = vertex_buffer,
+            .index_buffer = index_buffer,
+        };
+    }
 
     pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
         var arena = std.heap.ArenaAllocator.init(allocator);
@@ -469,6 +537,8 @@ pub const World = struct {
     }
 
     pub fn deinit(self: *World) void {
+        self.tag_id_map.deinit();
+        self.component_id_map.deinit();
         // NOTE: this segfaults, so just leaving it here.
         _ = ecs.fini(self.id);
     }
@@ -599,61 +669,62 @@ pub const World = struct {
         for (scene_asset.geometry_paths.items) |geometry_path| {
             _ = try sf.MeshAsset.load_mesh(geometry_path, mesh_manager, meshes, vertices, indices);
         }
-        const parser_world = scene_asset.world;
-        for (parser_world.components) |comp| {
-            const comp_type = comps.name_type_map.get(comp).?;
-            switch (comp_type) {
-                .transform => {
-                    try self.component_add(Transform);
-                },
-                .mesh => {
-                    try self.component_add(Mesh);
-                },
-                .material => {
-                    try self.component_add(Material);
-                },
-            }
-        }
-        for (parser_world.tags) |tag| {
-            const tag_type = tags.name_type_map.get(tag).?;
-            switch (tag_type) {
-                .test_tag => {
-                    try self.tag_add(TestTag);
-                },
-            }
-        }
+        try self.component_add(Transform);
         const scene_entity = self.entity_new("Root");
-        for (parser_world.entities) |e| {
-            const entity = ecs.new_from_path_w_sep(self.id, 0, e.path, ".", null);
-            for (e.tags) |tag| {
-                const tag_type = tags.name_type_map.get(tag).?;
-                switch (tag_type) {
-                    .test_tag => {
-                        const id = ecs.id(TestTag);
-                        _ = ecs.add_id(self.id, entity, id);
+        _ = self.entity_new_with_parent(scene_entity, "New Entity");
+        if (scene_asset.world) |parser_world| {
+            for (parser_world.components) |comp| {
+                const comp_type = comps.name_type_map.get(comp).?;
+                switch (comp_type) {
+                    .transform => {},
+                    .mesh => {
+                        try self.component_add(Mesh);
+                    },
+                    .material => {
+                        try self.component_add(Material);
                     },
                 }
             }
-            for (e.components) |comp| {
-                const comp_type = comps.name_type_map.get(comp.name).?;
-                switch (comp_type) {
-                    .transform => {
-                        var transform: Transform = .{
-                            .position = .{ comp.value.matrix3[6], comp.value.matrix3[7], comp.value.matrix3[8], 0 },
-                            .euler_angles = .{ comp.value.matrix3[3], comp.value.matrix3[4], comp.value.matrix3[5] },
-                            .scale = .{ comp.value.matrix3[0], comp.value.matrix3[1], comp.value.matrix3[2], 0 },
-                            .rot_dirty = true,
-                        };
-                        transform.calculate_local();
-                        _ = ecs.set(self.id, entity, Transform, transform);
+            for (parser_world.tags) |tag| {
+                const tag_type = tags.name_type_map.get(tag).?;
+                switch (tag_type) {
+                    .test_tag => {
+                        try self.tag_add(TestTag);
                     },
-                    .mesh => {
-                        const mesh = try mesh_manager.get_mesh(comp.value.guid);
-                        _ = ecs.set(self.id, entity, Mesh, mesh);
-                    },
-                    .material => {
-                        _ = ecs.set(self.id, entity, Material, material_manager.materials.get(comp.value.guid).?);
-                    },
+                }
+            }
+            for (parser_world.entities) |e| {
+                const entity = ecs.new_from_path_w_sep(self.id, 0, e.path, ".", null);
+                for (e.tags) |tag| {
+                    const tag_type = tags.name_type_map.get(tag).?;
+                    switch (tag_type) {
+                        .test_tag => {
+                            const id = ecs.id(TestTag);
+                            _ = ecs.add_id(self.id, entity, id);
+                        },
+                    }
+                }
+                for (e.components) |comp| {
+                    const comp_type = comps.name_type_map.get(comp.name).?;
+                    switch (comp_type) {
+                        .transform => {
+                            var transform: Transform = .{
+                                .position = .{ comp.value.matrix3[6], comp.value.matrix3[7], comp.value.matrix3[8], 0 },
+                                .euler_angles = .{ comp.value.matrix3[3], comp.value.matrix3[4], comp.value.matrix3[5] },
+                                .scale = .{ comp.value.matrix3[0], comp.value.matrix3[1], comp.value.matrix3[2], 0 },
+                                .rot_dirty = true,
+                            };
+                            transform.calculate_local();
+                            _ = ecs.set(self.id, entity, Transform, transform);
+                        },
+                        .mesh => {
+                            const mesh = try mesh_manager.get_mesh(comp.value.guid);
+                            _ = ecs.set(self.id, entity, Mesh, mesh);
+                        },
+                        .material => {
+                            _ = ecs.set(self.id, entity, Material, material_manager.materials.get(comp.value.guid).?);
+                        },
+                    }
                 }
             }
         }

@@ -102,6 +102,26 @@ pub const MeshManager = struct {
     mesh_map: std.AutoHashMap([64]u8, Mesh),
     path_database: std.ArrayList([:0]const u8),
 
+    const INIT_ASSET_MAP_SIZE = 16;
+
+    pub fn init_empty(allocator: std.mem.Allocator) !MeshManager {
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        var arena_alloc = arena.allocator();
+        var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
+        try asset_map.ensureTotalCapacity(INIT_ASSET_MAP_SIZE);
+        var mesh_map = std.AutoHashMap([64]u8, Mesh).init(arena_alloc);
+        try mesh_map.ensureTotalCapacity(1024);
+        return MeshManager{
+            .parse_arena = parse_arena,
+            .arena = arena,
+            .mesh_assets_map = asset_map,
+            .mesh_map = mesh_map,
+            .path_database = path_database,
+        };
+    }
+
     pub fn init(allocator: std.mem.Allocator, config_path: []const u8) !MeshManager {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var arena_alloc = arena.allocator();

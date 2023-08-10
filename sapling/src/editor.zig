@@ -80,6 +80,21 @@ pub const Editor = struct {
                 var size = [2]f32{ 0.0, 0.0 };
                 if (zgui.beginMainMenuBar()) {
                     if (zgui.beginMenu("Scene", true)) {
+                        if (zgui.menuItem("New", .{})) {
+                            const new_path = try nfd.saveFileDialog(null, null);
+                            if (new_path) |path| {
+                                if (self.current_scene_path != null) {
+                                    nfd.freePath(self.current_scene_path.?);
+                                    self.current_scene_path = null;
+                                }
+                                self.current_scene.destroy();
+                                self.current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, path);
+                                self.game_renderer.?.destroy(allocator);
+                                self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, 800, 600);
+                                RendererState.renderer = self.game_renderer;
+                                self.current_scene_path = path;
+                            }
+                        }
                         if (zgui.menuItem("Open", .{})) {
                             const open_path = try nfd.openFileDialog("json", null);
                             if (open_path) |path| {
@@ -88,7 +103,6 @@ pub const Editor = struct {
                                     self.current_scene_path = null;
                                 }
                                 // TODO: fix scene deinit
-                                // self.game_renderer.current_scene.destroy();
                                 self.current_scene.destroy();
                                 self.current_scene = try sapfire.scene.Scene.create(allocator, gctx, path);
                                 self.game_renderer.?.destroy(allocator);

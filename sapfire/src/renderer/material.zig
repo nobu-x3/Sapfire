@@ -26,6 +26,28 @@ pub const MaterialManager = struct {
         database: [][:0]const u8,
     };
 
+    const INIT_ASSET_MAP_SIZE = 16;
+
+    pub fn init_empty(allocator: std.mem.Allocator) !MaterialManager {
+        var asset_arena = std.heap.ArenaAllocator.init(allocator);
+        var arena = std.heap.ArenaAllocator.init(allocator);
+        var alloc = arena.allocator();
+        var parse_arena = std.heap.ArenaAllocator.init(allocator);
+        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var materials = std.AutoHashMap([64]u8, Material).init(alloc);
+        try materials.ensureTotalCapacity(INIT_ASSET_MAP_SIZE);
+        var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
+        try asset_map.ensureTotalCapacity(INIT_ASSET_MAP_SIZE);
+        return MaterialManager{
+            .parse_arena = parse_arena,
+            .materials = materials,
+            .arena = arena,
+            .material_asset_map = asset_map,
+            .asset_arena = asset_arena,
+            .path_database = path_database,
+        };
+    }
+
     // TODO: parse config file
     pub fn init(allocator: std.mem.Allocator, config_path: []const u8) !MaterialManager {
         var asset_arena = std.heap.ArenaAllocator.init(allocator);

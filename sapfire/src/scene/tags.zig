@@ -34,7 +34,7 @@ pub fn inspect_entity_tags(world: *ecs.world_t, entity: ecs.entity_t) void {
 }
 
 fn inspect_tag(comptime T: anytype, world: *ecs.world_t, entity: ecs.entity_t) void {
-    if (ecs.has_id(world, entity, ecs.id(T))) {
+    if (ecs.id_is_valid(world, ecs.id(T)) and ecs.has_id(world, entity, ecs.id(T))) {
         if (!ecs.is_valid(world, entity) or !ecs.is_alive(world, entity)) return;
         T.draw_inspect(world, entity);
     }
