@@ -317,7 +317,7 @@ pub const AssetManager = struct {
                                 }
                                 _ = self.texture_manager.texture_assets_map.remove(selected_asset_guid.?);
                                 _ = self.texture_manager.path_database.swapRemove(index_to_remove);
-                                { // serialize material_config.json
+                                { // serialize texture_config.json
                                     var file = try std.fs.cwd().createFile("project/texture_config.json", .{});
                                     defer file.close();
                                     var writer = file.writer();
@@ -336,7 +336,7 @@ pub const AssetManager = struct {
                                 }
                                 _ = self.mesh_manager.mesh_assets_map.remove(selected_asset_guid.?);
                                 _ = self.mesh_manager.path_database.swapRemove(index_to_remove);
-                                { // serialize material_config.json
+                                { // serialize mesh_config.json
                                     var file = try std.fs.cwd().createFile("project/mesh_config.json", .{});
                                     defer file.close();
                                     var writer = file.writer();
