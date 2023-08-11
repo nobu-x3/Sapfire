@@ -120,16 +120,8 @@
             "renderer.material.Material"
         ]
     },
-    "meshes": [
-        {
-            "geometry_path": "project/meshes/cube.json",
-            "material_path": "project/materials/material.json",
-            "texture_path": "assets/textures/cobblestone.png"
-        },{
-            "geometry_path": "project/meshes/cube.json",
-            "material_path": "project/materials/material.json",
-            "texture_path": "assets/textures/cobblestone.png"
-        }
+            "texture_paths": ["assets/textures/cobblestone.png", "assets/textures/cobblestone.png"],
+            "material_paths": ["project/materials/material.json","project/materials/material.json"],
+            "geometry_paths": ["project/meshes/cube.json","project/meshes/cube.json"]
 
-    ]
 }

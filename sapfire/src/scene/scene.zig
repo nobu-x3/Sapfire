@@ -57,14 +57,12 @@ pub const SceneConfig = struct {
     meshes: [][:0]const u8,
     world: ParseWorld,
 };
-const ParseMesh = struct {
-    geometry_path: [:0]const u8,
-    material_path: [:0]const u8,
-    texture_path: [:0]const u8,
-};
+
 const ParseScene = struct {
     world: ParseWorld,
-    meshes: []const ParseMesh,
+    texture_paths: [][:0]const u8,
+    material_paths: [][:0]const u8,
+    geometry_paths: [][:0]const u8,
 };
 
 pub const SceneAsset = struct {
@@ -94,13 +92,17 @@ pub const SceneAsset = struct {
             return e;
         };
         const config = try json.parseFromSliceLeaky(ParseScene, database_allocator, config_data, .{});
-        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
-        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
-        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, config.meshes.len + 256);
-        for (config.meshes) |mesh| {
-            try texture_paths.append(mesh.texture_path);
-            try geometry_paths.append(mesh.geometry_path);
-            try material_paths.append(mesh.material_path);
+        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
+        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
+        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
+        for (config.texture_paths) |t_path| {
+            try texture_paths.append(t_path);
+        }
+        for (config.material_paths) |m_path| {
+            try material_paths.append(m_path);
+        }
+        for (config.geometry_paths) |g_path| {
+            try geometry_paths.append(g_path);
         }
         return SceneAsset{
             .guid = scene_guid,
@@ -199,9 +201,9 @@ pub const Scene = struct {
         var meshes = std.ArrayList(Mesh).init(arena.allocator());
         try meshes.ensureTotalCapacity(128);
         var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
-        try vertices.ensureTotalCapacity(99999);
+        try vertices.ensureTotalCapacity(INIT_VERTEX_ARRAY_CAPACITY);
         var indices = std.ArrayList(u32).init(arena.allocator());
-        try indices.ensureTotalCapacity(99999);
+        try indices.ensureTotalCapacity(INIT_INDEX_ARRAY_CAPACITY);
         var pipeline_system = try sf.PipelineSystem.init(arena.allocator());
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -496,17 +498,11 @@ pub const Scene = struct {
             .components = components.items,
             .tags = tags_arr.items,
         };
-        var meshes = std.ArrayList(ParseMesh).init(parse_arena.allocator());
-        for (0..self.asset.geometry_paths.items.len) |i| {
-            try meshes.append(ParseMesh{
-                .geometry_path = self.asset.geometry_paths.items[i],
-                .material_path = self.asset.material_paths.items[i],
-                .texture_path = self.asset.texture_paths.items[i],
-            });
-        }
         try json.stringify(ParseScene{
             .world = world,
-            .meshes = meshes.items,
+            .texture_paths = self.asset.texture_paths.items,
+            .material_paths = self.asset.material_paths.items,
+            .geometry_paths = self.asset.geometry_paths.items,
         }, .{}, writer);
     }
 };
@@ -671,7 +667,7 @@ pub const World = struct {
         }
         try self.component_add(Transform);
         const scene_entity = self.entity_new("Root");
-        _ = self.entity_new_with_parent(scene_entity, "New Entity");
+        var entities_added: u32 = 0;
         if (scene_asset.world) |parser_world| {
             for (parser_world.components) |comp| {
                 const comp_type = comps.name_type_map.get(comp).?;
@@ -704,6 +700,7 @@ pub const World = struct {
                         },
                     }
                 }
+                entities_added += 1;
                 for (e.components) |comp| {
                     const comp_type = comps.name_type_map.get(comp.name).?;
                     switch (comp_type) {
@@ -728,6 +725,8 @@ pub const World = struct {
                 }
             }
         }
+        if (entities_added == 0)
+            _ = self.entity_new_with_parent(scene_entity, "New Entity");
         return scene_entity;
     }
 };
