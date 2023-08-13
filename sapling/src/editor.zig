@@ -90,7 +90,8 @@ pub const Editor = struct {
                                 self.current_scene.destroy();
                                 self.current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, path);
                                 self.game_renderer.?.destroy(allocator);
-                                self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, 800, 600);
+                                const win_size = self.window.getSize();
+                                self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, @intCast(win_size[0]), @intCast(win_size[1]));
                                 RendererState.renderer = self.game_renderer;
                                 self.current_scene_path = path;
                             }
@@ -106,7 +107,8 @@ pub const Editor = struct {
                                 self.current_scene.destroy();
                                 self.current_scene = try sapfire.scene.Scene.create(allocator, gctx, path);
                                 self.game_renderer.?.destroy(allocator);
-                                self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, 800, 600);
+                                const win_size = self.window.getSize();
+                                self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, @intCast(win_size[0]), @intCast(win_size[1]));
                                 RendererState.renderer = self.game_renderer;
                                 self.current_scene_path = path;
                             }
