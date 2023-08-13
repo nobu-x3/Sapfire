@@ -20,6 +20,15 @@ pub fn system() ecs.system_desc_t {
     return desc;
 }
 
+pub fn query() ecs.query_desc_t {
+    var query_desc: ecs.query_desc_t = .{};
+    query.filter.terms[0] = .{ .id = ecs.id(Material) };
+    query.filter.terms[1] = .{ .id = ecs.id(components.Transform) };
+    query.filter.terms[2] = .{ .id = ecs.id(components.Mesh) };
+    query.order_by_component = ecs.id(Material);
+    return query_desc;
+}
+
 pub fn run(it: *ecs.iter_t) callconv(.C) void {
     const renderer_state = renderer.renderer.?;
     const color_view = renderer.color_view.?;

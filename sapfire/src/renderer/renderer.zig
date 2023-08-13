@@ -16,6 +16,7 @@ const sf = struct {
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("../core/asset_manager.zig");
     usingnamespace @import("../core/time.zig");
+    const Components = @import("../scene/components.zig");
 };
 
 pub const RendererState = struct {
@@ -61,7 +62,6 @@ pub const RendererState = struct {
     pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, fb_width_passed: u32, fb_height_passed: u32) !*RendererState {
         var arena = std.heap.ArenaAllocator.init(allocator);
         const depth_texture = sf.Texture.create_depth(gctx, fb_width_passed, fb_height_passed);
-        fb_width = fb_width_passed;
         fb_height = fb_height_passed;
         const renderer_state = try allocator.create(RendererState);
         renderer_state.* = .{
@@ -186,9 +186,6 @@ pub const RendererState = struct {
 
     pub fn draw_to_texture(renderer_state: *RendererState, color_view_passed: *zgpu.wgpu.TextureView, fb_width_passed: u32, fb_height_passed: u32, scene: *sf.Scene) !void {
         const gctx = renderer_state.gctx;
-        color_view = color_view_passed;
-        fb_width = fb_width_passed;
-        fb_height = fb_height_passed;
         const cam_world_to_view = zm.lookAtLh(
             zm.loadArr3(renderer_state.camera.position),
             zm.loadArr3(renderer_state.camera.forward),
@@ -196,7 +193,7 @@ pub const RendererState = struct {
         );
         const cam_view_to_clip = zm.perspectiveFovLh(
             0.25 * std.math.pi,
-            @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
+            @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
             0.01,
             200.0,
         );
@@ -235,6 +232,7 @@ pub const RendererState = struct {
                 }
                 pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
                 pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
+                // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
 
                 const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
                 glob.slice[0] = .{
@@ -248,43 +246,37 @@ pub const RendererState = struct {
                 var q = try ecs.query_init(scene.world.id, &query_desc);
                 var it = ecs.query_iter(scene.world.id, q);
                 while (ecs.query_next(&it)) {
-                    var i: usize = 0;
-                    while (i < it.count()) : (i += 1) {
-                        var current_pipeline: sf.Pipeline = undefined;
-                        var current_material: sf.Material = undefined;
-                        if (ecs.field(&it, sf.Material, 2)) |materials| {
-                            const mat = materials[i];
-                            const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
-                            if (pipe.handle.id != current_pipeline.handle.id) {
-                                current_pipeline = pipe;
-                                const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
-                                pass.setPipeline(pipeline);
-                            }
-                            var should_bind_group = false;
-
-                            if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
-                                current_material = mat;
-                                should_bind_group = true;
-                            }
-                            if (ecs.field(&it, sf.Components.Transform, 1)) |transforms| {
-                                const transform = transforms[i];
-                                if (ecs.field(&it, sf.Components.Mesh, 3)) |meshes| {
-                                    const mesh_comp = meshes[i];
-                                    const object_to_world = transform.world;
-                                    const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
-                                    mem.slice[0] = .{
-                                        .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
-                                        .mip_level = @floatFromInt(renderer_state.mip_level),
-                                        .model = zm.transpose(object_to_world),
-                                    };
-                                    if (should_bind_group) {
-                                        const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
-                                        pass.setBindGroup(1, bind_group, &.{mem.offset});
-                                    }
-                                    pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
-                                }
-                            }
+                    const transforms = ecs.field(&it, sf.Components.Transform, 1).?;
+                    const materials = ecs.field(&it, sf.Material, 2).?;
+                    const meshes = ecs.field(&it, sf.Components.Mesh, 3).?;
+                    var current_pipeline: sf.Pipeline = undefined;
+                    var current_material: sf.Material = undefined;
+                    for (0..it.count()) |i| {
+                        const mat = materials[i];
+                        const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
+                        if (pipe.handle.id != current_pipeline.handle.id) {
+                            current_pipeline = pipe;
+                            const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
+                            pass.setPipeline(pipeline);
                         }
+                        var should_bind_group = false;
+
+                        if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
+                            current_material = mat;
+                            should_bind_group = true;
+                        }
+                        const object_to_world = transforms[i].world;
+                        const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
+                        mem.slice[0] = .{
+                            .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
+                            .mip_level = @floatFromInt(renderer_state.mip_level),
+                            .model = zm.transpose(object_to_world),
+                        };
+                        if (should_bind_group) {
+                            const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
+                            pass.setBindGroup(1, bind_group, &.{mem.offset});
+                        }
+                        pass.drawIndexed(meshes[i].num_indices, 1, meshes[i].index_offset, meshes[i].vertex_offset, 0);
                     }
                 }
             }

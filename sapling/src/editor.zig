@@ -10,6 +10,7 @@ const JobsManager = sapfire.core.JobsManager;
 const RendererState = sapfire.rendering.RendererState;
 const Texture = sapfire.rendering.Texture;
 const Time = sapfire.core.Time;
+const render_system = sapfire.scene.render_system;
 const log = sapfire.core.log;
 const nfd = @import("nfd");
 
@@ -17,7 +18,9 @@ pub const Editor = struct {
     window: *glfw.Window,
     gctx: *zgpu.GraphicsContext,
     game_renderer: ?*RendererState = null,
+    scene_renderer: *RendererState,
     framebuffer: Texture,
+    scene_framebuffer: Texture,
     current_scene: sapfire.scene.Scene,
     current_scene_path: ?[:0]const u8 = null,
 
@@ -51,6 +54,15 @@ pub const Editor = struct {
             .width = gctx.swapchain_descriptor.width,
             .height = gctx.swapchain_descriptor.height,
         }, gctx.swapchain_descriptor.format);
+        const scene_fb =
+            Texture.create_with_wgpu_format(gctx, .{
+            .render_attachment = true,
+            .texture_binding = true,
+        }, .{
+            .width = gctx.swapchain_descriptor.width,
+            .height = gctx.swapchain_descriptor.height,
+        }, gctx.swapchain_descriptor.format);
+        var scene_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
         var current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, "project/scenes/test_scene.json");
         sapfire.scene.Scene.scene = &current_scene;
         return Editor{
@@ -58,6 +70,8 @@ pub const Editor = struct {
             .gctx = gctx,
             .framebuffer = framebuffer,
             .current_scene = current_scene,
+            .scene_renderer = scene_renderer,
+            .scene_framebuffer = scene_fb,
         };
     }
 
@@ -69,6 +83,7 @@ pub const Editor = struct {
             Time.update();
             const gctx = self.gctx;
             var color_view = gctx.lookupResource(self.framebuffer.view) orelse return;
+            var scene_color_view = gctx.lookupResource(self.scene_framebuffer.view) orelse return;
             { // gui update
                 zgui.backend.newFrame(
                     gctx.swapchain_descriptor.width,
@@ -156,7 +171,14 @@ pub const Editor = struct {
                     }
                 }
                 zgui.endMainMenuBar();
-
+                if (zgui.begin("Scene View", .{ .flags = .{
+                    .no_focus_on_appearing = true,
+                    .no_scrollbar = true,
+                } })) {
+                    try self.scene_renderer.draw_to_texture(&scene_color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
+                    zgui.image(scene_color_view, .{ .w = size[0], .h = size[1] });
+                }
+                zgui.end();
                 if (self.game_renderer != null) {
                     if (zgui.begin("Game View", .{ .flags = .{
                         .no_focus_on_appearing = true,
