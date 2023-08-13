@@ -256,8 +256,8 @@ pub const Scene = struct {
     }
 
     pub fn destroy(self: *Scene) void {
-        self.vertices.deinit();
-        self.indices.deinit();
+        // self.vertices.deinit();
+        // self.indices.deinit();
         self.world.deinit();
         self.arena.deinit();
     }
@@ -533,8 +533,8 @@ pub const World = struct {
     }
 
     pub fn deinit(self: *World) void {
-        self.tag_id_map.deinit();
-        self.component_id_map.deinit();
+        // self.tag_id_map.deinit();
+        // self.component_id_map.deinit();
         // NOTE: this segfaults, so just leaving it here.
         _ = ecs.fini(self.id);
     }

@@ -51,18 +51,17 @@ pub const Editor = struct {
             .width = gctx.swapchain_descriptor.width,
             .height = gctx.swapchain_descriptor.height,
         }, gctx.swapchain_descriptor.format);
-        var game_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
-        RendererState.renderer = game_renderer;
-        var current_scene = try sapfire.scene.Scene.create(allocator, gctx, "project/scenes/test_scene.json");
+        var current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, "project/scenes/test_scene.json");
         sapfire.scene.Scene.scene = &current_scene;
         return Editor{
             .window = window,
             .gctx = gctx,
             .framebuffer = framebuffer,
             .current_scene = current_scene,
-            .game_renderer = game_renderer,
         };
     }
+
+    var play_mode = false;
 
     pub fn run(self: *Editor, allocator: std.mem.Allocator) !void {
         while (!self.window.shouldClose() and self.window.getKey(.escape) != .press) {
@@ -89,9 +88,12 @@ pub const Editor = struct {
                                 }
                                 self.current_scene.destroy();
                                 self.current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, path);
-                                self.game_renderer.?.destroy(allocator);
-                                const win_size = self.window.getSize();
-                                self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, @intCast(win_size[0]), @intCast(win_size[1]));
+
+                                if (self.game_renderer) |renderer| {
+                                    renderer.destroy(allocator);
+                                    const win_size = self.window.getSize();
+                                    self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, @intCast(win_size[0]), @intCast(win_size[1]));
+                                }
                                 RendererState.renderer = self.game_renderer;
                                 self.current_scene_path = path;
                             }
@@ -106,9 +108,11 @@ pub const Editor = struct {
                                 // TODO: fix scene deinit
                                 self.current_scene.destroy();
                                 self.current_scene = try sapfire.scene.Scene.create(allocator, gctx, path);
-                                self.game_renderer.?.destroy(allocator);
-                                const win_size = self.window.getSize();
-                                self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, @intCast(win_size[0]), @intCast(win_size[1]));
+                                if (self.game_renderer) |renderer| {
+                                    renderer.destroy(allocator);
+                                    const win_size = self.window.getSize();
+                                    self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, @intCast(win_size[0]), @intCast(win_size[1]));
+                                }
                                 RendererState.renderer = self.game_renderer;
                                 self.current_scene_path = path;
                             }
@@ -136,6 +140,19 @@ pub const Editor = struct {
                             }
                         }
                         zgui.endMenu();
+                    }
+                    if (!play_mode) {
+                        if (zgui.button("Play", .{})) {
+                            play_mode = true;
+                            self.game_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
+                            RendererState.renderer = self.game_renderer;
+                        }
+                    } else {
+                        if (zgui.button("Stop", .{})) {
+                            play_mode = false;
+                            self.game_renderer.?.destroy(allocator);
+                            self.game_renderer = null;
+                        }
                     }
                 }
                 zgui.endMainMenuBar();
