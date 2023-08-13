@@ -175,6 +175,7 @@ pub const Editor = struct {
                     .no_focus_on_appearing = true,
                     .no_scrollbar = true,
                 } })) {
+                    size = zgui.getWindowSize();
                     try self.scene_renderer.draw_to_texture(&scene_color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
                     zgui.image(scene_color_view, .{ .w = size[0], .h = size[1] });
                 }
