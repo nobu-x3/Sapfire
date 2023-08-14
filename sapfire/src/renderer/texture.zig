@@ -1,11 +1,11 @@
 const std = @import("std");
 const zgpu = @import("zgpu");
 const stbi = @import("zstbi");
-const log = @import("../core/logger.zig");
 const json = std.json;
 const sf = struct {
-    usingnamespace @import("../core/asset_manager.zig");
+    usingnamespace @import("../core.zig");
 };
+const log = sf.log;
 
 const INVALID_ID = 4294967295;
 

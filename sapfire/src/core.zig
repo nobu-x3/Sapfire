@@ -1,6 +1,6 @@
 pub const ApplicationConfig = @import("core/application.zig").ApplicationConfig;
 pub const Application = @import("core/application.zig").Application;
-pub const log = @import("core/logger.zig");
+pub const log = @import("core/logger.zig").LoggingSystem;
 pub const AssetManager = @import("core/asset_manager.zig").AssetManager;
 pub const AssetType = @import("core/asset_manager.zig").AssetType;
 pub const JobsManager = @import("core/jobs.zig").JobsManager;

@@ -1,13 +1,13 @@
-const log = @import("logger.zig");
 const std = @import("std");
 const glfw = @import("zglfw");
 const sf = struct {
+    usingnamespace @import("../core.zig");
     usingnamespace @import("../game_types.zig");
     usingnamespace @import("../renderer/renderer.zig");
     usingnamespace @import("asset_manager.zig");
     usingnamespace @import("jobs.zig");
-    usingnamespace @import("time.zig");
 };
+const log = sf.log;
 const Game = sf.Game;
 const zgui = @import("zgui");
 
@@ -31,10 +31,6 @@ pub const Application = struct {
         const allocator = gpa.allocator();
         try log.init();
         defer log.deinit();
-        // sf.JobsManager.init();
-        // defer sf.JobsManager.deinit();
-        // try sf.AssetManager.init(allocator, "project/project_config.json"); // TODO: move this to editor, we don't need to load EVERYTHING at runtime
-        // defer sf.AssetManager.deinit();
         sf.Time.init();
         glfw.init() catch |e| {
             log.err("Failed to init glfw.", .{});

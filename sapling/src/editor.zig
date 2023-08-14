@@ -192,7 +192,7 @@ pub const Editor = struct {
                         RendererState.fb_width = @intFromFloat(size[0]);
                         RendererState.fb_height = @intFromFloat(size[1]);
                         sapfire.scene.Scene.scene = &self.current_scene;
-                        try self.current_scene.update(gctx.stats.delta_time);
+                        try self.current_scene.progress(gctx.stats.delta_time);
                         zgui.image(color_view, .{ .w = size[0], .h = size[1] });
                     }
                     zgui.end();

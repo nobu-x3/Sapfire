@@ -6,23 +6,17 @@ const std = @import("std");
 const json = std.json;
 const comps = @import("components.zig");
 const tags = @import("tags.zig");
-const log = @import("../core/logger.zig");
-const asset = @import("../core.zig").AssetManager;
 const Transform = comps.Transform;
 const Mesh = comps.Mesh;
-const Material = @import("../renderer/material.zig").Material;
 const TestTag = tags.TestTag;
 const fs = std.fs;
 const sf = struct {
-    usingnamespace @import("../core/asset_manager.zig");
-    usingnamespace @import("../renderer/mesh.zig");
-    usingnamespace @import("../renderer/renderer_types.zig");
-    usingnamespace @import("../renderer/material.zig");
-    usingnamespace @import("../renderer/buffer.zig");
-    usingnamespace @import("../renderer/texture.zig");
-    usingnamespace @import("../renderer/pipeline.zig");
-    usingnamespace @import("../renderer/renderer.zig");
+    usingnamespace @import("../core.zig");
+    usingnamespace @import("../rendering.zig");
 };
+const log = sf.log;
+const asset = sf.AssetManager;
+const Material = sf.Material;
 
 const ComponentValueTag = enum { matrix, vector, path, guid, matrix3 };
 
@@ -127,8 +121,8 @@ pub const Scene = struct {
     texture_manager: sf.TextureManager,
     material_manager: sf.MaterialManager,
     global_uniform_bind_group: zgpu.BindGroupHandle,
-    vertex_buffer: zgpu.BufferHandle,
-    index_buffer: zgpu.BufferHandle,
+    vertex_buffer: sf.Buffer,
+    index_buffer: sf.Buffer,
 
     pub var scene: ?*Scene = null;
     pub var currently_selected_entity: ecs.entity_t = undefined;
@@ -164,8 +158,8 @@ pub const Scene = struct {
         });
         const scene_entity = try world.deserialize(&scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
         currently_selected_entity = scene_entity;
-        const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
-        const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
+        const vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
+        const index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
         ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
         var render_color_system = @import("systems/render_color_system.zig").system();
@@ -219,8 +213,8 @@ pub const Scene = struct {
         });
         const scene_entity = try world.deserialize(&scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
         currently_selected_entity = scene_entity;
-        const vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
-        const index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
+        const vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
+        const index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
         ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
         var render_color_system = @import("systems/render_color_system.zig").system();
@@ -245,13 +239,13 @@ pub const Scene = struct {
 
     pub fn recreate_buffers(self: *Scene) void {
         const gctx = sf.RendererState.renderer.?.gctx;
-        gctx.releaseResource(self.index_buffer);
-        gctx.releaseResource(self.vertex_buffer);
-        self.vertex_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, self.vertices.items);
-        self.index_buffer = sf.buffer_create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, self.indices.items);
+        gctx.releaseResource(self.index_buffer.handle);
+        gctx.releaseResource(self.vertex_buffer.handle);
+        self.vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, self.vertices.items);
+        self.index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, self.indices.items);
     }
 
-    pub fn update(self: *Scene, delta_time: f32) !void {
+    pub fn progress(self: *Scene, delta_time: f32) !void {
         _ = ecs.progress(self.world.id, delta_time);
     }
 

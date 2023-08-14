@@ -2,16 +2,16 @@ const zgpu = @import("zgpu");
 const zgui = @import("zgui");
 const ecs = @import("zflecs");
 const std = @import("std");
-const log = @import("../core/logger.zig");
 const json = std.json;
 const sf = struct {
-    usingnamespace @import("../core/asset_manager.zig");
+    usingnamespace @import("../core.zig");
     usingnamespace @import("pipeline.zig");
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("texture.zig");
     usingnamespace @import("mesh.zig");
     usingnamespace @import("renderer.zig");
 };
+const log = sf.log;
 
 pub const MaterialManager = struct {
     materials: std.AutoHashMap([64]u8, Material),

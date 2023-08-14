@@ -11,12 +11,10 @@ const sf = struct {
     usingnamespace @import("mesh.zig");
     usingnamespace @import("buffer.zig");
     usingnamespace @import("pipeline.zig");
-    usingnamespace @import("../scene/scene.zig");
+    usingnamespace @import("../scene.zig");
     usingnamespace @import("material.zig");
     usingnamespace @import("renderer_types.zig");
-    usingnamespace @import("../core/asset_manager.zig");
-    usingnamespace @import("../core/time.zig");
-    const Components = @import("../scene/components.zig");
+    usingnamespace @import("../core.zig");
 };
 
 pub const RendererState = struct {
@@ -165,7 +163,6 @@ pub const RendererState = struct {
                 // pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
                 // pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
                 // const object_to_clip = zm.mul(object_to_world, cam_world_to_clip);
-
                 const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
                 glob.slice[0] = .{
                     .view_projection = zm.transpose(cam_world_to_clip),
@@ -208,8 +205,8 @@ pub const RendererState = struct {
             defer encoder.release();
             // Main pass.
             pass: {
-                const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer) orelse break :pass;
-                const ib_info = gctx.lookupResourceInfo(scene.index_buffer) orelse break :pass;
+                const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer.handle) orelse break :pass;
+                const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :pass;
                 const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
                 const global_uniform_bind_group = gctx.lookupResource(scene.global_uniform_bind_group) orelse break :pass;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
@@ -235,7 +232,6 @@ pub const RendererState = struct {
                 }
                 pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
                 pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
-
                 const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
                 glob.slice[0] = .{
                     .view_projection = zm.transpose(cam_world_to_clip),
@@ -243,8 +239,8 @@ pub const RendererState = struct {
                 pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
                 var query_desc = ecs.query_desc_t{};
                 query_desc.filter.terms[0] = .{ .id = ecs.id(sf.Material) };
-                query_desc.filter.terms[1] = .{ .id = ecs.id(sf.Components.Transform) };
-                query_desc.filter.terms[2] = .{ .id = ecs.id(sf.Components.Mesh) };
+                query_desc.filter.terms[1] = .{ .id = ecs.id(sf.components.Transform) };
+                query_desc.filter.terms[2] = .{ .id = ecs.id(sf.components.Mesh) };
                 query_desc.order_by_component = ecs.id(sf.Material);
                 var q = try ecs.query_init(scene.world.id, &query_desc);
                 var it = ecs.query_iter(scene.world.id, q);
@@ -268,9 +264,9 @@ pub const RendererState = struct {
                                 current_material = mat;
                                 should_bind_group = true;
                             }
-                            if (ecs.field(&it, sf.Components.Transform, 2)) |transforms| {
+                            if (ecs.field(&it, sf.components.Transform, 2)) |transforms| {
                                 const transform = transforms[i];
-                                if (ecs.field(&it, sf.Components.Mesh, 3)) |meshes| {
+                                if (ecs.field(&it, sf.components.Mesh, 3)) |meshes| {
                                     const mesh_comp = meshes[i];
                                     const object_to_world = transform.world;
                                     const mem = gctx.uniformsAllocate(sf.Uniforms, 1);

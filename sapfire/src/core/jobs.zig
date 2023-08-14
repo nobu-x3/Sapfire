@@ -6,6 +6,8 @@ pub const JobId = zjobs.JobId;
 pub const JobsManager = struct {
     jobs: Jobs,
 
+    var instance: JobsManager = undefined;
+
     pub fn init() void {
         instance.jobs = Jobs.init();
     }
@@ -18,5 +20,3 @@ pub const JobsManager = struct {
         return &instance.jobs;
     }
 };
-
-var instance: JobsManager = undefined;

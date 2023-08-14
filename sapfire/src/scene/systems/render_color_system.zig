@@ -3,12 +3,13 @@ const zm = @import("zmath");
 const ecs = @import("zflecs");
 const zgpu = @import("zgpu");
 const components = @import("../components.zig");
-const Material = @import("../../renderer/material.zig").Material;
-const renderer = @import("../../renderer/renderer.zig").RendererState;
-const Pipeline = @import("../../renderer/pipeline.zig").Pipeline;
 const sf = struct {
-    usingnamespace @import("../../renderer/renderer_types.zig");
+    usingnamespace @import("../../rendering.zig");
 };
+
+const renderer = sf.RendererState;
+const Material = sf.Material;
+const Pipeline = sf.Pipeline;
 
 pub fn system() ecs.system_desc_t {
     var desc: ecs.system_desc_t = .{};
@@ -55,8 +56,8 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
         defer encoder.release();
         // Main pass.
         pass: {
-            const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer) orelse break :pass;
-            const ib_info = gctx.lookupResourceInfo(scene.index_buffer) orelse break :pass;
+            const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer.handle) orelse break :pass;
+            const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :pass;
             const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
             const global_uniform_bind_group = gctx.lookupResource(scene.global_uniform_bind_group) orelse break :pass;
             const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
@@ -103,7 +104,6 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
                             pass.setPipeline(pipeline);
                         }
                         var should_bind_group = false;
-
                         if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
                             current_material = mat;
                             should_bind_group = true;

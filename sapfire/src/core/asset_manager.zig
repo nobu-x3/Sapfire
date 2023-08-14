@@ -1,17 +1,16 @@
 const std = @import("std");
 const zgui = @import("zgui");
-const log = @import("logger.zig");
 const crypto = std.crypto;
 const json = std.json;
 const jobs = @import("jobs.zig");
 const nfd = @import("nfd");
 
 const sf = struct {
-    usingnamespace @import("../renderer/texture.zig");
-    usingnamespace @import("../renderer/mesh.zig");
-    usingnamespace @import("../renderer/material.zig");
-    usingnamespace @import("../scene/scene.zig");
+    usingnamespace @import("../core.zig");
+    usingnamespace @import("../rendering.zig");
+    usingnamespace @import("../scene.zig");
 };
+const log = sf.log;
 
 // TODO: add SceneAssetManager.
 // The purpose is to separate runtime and edittime asset managers.

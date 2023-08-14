@@ -1,14 +1,14 @@
 const std = @import("std");
 const AssetManager = @import("../core/asset_manager.zig").AssetManager;
 const zmesh = @import("zmesh");
-const log = @import("../core/logger.zig");
 const json = std.json;
 const sf = struct {
     usingnamespace @import("texture.zig");
     usingnamespace @import("renderer_types.zig");
-    usingnamespace @import("../core/asset_manager.zig");
+    usingnamespace @import("../core.zig");
     usingnamespace @import("material.zig");
 };
+const log = sf.log;
 const Mesh = @import("../scene/components.zig").Mesh;
 
 pub const MeshAsset = struct {
@@ -190,7 +190,6 @@ pub const MeshManager = struct {
         geometry_path: [:0]const u8,
         material_path: [:0]const u8,
     };
-
     fn create_mesh_asset(arena: std.mem.Allocator, parse_arena: std.mem.Allocator, config_path: [:0]const u8, out_map: *std.AutoHashMap([64]u8, MeshAsset)) !void {
         const config_data = std.fs.cwd().readFileAlloc(parse_arena, config_path, 512 * 16) catch |e| {
             log.err("Failed to parse mesh config file. Given path:{s}", .{config_path});

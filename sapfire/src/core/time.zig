@@ -7,6 +7,8 @@ pub const Time = struct {
     current_ts: i64,
     prev_ts: i64,
 
+    var instance: Time = undefined;
+
     pub fn init() void {
         instance.current_ts = time.microTimestamp();
         instance.delta_time = 0.0;
@@ -28,5 +30,3 @@ pub const Time = struct {
         return &instance.time_scale;
     }
 };
-
-var instance: Time = undefined;

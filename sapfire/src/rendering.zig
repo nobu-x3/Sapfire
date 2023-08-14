@@ -16,4 +16,4 @@ pub const Texture = @import("renderer/texture.zig").Texture;
 pub const TextureAsset = @import("renderer/texture.zig").TextureAsset;
 pub const TextureFormat = @import("renderer/texture.zig").TextureFormat;
 pub const TextureManager = @import("renderer/texture.zig").TextureManager;
-pub const buffer = @import("renderer/buffer.zig");
+pub const Buffer = @import("renderer/buffer.zig").Buffer;
