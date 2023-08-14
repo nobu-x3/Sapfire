@@ -255,6 +255,28 @@ pub const Scene = struct {
         _ = ecs.progress(self.world.id, delta_time);
     }
 
+    pub fn update_no_systems(self: *Scene, delta_time: f32) !void {
+        _ = delta_time;
+        { // update transforms
+            var query_desc = ecs.query_desc_t{};
+            query_desc.filter.terms[0] = .{ .id = ecs.id(Transform) };
+            var q = try ecs.query_init(self.world.id, &query_desc);
+            var it = ecs.query_iter(self.world.id, q);
+            while (ecs.query_next(&it)) {
+                const entities = it.entities();
+                for (0..it.count()) |i| {
+                    if (ecs.field(&it, Transform, 1)) |transforms| {
+                        const parent = World.entity_get_parent_world_id(it.world, entities[i]);
+                        if (parent > 0) { // This is to prevent root modification
+                            const parent_transform = ecs.get(it.world, parent, Transform) orelse continue;
+                            transforms[i].world = zm.mul(transforms[i].local, parent_transform.world);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     pub fn destroy(self: *Scene) void {
         // self.vertices.deinit();
         // self.indices.deinit();
