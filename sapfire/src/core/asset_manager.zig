@@ -23,29 +23,12 @@ pub const AssetManager = struct {
     mesh_manager: sf.MeshManager,
     scene_manager: sf.SceneManager,
 
-    pub fn texture_manager() *sf.TextureManager {
-        return &instance.texture_manager;
-    }
-
-    pub fn material_manager() *sf.MaterialManager {
-        return &instance.material_manager;
-    }
-
-    pub fn mesh_manager() *sf.MeshManager {
-        return &instance.mesh_manager;
-    }
-
-    pub fn scene_manager() *sf.SceneManager {
-        return &instance.scene_manager();
-    }
-
     // TODO: takes in path to "project" serialization which contains paths to each subsystem's serialization file.
     // Each submodule will have its own file so that project's assets can be loaded in parallel
     pub fn init(
         allocator: std.mem.Allocator,
         project_config: []const u8,
-    ) !void {
-        instance.allocator = allocator;
+    ) !*AssetManager {
         var arena = std.heap.ArenaAllocator.init(allocator);
         defer arena.deinit();
         const config_data = std.fs.cwd().readFileAlloc(arena.allocator(), project_config, 512 * 16) catch |e| {
@@ -59,7 +42,7 @@ pub const AssetManager = struct {
             scene_config: []const u8,
         };
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
-
+        var asset_manager = try allocator.create(AssetManager);
         _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
             allocator: std.mem.Allocator,
             path: []const u8,
@@ -72,7 +55,7 @@ pub const AssetManager = struct {
         }{
             .allocator = allocator,
             .path = config.texture_config,
-            .texman = &instance.texture_manager,
+            .texman = &asset_manager.texture_manager,
         });
         jobs.JobsManager.jobs().start();
         const material_job = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
@@ -87,7 +70,7 @@ pub const AssetManager = struct {
         }{
             .allocator = allocator,
             .path = config.material_config,
-            .matman = &instance.material_manager,
+            .matman = &asset_manager.material_manager,
         });
 
         _ = try jobs.JobsManager.jobs().schedule(material_job, struct {
@@ -102,7 +85,7 @@ pub const AssetManager = struct {
         }{
             .allocator = allocator,
             .path = config.mesh_config,
-            .meshman = &instance.mesh_manager,
+            .meshman = &asset_manager.mesh_manager,
         });
         _ = try jobs.JobsManager.jobs().schedule(jobs.JobId.none, struct {
             pub fn exec(_: *@This()) void {
@@ -110,15 +93,18 @@ pub const AssetManager = struct {
             }
         }{});
         jobs.JobsManager.jobs().join();
-        instance.scene_manager = try sf.SceneManager.init(allocator, config.scene_config);
-        instance.parse_arena = std.heap.ArenaAllocator.init(allocator);
+        asset_manager.allocator = allocator;
+        asset_manager.scene_manager = try sf.SceneManager.init(allocator, config.scene_config);
+        asset_manager.parse_arena = std.heap.ArenaAllocator.init(allocator);
+        return asset_manager;
     }
 
-    pub fn deinit() void {
-        sf.MaterialManager.deinit(&instance.material_manager);
-        sf.MeshManager.deinit(&instance.mesh_manager);
-        sf.TextureManager.deinit(&instance.texture_manager);
-        sf.SceneManager.deinit(&instance.scene_manager);
+    pub fn deinit(self: *AssetManager) void {
+        self.mesh_manager.deinit();
+        self.material_manager.deinit();
+        self.texture_manager.deinit();
+        self.scene_manager.deinit();
+        self.allocator.destroy(self);
     }
 
     // TODO: this should be used to import raw files and generate .sf* format assets
@@ -160,7 +146,7 @@ pub const AssetManager = struct {
                         if (zgui.button("Import", .{})) {
                             const open_path = try nfd.openFileDialog("gltf", null);
                             if (open_path) |path| {
-                                try self.mesh_manager.import_mesh(path);
+                                try self.mesh_manager.import_mesh(&self.material_manager, path);
                                 asset_modal_open = false;
                             }
                         }
@@ -361,8 +347,3 @@ pub const AssetType = enum {
     Mesh,
     Scene,
 };
-
-var instance: AssetManager = undefined;
-pub fn asset_manager() *AssetManager {
-    return &instance;
-}

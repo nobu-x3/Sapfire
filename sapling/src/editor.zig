@@ -5,18 +5,19 @@ const glfw = @import("zglfw");
 const sapfire = @import("sapfire");
 // NOTE: for some reason editor cannot find zflecs
 const AssetManager = sapfire.core.AssetManager;
-const asset_manager = sapfire.core.asset_manager;
-const JobsManager = sapfire.core.JobsManager;
+const core = sapfire.core;
+const JobsManager = core.JobsManager;
 const RendererState = sapfire.rendering.RendererState;
 const Texture = sapfire.rendering.Texture;
-const Time = sapfire.core.Time;
+const Time = core.Time;
 const render_system = sapfire.scene.render_system;
-const log = sapfire.core.log;
+const log = core.log;
 const nfd = @import("nfd");
 
 pub const Editor = struct {
     window: *glfw.Window,
     gctx: *zgpu.GraphicsContext,
+    asset_manager: *core.AssetManager,
     game_renderer: ?*RendererState = null,
     scene_renderer: *RendererState,
     framebuffer: Texture,
@@ -27,7 +28,7 @@ pub const Editor = struct {
     pub fn create(allocator: std.mem.Allocator, project_path: [:0]const u8) !Editor {
         JobsManager.init();
         try log.init();
-        try AssetManager.init(allocator, project_path);
+        const asset_manager = try AssetManager.init(allocator, project_path);
         Time.init();
         glfw.init() catch |e| {
             log.err("Failed to init glfw.", .{});
@@ -72,6 +73,7 @@ pub const Editor = struct {
             .current_scene = current_scene,
             .scene_renderer = scene_renderer,
             .scene_framebuffer = scene_fb,
+            .asset_manager = asset_manager,
         };
     }
 
@@ -206,8 +208,8 @@ pub const Editor = struct {
                 }
                 zgui.end();
                 self.current_scene.draw_scene_hierarchy();
-                try self.current_scene.draw_inspector(asset_manager());
-                try asset_manager().draw_explorer();
+                try self.current_scene.draw_inspector(self.asset_manager);
+                try self.asset_manager.draw_explorer();
             }
 
             const swapchain_texv = gctx.swapchain.getCurrentTextureView();
@@ -246,7 +248,7 @@ pub const Editor = struct {
         self.gctx.destroy(allocator);
         self.window.destroy();
         glfw.terminate();
-        AssetManager.deinit();
+        self.asset_manager.deinit();
         log.deinit();
         JobsManager.deinit();
     }

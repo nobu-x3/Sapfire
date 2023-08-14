@@ -222,7 +222,7 @@ pub const MeshManager = struct {
         log.info("Mesh at {s} added to asset map with guid\n{d}", .{ config_path, guid });
     }
 
-    pub fn import_mesh(self: *MeshManager, path: [:0]const u8) !void {
+    pub fn import_mesh(self: *MeshManager, material_manager: *sf.MaterialManager, path: [:0]const u8) !void {
         zmesh.init(self.parse_arena.allocator());
         defer zmesh.deinit();
         const data = zmesh.io.parseAndLoadFile(path) catch |e| {
@@ -234,7 +234,7 @@ pub const MeshManager = struct {
         var positions = std.ArrayList([3]f32).init(self.arena.allocator());
         var uvs = std.ArrayList([2]f32).init(self.arena.allocator());
         try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
-        var iter = AssetManager.material_manager().material_asset_map.iterator();
+        var iter = material_manager.material_asset_map.iterator();
         const material_asset = iter.next().?.value_ptr;
         const material_guid = material_asset.guid;
         var split = std.mem.splitAny(u8, path, "/");
