@@ -115,7 +115,7 @@ pub const MaterialManager = struct {
 
     pub fn add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !void {
         if (system.default_material == null) {
-            system.default_material = Material.create_default(texture_system, gctx);
+            system.default_material = try Material.create_default(system, texture_system, gctx);
         }
         const guid = sf.AssetManager.generate_guid(name);
         if (!system.materials.contains(guid)) {
@@ -127,7 +127,7 @@ pub const MaterialManager = struct {
 
     pub fn add_material_by_guid(system: *MaterialManager, guid: [64]u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) !void {
         if (system.default_material == null) {
-            system.default_material = Material.create_default(texture_system, gctx);
+            system.default_material = try Material.create_default(system, texture_system, gctx);
         }
         if (!system.materials.contains(guid)) {
             // TODO: material name
@@ -272,7 +272,7 @@ pub const Material = struct {
         return material;
     }
 
-    fn create_default(texture_manager: *sf.TextureManager, gctx: *zgpu.GraphicsContext) Material {
+    pub fn create_default(material_manager: *MaterialManager, texture_manager: *sf.TextureManager, gctx: *zgpu.GraphicsContext) !Material {
         const local_bgl = gctx.createBindGroupLayout(
             &.{
                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -299,18 +299,25 @@ pub const Material = struct {
             .{ .binding = 1, .texture_view_handle = default_texture.view },
             .{ .binding = 2, .sampler_handle = sampler },
         });
+        const guid = sf.AssetManager.generate_guid("default");
         var material = Material{
-            .guid = sf.AssetManager.generate_guid("default"),
+            .guid = guid,
             .bind_group = local_bg,
             .sampler = sampler,
         };
+        try material_manager.materials.put(guid, material);
+        const material_asset = MaterialAsset{
+            .guid = guid,
+            .path = "default",
+        };
+        try material_manager.material_asset_map.put(guid, material_asset);
         return material;
     }
 };
 
 pub const MaterialAsset = struct {
     guid: [64]u8,
-    texture_guid: ?[64]u8,
+    texture_guid: ?[64]u8 = null,
     path: [:0]const u8,
 
     pub const Config = struct {

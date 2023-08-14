@@ -132,7 +132,7 @@ pub const Scene = struct {
 
     pub fn create_new(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
         var arena = std.heap.ArenaAllocator.init(allocator);
-        const scene_asset = try SceneAsset.create_empty(arena.allocator(), path);
+        var scene_asset = try SceneAsset.create_empty(arena.allocator(), path);
         var world = try World.init(arena.allocator());
         var texman = try sf.TextureManager.init_empty(arena.allocator());
         var matman = try sf.MaterialManager.init_empty(arena.allocator());
@@ -330,18 +330,72 @@ pub const Scene = struct {
                     if (zgui.selectable("Mesh", .{ .flags = .{ .allow_double_click = true } })) {
                         { // Mesh
                             ecs.add(self.world.id, currently_selected_entity, Mesh);
-                            _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0])).?);
-                            _ = sf.MeshAsset.load_mesh(self.asset.geometry_paths.items[0], &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
-                                std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
-                                zgui.closeCurrentPopup();
-                                return;
-                            };
+                            if (self.asset.geometry_paths.items.len > 0) {
+                                _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0])).?);
+                                _ = sf.MeshAsset.load_mesh(self.asset.geometry_paths.items[0], &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
+                                    std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
+                                    zgui.closeCurrentPopup();
+                                    return;
+                                };
+                            } else {
+                                if (asset_manager.mesh_manager.mesh_map.count() > 0) {
+                                    var iter = asset_manager.mesh_manager.mesh_map.iterator();
+                                    while (iter.next()) |entry| {
+                                        const path = asset_manager.mesh_manager.mesh_assets_map.get(entry.key_ptr.*).?.path;
+                                        try self.asset.geometry_paths.append(path);
+                                        try self.mesh_manager.mesh_map.put(entry.key_ptr.*, entry.value_ptr.*);
+                                        _ = ecs.set(self.world.id, currently_selected_entity, Mesh, entry.value_ptr.*);
+                                        break;
+                                    }
+                                } else {
+                                    var iter = asset_manager.mesh_manager.mesh_assets_map.iterator();
+                                    while (iter.next()) |entry| {
+                                        const path = entry.value_ptr.path;
+                                        const mesh = sf.MeshAsset.load_mesh(path, &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
+                                            std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
+                                            zgui.closeCurrentPopup();
+                                            return;
+                                        };
+                                        try self.mesh_manager.mesh_assets_map.put(entry.key_ptr.*, entry.value_ptr.*);
+                                        try self.mesh_manager.mesh_map.put(entry.key_ptr.*, mesh);
+                                        try self.asset.geometry_paths.append(path);
+                                        _ = ecs.set(self.world.id, currently_selected_entity, Mesh, mesh);
+                                        break;
+                                    }
+                                }
+                            }
                             self.recreate_buffers();
                         }
                         { // Material
-                            ecs.add(self.world.id, currently_selected_entity, Material);
-                            _ = ecs.set(self.world.id, currently_selected_entity, Material, self.material_manager.materials.get(sf.AssetManager.generate_guid(self.asset.material_paths.items[0])).?);
                             const gctx = sf.RendererState.renderer.?.gctx;
+                            var guid: [64]u8 = undefined;
+                            ecs.add(self.world.id, currently_selected_entity, Material);
+                            if (self.material_manager.materials.count() > 0) {
+                                var iter = self.material_manager.materials.iterator();
+                                var entry = iter.next().?;
+                                guid = entry.key_ptr.*;
+                                _ = ecs.set(self.world.id, currently_selected_entity, Material, entry.value_ptr.*);
+                            } else {
+                                if (asset_manager.material_manager.materials.count() > 0) {
+                                    var iter = asset_manager.material_manager.materials.iterator();
+                                    while (iter.next()) |entry| {
+                                        guid = entry.key_ptr.*;
+                                        try self.material_manager.materials.put(entry.key_ptr.*, entry.value_ptr.*);
+                                        _ = ecs.set(self.world.id, currently_selected_entity, Material, entry.value_ptr.*);
+                                        try self.asset.material_paths.append(asset_manager.material_manager.material_asset_map.get(entry.key_ptr.*).?.path);
+                                        break;
+                                    }
+                                } else {
+                                    guid = sf.AssetManager.generate_guid("default");
+                                    try self.material_manager.materials.put(guid, asset_manager.material_manager.default_material orelse val: {
+                                        asset_manager.material_manager.default_material = try sf.Material.create_default(&asset_manager.material_manager, &asset_manager.texture_manager, gctx);
+                                        self.material_manager.default_material = try sf.Material.create_default(&self.material_manager, &self.texture_manager, gctx);
+                                        break :val asset_manager.material_manager.default_material.?;
+                                    });
+                                    try self.asset.material_paths.append("default");
+                                    _ = ecs.set(self.world.id, currently_selected_entity, Material, asset_manager.material_manager.default_material.?);
+                                }
+                            }
                             const global_uniform_bgl = gctx.createBindGroupLayout(&.{
                                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                             });
@@ -359,17 +413,12 @@ pub const Scene = struct {
                                 zgui.endPopup();
                                 return;
                             };
-                            self.pipeline_system.add_material(new_pipeline.*, sf.AssetManager.generate_guid(self.asset.material_paths.items[0])) catch |e| {
+                            self.pipeline_system.add_material(new_pipeline.*, guid) catch |e| {
                                 std.log.err("Error when adding material to the newly created pipeline. {s}.", .{@typeName(@TypeOf(e))});
                                 zgui.endPopup();
                                 return;
                             };
                         }
-                        zgui.closeCurrentPopup();
-                    }
-                    if (zgui.selectable("Material", .{ .flags = .{ .allow_double_click = true } })) {
-                        ecs.add(self.world.id, currently_selected_entity, Material);
-                        _ = ecs.set(self.world.id, currently_selected_entity, Material, self.material_manager.materials.get(sf.AssetManager.generate_guid(self.asset.material_paths.items[0])).?);
                         zgui.closeCurrentPopup();
                     }
                     zgui.endPopup();
@@ -681,7 +730,10 @@ pub const World = struct {
         for (scene_asset.geometry_paths.items) |geometry_path| {
             _ = try sf.MeshAsset.load_mesh(geometry_path, mesh_manager, meshes, vertices, indices);
         }
+        // add these by default
         try self.component_add(Transform);
+        try self.component_add(Mesh);
+        try self.component_add(Material);
         const scene_entity = self.entity_new("Root");
         var entities_added: u32 = 0;
         if (scene_asset.world) |parser_world| {
@@ -689,12 +741,8 @@ pub const World = struct {
                 const comp_type = comps.name_type_map.get(comp).?;
                 switch (comp_type) {
                     .transform => {},
-                    .mesh => {
-                        try self.component_add(Mesh);
-                    },
-                    .material => {
-                        try self.component_add(Material);
-                    },
+                    .mesh => {},
+                    .material => {},
                 }
             }
             for (parser_world.tags) |tag| {
