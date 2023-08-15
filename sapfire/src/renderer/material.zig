@@ -61,9 +61,9 @@ pub const MaterialManager = struct {
         };
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var materials = std.AutoHashMap([64]u8, Material).init(alloc);
-        try materials.ensureTotalCapacity(@intCast(config.database.len));
+        try materials.ensureTotalCapacity(INIT_ASSET_MAP_SIZE);
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
-        try asset_map.ensureTotalCapacity(@intCast(config.database.len));
+        try asset_map.ensureTotalCapacity(INIT_ASSET_MAP_SIZE);
         for (config.database) |path| {
             const material_asset = try MaterialAsset.create(parse_arena.allocator(), path);
             try asset_map.putNoClobber(material_asset.guid, material_asset);
@@ -86,9 +86,9 @@ pub const MaterialManager = struct {
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
         var materials = std.AutoHashMap([64]u8, Material).init(alloc);
-        try materials.ensureTotalCapacity(@intCast(paths.len));
+        try materials.ensureTotalCapacity(INIT_ASSET_MAP_SIZE);
         var asset_map = std.AutoHashMap([64]u8, MaterialAsset).init(asset_arena.allocator());
-        try asset_map.ensureTotalCapacity(@intCast(paths.len));
+        try asset_map.ensureTotalCapacity(INIT_ASSET_MAP_SIZE);
         for (paths) |path| {
             const guid = sf.AssetManager.generate_guid(path);
             if (asset_map.contains(guid)) continue;

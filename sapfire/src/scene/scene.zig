@@ -559,6 +559,18 @@ pub const Scene = struct {
             .components = components.items,
             .tags = tags_arr.items,
         };
+        var index: usize = 0;
+        var found = false;
+        for (self.asset.material_paths.items) |path| {
+            if (std.mem.eql(u8, path, "default")) {
+                found = true;
+                break;
+            }
+            index += 1;
+        }
+        if (found) {
+            _ = self.asset.material_paths.swapRemove(index);
+        }
         try json.stringify(ParseScene{
             .world = world,
             .texture_paths = self.asset.texture_paths.items,
@@ -712,6 +724,11 @@ pub const World = struct {
         );
         defer gctx.releaseResource(local_bgl);
         var pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false);
+        { // default material & pipeline
+            material_manager.default_material = try sf.Material.create_default(material_manager, texture_manager, gctx);
+            var default_pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false);
+            try pipeline_system.add_material(default_pipeline.*, sf.AssetManager.generate_guid("default"));
+        }
         // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
         for (scene_asset.material_paths.items) |material_path| {
             const material_asset = material_manager.material_asset_map.get(sf.AssetManager.generate_guid(material_path)).?;
@@ -779,7 +796,7 @@ pub const World = struct {
                             _ = ecs.set(self.id, entity, Mesh, mesh);
                         },
                         .material => {
-                            _ = ecs.set(self.id, entity, Material, material_manager.materials.get(comp.value.guid).?);
+                            _ = ecs.set(self.id, entity, Material, material_manager.materials.get(comp.value.guid) orelse material_manager.default_material.?);
                         },
                     }
                 }
