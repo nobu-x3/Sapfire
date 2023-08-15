@@ -340,28 +340,24 @@ pub const Scene = struct {
                             } else {
                                 if (asset_manager.mesh_manager.mesh_map.count() > 0) {
                                     var iter = asset_manager.mesh_manager.mesh_map.iterator();
-                                    while (iter.next()) |entry| {
-                                        const path = asset_manager.mesh_manager.mesh_assets_map.get(entry.key_ptr.*).?.path;
-                                        try self.asset.geometry_paths.append(path);
-                                        try self.mesh_manager.mesh_map.put(entry.key_ptr.*, entry.value_ptr.*);
-                                        _ = ecs.set(self.world.id, currently_selected_entity, Mesh, entry.value_ptr.*);
-                                        break;
-                                    }
+                                    const entry = iter.next().?;
+                                    const path = asset_manager.mesh_manager.mesh_assets_map.get(entry.key_ptr.*).?.path;
+                                    try self.asset.geometry_paths.append(path);
+                                    try self.mesh_manager.mesh_map.put(entry.key_ptr.*, entry.value_ptr.*);
+                                    _ = ecs.set(self.world.id, currently_selected_entity, Mesh, entry.value_ptr.*);
                                 } else {
                                     var iter = asset_manager.mesh_manager.mesh_assets_map.iterator();
-                                    while (iter.next()) |entry| {
-                                        const path = entry.value_ptr.path;
-                                        const mesh = sf.MeshAsset.load_mesh(path, &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
-                                            std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
-                                            zgui.closeCurrentPopup();
-                                            return;
-                                        };
-                                        try self.mesh_manager.mesh_assets_map.put(entry.key_ptr.*, entry.value_ptr.*);
-                                        try self.mesh_manager.mesh_map.put(entry.key_ptr.*, mesh);
-                                        try self.asset.geometry_paths.append(path);
-                                        _ = ecs.set(self.world.id, currently_selected_entity, Mesh, mesh);
-                                        break;
-                                    }
+                                    const entry = iter.next().?;
+                                    const path = entry.value_ptr.path;
+                                    const mesh = sf.MeshAsset.load_mesh(path, &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
+                                        std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
+                                        zgui.closeCurrentPopup();
+                                        return;
+                                    };
+                                    try self.mesh_manager.mesh_assets_map.put(entry.key_ptr.*, entry.value_ptr.*);
+                                    try self.mesh_manager.mesh_map.put(entry.key_ptr.*, mesh);
+                                    try self.asset.geometry_paths.append(path);
+                                    _ = ecs.set(self.world.id, currently_selected_entity, Mesh, mesh);
                                 }
                             }
                             self.recreate_buffers();
