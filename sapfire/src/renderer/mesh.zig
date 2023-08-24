@@ -43,19 +43,26 @@ pub const MeshAsset = struct {
         }
         const mesh: Mesh = .{
             .guid = guid,
-            .index_offset = @intCast(out_indices.items.len),
-            .vertex_offset = @intCast(out_vertices.items.len),
-            .num_indices = @intCast(data.indices.items.len),
-            .num_vertices = @intCast(data.positions.items.len),
+            .index_offset = @truncate(out_indices.items.len),
+            .vertex_offset = @truncate(@as(i64, @intCast(out_vertices.items.len))),
+            .num_indices = @truncate(data.indices.items.len),
+            .num_vertices = @truncate(data.positions.items.len),
         };
         try mesh_manager.mesh_map.put(guid, mesh);
         if (out_meshes != null)
-            try out_meshes.?.append(mesh);
+            out_meshes.?.appendAssumeCapacity(mesh);
+        // try out_meshes.?.append(mesh);
+        std.log.info("Existing {d}, cap {d}, len to add {d}", .{ out_indices.items.len, out_indices.capacity, data.indices.items.len });
         for (data.indices.items) |index| {
-            try out_indices.append(index);
+            out_indices.appendAssumeCapacity(index);
+            // try out_indices.append(index);
         }
         for (data.positions.items, 0..) |_, index| {
-            try out_vertices.append(.{
+            // try out_vertices.append(.{
+            //     .position = data.positions.items[index],
+            //     .uv = data.uvs.items[index],
+            // });
+            out_vertices.appendAssumeCapacity(.{
                 .position = data.positions.items[index],
                 .uv = data.uvs.items[index],
             });
@@ -73,10 +80,10 @@ pub const MeshAsset = struct {
             return;
         };
         try out_meshes.append(.{
-            .index_offset = @intCast(out_indices.items.len),
-            .vertex_offset = @intCast(out_vertices.items.len),
-            .num_indices = @intCast(data.indices.items.len),
-            .num_vertices = @intCast(data.positions.items.len),
+            .index_offset = @truncate(out_indices.items.len),
+            .vertex_offset = @truncate(out_vertices.items.len),
+            .num_indices = @truncate(data.indices.items.len),
+            .num_vertices = @truncate(data.positions.items.len),
         });
         try material_manager.add_material_to_mesh(material, &out_meshes.items[out_meshes.items.len - 1]);
         for (data.indices.items) |index| {

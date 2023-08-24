@@ -64,8 +64,12 @@ pub const Editor = struct {
             .height = gctx.swapchain_descriptor.height,
         }, gctx.swapchain_descriptor.format);
         var scene_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
+        // TODO: clean up
+        var meshes = try allocator.create(std.ArrayList(sapfire.scene.components.Mesh));
+        meshes.* = std.ArrayList(sapfire.scene.components.Mesh).init(allocator);
+        try meshes.ensureTotalCapacity(128);
         var current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, "project/scenes/test_scene.json");
-        sapfire.scene.Scene.scene = &current_scene;
+        try current_scene.deserialize(gctx, meshes);
         return Editor{
             .window = window,
             .gctx = gctx,
@@ -105,7 +109,6 @@ pub const Editor = struct {
                                 }
                                 self.current_scene.destroy();
                                 self.current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, path);
-
                                 if (self.game_renderer) |renderer| {
                                     renderer.destroy(allocator);
                                     const win_size = self.window.getSize();

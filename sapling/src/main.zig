@@ -7,6 +7,8 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     var allocator = gpa.allocator();
     var editor = try Editor.create(allocator, "project/project_config.json");
+    sf.scene.Scene.scene = &editor.current_scene;
+    std.log.info("{*}", .{&editor.current_scene.indices});
     defer editor.destroy(allocator);
     try editor.run(allocator);
 }

@@ -132,7 +132,7 @@ pub const MaterialManager = struct {
         if (!system.materials.contains(guid)) {
             // TODO: material name
             var material = Material.create(gctx, texture_name, texture_system, layout, uniform_size, texture_name);
-            try system.materials.putNoClobber(guid, material);
+            try system.materials.put(guid, material);
             log.info("Added material with guid\n{d}", .{guid});
         }
     }
@@ -159,12 +159,19 @@ pub const Material = struct {
         const maybe_scene = @import("../scene/scene.zig").Scene.scene;
         if (maybe_scene) |scene| {
             var iter = asset_manager.material_manager.material_asset_map.iterator();
+            var shown = false;
             while (iter.next()) |entry| {
                 if (std.mem.eql(u8, &self.guid, &entry.value_ptr.guid)) {
+                    shown = true;
                     if (zgui.button(entry.value_ptr.path, .{})) {
                         zgui.openPopup("Material menu", .{});
                     }
                     break;
+                }
+            }
+            if (!shown) {
+                if (zgui.button("default", .{})) {
+                    zgui.openPopup("Material menu", .{});
                 }
             }
             if (zgui.beginPopup("Material menu", .{})) {
@@ -184,12 +191,12 @@ pub const Material = struct {
                                 };
                                 break :val asset_manager.material_manager.materials.get(entry.key_ptr.*).?;
                             };
-                            scene.material_manager.materials.put(entry.key_ptr.*, material) catch |e| {
-                                std.log.err("Error when adding material to scene material manager. {s}.", .{@typeName(@TypeOf(e))});
-                                zgui.endPopup();
-                                return;
-                            };
-
+                            scene.material_manager.materials.putAssumeCapacity(entry.key_ptr.*, material);
+                            // scene.material_manager.materials.put(entry.key_ptr.*, material) catch |e| {
+                            //     std.log.err("Error when adding material to scene material manager. {s}.", .{@typeName(@TypeOf(e))});
+                            //     zgui.endPopup();
+                            //     return;
+                            // };
                             const global_uniform_bgl = gctx.createBindGroupLayout(&.{
                                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                             });
@@ -212,8 +219,12 @@ pub const Material = struct {
                                 zgui.endPopup();
                                 return;
                             };
-                            try scene.asset.material_paths.append(entry.value_ptr.path);
-                            try scene.asset.texture_paths.append(asset_manager.texture_manager.texture_assets_map.get(entry.value_ptr.texture_guid.?).?.path);
+                            if (!std.mem.eql(u8, entry.value_ptr.path, "default")) {
+                                try scene.asset.material_paths.append(entry.value_ptr.path);
+                            }
+                            if (entry.value_ptr.texture_guid) |texture_guid| {
+                                try scene.asset.texture_paths.append(asset_manager.texture_manager.texture_assets_map.get(texture_guid).?.path);
+                            }
                         }
                         _ = ecs.set(world, entity, Material, scene.material_manager.materials.get(entry.key_ptr.*).?);
                     }

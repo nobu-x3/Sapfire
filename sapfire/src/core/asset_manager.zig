@@ -72,7 +72,6 @@ pub const AssetManager = struct {
             .path = config.material_config,
             .matman = &asset_manager.material_manager,
         });
-
         _ = try jobs.JobsManager.jobs().schedule(material_job, struct {
             allocator: std.mem.Allocator,
             path: []const u8,
