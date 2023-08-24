@@ -345,7 +345,7 @@ pub const Scene = struct {
                             if (self.asset.geometry_paths.items.len > 0) {
                                 _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0])).?);
                                 _ = sf.MeshAsset.load_mesh(self.asset.geometry_paths.items[0], &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
-                                    std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
+                                    log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.closeCurrentPopup();
                                     return;
                                 };

@@ -50,22 +50,21 @@ pub const MeshAsset = struct {
         };
         try mesh_manager.mesh_map.put(guid, mesh);
         if (out_meshes != null)
-            out_meshes.?.appendAssumeCapacity(mesh);
-        // try out_meshes.?.append(mesh);
-        std.log.info("Existing {d}, cap {d}, len to add {d}", .{ out_indices.items.len, out_indices.capacity, data.indices.items.len });
+            // out_meshes.?.appendAssumeCapacity(mesh);
+            try out_meshes.?.append(mesh);
         for (data.indices.items) |index| {
-            out_indices.appendAssumeCapacity(index);
-            // try out_indices.append(index);
+            // out_indices.appendAssumeCapacity(index);
+            try out_indices.append(index);
         }
         for (data.positions.items, 0..) |_, index| {
-            // try out_vertices.append(.{
-            //     .position = data.positions.items[index],
-            //     .uv = data.uvs.items[index],
-            // });
-            out_vertices.appendAssumeCapacity(.{
+            try out_vertices.append(.{
                 .position = data.positions.items[index],
                 .uv = data.uvs.items[index],
             });
+            // out_vertices.appendAssumeCapacity(.{
+            //     .position = data.positions.items[index],
+            //     .uv = data.uvs.items[index],
+            // });
         }
         return mesh;
     }

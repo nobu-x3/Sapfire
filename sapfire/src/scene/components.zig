@@ -148,7 +148,6 @@ pub const Mesh = struct {
                     if (zgui.selectable(entry.value_ptr.path, .{})) {
                         if (!scene.mesh_manager.mesh_map.contains(entry.value_ptr.guid)) {
                             const mesh = asset_manager.mesh_manager.mesh_map.get(entry.value_ptr.guid) orelse val: {
-                                std.log.info("{*}", .{&scene.indices});
                                 const mesh = rendering.MeshAsset.load_mesh(entry.value_ptr.path, &asset_manager.mesh_manager, null, &scene.vertices, &scene.indices) catch |e| {
                                     std.log.err("Failed to add mesh asset to the editor manager. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.endPopup();
@@ -163,7 +162,7 @@ pub const Mesh = struct {
                             };
                             try scene.asset.geometry_paths.append(entry.value_ptr.path);
                             const material = ecs.get(world, entity, Material).?;
-                            const material_asset = asset_manager.material_manager.material_asset_map.get(material.guid).?;
+                            const material_asset = asset_manager.material_manager.material_asset_map.get(material.guid) orelse asset_manager.material_manager.material_asset_map.get(asset_manager.material_manager.default_material.?.guid).?;
                             try scene.asset.material_paths.append(material_asset.path);
                             const texture_asset = asset_manager.texture_manager.texture_assets_map.get(material_asset.texture_guid.?).?;
                             try scene.asset.texture_paths.append(texture_asset.path);
