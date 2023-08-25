@@ -396,8 +396,8 @@ pub const Scene = struct {
                                 } else {
                                     guid = sf.AssetManager.generate_guid("default");
                                     try self.material_manager.materials.put(guid, asset_manager.material_manager.default_material orelse val: {
-                                        asset_manager.material_manager.default_material = try sf.Material.create_default(&asset_manager.material_manager, &asset_manager.texture_manager, gctx);
-                                        self.material_manager.default_material = try sf.Material.create_default(&self.material_manager, &self.texture_manager, gctx);
+                                        try sf.Material.create_default(&asset_manager.material_manager, &asset_manager.texture_manager, gctx);
+                                        try sf.Material.create_default(&self.material_manager, &self.texture_manager, gctx);
                                         break :val asset_manager.material_manager.default_material.?;
                                     });
                                     try self.asset.material_paths.append("default");
@@ -737,7 +737,7 @@ pub const World = struct {
         defer gctx.releaseResource(local_bgl);
         var pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false);
         { // default material & pipeline
-            material_manager.default_material = try sf.Material.create_default(material_manager, texture_manager, gctx);
+            try sf.Material.create_default(material_manager, texture_manager, gctx);
             var default_pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false);
             try pipeline_system.add_material(default_pipeline.*, sf.AssetManager.generate_guid("default"));
         }

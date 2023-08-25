@@ -47,7 +47,7 @@ pub const Texture = struct {
         return Texture{ .handle = handle, .view = texture_view };
     }
 
-    pub fn generate_default(gctx: *zgpu.GraphicsContext) !Texture {
+    pub fn generate_default(gctx: *zgpu.GraphicsContext, texture_manager: *TextureManager) !void {
         // Generate default texture
         @setEvalBranchQuota(256 * 256 * 4);
         const dimensions: u32 = 256;
@@ -81,7 +81,7 @@ pub const Texture = struct {
         //     std.log.err("Failed to load default texture.", .{});
         //     return e;
         // };
-        var new_texture = Texture.create(gctx, .{ .texture_binding = true, .copy_dst = true }, .{
+        texture_manager.default_texture = Texture.create(gctx, .{ .texture_binding = true, .copy_dst = true }, .{
             .width = 256,
             .height = 256,
             .depth_or_array_layers = 1,
@@ -91,8 +91,7 @@ pub const Texture = struct {
             .is_hdr = false,
             .bytes_per_row = dimensions,
         });
-        Texture.load_data(&new_texture, gctx, dimensions, dimensions, dimensions * channels, pixels[0..]);
-        return new_texture;
+        Texture.load_data(&texture_manager.default_texture.?, gctx, dimensions, dimensions, dimensions * channels, pixels[0..]);
     }
 
     pub fn create_depth(gctx: *zgpu.GraphicsContext, width: u32, height: u32) Texture {
@@ -231,7 +230,7 @@ pub const TextureManager = struct {
         var texture: Texture = undefined;
         const guid = sf.AssetManager.generate_guid(pathname);
         if (system.default_texture == null) {
-            system.default_texture = try Texture.generate_default(gctx);
+            try Texture.generate_default(gctx, system);
         }
         if (!system.texture_assets_map.contains(guid)) {
             log.err("Texture at path {s} is not present in the asset database. Using default texture.", .{pathname});

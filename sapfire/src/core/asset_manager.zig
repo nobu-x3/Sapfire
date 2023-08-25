@@ -1,5 +1,6 @@
 const std = @import("std");
 const zgui = @import("zgui");
+const zgpu = @import("zgpu");
 const crypto = std.crypto;
 const json = std.json;
 const jobs = @import("jobs.zig");
@@ -104,6 +105,11 @@ pub const AssetManager = struct {
         self.texture_manager.deinit();
         self.scene_manager.deinit();
         self.allocator.destroy(self);
+    }
+
+    pub fn create_defaults(self: *AssetManager, gctx: *zgpu.GraphicsContext) !void {
+        try sf.Texture.generate_default(gctx, &self.texture_manager);
+        try sf.Material.create_default(&self.material_manager, &self.texture_manager, gctx);
     }
 
     // TODO: this should be used to import raw files and generate .sf* format assets

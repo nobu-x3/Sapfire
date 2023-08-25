@@ -115,7 +115,7 @@ pub const MaterialManager = struct {
 
     pub fn add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !void {
         if (system.default_material == null) {
-            system.default_material = try Material.create_default(system, texture_system, gctx);
+            try Material.create_default(system, texture_system, gctx);
         }
         const guid = sf.AssetManager.generate_guid(name);
         if (!system.materials.contains(guid)) {
@@ -283,7 +283,7 @@ pub const Material = struct {
         return material;
     }
 
-    pub fn create_default(material_manager: *MaterialManager, texture_manager: *sf.TextureManager, gctx: *zgpu.GraphicsContext) !Material {
+    pub fn create_default(material_manager: *MaterialManager, texture_manager: *sf.TextureManager, gctx: *zgpu.GraphicsContext) !void {
         const local_bgl = gctx.createBindGroupLayout(
             &.{
                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -299,7 +299,7 @@ pub const Material = struct {
             .address_mode_w = .repeat,
         });
         const default_texture = texture_manager.default_texture orelse val: {
-            texture_manager.default_texture = sf.Texture.generate_default(gctx) catch |e| {
+            sf.Texture.generate_default(gctx, texture_manager) catch |e| {
                 std.log.err("Failed to generate default material because default generation failed. {s}.", .{@typeName(@TypeOf(e))});
                 return;
             };
@@ -311,18 +311,17 @@ pub const Material = struct {
             .{ .binding = 2, .sampler_handle = sampler },
         });
         const guid = sf.AssetManager.generate_guid("default");
-        var material = Material{
+        material_manager.default_material = Material{
             .guid = guid,
             .bind_group = local_bg,
             .sampler = sampler,
         };
-        try material_manager.materials.put(guid, material);
+        try material_manager.materials.put(guid, material_manager.default_material.?);
         const material_asset = MaterialAsset{
             .guid = guid,
             .path = "default",
         };
         try material_manager.material_asset_map.put(guid, material_asset);
-        return material;
     }
 };
 

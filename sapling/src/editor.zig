@@ -28,7 +28,7 @@ pub const Editor = struct {
     pub fn create(allocator: std.mem.Allocator, project_path: [:0]const u8) !Editor {
         JobsManager.init();
         try log.init();
-        const asset_manager = try AssetManager.init(allocator, project_path);
+        var asset_manager = try AssetManager.init(allocator, project_path);
         Time.init();
         glfw.init() catch |e| {
             log.err("Failed to init glfw.", .{});
@@ -40,6 +40,7 @@ pub const Editor = struct {
         };
         window.setSizeLimits(400, 400, -1, -1);
         var gctx = try zgpu.GraphicsContext.create(allocator, window, .{});
+        try asset_manager.create_defaults(gctx);
         zgui.init(allocator);
         zgui.backend.initWithConfig(
             window,
