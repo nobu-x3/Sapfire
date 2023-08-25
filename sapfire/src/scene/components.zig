@@ -162,8 +162,8 @@ pub const Mesh = struct {
                             };
                             try scene.asset.geometry_paths.append(entry.value_ptr.path);
                             const material = ecs.get(world, entity, Material).?;
-                            std.debug.print("{d}", .{asset_manager.material_manager.default_material.?.guid});
-                            std.debug.print("{d}", .{material.guid});
+                            std.debug.print("{d}\n", .{asset_manager.material_manager.default_material.?.guid});
+                            std.debug.print("{d}\n", .{material.guid});
                             const material_asset = asset_manager.material_manager.material_asset_map.get(material.guid) orelse asset_manager.material_manager.material_asset_map.get(asset_manager.material_manager.default_material.?.guid).?;
                             try scene.asset.material_paths.append(material_asset.path);
                             if (material_asset.texture_guid) |guid| {

@@ -179,7 +179,17 @@ pub const Material = struct {
                 while (it.next()) |entry| {
                     if (zgui.selectable(entry.value_ptr.path, .{})) {
                         if (!scene.material_manager.materials.contains(entry.key_ptr.*)) {
-                            const material = asset_manager.material_manager.materials.get(entry.value_ptr.guid) orelse val: {
+                            if (entry.value_ptr.texture_guid) |text_guid| {
+                                var tex_entry = try scene.texture_manager.textures.getOrPut(text_guid);
+                                if (!tex_entry.found_existing) {
+                                    tex_entry.value_ptr.* = asset_manager.texture_manager.textures.get(text_guid) orelse val: {
+                                        var asset = asset_manager.texture_manager.texture_assets_map.getPtr(text_guid).?;
+                                        try asset_manager.texture_manager.add_texture(asset.path, gctx, .{ .texture_binding = true, .copy_dst = true });
+                                        break :val asset_manager.texture_manager.textures.get(text_guid).?;
+                                    };
+                                }
+                            }
+                            const material = asset_manager.material_manager.materials.getPtr(entry.value_ptr.guid) orelse val: {
                                 asset_manager.material_manager.add_material(entry.value_ptr.path, gctx, &asset_manager.texture_manager, &.{
                                     zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                                     zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
@@ -189,14 +199,9 @@ pub const Material = struct {
                                     zgui.endPopup();
                                     return;
                                 };
-                                break :val asset_manager.material_manager.materials.get(entry.key_ptr.*).?;
+                                break :val asset_manager.material_manager.materials.getPtr(entry.key_ptr.*).?;
                             };
-                            scene.material_manager.materials.putAssumeCapacity(entry.key_ptr.*, material);
-                            // scene.material_manager.materials.put(entry.key_ptr.*, material) catch |e| {
-                            //     std.log.err("Error when adding material to scene material manager. {s}.", .{@typeName(@TypeOf(e))});
-                            //     zgui.endPopup();
-                            //     return;
-                            // };
+                            scene.material_manager.materials.putAssumeCapacity(entry.key_ptr.*, material.*);
                             const global_uniform_bgl = gctx.createBindGroupLayout(&.{
                                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                             });

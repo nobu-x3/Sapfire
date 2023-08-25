@@ -141,7 +141,7 @@ const Config = struct {
 };
 
 pub const TextureManager = struct {
-    map: std.AutoHashMap([64]u8, Texture),
+    textures: std.AutoHashMap([64]u8, Texture),
     arena: std.heap.ArenaAllocator,
     default_texture: ?Texture = null,
     texture_assets_map: std.AutoHashMap([64]u8, TextureAsset),
@@ -161,7 +161,7 @@ pub const TextureManager = struct {
         var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
         return TextureManager{
             .arena = arena,
-            .map = map,
+            .textures = map,
             .texture_assets_map = asset_map,
             .parse_arena = parse_arena,
             .path_database = path_database,
@@ -190,7 +190,7 @@ pub const TextureManager = struct {
         try parse_pngs(arena_alloc, config.database, &asset_map);
         return TextureManager{
             .arena = arena,
-            .map = map,
+            .textures = map,
             .texture_assets_map = asset_map,
             .parse_arena = parse_arena,
             .path_database = path_database,
@@ -212,7 +212,7 @@ pub const TextureManager = struct {
         try parse_pngs(arena_alloc, paths, &asset_map);
         return TextureManager{
             .arena = arena,
-            .map = map,
+            .textures = map,
             .texture_assets_map = asset_map,
             .parse_arena = parse_arena,
             .path_database = path_database,
@@ -249,17 +249,16 @@ pub const TextureManager = struct {
             .depth_or_array_layers = 1,
         }, image.format);
         Texture.load_data(&texture, gctx, image.width, image.height, image.format.bytes_per_row, image.data);
-        // TODO: rework this to use guids
-        try system.map.put(guid, texture);
+        try system.textures.put(guid, texture);
     }
 
     pub fn get_texture_by_name(system: *TextureManager, name: [:0]const u8) Texture {
         const guid = sf.AssetManager.generate_guid(name);
-        return system.map.get(guid) orelse system.default_texture.?;
+        return system.textures.get(guid) orelse system.default_texture.?;
     }
 
     pub fn get_texture(system: *TextureManager, guid: [64]u8) Texture {
-        return system.map.get(guid) orelse system.default_texture.?;
+        return system.textures.get(guid) orelse system.default_texture.?;
     }
 
     // TODO: pass an allocator instead of caching parse_arena
