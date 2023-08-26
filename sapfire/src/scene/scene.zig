@@ -129,35 +129,22 @@ pub const Scene = struct {
     const INIT_INDEX_ARRAY_CAPACITY = 262144;
     const INIT_VERTEX_ARRAY_CAPACITY = 262144;
 
-    pub fn create_new(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
-        _ = gctx;
-        var arena = std.heap.ArenaAllocator.init(allocator);
-        var scene_asset = try SceneAsset.create_empty(allocator, path);
-        var world = try World.init(arena.allocator());
-        var texman = try sf.TextureManager.init_empty(allocator);
-        var matman = try sf.MaterialManager.init_empty(allocator);
-        var meshman = try sf.MeshManager.init_empty(allocator);
-        var pipeline_system = try sf.PipelineSystem.init(allocator);
-        var vertices = std.ArrayList(sf.Vertex).init(allocator);
-        try vertices.ensureTotalCapacity(INIT_VERTEX_ARRAY_CAPACITY);
-        var indices = std.ArrayList(u32).init(allocator);
-        try indices.ensureTotalCapacity(INIT_INDEX_ARRAY_CAPACITY);
-        return Scene{
-            .guid = sf.AssetManager.generate_guid(path),
-            .world = world,
-            .asset = scene_asset,
-            .arena = arena,
-            .vertices = vertices,
-            .indices = indices,
-            .pipeline_system = pipeline_system,
-            .mesh_manager = meshman,
-            .texture_manager = texman,
-            .material_manager = matman,
-            .global_uniform_bind_group = undefined,
-            .vertex_buffer = undefined,
-            .index_buffer = undefined,
-            .scene_entity = undefined,
-        };
+    pub fn init_new(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8, out_scene: *Scene) !void {
+        out_scene.arena = std.heap.ArenaAllocator.init(allocator);
+        out_scene.asset = try SceneAsset.create_empty(allocator, path);
+        out_scene.world = try World.init(out_scene.arena.allocator());
+        out_scene.texture_manager = try sf.TextureManager.init_empty(allocator);
+        out_scene.material_manager = try sf.MaterialManager.init_empty(allocator);
+        out_scene.mesh_manager = try sf.MeshManager.init_empty(allocator);
+        out_scene.pipeline_system = try sf.PipelineSystem.init(allocator);
+        out_scene.vertices = std.ArrayList(sf.Vertex).init(allocator);
+        try out_scene.vertices.ensureTotalCapacity(INIT_VERTEX_ARRAY_CAPACITY);
+        out_scene.indices = std.ArrayList(u32).init(allocator);
+        try out_scene.indices.ensureTotalCapacity(INIT_INDEX_ARRAY_CAPACITY);
+        var meshes = std.ArrayList(Mesh).init(allocator);
+        try meshes.ensureTotalCapacity(128);
+        defer meshes.deinit();
+        try out_scene.deserialize(gctx, &meshes);
     }
 
     pub fn deserialize(self: *Scene, gctx: *zgpu.GraphicsContext, meshes: *std.ArrayList(Mesh)) !void {
@@ -194,28 +181,29 @@ pub const Scene = struct {
         ecs.SYSTEM(self.world.id, "render", ecs.OnStore, &render_color_system);
     }
 
-    pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8) !Scene {
-        var arena = std.heap.ArenaAllocator.init(allocator);
-        var world = try World.init(arena.allocator());
+    pub fn init(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8, out_scene: *Scene) !void {
+        out_scene.arena = std.heap.ArenaAllocator.init(allocator);
+        out_scene.world = try World.init(out_scene.arena.allocator());
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
-        const scene_asset = try SceneAsset.create(arena.allocator(), parse_arena.allocator(), path);
+        out_scene.asset = try SceneAsset.create(out_scene.arena.allocator(), parse_arena.allocator(), path);
         // manager inits can be jobified
-        var texman = try sf.TextureManager.init_from_slice(arena.allocator(), scene_asset.texture_paths.items);
-        var matman = try sf.MaterialManager.init_from_slice(arena.allocator(), scene_asset.material_paths.items);
-        var meshman = try sf.MeshManager.init_from_slice(arena.allocator(), scene_asset.geometry_paths.items);
-        var meshes = std.ArrayList(Mesh).init(arena.allocator());
+        out_scene.texture_manager = try sf.TextureManager.init_from_slice(out_scene.arena.allocator(), out_scene.asset.texture_paths.items);
+        out_scene.material_manager = try sf.MaterialManager.init_from_slice(out_scene.arena.allocator(), out_scene.asset.material_paths.items);
+        out_scene.mesh_manager = try sf.MeshManager.init_from_slice(out_scene.arena.allocator(), out_scene.asset.geometry_paths.items);
+        var meshes = std.ArrayList(Mesh).init(allocator);
         try meshes.ensureTotalCapacity(128);
-        var vertices = std.ArrayList(sf.Vertex).init(arena.allocator());
-        try vertices.ensureTotalCapacity(INIT_VERTEX_ARRAY_CAPACITY);
-        var indices = std.ArrayList(u32).init(arena.allocator());
-        try indices.ensureTotalCapacity(INIT_INDEX_ARRAY_CAPACITY);
-        var pipeline_system = try sf.PipelineSystem.init(arena.allocator());
+        defer meshes.deinit();
+        out_scene.vertices = std.ArrayList(sf.Vertex).init(out_scene.arena.allocator());
+        try out_scene.vertices.ensureTotalCapacity(INIT_VERTEX_ARRAY_CAPACITY);
+        out_scene.indices = std.ArrayList(u32).init(out_scene.arena.allocator());
+        try out_scene.indices.ensureTotalCapacity(INIT_INDEX_ARRAY_CAPACITY);
+        out_scene.pipeline_system = try sf.PipelineSystem.init(out_scene.arena.allocator());
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         });
         defer gctx.releaseResource(global_uniform_bgl);
-        const global_uniform_bind_group = gctx.createBindGroup(global_uniform_bgl, &.{
+        out_scene.global_uniform_bind_group = gctx.createBindGroup(global_uniform_bgl, &.{
             .{
                 .binding = 0,
                 .buffer_handle = gctx.uniforms.buffer,
@@ -223,30 +211,14 @@ pub const Scene = struct {
                 .size = @sizeOf(sf.GlobalUniforms),
             },
         });
-        const scene_entity = try world.deserialize(&scene_asset, gctx, global_uniform_bgl, &pipeline_system, &texman, &matman, &meshman, &meshes, &vertices, &indices);
-        currently_selected_entity = scene_entity;
-        const vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, vertices.items);
-        const index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, indices.items);
+        out_scene.scene_entity = try out_scene.world.deserialize(&out_scene.asset, gctx, global_uniform_bgl, &out_scene.pipeline_system, &out_scene.texture_manager, &out_scene.material_manager, &out_scene.mesh_manager, &meshes, &out_scene.vertices, &out_scene.indices);
+        currently_selected_entity = out_scene.scene_entity;
+        out_scene.vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, out_scene.vertices.items);
+        out_scene.index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, out_scene.indices.items);
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
-        ecs.SYSTEM(world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
+        ecs.SYSTEM(out_scene.world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
         var render_color_system = @import("systems/render_color_system.zig").system();
-        ecs.SYSTEM(world.id, "render", ecs.OnStore, &render_color_system);
-        return Scene{
-            .guid = sf.AssetManager.generate_guid(path),
-            .world = world,
-            .asset = scene_asset,
-            .arena = arena,
-            .scene_entity = scene_entity,
-            .vertices = vertices,
-            .indices = indices,
-            .pipeline_system = pipeline_system,
-            .mesh_manager = meshman,
-            .texture_manager = texman,
-            .material_manager = matman,
-            .global_uniform_bind_group = global_uniform_bind_group,
-            .vertex_buffer = vertex_buffer,
-            .index_buffer = index_buffer,
-        };
+        ecs.SYSTEM(out_scene.world.id, "render", ecs.OnStore, &render_color_system);
     }
 
     pub fn recreate_buffers(self: *Scene) void {

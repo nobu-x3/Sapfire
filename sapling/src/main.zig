@@ -6,7 +6,8 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     var allocator = gpa.allocator();
-    var editor = try Editor.create(allocator, "project/project_config.json");
+    var editor: Editor = undefined;
+    try Editor.init(allocator, "project/project_config.json", &editor);
     sf.scene.Scene.scene = &editor.current_scene;
     defer editor.destroy(allocator);
     try editor.run(allocator);

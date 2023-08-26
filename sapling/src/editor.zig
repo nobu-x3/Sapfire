@@ -25,61 +25,47 @@ pub const Editor = struct {
     current_scene: sapfire.scene.Scene,
     current_scene_path: ?[:0]const u8 = null,
 
-    pub fn create(allocator: std.mem.Allocator, project_path: [:0]const u8) !Editor {
+    pub fn init(allocator: std.mem.Allocator, project_path: [:0]const u8, out_editor: *Editor) !void {
         JobsManager.init();
         try log.init();
-        var asset_manager = try AssetManager.init(allocator, project_path);
+        out_editor.asset_manager = try AssetManager.init(allocator, project_path);
         Time.init();
         glfw.init() catch |e| {
             log.err("Failed to init glfw.", .{});
             return e;
         };
-        const window = glfw.Window.create(800, 600, "Sapling", null) catch |e| {
+        out_editor.window = glfw.Window.create(800, 600, "Sapling", null) catch |e| {
             log.err("Failed to create window.", .{});
             return e;
         };
-        window.setSizeLimits(400, 400, -1, -1);
-        var gctx = try zgpu.GraphicsContext.create(allocator, window, .{});
-        try asset_manager.create_defaults(gctx);
+        out_editor.window.setSizeLimits(400, 400, -1, -1);
+        out_editor.gctx = try zgpu.GraphicsContext.create(allocator, out_editor.window, .{});
+        try out_editor.asset_manager.create_defaults(out_editor.gctx);
         zgui.init(allocator);
         zgui.backend.initWithConfig(
-            window,
-            gctx.device,
+            out_editor.window,
+            out_editor.gctx.device,
             @intFromEnum(zgpu.GraphicsContext.swapchain_format),
             .{ .texture_filter_mode = .linear, .pipeline_multisample_count = 1 },
         );
         set_style();
-        const framebuffer = Texture.create_with_wgpu_format(gctx, .{
+        out_editor.framebuffer = Texture.create_with_wgpu_format(out_editor.gctx, .{
             .render_attachment = true,
             .texture_binding = true,
         }, .{
-            .width = gctx.swapchain_descriptor.width,
-            .height = gctx.swapchain_descriptor.height,
-        }, gctx.swapchain_descriptor.format);
-        const scene_fb =
-            Texture.create_with_wgpu_format(gctx, .{
+            .width = out_editor.gctx.swapchain_descriptor.width,
+            .height = out_editor.gctx.swapchain_descriptor.height,
+        }, out_editor.gctx.swapchain_descriptor.format);
+        out_editor.scene_framebuffer =
+            Texture.create_with_wgpu_format(out_editor.gctx, .{
             .render_attachment = true,
             .texture_binding = true,
         }, .{
-            .width = gctx.swapchain_descriptor.width,
-            .height = gctx.swapchain_descriptor.height,
-        }, gctx.swapchain_descriptor.format);
-        var scene_renderer = try RendererState.create_with_gctx(allocator, gctx, gctx.swapchain_descriptor.width, gctx.swapchain_descriptor.height);
-        // TODO: clean up
-        var meshes = try allocator.create(std.ArrayList(sapfire.scene.components.Mesh));
-        meshes.* = std.ArrayList(sapfire.scene.components.Mesh).init(allocator);
-        try meshes.ensureTotalCapacity(128);
-        var current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, "project/scenes/test_scene.json");
-        try current_scene.deserialize(gctx, meshes);
-        return Editor{
-            .window = window,
-            .gctx = gctx,
-            .framebuffer = framebuffer,
-            .current_scene = current_scene,
-            .scene_renderer = scene_renderer,
-            .scene_framebuffer = scene_fb,
-            .asset_manager = asset_manager,
-        };
+            .width = out_editor.gctx.swapchain_descriptor.width,
+            .height = out_editor.gctx.swapchain_descriptor.height,
+        }, out_editor.gctx.swapchain_descriptor.format);
+        out_editor.scene_renderer = try RendererState.create_with_gctx(allocator, out_editor.gctx, out_editor.gctx.swapchain_descriptor.width, out_editor.gctx.swapchain_descriptor.height);
+        try sapfire.scene.Scene.init_new(allocator, out_editor.gctx, "project/scenes/test_scene.json", &out_editor.current_scene);
     }
 
     var play_mode = false;
@@ -109,7 +95,8 @@ pub const Editor = struct {
                                     self.current_scene_path = null;
                                 }
                                 self.current_scene.destroy();
-                                self.current_scene = try sapfire.scene.Scene.create_new(allocator, gctx, path);
+                                self.current_scene = undefined;
+                                try sapfire.scene.Scene.init_new(allocator, gctx, path, &self.current_scene);
                                 if (self.game_renderer) |renderer| {
                                     renderer.destroy(allocator);
                                     const win_size = self.window.getSize();
@@ -128,7 +115,8 @@ pub const Editor = struct {
                                 }
                                 // TODO: fix scene deinit
                                 self.current_scene.destroy();
-                                self.current_scene = try sapfire.scene.Scene.create(allocator, gctx, path);
+                                self.current_scene = undefined;
+                                try sapfire.scene.Scene.init(allocator, gctx, path, &self.current_scene);
                                 if (self.game_renderer) |renderer| {
                                     renderer.destroy(allocator);
                                     const win_size = self.window.getSize();
