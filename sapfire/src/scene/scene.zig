@@ -54,57 +54,117 @@ pub const SceneConfig = struct {
 
 const ParseScene = struct {
     world: ParseWorld,
-    texture_paths: [][:0]const u8,
-    material_paths: [][:0]const u8,
-    geometry_paths: [][:0]const u8,
+    texture_paths: [][]const u8,
+    material_paths: [][]const u8,
+    geometry_paths: [][]const u8,
 };
 
 pub const SceneAsset = struct {
     guid: [64]u8,
-    texture_paths: std.ArrayList([:0]const u8),
-    material_paths: std.ArrayList([:0]const u8),
-    geometry_paths: std.ArrayList([:0]const u8),
+    texture_paths: std.StringHashMap(u32),
+    material_paths: std.StringHashMap(u32),
+    geometry_paths: std.StringHashMap(u32),
     world: ?ParseWorld = null,
 
-    pub fn create_empty(database_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
-        const scene_guid = sf.AssetManager.generate_guid(path);
-        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
-        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
-        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
-        return SceneAsset{
-            .guid = scene_guid,
-            .texture_paths = texture_paths,
-            .material_paths = material_paths,
-            .geometry_paths = geometry_paths,
-        };
+    pub fn add_asset_path(self: *SceneAsset, asset_type: sf.AssetType, path: []const u8, old_path: ?[]const u8) !void {
+        switch (asset_type) {
+            .Texture => {
+                var entry = try self.texture_paths.getOrPut(path);
+                if (!entry.found_existing) {
+                    entry.value_ptr.* = 0;
+                }
+                entry.value_ptr.* += 1;
+                if (old_path != null and self.texture_paths.contains(old_path.?)) {
+                    self.texture_paths.getPtr(old_path.?).?.* -= 1;
+                }
+            },
+            .Material => {
+                var entry = try self.material_paths.getOrPut(path);
+                if (!entry.found_existing) {
+                    entry.value_ptr.* = 0;
+                }
+                entry.value_ptr.* += 1;
+                if (old_path != null and self.material_paths.contains(old_path.?)) {
+                    self.material_paths.getPtr(old_path.?).?.* -= 1;
+                }
+            },
+            .Mesh => {
+                var entry = try self.geometry_paths.getOrPut(path);
+                if (!entry.found_existing) {
+                    entry.value_ptr.* = 0;
+                }
+                entry.value_ptr.* += 1;
+                if (old_path != null and self.geometry_paths.contains(old_path.?)) {
+                    self.geometry_paths.getPtr(old_path.?).?.* -= 1;
+                }
+            },
+            else => {},
+        }
     }
 
-    pub fn create(database_allocator: std.mem.Allocator, parse_allocator: std.mem.Allocator, path: [:0]const u8) !SceneAsset {
-        const scene_guid = sf.AssetManager.generate_guid(path);
+    pub fn deserialize_paths(self: *SceneAsset, asset_type: sf.AssetType, out_paths: *std.ArrayList([]const u8)) !void {
+        switch (asset_type) {
+            .Texture => {
+                var iter = self.texture_paths.iterator();
+                while (iter.next()) |entry| {
+                    if (entry.value_ptr.* > 0 and std.mem.eql(u8, entry.key_ptr.*, "default")) {
+                        try out_paths.append(entry.key_ptr.*);
+                    }
+                }
+            },
+            .Material => {
+                var iter = self.material_paths.iterator();
+                while (iter.next()) |entry| {
+                    if (entry.value_ptr.* > 0 and std.mem.eql(u8, entry.key_ptr.*, "default")) {
+                        try out_paths.append(entry.key_ptr.*);
+                    }
+                }
+            },
+            .Mesh => {
+                var iter = self.material_paths.iterator();
+                while (iter.next()) |entry| {
+                    if (entry.value_ptr.* > 0 and std.mem.eql(u8, entry.key_ptr.*, "default")) {
+                        try out_paths.append(entry.key_ptr.*);
+                    }
+                }
+            },
+            else => {},
+        }
+    }
+
+    pub fn serialize_paths(self: *SceneAsset, asset_type: sf.AssetType) !void {
+        _ = self;
+        _ = asset_type;
+    }
+
+    pub fn init_empty(database_allocator: std.mem.Allocator, path: [:0]const u8, out_scene_asset: *SceneAsset) !void {
+        out_scene_asset.guid = sf.AssetManager.generate_guid(path);
+        out_scene_asset.texture_paths = std.StringHashMap(u32).init(database_allocator);
+        out_scene_asset.geometry_paths = std.StringHashMap(u32).init(database_allocator);
+        out_scene_asset.material_paths = std.StringHashMap(u32).init(database_allocator);
+        out_scene_asset.world = null;
+    }
+
+    pub fn init(database_allocator: std.mem.Allocator, parse_allocator: std.mem.Allocator, path: [:0]const u8, out_scene_asset: *SceneAsset) !void {
+        out_scene_asset.guid = sf.AssetManager.generate_guid(path);
         const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
             log.err("Failed to parse scene config file. Given path:{s}", .{path});
             return e;
         };
         const config = try json.parseFromSliceLeaky(ParseScene, database_allocator, config_data, .{});
-        var texture_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
-        var geometry_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
-        var material_paths = try std.ArrayList([:0]const u8).initCapacity(database_allocator, 256);
+        out_scene_asset.world = config.world;
+        out_scene_asset.texture_paths = std.StringHashMap(u32).init(database_allocator);
+        out_scene_asset.geometry_paths = std.StringHashMap(u32).init(database_allocator);
+        out_scene_asset.material_paths = std.StringHashMap(u32).init(database_allocator);
         for (config.texture_paths) |t_path| {
-            try texture_paths.append(t_path);
+            try out_scene_asset.add_asset_path(.Texture, t_path, null);
         }
         for (config.material_paths) |m_path| {
-            try material_paths.append(m_path);
+            try out_scene_asset.add_asset_path(.Material, m_path, null);
         }
         for (config.geometry_paths) |g_path| {
-            try geometry_paths.append(g_path);
+            try out_scene_asset.add_asset_path(.Mesh, g_path, null);
         }
-        return SceneAsset{
-            .guid = scene_guid,
-            .texture_paths = texture_paths,
-            .material_paths = material_paths,
-            .geometry_paths = geometry_paths,
-            .world = config.world,
-        };
     }
 };
 
@@ -131,7 +191,7 @@ pub const Scene = struct {
 
     pub fn init_new(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8, out_scene: *Scene) !void {
         out_scene.arena = std.heap.ArenaAllocator.init(allocator);
-        out_scene.asset = try SceneAsset.create_empty(allocator, path);
+        try SceneAsset.init_empty(allocator, path, &out_scene.asset);
         out_scene.world = try World.init(out_scene.arena.allocator());
         out_scene.texture_manager = try sf.TextureManager.init_empty(allocator);
         out_scene.material_manager = try sf.MaterialManager.init_empty(allocator);
@@ -186,11 +246,20 @@ pub const Scene = struct {
         out_scene.world = try World.init(out_scene.arena.allocator());
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
         defer parse_arena.deinit();
-        out_scene.asset = try SceneAsset.create(out_scene.arena.allocator(), parse_arena.allocator(), path);
+        try SceneAsset.init(out_scene.arena.allocator(), parse_arena.allocator(), path, &out_scene.asset);
         // manager inits can be jobified
-        out_scene.texture_manager = try sf.TextureManager.init_from_slice(out_scene.arena.allocator(), out_scene.asset.texture_paths.items);
-        out_scene.material_manager = try sf.MaterialManager.init_from_slice(out_scene.arena.allocator(), out_scene.asset.material_paths.items);
-        out_scene.mesh_manager = try sf.MeshManager.init_from_slice(out_scene.arena.allocator(), out_scene.asset.geometry_paths.items);
+        var tex_paths = std.ArrayList([]const u8).init(allocator);
+        defer tex_paths.deinit();
+        try out_scene.asset.deserialize_paths(.Texture, &tex_paths);
+        out_scene.texture_manager = try sf.TextureManager.init_from_slice(out_scene.arena.allocator(), tex_paths.items);
+        var mat_paths = std.ArrayList([]const u8).init(allocator);
+        defer mat_paths.deinit();
+        try out_scene.asset.deserialize_paths(.Material, &mat_paths);
+        out_scene.material_manager = try sf.MaterialManager.init_from_slice(out_scene.arena.allocator(), mat_paths.items);
+        var mesh_paths = std.ArrayList([]const u8).init(allocator);
+        defer mesh_paths.deinit();
+        try out_scene.asset.deserialize_paths(.Mesh, &mesh_paths);
+        out_scene.mesh_manager = try sf.MeshManager.init_from_slice(out_scene.arena.allocator(), mesh_paths.items);
         var meshes = std.ArrayList(Mesh).init(allocator);
         try meshes.ensureTotalCapacity(128);
         defer meshes.deinit();
@@ -314,9 +383,11 @@ pub const Scene = struct {
                     if (zgui.selectable("Mesh", .{ .flags = .{ .allow_double_click = true } })) {
                         { // Mesh
                             ecs.add(self.world.id, currently_selected_entity, Mesh);
-                            if (self.asset.geometry_paths.items.len > 0) {
-                                _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(self.asset.geometry_paths.items[0])).?);
-                                _ = sf.MeshAsset.load_mesh(self.asset.geometry_paths.items[0], &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
+                            if (self.asset.geometry_paths.count() > 0) {
+                                var iter = self.asset.geometry_paths.keyIterator();
+                                var path = iter.next().?;
+                                _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(path.*)).?);
+                                _ = sf.MeshAsset.load_mesh(path.*, &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
                                     log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.closeCurrentPopup();
                                     return;
@@ -326,7 +397,7 @@ pub const Scene = struct {
                                     var iter = asset_manager.mesh_manager.mesh_map.iterator();
                                     const entry = iter.next().?;
                                     const path = asset_manager.mesh_manager.mesh_assets_map.get(entry.key_ptr.*).?.path;
-                                    try self.asset.geometry_paths.append(path);
+                                    try self.asset.add_asset_path(.Mesh, path, null);
                                     try self.mesh_manager.mesh_map.put(entry.key_ptr.*, entry.value_ptr.*);
                                     _ = ecs.set(self.world.id, currently_selected_entity, Mesh, entry.value_ptr.*);
                                 } else {
@@ -340,7 +411,7 @@ pub const Scene = struct {
                                     };
                                     try self.mesh_manager.mesh_assets_map.put(entry.key_ptr.*, entry.value_ptr.*);
                                     try self.mesh_manager.mesh_map.put(entry.key_ptr.*, mesh);
-                                    try self.asset.geometry_paths.append(path);
+                                    try self.asset.add_asset_path(.Mesh, path, null);
                                     _ = ecs.set(self.world.id, currently_selected_entity, Mesh, mesh);
                                 }
                             }
@@ -362,7 +433,7 @@ pub const Scene = struct {
                                         guid = entry.key_ptr.*;
                                         try self.material_manager.materials.put(entry.key_ptr.*, entry.value_ptr.*);
                                         _ = ecs.set(self.world.id, currently_selected_entity, Material, entry.value_ptr.*);
-                                        try self.asset.material_paths.append(asset_manager.material_manager.material_asset_map.get(entry.key_ptr.*).?.path);
+                                        try self.asset.add_asset_path(.Material, asset_manager.material_manager.material_asset_map.get(entry.key_ptr.*).?.path, null);
                                         break;
                                     }
                                 } else {
@@ -372,7 +443,7 @@ pub const Scene = struct {
                                         try sf.Material.create_default(&self.material_manager, &self.texture_manager, gctx);
                                         break :val asset_manager.material_manager.default_material.?;
                                     });
-                                    try self.asset.material_paths.append("default");
+                                    try self.asset.add_asset_path(.Material, "default", null);
                                     _ = ecs.set(self.world.id, currently_selected_entity, Material, asset_manager.material_manager.default_material.?);
                                 }
                             }
@@ -543,23 +614,17 @@ pub const Scene = struct {
             .components = components.items,
             .tags = tags_arr.items,
         };
-        var index: usize = 0;
-        var found = false;
-        for (self.asset.material_paths.items) |path| {
-            if (std.mem.eql(u8, path, "default")) {
-                found = true;
-                break;
-            }
-            index += 1;
-        }
-        if (found) {
-            _ = self.asset.material_paths.swapRemove(index);
-        }
+        var mat_paths = std.ArrayList([]const u8).init(parse_arena.allocator());
+        try self.asset.deserialize_paths(.Material, &mat_paths);
+        var tex_paths = std.ArrayList([]const u8).init(parse_arena.allocator());
+        try self.asset.deserialize_paths(.Texture, &tex_paths);
+        var mesh_paths = std.ArrayList([]const u8).init(parse_arena.allocator());
+        try self.asset.deserialize_paths(.Mesh, &mesh_paths);
         try json.stringify(ParseScene{
             .world = world,
-            .texture_paths = self.asset.texture_paths.items,
-            .material_paths = self.asset.material_paths.items,
-            .geometry_paths = self.asset.geometry_paths.items,
+            .texture_paths = tex_paths.items,
+            .material_paths = mat_paths.items,
+            .geometry_paths = mesh_paths.items,
         }, .{}, writer);
     }
 };
@@ -696,8 +761,11 @@ pub const World = struct {
         vertices: *std.ArrayList(sf.Vertex),
         indices: *std.ArrayList(u32),
     ) !ecs.entity_t {
-        for (scene_asset.texture_paths.items) |texture_path| {
-            try sf.TextureManager.add_texture(texture_manager, texture_path, gctx, .{ .texture_binding = true, .copy_dst = true });
+        { // Textures
+            var iter = scene_asset.texture_paths.keyIterator();
+            while (iter.next()) |texture_path| {
+                try sf.TextureManager.add_texture(texture_manager, texture_path.*, gctx, .{ .texture_binding = true, .copy_dst = true });
+            }
         }
         const local_bgl = gctx.createBindGroupLayout(
             &.{
@@ -714,18 +782,24 @@ pub const World = struct {
             try pipeline_system.add_material(default_pipeline.*, sf.AssetManager.generate_guid("default"));
         }
         // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
-        for (scene_asset.material_paths.items) |material_path| {
-            const material_asset = material_manager.material_asset_map.get(sf.AssetManager.generate_guid(material_path)).?;
-            // TODO: look into making multiple textures per material
-            try sf.MaterialManager.add_material(material_manager, material_path, gctx, texture_manager, &.{
-                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-            }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
-            try pipeline_system.add_material(pipeline.*, sf.AssetManager.generate_guid(material_path));
+        { // Materials
+            var iter = scene_asset.material_paths.keyIterator();
+            while (iter.next()) |material_path| {
+                const material_asset = material_manager.material_asset_map.get(sf.AssetManager.generate_guid(material_path.*)).?;
+                // TODO: look into making multiple textures per material
+                try sf.MaterialManager.add_material(material_manager, material_path.*, gctx, texture_manager, &.{
+                    zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+                    zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+                    zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+                }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
+                try pipeline_system.add_material(pipeline.*, sf.AssetManager.generate_guid(material_path.*));
+            }
         }
-        for (scene_asset.geometry_paths.items) |geometry_path| {
-            _ = try sf.MeshAsset.load_mesh(geometry_path, mesh_manager, meshes, vertices, indices);
+        { // Meshes
+            var iter = scene_asset.geometry_paths.keyIterator();
+            while (iter.next()) |geometry_path| {
+                _ = try sf.MeshAsset.load_mesh(geometry_path.*, mesh_manager, meshes, vertices, indices);
+            }
         }
         // add these by default
         try self.component_add(Transform);
@@ -794,7 +868,7 @@ pub const World = struct {
 
 pub const SceneManager = struct {
     arena_allocator: std.heap.ArenaAllocator,
-    asset_map: std.AutoHashMap([64]u8, SceneAsset),
+    asset_map: std.AutoHashMap([64]u8, *SceneAsset),
 
     pub fn init(allocator: std.mem.Allocator, config_path: []const u8) !SceneManager {
         var arena = std.heap.ArenaAllocator.init(allocator);
@@ -809,10 +883,11 @@ pub const SceneManager = struct {
             database: [][:0]const u8,
         };
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
-        var asset_map = std.AutoHashMap([64]u8, SceneAsset).init(arena_alloc);
+        var asset_map = std.AutoHashMap([64]u8, *SceneAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(@intCast(config.database.len));
         for (config.database) |path| {
-            const scene_asset = try SceneAsset.create(arena.allocator(), parse_arena.allocator(), path);
+            var scene_asset = try arena_alloc.create(SceneAsset);
+            try SceneAsset.init(arena.allocator(), parse_arena.allocator(), path, scene_asset);
             try asset_map.putNoClobber(scene_asset.guid, scene_asset);
         }
         return SceneManager{

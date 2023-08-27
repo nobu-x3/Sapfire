@@ -23,7 +23,7 @@ pub const MaterialManager = struct {
     path_database: std.ArrayList([:0]const u8), // TODO: serialize material_asset_map paths instead
 
     pub const Config = struct {
-        database: [][:0]const u8,
+        database: [][]const u8,
     };
 
     const INIT_ASSET_MAP_SIZE = 16;
@@ -67,7 +67,8 @@ pub const MaterialManager = struct {
         for (config.database) |path| {
             const material_asset = try MaterialAsset.create(parse_arena.allocator(), path);
             try asset_map.putNoClobber(material_asset.guid, material_asset);
-            try path_database.append(path);
+            var path_sen = try std.mem.concatWithSentinel(parse_arena.allocator(), u8, &.{path}, 0);
+            try path_database.append(path_sen);
         }
         return MaterialManager{
             .parse_arena = parse_arena,
@@ -79,7 +80,7 @@ pub const MaterialManager = struct {
         };
     }
 
-    pub fn init_from_slice(allocator: std.mem.Allocator, paths: [][:0]const u8) !MaterialManager {
+    pub fn init_from_slice(allocator: std.mem.Allocator, paths: [][]const u8) !MaterialManager {
         var asset_arena = std.heap.ArenaAllocator.init(allocator);
         var arena = std.heap.ArenaAllocator.init(allocator);
         var alloc = arena.allocator();
@@ -94,7 +95,8 @@ pub const MaterialManager = struct {
             if (asset_map.contains(guid)) continue;
             const material_asset = try MaterialAsset.create(parse_arena.allocator(), path);
             try asset_map.putNoClobber(material_asset.guid, material_asset);
-            try path_database.append(path);
+            var path_sen = try std.mem.concatWithSentinel(parse_arena.allocator(), u8, &.{path}, 0);
+            try path_database.append(path_sen);
         }
         return MaterialManager{
             .parse_arena = parse_arena,
@@ -113,7 +115,7 @@ pub const MaterialManager = struct {
         system.arena.deinit();
     }
 
-    pub fn add_material(system: *MaterialManager, name: [:0]const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !void {
+    pub fn add_material(system: *MaterialManager, name: []const u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !void {
         if (system.default_material == null) {
             try Material.create_default(system, texture_system, gctx);
         }
@@ -225,10 +227,10 @@ pub const Material = struct {
                                 return;
                             };
                             if (!std.mem.eql(u8, entry.value_ptr.path, "default")) {
-                                try scene.asset.material_paths.append(entry.value_ptr.path);
+                                try scene.asset.add_asset_path(.Material, entry.value_ptr.path, null);
                             }
                             if (entry.value_ptr.texture_guid) |texture_guid| {
-                                try scene.asset.texture_paths.append(asset_manager.texture_manager.texture_assets_map.get(texture_guid).?.path);
+                                try scene.asset.add_asset_path(.Texture, asset_manager.texture_manager.texture_assets_map.get(texture_guid).?.path, null);
                             }
                         }
                         _ = ecs.set(world, entity, Material, scene.material_manager.materials.get(entry.key_ptr.*).?);
@@ -266,7 +268,7 @@ pub const Material = struct {
         return material;
     }
 
-    pub fn create(gctx: *zgpu.GraphicsContext, name: [:0]const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !Material {
+    pub fn create(gctx: *zgpu.GraphicsContext, name: []const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !Material {
         const local_bgl = gctx.createBindGroupLayout(layout);
         defer gctx.releaseResource(local_bgl);
         // Create a sampler.
@@ -339,7 +341,7 @@ pub const MaterialAsset = struct {
         texture_guid: ?[64]u8,
     };
 
-    fn create(parse_allocator: std.mem.Allocator, path: [:0]const u8) !MaterialAsset {
+    fn create(parse_allocator: std.mem.Allocator, path: []const u8) !MaterialAsset {
         const material_guid = sf.AssetManager.generate_guid(path);
         const config_data = std.fs.cwd().readFileAlloc(parse_allocator, path, 512 * 16) catch |e| {
             log.err("Failed to parse material config file. Given path:{s}", .{path});

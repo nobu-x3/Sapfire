@@ -137,7 +137,7 @@ pub const TextureAsset = struct {
 };
 
 const Config = struct {
-    database: [][:0]const u8,
+    database: [][]const u8,
 };
 
 pub const TextureManager = struct {
@@ -146,7 +146,7 @@ pub const TextureManager = struct {
     default_texture: ?Texture = null,
     texture_assets_map: std.AutoHashMap([64]u8, TextureAsset),
     parse_arena: std.heap.ArenaAllocator,
-    path_database: std.ArrayList([:0]const u8),
+    path_database: std.ArrayList([]const u8),
 
     const INIT_TEXTURE_MAP_SIZE = 16;
 
@@ -158,7 +158,7 @@ pub const TextureManager = struct {
         var asset_map = std.AutoHashMap([64]u8, TextureAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(INIT_TEXTURE_MAP_SIZE);
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var path_database = std.ArrayList([]const u8).init(parse_arena.allocator());
         return TextureManager{
             .arena = arena,
             .textures = map,
@@ -176,7 +176,7 @@ pub const TextureManager = struct {
         var map = std.AutoHashMap([64]u8, Texture).init(arena_alloc);
         try map.ensureTotalCapacity(256);
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var path_database = std.ArrayList([]const u8).init(parse_arena.allocator());
         const config_data = std.fs.cwd().readFileAlloc(parse_arena.allocator(), config_path, 512 * 16) catch |e| {
             log.err("Failed to parse texture config file. Given path:{s}", .{config_path});
             return e;
@@ -197,13 +197,13 @@ pub const TextureManager = struct {
         };
     }
 
-    pub fn init_from_slice(allocator: std.mem.Allocator, paths: [][:0]const u8) !TextureManager {
+    pub fn init_from_slice(allocator: std.mem.Allocator, paths: [][]const u8) !TextureManager {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var arena_alloc = arena.allocator();
         var map = std.AutoHashMap([64]u8, Texture).init(arena_alloc);
         try map.ensureTotalCapacity(256);
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var path_database = std.ArrayList([]const u8).init(parse_arena.allocator());
         for (paths) |path| {
             try path_database.append(path);
         }
@@ -226,7 +226,7 @@ pub const TextureManager = struct {
         system.arena.deinit();
     }
 
-    pub fn add_texture(system: *TextureManager, pathname: [:0]const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
+    pub fn add_texture(system: *TextureManager, pathname: []const u8, gctx: *zgpu.GraphicsContext, usage: zgpu.wgpu.TextureUsage) !void {
         var texture: Texture = undefined;
         const guid = sf.AssetManager.generate_guid(pathname);
         if (system.default_texture == null) {
@@ -328,7 +328,7 @@ pub const TextureManager = struct {
 };
 
 // TODO: temp function
-fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std.AutoHashMap([64]u8, TextureAsset)) !void {
+fn parse_pngs(allocator: std.mem.Allocator, paths: [][]const u8, out_map: *std.AutoHashMap([64]u8, TextureAsset)) !void {
     var arena = std.heap.ArenaAllocator.init(allocator);
     defer arena.deinit();
     stbi.init(arena.allocator());
@@ -338,11 +338,12 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
         if (out_map.contains(guid)) continue;
         var path_cpy = try allocator.allocSentinel(u8, path.len, 0);
         @memcpy(path_cpy, path);
-        var image = stbi.Image.loadFromFile(path, 4) catch {
+        const path_sen = try std.mem.concatWithSentinel(arena.allocator(), u8, &.{path}, 0);
+        var image = stbi.Image.loadFromFile(path_sen, 4) catch {
             log.err("Error loading texture from path {s}.", .{path});
             const asset: TextureAsset = .{
                 .guid = guid,
-                .path = path,
+                .path = path_sen,
                 .data = undefined,
                 .parse_success = false,
                 .width = 0,
@@ -364,7 +365,7 @@ fn parse_pngs(allocator: std.mem.Allocator, paths: [][:0]const u8, out_map: *std
         @memcpy(data, image.data);
         const asset: TextureAsset = .{
             .guid = guid,
-            .path = path,
+            .path = path_sen,
             .data = data,
             .parse_success = true,
             .width = image.width,

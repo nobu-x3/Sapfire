@@ -20,7 +20,7 @@ pub const MeshAsset = struct {
     uvs: std.ArrayList([2]f32),
     parse_success: bool,
 
-    pub fn load_mesh(path: [:0]const u8, mesh_manager: *MeshManager, out_meshes: ?*std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !Mesh {
+    pub fn load_mesh(path: []const u8, mesh_manager: *MeshManager, out_meshes: ?*std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !Mesh {
         const guid = sf.AssetManager.generate_guid(path);
         const data = mesh_manager.mesh_assets_map.get(guid) orelse {
             log.err("Mesh at path {s} is not present in the asset database. Loading failed.", .{path});
@@ -98,7 +98,7 @@ pub const MeshAsset = struct {
 };
 
 const Config = struct {
-    database: [][:0]const u8,
+    database: [][]const u8,
 };
 
 pub const MeshManager = struct {
@@ -106,7 +106,7 @@ pub const MeshManager = struct {
     parse_arena: std.heap.ArenaAllocator,
     mesh_assets_map: std.AutoHashMap([64]u8, MeshAsset),
     mesh_map: std.AutoHashMap([64]u8, Mesh),
-    path_database: std.ArrayList([:0]const u8),
+    path_database: std.ArrayList([]const u8),
 
     const INIT_ASSET_MAP_SIZE = 16;
 
@@ -114,7 +114,7 @@ pub const MeshManager = struct {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var arena_alloc = arena.allocator();
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
-        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var path_database = std.ArrayList([]const u8).init(parse_arena.allocator());
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(INIT_ASSET_MAP_SIZE);
         var mesh_map = std.AutoHashMap([64]u8, Mesh).init(arena_alloc);
@@ -138,7 +138,7 @@ pub const MeshManager = struct {
             log.err("Failed to parse texture config file. Given path:{s}", .{config_path});
             return e;
         };
-        var path_database = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var path_database = std.ArrayList([]const u8).init(parse_arena.allocator());
         const config = try json.parseFromSliceLeaky(Config, arena.allocator(), config_data, .{});
         var asset_map = std.AutoHashMap([64]u8, MeshAsset).init(arena_alloc);
         try asset_map.ensureTotalCapacity(@intCast(config.database.len));
@@ -160,7 +160,7 @@ pub const MeshManager = struct {
         };
     }
 
-    pub fn init_from_slice(allocator: std.mem.Allocator, paths: [][:0]const u8) !MeshManager {
+    pub fn init_from_slice(allocator: std.mem.Allocator, paths: [][]const u8) !MeshManager {
         var arena = std.heap.ArenaAllocator.init(allocator);
         var arena_alloc = arena.allocator();
         var parse_arena = std.heap.ArenaAllocator.init(allocator);
@@ -170,7 +170,7 @@ pub const MeshManager = struct {
         try asset_map.ensureTotalCapacity(@intCast(paths.len));
         var mesh_map = std.AutoHashMap([64]u8, Mesh).init(arena_alloc);
         try mesh_map.ensureTotalCapacity(1024);
-        var config = std.ArrayList([:0]const u8).init(parse_arena.allocator());
+        var config = std.ArrayList([]const u8).init(parse_arena.allocator());
         for (paths) |path| {
             create_mesh_asset(arena_alloc, parse_arena.allocator(), path, &asset_map) catch |e| {
                 log.err("Failed to parse mesh at path {s}. Panicing.", .{path});
@@ -196,7 +196,7 @@ pub const MeshManager = struct {
         geometry_path: [:0]const u8,
         material_path: [:0]const u8,
     };
-    fn create_mesh_asset(arena: std.mem.Allocator, parse_arena: std.mem.Allocator, config_path: [:0]const u8, out_map: *std.AutoHashMap([64]u8, MeshAsset)) !void {
+    fn create_mesh_asset(arena: std.mem.Allocator, parse_arena: std.mem.Allocator, config_path: []const u8, out_map: *std.AutoHashMap([64]u8, MeshAsset)) !void {
         const config_data = std.fs.cwd().readFileAlloc(parse_arena, config_path, 512 * 16) catch |e| {
             log.err("Failed to parse mesh config file. Given path:{s}", .{config_path});
             return e;

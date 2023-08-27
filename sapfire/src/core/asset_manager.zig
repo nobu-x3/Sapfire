@@ -122,7 +122,7 @@ pub const AssetManager = struct {
         crypto.hash.sha2.Sha512.hash(path, guid[0..], .{});
     }
 
-    pub fn generate_guid(path: [:0]const u8) [64]u8 {
+    pub fn generate_guid(path: []const u8) [64]u8 {
         var guid: [64]u8 = undefined;
         crypto.hash.sha2.Sha512.hash(path, &guid, .{});
         return guid;

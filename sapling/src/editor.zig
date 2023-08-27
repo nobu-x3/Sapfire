@@ -26,6 +26,7 @@ pub const Editor = struct {
     current_scene_path: ?[:0]const u8 = null,
 
     pub fn init(allocator: std.mem.Allocator, project_path: [:0]const u8, out_editor: *Editor) !void {
+        out_editor.current_scene_path = null;
         JobsManager.init();
         try log.init();
         out_editor.asset_manager = try AssetManager.init(allocator, project_path);
@@ -130,8 +131,9 @@ pub const Editor = struct {
                             if (self.current_scene_path == null) {
                                 const open_path = try nfd.saveFileDialog("json", null);
                                 if (open_path) |path| {
+                                    self.current_scene_path = try allocator.dupeZ(u8, path);
                                     try self.current_scene.serialize(allocator, path);
-                                    self.current_scene_path = path;
+                                    nfd.freePath(path);
                                 }
                             } else {
                                 try self.current_scene.serialize(allocator, self.current_scene_path.?);
@@ -140,12 +142,14 @@ pub const Editor = struct {
                         if (zgui.menuItem("Save as...", .{})) {
                             const open_path = try nfd.saveFileDialog("json", null);
                             if (open_path) |path| {
-                                if (self.current_scene_path != null) {
-                                    nfd.freePath(self.current_scene_path.?);
+                                if (self.current_scene_path != null and self.current_scene_path.?.len > 0) {
+                                    allocator.free(self.current_scene_path.?);
                                     self.current_scene_path = null;
                                 }
-                                self.current_scene_path = path;
+
+                                self.current_scene_path = try allocator.dupeZ(u8, path);
                                 try self.current_scene.serialize(allocator, path);
+                                nfd.freePath(path);
                             }
                         }
                         zgui.endMenu();
@@ -191,7 +195,6 @@ pub const Editor = struct {
                     }
                     zgui.end();
                 }
-
                 if (zgui.begin("Stats", .{ .flags = .{ .always_auto_resize = true } })) {
                     zgui.bulletText(
                         "Average :  {d:.3} ms/frame ({d:.1} fps)",
