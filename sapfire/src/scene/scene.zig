@@ -229,7 +229,8 @@ pub const Scene = struct {
         self.scene_entity = try self.world.deserialize(
             &self.asset,
             gctx,
-            global_uniform_bgl,
+            &global_uniform_bgl,
+            &lighting_bgl,
             &self.pipeline_system,
             &self.texture_manager,
             &self.material_manager,
@@ -296,7 +297,7 @@ pub const Scene = struct {
             .offset = 256,
             .size = @sizeOf(sf.LightingUniform),
         }});
-        out_scene.scene_entity = try out_scene.world.deserialize(&out_scene.asset, gctx, global_uniform_bgl, &out_scene.pipeline_system, &out_scene.texture_manager, &out_scene.material_manager, &out_scene.mesh_manager, &meshes, &out_scene.vertices, &out_scene.indices);
+        out_scene.scene_entity = try out_scene.world.deserialize(&out_scene.asset, gctx, &global_uniform_bgl, &lighting_bgl, &out_scene.pipeline_system, &out_scene.texture_manager, &out_scene.material_manager, &out_scene.mesh_manager, &meshes, &out_scene.vertices, &out_scene.indices);
         currently_selected_entity = out_scene.scene_entity;
         out_scene.vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, out_scene.vertices.items);
         out_scene.index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, out_scene.indices.items);
@@ -773,7 +774,8 @@ pub const World = struct {
         self: *World,
         scene_asset: *const SceneAsset,
         gctx: *zgpu.GraphicsContext,
-        global_uniform_bgl: zgpu.BindGroupLayoutHandle,
+        global_uniform_bgl: *const zgpu.BindGroupLayoutHandle,
+        lighting_uniform_bgl: *const zgpu.BindGroupLayoutHandle,
         pipeline_system: *sf.PipelineSystem,
         texture_manager: *sf.TextureManager,
         material_manager: *sf.MaterialManager,
@@ -788,10 +790,6 @@ pub const World = struct {
                 try sf.TextureManager.add_texture(texture_manager, texture_path.*, gctx, .{ .texture_binding = true, .copy_dst = true });
             }
         }
-        const lighting_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
-        });
-        defer gctx.releaseResource(lighting_bgl);
         const local_bgl = gctx.createBindGroupLayout(
             &.{
                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -801,10 +799,10 @@ pub const World = struct {
             },
         );
         defer gctx.releaseResource(local_bgl);
-        var pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false);
+        var pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, lighting_uniform_bgl.*, local_bgl }, false);
         { // default material & pipeline
             try sf.Material.create_default(material_manager, texture_manager, gctx);
-            var default_pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false);
+            var default_pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, lighting_uniform_bgl.*, local_bgl }, false);
             try pipeline_system.add_material(default_pipeline.*, sf.AssetManager.generate_guid("default"));
         }
         // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system

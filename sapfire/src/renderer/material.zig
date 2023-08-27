@@ -280,7 +280,7 @@ pub const Material = struct {
                 .{
                     .binding = 3,
                     .buffer_handle = gctx.uniforms.buffer,
-                    .offset = 256,
+                    .offset = 512,
                     .size = @as(u64, @sizeOf(sf.PhongData)),
                 },
             },
@@ -327,7 +327,7 @@ pub const Material = struct {
             .{
                 .binding = 3,
                 .buffer_handle = gctx.uniforms.buffer,
-                .offset = 256,
+                .offset = 512,
                 .size = @sizeOf(sf.PhongData),
             },
         });

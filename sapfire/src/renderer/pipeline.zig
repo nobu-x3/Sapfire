@@ -21,8 +21,8 @@ const wgsl_common =
 \\      color: vec3<f32>,
 \\  }
 \\  @group(0) @binding(0) var<uniform> globalUniforms: Globals;
-\\  @group(2) @binding(0) var<uniform> uniforms: Uniforms;
 \\  @group(1) @binding(0) var<uniform> light: Lights;
+\\  @group(2) @binding(0) var<uniform> uniforms: Uniforms;
 ;
 const wgsl_vs = wgsl_common ++
 \\  struct VertexOut {
@@ -82,17 +82,7 @@ pub const PipelineSystem = struct {
     }
 
     pub fn add_pipeline(system: *PipelineSystem, gctx: *zgpu.GraphicsContext, layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool) !*const Pipeline {
-        // var bgls: [64]zgpu.BindGroupLayoutHandle = undefined;
-        // for (0..layout.len) |index| {
-        //     bgls[index] = gctx.createBindGroupLayout(layout[index]);
-        // }
-        // defer {
-        //     for (0..layout.len) |index| {
-        //         gctx.releaseResource(bgls[index]);
-        //     }
-        // }
         var pipeline: Pipeline = undefined;
-        // pipeline_create(system.arena, gctx, bgls[0..layout.len], async_shader_compilation, &pipeline.handle);
         Pipeline.create(system.arena.allocator(), gctx, layout, async_shader_compilation, &pipeline.handle);
         try system.pipelines.append(pipeline);
         return &system.pipelines.items[system.pipelines.items.len - 1];
