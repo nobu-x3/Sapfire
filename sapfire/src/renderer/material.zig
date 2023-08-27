@@ -180,6 +180,7 @@ pub const Material = struct {
                 var it = asset_manager.material_manager.material_asset_map.iterator();
                 while (it.next()) |entry| {
                     if (zgui.selectable(entry.value_ptr.path, .{})) {
+                        const old_mat = ecs.get(world, entity, Material);
                         if (!scene.material_manager.materials.contains(entry.key_ptr.*)) {
                             if (entry.value_ptr.texture_guid) |text_guid| {
                                 var tex_entry = try scene.texture_manager.textures.getOrPut(text_guid);
@@ -227,11 +228,26 @@ pub const Material = struct {
                                 return;
                             };
                             if (!std.mem.eql(u8, entry.value_ptr.path, "default")) {
-                                try scene.asset.add_asset_path(.Material, entry.value_ptr.path, null);
+                                const mat_comp = ecs.get(world, entity, Material);
+                                if (mat_comp) |mat| {
+                                    const old_path = asset_manager.material_manager.material_asset_map.get(mat.guid).?.path;
+                                    try scene.asset.add_asset_path(.Material, entry.value_ptr.path, old_path);
+                                } else {
+                                    try scene.asset.add_asset_path(.Material, entry.value_ptr.path, null);
+                                }
                             }
                             if (entry.value_ptr.texture_guid) |texture_guid| {
-                                try scene.asset.add_asset_path(.Texture, asset_manager.texture_manager.texture_assets_map.get(texture_guid).?.path, null);
+                                const maybe_old_mat_asset = scene.material_manager.material_asset_map.get(old_mat.?.guid);
+                                try scene.asset.add_asset_path(
+                                    .Texture,
+                                    asset_manager.texture_manager.texture_assets_map.get(texture_guid).?.path,
+                                    if (maybe_old_mat_asset != null) maybe_old_mat_asset.?.path else null,
+                                );
                             }
+                        } else {
+                            const material = ecs.get(world, entity, Material).?;
+                            const material_asset = asset_manager.material_manager.material_asset_map.get(material.guid).?;
+                            try scene.asset.add_asset_path(.Mesh, entry.value_ptr.path, material_asset.path);
                         }
                         _ = ecs.set(world, entity, Material, scene.material_manager.materials.get(entry.key_ptr.*).?);
                     }

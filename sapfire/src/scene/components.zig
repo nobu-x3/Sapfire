@@ -160,7 +160,13 @@ pub const Mesh = struct {
                                 zgui.endPopup();
                                 return;
                             };
-                            try scene.asset.add_asset_path(.Mesh, entry.value_ptr.path, null);
+                            const mesh_comp = ecs.get(world, entity, Mesh);
+                            if (mesh_comp) |comp| {
+                                const old_path = asset_manager.mesh_manager.mesh_assets_map.get(comp.guid).?.path;
+                                try scene.asset.add_asset_path(.Mesh, entry.value_ptr.path, old_path);
+                            } else {
+                                try scene.asset.add_asset_path(.Mesh, entry.value_ptr.path, null);
+                            }
                             const material = ecs.get(world, entity, Material).?;
                             const material_asset = asset_manager.material_manager.material_asset_map.get(material.guid) orelse asset_manager.material_manager.material_asset_map.get(asset_manager.material_manager.default_material.?.guid).?;
                             try scene.asset.add_asset_path(.Material, material_asset.path, null);
@@ -170,6 +176,10 @@ pub const Mesh = struct {
                                 }
                             }
                             scene.recreate_buffers();
+                        } else {
+                            const mesh = ecs.get(world, entity, Mesh).?;
+                            const mesh_asset = asset_manager.mesh_manager.mesh_assets_map.get(mesh.guid).?;
+                            try scene.asset.add_asset_path(.Mesh, entry.value_ptr.path, mesh_asset.path);
                         }
                         const mesh = scene.mesh_manager.mesh_map.get(entry.value_ptr.guid).?;
                         _ = ecs.set(world, entity, Mesh, mesh);

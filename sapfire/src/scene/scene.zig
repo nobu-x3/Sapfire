@@ -107,7 +107,7 @@ pub const SceneAsset = struct {
             .Texture => {
                 var iter = self.texture_paths.iterator();
                 while (iter.next()) |entry| {
-                    if (entry.value_ptr.* > 0 and std.mem.eql(u8, entry.key_ptr.*, "default")) {
+                    if (entry.value_ptr.* > 0 and !std.mem.eql(u8, entry.key_ptr.*, "default")) {
                         try out_paths.append(entry.key_ptr.*);
                     }
                 }
@@ -115,26 +115,21 @@ pub const SceneAsset = struct {
             .Material => {
                 var iter = self.material_paths.iterator();
                 while (iter.next()) |entry| {
-                    if (entry.value_ptr.* > 0 and std.mem.eql(u8, entry.key_ptr.*, "default")) {
+                    if (entry.value_ptr.* > 0 and !std.mem.eql(u8, entry.key_ptr.*, "default")) {
                         try out_paths.append(entry.key_ptr.*);
                     }
                 }
             },
             .Mesh => {
-                var iter = self.material_paths.iterator();
+                var iter = self.geometry_paths.iterator();
                 while (iter.next()) |entry| {
-                    if (entry.value_ptr.* > 0 and std.mem.eql(u8, entry.key_ptr.*, "default")) {
+                    if (entry.value_ptr.* > 0 and !std.mem.eql(u8, entry.key_ptr.*, "default")) {
                         try out_paths.append(entry.key_ptr.*);
                     }
                 }
             },
             else => {},
         }
-    }
-
-    pub fn serialize_paths(self: *SceneAsset, asset_type: sf.AssetType) !void {
-        _ = self;
-        _ = asset_type;
     }
 
     pub fn init_empty(database_allocator: std.mem.Allocator, path: [:0]const u8, out_scene_asset: *SceneAsset) !void {
