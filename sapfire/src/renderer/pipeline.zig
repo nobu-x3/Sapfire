@@ -16,8 +16,13 @@ const wgsl_common =
 \\  struct Globals {
 \\      view_proj: mat4x4<f32>,
 \\  }
+\\  struct Lights {
+\\      position: vec3<f32>,
+\\      color: vec3<f32>,
+\\  }
 \\  @group(0) @binding(0) var<uniform> globalUniforms: Globals;
-\\  @group(1) @binding(0) var<uniform> uniforms: Uniforms;
+\\  @group(2) @binding(0) var<uniform> uniforms: Uniforms;
+\\  @group(1) @binding(0) var<uniform> light: Lights;
 ;
 const wgsl_vs = wgsl_common ++
 \\  struct VertexOut {
@@ -26,7 +31,9 @@ const wgsl_vs = wgsl_common ++
 \\  }
 \\  @vertex fn main(
 \\      @location(0) position: vec3<f32>,
-\\      @location(1) uv: vec2<f32>,
+\\      @location(1) normal: vec3<f32>,
+\\      @location(2) tangent: vec4<f32>,
+\\      @location(3) uv: vec2<f32>,
 \\  ) -> VertexOut {
 \\      //let p = vec2(position.x / uniforms.aspect_ratio, position.y);
 \\      var output: VertexOut;
@@ -37,8 +44,14 @@ const wgsl_vs = wgsl_common ++
 \\  }
 ;
 const wgsl_fs = wgsl_common ++
-\\  @group(1) @binding(1) var image: texture_2d<f32>;
-\\  @group(1) @binding(2) var image_sampler: sampler;
+\\  struct PhongData {
+\\       ambient: f32,
+\\       diffuse: f32,
+\\       reflection: f32,
+\\  }
+\\  @group(2) @binding(1) var image: texture_2d<f32>;
+\\  @group(2) @binding(2) var image_sampler: sampler;
+\\  @group(2) @binding(3) var<uniform> phong_data: PhongData;
 \\  @fragment fn main(
 \\      @location(0) uv: vec2<f32>,
 \\  ) -> @location(0) vec4<f32> {
@@ -107,7 +120,9 @@ pub const Pipeline = struct {
         }};
         const vertex_attributes = [_]zgpu.wgpu.VertexAttribute{
             .{ .format = .float32x3, .offset = 0, .shader_location = 0 },
-            .{ .format = .float32x2, .offset = @offsetOf(types.Vertex, "uv"), .shader_location = 1 },
+            .{ .format = .float32x3, .offset = @offsetOf(types.Vertex, "normal"), .shader_location = 1 },
+            .{ .format = .float32x4, .offset = @offsetOf(types.Vertex, "tangent"), .shader_location = 2 },
+            .{ .format = .float32x2, .offset = @offsetOf(types.Vertex, "uv"), .shader_location = 3 },
         };
         const vertex_buffers = [_]zgpu.wgpu.VertexBufferLayout{.{
             .array_stride = @sizeOf(types.Vertex),

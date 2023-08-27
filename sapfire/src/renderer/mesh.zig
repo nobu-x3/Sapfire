@@ -18,6 +18,8 @@ pub const MeshAsset = struct {
     indices: std.ArrayList(u32),
     positions: std.ArrayList([3]f32),
     uvs: std.ArrayList([2]f32),
+    normals: std.ArrayList([3]f32),
+    tangents: std.ArrayList([4]f32),
     parse_success: bool,
 
     pub fn load_mesh(path: []const u8, mesh_manager: *MeshManager, out_meshes: ?*std.ArrayList(Mesh), out_vertices: *std.ArrayList(sf.Vertex), out_indices: *std.ArrayList(u32)) !Mesh {
@@ -36,6 +38,8 @@ pub const MeshAsset = struct {
             for (data.positions.items, 0..) |_, index| {
                 try out_vertices.append(.{
                     .position = data.positions.items[index],
+                    .normal = data.normals.items[index],
+                    .tangent = data.tangents.items[index],
                     .uv = data.uvs.items[index],
                 });
             }
@@ -59,6 +63,8 @@ pub const MeshAsset = struct {
         for (data.positions.items, 0..) |_, index| {
             try out_vertices.append(.{
                 .position = data.positions.items[index],
+                .normal = data.normals.items[index],
+                .tangent = data.tangents.items[index],
                 .uv = data.uvs.items[index],
             });
             // out_vertices.appendAssumeCapacity(.{
@@ -210,7 +216,9 @@ pub const MeshManager = struct {
         var indices = std.ArrayList(u32).init(arena);
         var positions = std.ArrayList([3]f32).init(arena);
         var uvs = std.ArrayList([2]f32).init(arena);
-        try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
+        var normals = std.ArrayList([3]f32).init(arena);
+        var tangents = std.ArrayList([4]f32).init(arena);
+        try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, &normals, &uvs, &tangents);
         const material_guid = sf.AssetManager.generate_guid(config.material_path);
         const guid = sf.AssetManager.generate_guid(config_path);
         var path_cpy = try arena.allocSentinel(u8, config_path.len, 0);
@@ -221,6 +229,8 @@ pub const MeshManager = struct {
             .material_guid = material_guid,
             .indices = indices,
             .positions = positions,
+            .normals = normals,
+            .tangents = tangents,
             .uvs = uvs,
             .parse_success = true,
         };
@@ -239,7 +249,9 @@ pub const MeshManager = struct {
         var indices = std.ArrayList(u32).init(self.arena.allocator());
         var positions = std.ArrayList([3]f32).init(self.arena.allocator());
         var uvs = std.ArrayList([2]f32).init(self.arena.allocator());
-        try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, null, &uvs, null);
+        var normals = std.ArrayList([3]f32).init(self.arena.allocator());
+        var tangents = std.ArrayList([4]f32).init(self.arena.allocator());
+        try zmesh.io.appendMeshPrimitive(data, 0, 0, &indices, &positions, &normals, &uvs, &tangents);
         var iter = material_manager.material_asset_map.iterator();
         const material_asset = iter.next().?.value_ptr;
         const material_guid = material_asset.guid;
@@ -259,6 +271,8 @@ pub const MeshManager = struct {
             .material_guid = material_guid,
             .indices = indices,
             .positions = positions,
+            .normals = normals,
+            .tangents = tangents,
             .uvs = uvs,
             .parse_success = true,
         };

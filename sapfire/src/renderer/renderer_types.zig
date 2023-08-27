@@ -7,6 +7,8 @@ const mat = @import("material.zig");
 
 pub const Vertex = extern struct {
     position: [3]f32,
+    normal: [3]f32,
+    tangent: [4]f32,
     uv: [2]f32,
 };
 
@@ -18,6 +20,17 @@ pub const Uniforms = extern struct {
 
 pub const GlobalUniforms = extern struct {
     view_projection: zm.Mat,
+};
+
+pub const LightingUniform = extern struct {
+    position: [3]f32,
+    color: [3]f32,
+};
+
+pub const PhongData = extern struct {
+    ambient: f32,
+    diffuse: f32,
+    reflection: f32,
 };
 
 pub const Camera = struct {

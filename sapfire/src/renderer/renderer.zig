@@ -209,6 +209,7 @@ pub const RendererState = struct {
                 const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :pass;
                 const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
                 const global_uniform_bind_group = gctx.lookupResource(scene.global_uniform_bind_group) orelse break :pass;
+                const lighting_uniform_bind_group = gctx.lookupResource(scene.lighting_bind_group) orelse break :pass;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
                     .view = color_view_passed.*,
                     .load_op = .clear,
@@ -237,6 +238,12 @@ pub const RendererState = struct {
                     .view_projection = zm.transpose(cam_world_to_clip),
                 };
                 pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
+                const light = gctx.uniformsAllocate(sf.LightingUniform, 1);
+                light.slice[0] = .{
+                    .position = .{ -1.0, 1.0, 0.0 },
+                    .color = .{ 1.0, 0.0, 0.0 },
+                };
+                pass.setBindGroup(1, lighting_uniform_bind_group, &.{light.offset});
                 var query_desc = ecs.query_desc_t{};
                 query_desc.filter.terms[0] = .{ .id = ecs.id(sf.Material) };
                 query_desc.filter.terms[1] = .{ .id = ecs.id(sf.components.Transform) };
@@ -277,7 +284,13 @@ pub const RendererState = struct {
                                     };
                                     if (should_bind_group) {
                                         const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
-                                        pass.setBindGroup(1, bind_group, &.{mem.offset});
+                                        const phong_data = gctx.uniformsAllocate(sf.PhongData, 1);
+                                        phong_data.slice[0] = .{
+                                            .ambient = current_material.phong_data.ambient,
+                                            .diffuse = current_material.phong_data.diffuse,
+                                            .reflection = current_material.phong_data.reflection,
+                                        };
+                                        pass.setBindGroup(2, bind_group, &.{ mem.offset, phong_data.offset });
                                     }
                                     pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                                 }

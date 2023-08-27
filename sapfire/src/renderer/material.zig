@@ -121,21 +121,13 @@ pub const MaterialManager = struct {
         }
         const guid = sf.AssetManager.generate_guid(name);
         if (!system.materials.contains(guid)) {
-            var material = try Material.create(gctx, name, texture_system, layout, uniform_size, texture_guid);
+            var material = try Material.create(gctx, .{
+                .ambient = 1.0,
+                .diffuse = 0.0,
+                .reflection = 0.0,
+            }, name, texture_system, layout, uniform_size, texture_guid);
             try system.materials.put(guid, material);
             log.info("Added material at path {s} with guid\n{d}", .{ name, guid });
-        }
-    }
-
-    pub fn add_material_by_guid(system: *MaterialManager, guid: [64]u8, gctx: *zgpu.GraphicsContext, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) !void {
-        if (system.default_material == null) {
-            system.default_material = try Material.create_default(system, texture_system, gctx);
-        }
-        if (!system.materials.contains(guid)) {
-            // TODO: material name
-            var material = Material.create(gctx, texture_name, texture_system, layout, uniform_size, texture_name);
-            try system.materials.put(guid, material);
-            log.info("Added material with guid\n{d}", .{guid});
         }
     }
 };
@@ -144,6 +136,7 @@ pub const Material = struct {
     guid: [64]u8,
     bind_group: zgpu.BindGroupHandle,
     sampler: zgpu.SamplerHandle, // in case we need it later
+    phong_data: sf.PhongData,
 
     pub fn draw_inspect(self: *Material, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *sf.AssetManager) !void {
         const gctx = sf.RendererState.renderer.?.gctx;
@@ -197,6 +190,7 @@ pub const Material = struct {
                                     zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                                     zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
                                     zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+                                    zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
                                 }, @sizeOf(sf.Uniforms), entry.value_ptr.texture_guid.?) catch |e| {
                                     std.log.err("Error when adding material to editor material manager. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.endPopup();
@@ -209,15 +203,20 @@ pub const Material = struct {
                                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                             });
                             defer gctx.releaseResource(global_uniform_bgl);
+                            const lighting_bgl = gctx.createBindGroupLayout(&.{
+                                zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
+                            });
+                            defer gctx.releaseResource(lighting_bgl);
                             const local_bgl = gctx.createBindGroupLayout(
                                 &.{
                                     zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                                     zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
                                     zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+                                    zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
                                 },
                             );
                             defer gctx.releaseResource(local_bgl);
-                            const new_pipeline = scene.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false) catch |e| {
+                            const new_pipeline = scene.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false) catch |e| {
                                 std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
                                 zgui.endPopup();
                                 return;
@@ -260,9 +259,7 @@ pub const Material = struct {
         zgui.dummy(.{ .h = 5, .w = 0 });
     }
 
-    // TODO: make bind group configurable
-    pub fn create_tex_name(gctx: *zgpu.GraphicsContext, name: [:0]const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_name: [:0]const u8) Material {
-        // bind group
+    pub fn create(gctx: *zgpu.GraphicsContext, phong_data: sf.PhongData, name: []const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !Material {
         const local_bgl = gctx.createBindGroupLayout(layout);
         defer gctx.releaseResource(local_bgl);
         // Create a sampler.
@@ -271,34 +268,25 @@ pub const Material = struct {
             .address_mode_v = .repeat,
             .address_mode_w = .repeat,
         });
-        const local_bg = gctx.createBindGroup(local_bgl, &.{
-            .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = uniform_size },
-            .{ .binding = 1, .texture_view_handle = sf.TextureManager.get_texture_by_name(texture_system, texture_name).view },
-            .{ .binding = 2, .sampler_handle = sampler },
-        });
+        const local_bg = gctx.createBindGroup(
+            local_bgl,
+            &.{
+                .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = uniform_size },
+                .{
+                    .binding = 1,
+                    .texture_view_handle = sf.TextureManager.get_texture(texture_system, texture_guid).view,
+                },
+                .{ .binding = 2, .sampler_handle = sampler },
+                .{
+                    .binding = 3,
+                    .buffer_handle = gctx.uniforms.buffer,
+                    .offset = 256,
+                    .size = @as(u64, @sizeOf(sf.PhongData)),
+                },
+            },
+        );
         var material = Material{
-            .guid = sf.AssetManager.generate_guid(name),
-            .bind_group = local_bg,
-            .sampler = sampler,
-        };
-        return material;
-    }
-
-    pub fn create(gctx: *zgpu.GraphicsContext, name: []const u8, texture_system: *sf.TextureManager, layout: []const zgpu.wgpu.BindGroupLayoutEntry, uniform_size: usize, texture_guid: [64]u8) !Material {
-        const local_bgl = gctx.createBindGroupLayout(layout);
-        defer gctx.releaseResource(local_bgl);
-        // Create a sampler.
-        const sampler = gctx.createSampler(.{
-            .address_mode_u = .repeat,
-            .address_mode_v = .repeat,
-            .address_mode_w = .repeat,
-        });
-        const local_bg = gctx.createBindGroup(local_bgl, &.{
-            .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = uniform_size },
-            .{ .binding = 1, .texture_view_handle = sf.TextureManager.get_texture(texture_system, texture_guid).view },
-            .{ .binding = 2, .sampler_handle = sampler },
-        });
-        var material = Material{
+            .phong_data = phong_data,
             .guid = sf.AssetManager.generate_guid(name),
             .bind_group = local_bg,
             .sampler = sampler,
@@ -312,6 +300,7 @@ pub const Material = struct {
                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                 zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
                 zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+                zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
             },
         );
         defer gctx.releaseResource(local_bgl);
@@ -330,11 +319,26 @@ pub const Material = struct {
         };
         const local_bg = gctx.createBindGroup(local_bgl, &.{
             .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = @sizeOf(sf.Uniforms) },
-            .{ .binding = 1, .texture_view_handle = default_texture.view },
+            .{
+                .binding = 1,
+                .texture_view_handle = default_texture.view,
+            },
             .{ .binding = 2, .sampler_handle = sampler },
+            .{
+                .binding = 3,
+                .buffer_handle = gctx.uniforms.buffer,
+                .offset = 256,
+                .size = @sizeOf(sf.PhongData),
+            },
         });
         const guid = sf.AssetManager.generate_guid("default");
+        const default_phong = sf.PhongData{
+            .ambient = 1.0,
+            .diffuse = 0.0,
+            .reflection = 0.0,
+        };
         material_manager.default_material = Material{
+            .phong_data = default_phong,
             .guid = guid,
             .bind_group = local_bg,
             .sampler = sampler,
