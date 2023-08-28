@@ -203,10 +203,6 @@ pub const Material = struct {
                                 zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                             });
                             defer gctx.releaseResource(global_uniform_bgl);
-                            const lighting_bgl = gctx.createBindGroupLayout(&.{
-                                zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
-                            });
-                            defer gctx.releaseResource(lighting_bgl);
                             const local_bgl = gctx.createBindGroupLayout(
                                 &.{
                                     zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -217,7 +213,7 @@ pub const Material = struct {
                             );
                             defer gctx.releaseResource(local_bgl);
                             var new_pipeline: sf.Pipeline = .{};
-                            scene.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false, &new_pipeline.handle) catch |e| {
+                            scene.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false, &new_pipeline.handle) catch |e| {
                                 std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
                                 zgui.endPopup();
                                 return;

@@ -176,7 +176,6 @@ pub const Scene = struct {
     texture_manager: sf.TextureManager,
     material_manager: sf.MaterialManager,
     global_uniform_bind_group: zgpu.BindGroupHandle,
-    lighting_bind_group: zgpu.BindGroupHandle,
     vertex_buffer: sf.Buffer,
     index_buffer: sf.Buffer,
 
@@ -216,23 +215,10 @@ pub const Scene = struct {
                 .size = @sizeOf(sf.GlobalUniforms),
             },
         });
-        const lighting_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
-        });
-        defer gctx.releaseResource(lighting_bgl);
-        self.lighting_bind_group = gctx.createBindGroup(lighting_bgl, &.{
-            .{
-                .binding = 0,
-                .buffer_handle = gctx.uniforms.buffer,
-                .offset = 256,
-                .size = @sizeOf(sf.LightingUniform),
-            },
-        });
         self.scene_entity = try self.world.deserialize(
             &self.asset,
             gctx,
             &global_uniform_bgl,
-            &lighting_bgl,
             &self.pipeline_system,
             &self.texture_manager,
             &self.material_manager,
@@ -289,17 +275,7 @@ pub const Scene = struct {
                 .size = @sizeOf(sf.GlobalUniforms),
             },
         });
-        const lighting_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
-        });
-        defer gctx.releaseResource(lighting_bgl);
-        out_scene.lighting_bind_group = gctx.createBindGroup(lighting_bgl, &.{.{
-            .binding = 0,
-            .buffer_handle = gctx.uniforms.buffer,
-            .offset = 256,
-            .size = @sizeOf(sf.LightingUniform),
-        }});
-        out_scene.scene_entity = try out_scene.world.deserialize(&out_scene.asset, gctx, &global_uniform_bgl, &lighting_bgl, &out_scene.pipeline_system, &out_scene.texture_manager, &out_scene.material_manager, &out_scene.mesh_manager, &meshes, &out_scene.vertices, &out_scene.indices);
+        out_scene.scene_entity = try out_scene.world.deserialize(&out_scene.asset, gctx, &global_uniform_bgl, &out_scene.pipeline_system, &out_scene.texture_manager, &out_scene.material_manager, &out_scene.mesh_manager, &meshes, &out_scene.vertices, &out_scene.indices);
         currently_selected_entity = out_scene.scene_entity;
         out_scene.vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, out_scene.vertices.items);
         out_scene.index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, out_scene.indices.items);
@@ -471,10 +447,6 @@ pub const Scene = struct {
                                     zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
                                 });
                                 defer gctx.releaseResource(global_uniform_bgl);
-                                const lighting_bgl = gctx.createBindGroupLayout(&.{
-                                    zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
-                                });
-                                defer gctx.releaseResource(lighting_bgl);
                                 const local_bgl = gctx.createBindGroupLayout(
                                     &.{
                                         zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
@@ -485,7 +457,7 @@ pub const Scene = struct {
                                 );
                                 defer gctx.releaseResource(local_bgl);
                                 var new_pipeline: sf.Pipeline = .{};
-                                self.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false, &new_pipeline.handle) catch |e| {
+                                self.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false, &new_pipeline.handle) catch |e| {
                                     std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.endPopup();
                                     return;
@@ -780,7 +752,6 @@ pub const World = struct {
         scene_asset: *const SceneAsset,
         gctx: *zgpu.GraphicsContext,
         global_uniform_bgl: *const zgpu.BindGroupLayoutHandle,
-        lighting_uniform_bgl: *const zgpu.BindGroupLayoutHandle,
         pipeline_system: *sf.PipelineSystem,
         texture_manager: *sf.TextureManager,
         material_manager: *sf.MaterialManager,
@@ -807,7 +778,7 @@ pub const World = struct {
         { // default material & pipeline
             try sf.Material.create_default(material_manager, texture_manager, gctx);
             var default_pipeline = sf.Pipeline{};
-            try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, lighting_uniform_bgl.*, local_bgl }, false, &default_pipeline.handle);
+            try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, local_bgl }, false, &default_pipeline.handle);
             try pipeline_system.add_material(&default_pipeline, sf.AssetManager.generate_guid("default"));
         }
         // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
@@ -815,7 +786,7 @@ pub const World = struct {
             var iter = scene_asset.material_paths.keyIterator();
             while (iter.next()) |material_path| {
                 var pipeline = sf.Pipeline{};
-                try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, lighting_uniform_bgl.*, local_bgl }, false, &pipeline.handle);
+                try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, local_bgl }, false, &pipeline.handle);
                 const material_asset = material_manager.material_asset_map.get(sf.AssetManager.generate_guid(material_path.*)).?;
                 // TODO: look into making multiple textures per material
                 try sf.MaterialManager.add_material(material_manager, material_path.*, gctx, texture_manager, &.{

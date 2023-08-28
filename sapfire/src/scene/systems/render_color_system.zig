@@ -60,7 +60,6 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
             const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :pass;
             const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
             const global_uniform_bind_group = gctx.lookupResource(scene.global_uniform_bind_group) orelse break :pass;
-            const lighting_uniform_bind_group = gctx.lookupResource(scene.lighting_bind_group) orelse break :pass;
             const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
                 .view = color_view.*,
                 .load_op = .clear,
@@ -89,12 +88,6 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
                 .view_projection = zm.transpose(cam_world_to_clip),
             };
             pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
-            const light = gctx.uniformsAllocate(sf.LightingUniform, 1);
-            light.slice[0] = .{
-                .position = .{ -1.0, 1.0, 0.0 },
-                .color = .{ 1.0, 0.0, 0.0 },
-            };
-            pass.setBindGroup(1, lighting_uniform_bind_group, &.{light.offset});
             while (ecs.query_next(it)) {
                 const entities = it.entities();
                 var i: usize = 0;

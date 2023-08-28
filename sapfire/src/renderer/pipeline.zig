@@ -21,8 +21,7 @@ const wgsl_common =
 \\      color: vec3<f32>,
 \\  }
 \\  @group(0) @binding(0) var<uniform> globalUniforms: Globals;
-\\  @group(1) @binding(0) var<uniform> light: Lights;
-\\  @group(2) @binding(0) var<uniform> uniforms: Uniforms;
+\\  @group(1) @binding(0) var<uniform> uniforms: Uniforms;
 ;
 const wgsl_vs = wgsl_common ++
 \\  struct VertexOut {
@@ -49,9 +48,9 @@ const wgsl_fs = wgsl_common ++
 \\       diffuse: f32,
 \\       reflection: f32,
 \\  }
-\\  @group(2) @binding(1) var image: texture_2d<f32>;
-\\  @group(2) @binding(2) var image_sampler: sampler;
-\\  @group(2) @binding(3) var<uniform> phong_data: PhongData;
+\\  @group(1) @binding(1) var image: texture_2d<f32>;
+\\  @group(1) @binding(2) var image_sampler: sampler;
+\\  @group(1) @binding(3) var<uniform> phong_data: PhongData;
 \\  @fragment fn main(
 \\      @location(0) uv: vec2<f32>,
 \\  ) -> @location(0) vec4<f32> {
