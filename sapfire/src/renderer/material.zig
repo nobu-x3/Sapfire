@@ -216,12 +216,13 @@ pub const Material = struct {
                                 },
                             );
                             defer gctx.releaseResource(local_bgl);
-                            const new_pipeline = scene.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false) catch |e| {
+                            var new_pipeline: sf.Pipeline = .{};
+                            scene.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false, &new_pipeline.handle) catch |e| {
                                 std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
                                 zgui.endPopup();
                                 return;
                             };
-                            scene.pipeline_system.add_material(new_pipeline.*, entry.key_ptr.*) catch |e| {
+                            scene.pipeline_system.add_material(&new_pipeline, entry.key_ptr.*) catch |e| {
                                 std.log.err("Error when adding material to the newly created pipeline. {s}.", .{@typeName(@TypeOf(e))});
                                 zgui.endPopup();
                                 return;

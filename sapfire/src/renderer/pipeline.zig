@@ -81,21 +81,19 @@ pub const PipelineSystem = struct {
         system.arena.deinit();
     }
 
-    pub fn add_pipeline(system: *PipelineSystem, gctx: *zgpu.GraphicsContext, layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool) !*const Pipeline {
-        var pipeline: Pipeline = undefined;
-        Pipeline.create(system.arena.allocator(), gctx, layout, async_shader_compilation, &pipeline.handle);
-        try system.pipelines.append(pipeline);
-        return &system.pipelines.items[system.pipelines.items.len - 1];
+    pub fn add_pipeline(system: *PipelineSystem, gctx: *zgpu.GraphicsContext, layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool, out_pipeline: *zgpu.RenderPipelineHandle) !void {
+        Pipeline.create(system.arena.allocator(), gctx, layout, async_shader_compilation, out_pipeline);
+        try system.pipelines.append(.{ .handle = out_pipeline.* });
     }
 
-    pub fn add_material(system: *PipelineSystem, pipeline: Pipeline, guid: [64]u8) !void {
+    pub fn add_material(system: *PipelineSystem, pipeline: *Pipeline, guid: [64]u8) !void {
         if (system.material_pipeline_map.contains(guid)) return;
-        try system.material_pipeline_map.put(guid, pipeline);
+        try system.material_pipeline_map.put(guid, pipeline.*);
     }
 };
 
 pub const Pipeline = struct {
-    handle: zgpu.RenderPipelineHandle,
+    handle: zgpu.RenderPipelineHandle = .{},
 
     // TODO: make shader modules configurable
     pub fn create(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, bind_group_layout: []const zgpu.BindGroupLayoutHandle, async_shader_compilation: bool, out_pipeline_handle: *zgpu.RenderPipelineHandle) void {

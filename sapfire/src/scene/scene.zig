@@ -220,12 +220,14 @@ pub const Scene = struct {
             zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
         });
         defer gctx.releaseResource(lighting_bgl);
-        self.lighting_bind_group = gctx.createBindGroup(lighting_bgl, &.{.{
-            .binding = 0,
-            .buffer_handle = gctx.uniforms.buffer,
-            .offset = 256,
-            .size = @sizeOf(sf.LightingUniform),
-        }});
+        self.lighting_bind_group = gctx.createBindGroup(lighting_bgl, &.{
+            .{
+                .binding = 0,
+                .buffer_handle = gctx.uniforms.buffer,
+                .offset = 256,
+                .size = @sizeOf(sf.LightingUniform),
+            },
+        });
         self.scene_entity = try self.world.deserialize(
             &self.asset,
             gctx,
@@ -464,33 +466,36 @@ pub const Scene = struct {
                                     _ = ecs.set(self.world.id, currently_selected_entity, Material, asset_manager.material_manager.default_material.?);
                                 }
                             }
-                            const global_uniform_bgl = gctx.createBindGroupLayout(&.{
-                                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                            });
-                            defer gctx.releaseResource(global_uniform_bgl);
-                            const lighting_bgl = gctx.createBindGroupLayout(&.{
-                                zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
-                            });
-                            defer gctx.releaseResource(lighting_bgl);
-                            const local_bgl = gctx.createBindGroupLayout(
-                                &.{
+                            if (!self.pipeline_system.material_pipeline_map.contains(guid)) {
+                                const global_uniform_bgl = gctx.createBindGroupLayout(&.{
                                     zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                                    zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                                    zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-                                    zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
-                                },
-                            );
-                            defer gctx.releaseResource(local_bgl);
-                            const new_pipeline = self.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false) catch |e| {
-                                std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
-                                zgui.endPopup();
-                                return;
-                            };
-                            self.pipeline_system.add_material(new_pipeline.*, guid) catch |e| {
-                                std.log.err("Error when adding material to the newly created pipeline. {s}.", .{@typeName(@TypeOf(e))});
-                                zgui.endPopup();
-                                return;
-                            };
+                                });
+                                defer gctx.releaseResource(global_uniform_bgl);
+                                const lighting_bgl = gctx.createBindGroupLayout(&.{
+                                    zgpu.bufferEntry(0, .{ .vertex = true }, .uniform, true, 0),
+                                });
+                                defer gctx.releaseResource(lighting_bgl);
+                                const local_bgl = gctx.createBindGroupLayout(
+                                    &.{
+                                        zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+                                        zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
+                                        zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
+                                        zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
+                                    },
+                                );
+                                defer gctx.releaseResource(local_bgl);
+                                var new_pipeline: sf.Pipeline = .{};
+                                self.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, lighting_bgl, local_bgl }, false, &new_pipeline.handle) catch |e| {
+                                    std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
+                                    zgui.endPopup();
+                                    return;
+                                };
+                                self.pipeline_system.add_material(&new_pipeline, guid) catch |e| {
+                                    std.log.err("Error when adding material to the newly created pipeline. {s}.", .{@typeName(@TypeOf(e))});
+                                    zgui.endPopup();
+                                    return;
+                                };
+                            }
                         }
                         zgui.closeCurrentPopup();
                     }
@@ -799,16 +804,18 @@ pub const World = struct {
             },
         );
         defer gctx.releaseResource(local_bgl);
-        var pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, lighting_uniform_bgl.*, local_bgl }, false);
         { // default material & pipeline
             try sf.Material.create_default(material_manager, texture_manager, gctx);
-            var default_pipeline = try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, lighting_uniform_bgl.*, local_bgl }, false);
-            try pipeline_system.add_material(default_pipeline.*, sf.AssetManager.generate_guid("default"));
+            var default_pipeline = sf.Pipeline{};
+            try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, lighting_uniform_bgl.*, local_bgl }, false, &default_pipeline.handle);
+            try pipeline_system.add_material(&default_pipeline, sf.AssetManager.generate_guid("default"));
         }
         // TODO: a module that parses material files (json or smth) and outputs bind group layouts to pass to pipeline system
         { // Materials
             var iter = scene_asset.material_paths.keyIterator();
             while (iter.next()) |material_path| {
+                var pipeline = sf.Pipeline{};
+                try pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl.*, lighting_uniform_bgl.*, local_bgl }, false, &pipeline.handle);
                 const material_asset = material_manager.material_asset_map.get(sf.AssetManager.generate_guid(material_path.*)).?;
                 // TODO: look into making multiple textures per material
                 try sf.MaterialManager.add_material(material_manager, material_path.*, gctx, texture_manager, &.{
@@ -817,7 +824,7 @@ pub const World = struct {
                     zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
                     zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
                 }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
-                try pipeline_system.add_material(pipeline.*, sf.AssetManager.generate_guid(material_path.*));
+                try pipeline_system.add_material(&pipeline, sf.AssetManager.generate_guid(material_path.*));
             }
         }
         { // Meshes

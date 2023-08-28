@@ -181,6 +181,8 @@ pub const RendererState = struct {
         }
     }
 
+    var current_pipeline: sf.Pipeline = undefined;
+    var current_material: sf.Material = undefined;
     pub fn draw_to_texture(renderer_state: *RendererState, color_view_passed: *zgpu.wgpu.TextureView, fb_width_passed: u32, fb_height_passed: u32, scene: *sf.Scene) !void {
         renderer = renderer_state;
         fb_width = fb_width_passed;
@@ -256,8 +258,6 @@ pub const RendererState = struct {
                     var i: usize = 0;
                     while (i < it.count()) : (i += 1) {
                         if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
-                        var current_pipeline: sf.Pipeline = undefined;
-                        var current_material: sf.Material = undefined;
                         if (ecs.field(&it, sf.Material, 1)) |materials| {
                             const mat = materials[i];
                             const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
