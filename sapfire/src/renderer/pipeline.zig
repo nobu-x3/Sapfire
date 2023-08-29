@@ -7,7 +7,7 @@ const types = @import("renderer_types.zig");
 const mat = @import("material.zig");
 
 // zig fmt: off
-const wgsl_common =
+pub const wgsl_common =
 \\  struct Uniforms {
 \\      aspect_ratio: f32,
 \\      mip_level: f32,
@@ -23,7 +23,7 @@ const wgsl_common =
 \\  @group(0) @binding(0) var<uniform> globalUniforms: Globals;
 \\  @group(1) @binding(0) var<uniform> uniforms: Uniforms;
 ;
-const wgsl_vs = wgsl_common ++
+pub const wgsl_vs = wgsl_common ++
 \\  struct VertexOut {
 \\      @builtin(position) position_clip: vec4<f32>,
 \\      @location(0) uv: vec2<f32>,
