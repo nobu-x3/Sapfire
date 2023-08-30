@@ -337,17 +337,10 @@ pub const Renderer = struct {
     pub var fb_width: u32 = 800;
     pub var fb_height: u32 = 600;
 
-    pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, fb_width_passed: u32, fb_height_passed: u32, out_renderer: *Renderer) !void {
+    pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, fb_width_passed: u32, fb_height_passed: u32, out_renderer: *Renderer, vb: *sf.Buffer, ib: *sf.Buffer) !void {
         out_renderer.arena = std.heap.ArenaAllocator.init(allocator);
-        var paths = std.ArrayList([]const u8).init(allocator);
-        defer paths.deinit();
-        try paths.append("project/meshes/cube.json");
-        out_renderer.mesh_manager = try sf.MeshManager.init_from_slice(out_renderer.arena.allocator(), paths.items);
-        out_renderer.vertices = std.ArrayList(sf.Vertex).init(out_renderer.arena.allocator());
-        out_renderer.indices = std.ArrayList(u32).init(out_renderer.arena.allocator());
-        _ = try sf.MeshAsset.load_mesh("project/meshes/cube.json", &out_renderer.mesh_manager, null, &out_renderer.vertices, &out_renderer.indices);
-        out_renderer.vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, out_renderer.vertices.items);
-        out_renderer.index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, out_renderer.indices.items);
+        out_renderer.vertex_buffer = vb.*;
+        out_renderer.index_buffer = ib.*;
         out_renderer.depth_texture = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .depth24_plus);
         fb_height = fb_height_passed;
         fb_width = fb_width_passed;
@@ -659,7 +652,7 @@ pub const Renderer = struct {
                     var i: usize = 0;
                     while (i < it.count()) : (i += 1) {
                         if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
-                        if (ecs.field(&it, sf.components.Mesh, 3)) |meshes| {
+                        if (ecs.field(&it, sf.components.Mesh, 1)) |meshes| {
                             const mesh_comp = meshes[i];
                             light_pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                         }
