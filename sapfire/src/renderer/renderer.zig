@@ -316,8 +316,14 @@ pub const Renderer = struct {
         cursor_pos: [2]f64 = .{ 0, 0 },
     } = .{},
     global_uniform_bind_group: zgpu.BindGroupHandle,
+    local_uniform_bind_group: zgpu.BindGroupHandle,
+    g_buffer_textures_bind_group: zgpu.BindGroupHandle,
+    lights_bind_group: zgpu.BindGroupHandle,
     vertex_buffer: sf.Buffer,
     index_buffer: sf.Buffer,
+    global_uniform_buffer: sf.Buffer,
+    lights_uniform_buffer: sf.Buffer,
+    local_uniform_buffer: sf.Buffer,
     texture_gbuffer_2d_f16: sf.Texture,
     texture_albedo: sf.Texture,
     g_buffer_pipeline: zgpu.RenderPipelineHandle,
@@ -332,37 +338,76 @@ pub const Renderer = struct {
         out_renderer.arena = std.heap.ArenaAllocator.init(allocator);
         out_renderer.depth_texture = sf.Texture.create_depth(gctx, fb_width_passed, fb_height_passed);
         fb_height = fb_height_passed;
-        const renderer_state = try allocator.create(RendererState);
         out_renderer.texture_gbuffer_2d_f16 = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 2 }, .rgba16_float);
         out_renderer.texture_albedo = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 2 }, .bgra8_unorm);
+        out_renderer.global_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.GlobalUniforms));
+        out_renderer.lights_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.LightingUniform));
+        out_renderer.local_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.Uniforms));
         // bgls
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         });
         defer gctx.releaseResource(global_uniform_bgl);
+        out_renderer.global_uniform_bind_group = gctx.createBindGroup(global_uniform_bgl, &.{
+            .{
+                .binding = 0,
+                .buffer_handle = out_renderer.global_uniform_buffer.handle,
+                .offset = 0,
+                .size = @sizeOf(sf.GlobalUniforms),
+            },
+        });
+        const local_uniform_bgl = gctx.createBindGroupLayout(&.{
+            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+        });
+        defer gctx.releaseResource(local_uniform_bgl);
+        out_renderer.global_uniform_bind_group = gctx.createBindGroup(local_uniform_bgl, &.{
+            .{
+                .binding = 0,
+                .buffer_handle = out_renderer.local_uniform_buffer.handle,
+                .offset = 0,
+                .size = @sizeOf(sf.Uniforms),
+            },
+        });
         var gbuffer_textures_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.textureEntry(0, .{ .fragment = true }, .{ .unfilterable_float = true }, .tvdim_2d, false),
-            zgpu.textureEntry(1, .{ .fragment = true }, .{ .unfilterable_float = true }, .tvdim_2d, false),
-            zgpu.textureEntry(2, .{ .fragment = true }, .{ .depth = true }, .tvdim_2d, false),
+            zgpu.textureEntry(0, .{ .fragment = true }, .unfilterable_float, .tvdim_2d, false),
+            zgpu.textureEntry(1, .{ .fragment = true }, .unfilterable_float, .tvdim_2d, false),
+            zgpu.textureEntry(2, .{ .fragment = true }, .depth, .tvdim_2d, false),
         });
         defer gctx.releaseResource(gbuffer_textures_bgl);
+
+        out_renderer.g_buffer_textures_bind_group = gctx.createBindGroup(gbuffer_textures_bgl, &.{
+            .{
+                .binding = 0,
+                .texture_view_handle = out_renderer.texture_gbuffer_2d_f16.view,
+            },
+            .{
+                .binding = 1,
+                .texture_view_handle = out_renderer.texture_albedo.view,
+            },
+            .{
+                .binding = 2,
+                .texture_view_handle = out_renderer.depth_texture.view,
+            },
+        });
         var lights_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .fragment = true, .compute = true }, .read_only_storage, false, @as(u64, @sizeOf(f32) * 8)),
-            zgpu.bufferEntry(1, .{ .fragment = true, .compute = true }, .uniform, false, @as(u64, @sizeOf(u32))),
-            zgpu.bufferEntry(2, .{ .fragment = true, .compute = true }, .uniform, false, @as(u64, @sizeOf(sf.LightingUniform))),
+            zgpu.bufferEntry(0, .{ .fragment = true }, .uniform, false, @as(u64, @sizeOf(sf.LightingUniform))),
         });
         defer gctx.releaseResource(lights_bgl);
-
+        out_renderer.lights_bind_group = gctx.createBindGroup(lights_bgl, &.{.{
+            .binding = 0,
+            .buffer_handle = out_renderer.lights_uniform_buffer.handle,
+            .offset = 0,
+            .size = @sizeOf(sf.LightingUniform),
+        }});
         // pipelines
-        var write_gbuffers_pipeline_layout = gctx.createPipelineLayout(&.{global_uniform_bgl});
+        var write_gbuffers_pipeline_layout = gctx.createPipelineLayout(&.{ global_uniform_bgl, local_uniform_bgl });
         defer gctx.releaseResource(write_gbuffers_pipeline_layout);
         var light_pipeline_layout = gctx.createPipelineLayout(.{ gbuffer_textures_bgl, lights_bgl });
         defer gctx.releaseResource(light_pipeline_layout);
-
-        const vs_module = zgpu.createWgslShaderModule(gctx.device, sf.wgsl_vs, "vs");
-        defer vs_module.release();
-        const fs_module = zgpu.createWgslShaderModule(gctx.device, sf.wgsl_fs, "fs");
-        defer fs_module.release();
+        const vs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.vertexWriteGBuffers, "vs");
+        defer vs_gbuffer.release();
+        const fs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.vertexWriteGBuffers, "fs");
+        defer fs_gbuffer.release();
         const g_color_targets = [_]zgpu.wgpu.ColorTargetState{
             .{
                 .format = .rgba16_float,
@@ -385,7 +430,7 @@ pub const Renderer = struct {
         // Create g buffer render pipeline.
         const g_pipeline_descriptor = zgpu.wgpu.RenderPipelineDescriptor{
             .vertex = .{
-                .module = vs_module,
+                .module = vs_gbuffer,
                 .entry_point = "main",
                 .buffer_count = g_vertex_buffers.len,
                 .buffers = &g_vertex_buffers,
@@ -401,7 +446,7 @@ pub const Renderer = struct {
                 .depth_compare = .less,
             },
             .fragment = &.{
-                .module = fs_module,
+                .module = fs_gbuffer,
                 .entry_point = "main",
                 .target_count = g_color_targets.len,
                 .targets = &g_color_targets,
@@ -411,13 +456,17 @@ pub const Renderer = struct {
         const light_color_targets = [_]zgpu.wgpu.ColorTargetState{
             .{
                 .format = zgpu.GraphicsContext.swapchain_format,
-                .blend = &.{ .color = {}, .alpha = .{} },
+                .blend = &.{ .color = zgpu.wgpu.BlendComponent{}, .alpha = zgpu.wgpu.BlendComponent{} },
             },
         };
+        const vs_light = zgpu.createWgslShaderModule(gctx.device, sf.vertexTextureQuad, "vs");
+        defer vs_light.release();
+        const fs_light = zgpu.createWgslShaderModule(gctx.device, sf.fragmentDeferredRendering, "fs");
+        defer fs_light.release();
         // Create light render pipeline.
         const light_pipeline_descriptor = zgpu.wgpu.RenderPipelineDescriptor{
             .vertex = .{
-                .module = vs_module,
+                .module = vs_light,
                 .entry_point = "main",
             },
             .primitive = .{
@@ -426,29 +475,26 @@ pub const Renderer = struct {
                 .topology = .triangle_list,
             },
             .fragment = &.{
-                .module = fs_module,
+                .module = fs_light,
                 .entry_point = "main",
                 .target_count = light_color_targets.len,
                 .targets = &light_color_targets,
             },
         };
         out_renderer.light_pipeline = gctx.createRenderPipeline(light_pipeline_layout, light_pipeline_descriptor);
-        renderer_state.* = .{
-            .gctx = gctx,
-            .depth_texture = out_renderer.depth_texture,
-            // NOTE: ugly hack
-            .vertex_buffer = sf.Scene.scene.?.vertex_buffer,
-            .index_buffer = sf.Scene.scene.?.index_buffer,
-        };
+        out_renderer.gctx = gctx;
+        out_renderer.depth_texture = out_renderer.depth_texture;
+        // NOTE: ugly hack
+        out_renderer.vertex_buffer = sf.Scene.scene.?.vertex_buffer;
+        out_renderer.index_buffer = sf.Scene.scene.?.index_buffer;
     }
 
-    pub fn destroy(renderer_state: *RendererState, allocator: std.mem.Allocator) void {
+    pub fn destroy(renderer_state: *Renderer, allocator: std.mem.Allocator) void {
         renderer_state.arena.deinit();
         allocator.destroy(renderer_state);
     }
 
     pub fn draw_deferred_to_texture(renderer_state: *Renderer, color_view_passed: *zgpu.wgpu.TextureView, fb_width_passed: u32, fb_height_passed: u32, scene: *sf.Scene) !void {
-        _ = color_view_passed;
         renderer = renderer_state;
         fb_width = fb_width_passed;
         fb_height = fb_height_passed;
@@ -471,18 +517,21 @@ pub const Renderer = struct {
             const encoder = gctx.device.createCommandEncoder(null);
             defer encoder.release();
             // GBuffer pass.
-            pass: {
-                const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer.handle) orelse break :pass;
-                const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :pass;
-                const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass;
-                const global_uniform_bind_group = gctx.lookupResource(scene.global_uniform_bind_group) orelse break :pass;
+            pass_gbuffer: {
+                const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer.handle) orelse break :pass_gbuffer;
+                const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :pass_gbuffer;
+                const global_uniform_buffer = gctx.lookupResource(renderer_state.global_uniform_buffer.handle) orelse break :pass_gbuffer;
+                const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass_gbuffer;
+                const gcolor_view = gctx.lookupResource(renderer_state.texture_gbuffer_2d_f16.view) orelse break :pass_gbuffer;
+                const galbedo_view = gctx.lookupResource(renderer_state.texture_albedo.view) orelse break :pass_gbuffer;
+                const global_uniform_bind_group = gctx.lookupResource(renderer_state.global_uniform_bind_group) orelse break :pass_gbuffer;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{ .{
-                    .view = scene.texture_gbuffer_2d_f16.view,
+                    .view = gcolor_view,
                     .load_op = .clear,
                     .store_op = .store,
                     .clear_value = .{ .r = 0.0, .g = 0.0, .b = 1.0, .a = 1.0 },
                 }, .{
-                    .view = scene.texture_albedo.view,
+                    .view = galbedo_view,
                     .load_op = .clear,
                     .store_op = .store,
                     .clear_value = .{ .r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0 },
@@ -498,18 +547,17 @@ pub const Renderer = struct {
                     .color_attachments = &color_attachments,
                     .depth_stencil_attachment = &depth_attachment,
                 };
-                const pass = encoder.beginRenderPass(render_pass_info);
+                const gbuffer_pass = encoder.beginRenderPass(render_pass_info);
                 defer {
-                    pass.end();
-                    pass.release();
+                    gbuffer_pass.end();
+                    gbuffer_pass.release();
                 }
-                pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
-                pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
-                const glob = gctx.uniformsAllocate(sf.GlobalUniforms, 1);
-                glob.slice[0] = .{
+                gbuffer_pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
+                gbuffer_pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
+                gctx.queue.writeBuffer(global_uniform_buffer, 0, sf.GlobalUniforms, &.{
                     .view_projection = zm.transpose(cam_world_to_clip),
-                };
-                pass.setBindGroup(0, global_uniform_bind_group, &.{glob.offset});
+                });
+                gbuffer_pass.setBindGroup(0, global_uniform_bind_group, null);
                 var query_desc = ecs.query_desc_t{};
                 query_desc.filter.terms[0] = .{ .id = ecs.id(sf.Material) };
                 query_desc.filter.terms[1] = .{ .id = ecs.id(sf.components.Transform) };
@@ -522,45 +570,68 @@ pub const Renderer = struct {
                     var i: usize = 0;
                     while (i < it.count()) : (i += 1) {
                         if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
-                        if (ecs.field(&it, sf.Material, 1)) |materials| {
-                            const mat = materials[i];
-                            const pipe = scene.pipeline_system.material_pipeline_map.get(mat.guid).?;
-                            var current_pipeline: sf.Pipeline = undefined;
-                            var current_material: sf.Material = undefined;
-                            if (pipe.handle.id != current_pipeline.handle.id) {
-                                current_pipeline = pipe;
-                                const pipeline = gctx.lookupResource(current_pipeline.handle) orelse break :pass;
-                                pass.setPipeline(pipeline);
+                        if (ecs.field(&it, sf.components.Transform, 2)) |transforms| {
+                            const transform = transforms[i];
+                            if (ecs.field(&it, sf.components.Mesh, 3)) |meshes| {
+                                const mesh_comp = meshes[i];
+                                const object_to_world = transform.world;
+                                const local_uniform_buffer = gctx.lookupResource(renderer_state.local_uniform_buffer.handle) orelse break :pass_gbuffer;
+                                const local_uniform_bg = gctx.lookupResource(renderer_state.local_uniform_bind_group) orelse break :pass_gbuffer;
+                                const pipeline = gctx.lookupResource(renderer_state.g_buffer_pipeline) orelse break :pass_gbuffer;
+                                gctx.queue.writeBuffer(local_uniform_buffer, 0, sf.Uniforms, &.{
+                                    .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
+                                    .mip_level = @as(f32, @floatFromInt(renderer_state.mip_level)),
+                                    .model = zm.transpose(object_to_world),
+                                });
+                                gbuffer_pass.setBindGroup(1, local_uniform_bg, null);
+                                gbuffer_pass.setPipeline(pipeline);
+                                gbuffer_pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                             }
-                            var should_bind_group = false;
-                            if (!std.mem.eql(u8, mat.guid[0..], current_material.guid[0..])) {
-                                current_material = mat;
-                                should_bind_group = true;
-                            }
-                            if (ecs.field(&it, sf.components.Transform, 2)) |transforms| {
-                                const transform = transforms[i];
-                                if (ecs.field(&it, sf.components.Mesh, 3)) |meshes| {
-                                    const mesh_comp = meshes[i];
-                                    const object_to_world = transform.world;
-                                    const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
-                                    mem.slice[0] = .{
-                                        .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
-                                        .mip_level = @floatFromInt(renderer_state.mip_level),
-                                        .model = zm.transpose(object_to_world),
-                                    };
-                                    if (should_bind_group) {
-                                        const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;
-                                        const phong_data = gctx.uniformsAllocate(sf.PhongData, 1);
-                                        phong_data.slice[0] = .{
-                                            .ambient = current_material.phong_data.ambient,
-                                            .diffuse = current_material.phong_data.diffuse,
-                                            .reflection = current_material.phong_data.reflection,
-                                        };
-                                        pass.setBindGroup(1, bind_group, &.{ mem.offset, phong_data.offset });
-                                    }
-                                    pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
-                                }
-                            }
+                        }
+                    }
+                }
+            }
+            // light pass.
+            light_pass: {
+                const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer.handle) orelse break :light_pass;
+                const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :light_pass;
+                const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
+                    .view = color_view_passed.*,
+                    .load_op = .clear,
+                    .store_op = .store,
+                }};
+                const render_pass_info = zgpu.wgpu.RenderPassDescriptor{
+                    .color_attachment_count = color_attachments.len,
+                    .color_attachments = &color_attachments,
+                };
+                const light_pass = encoder.beginRenderPass(render_pass_info);
+                defer {
+                    light_pass.end();
+                    light_pass.release();
+                }
+                light_pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
+                light_pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
+                const light_pipe = gctx.lookupResource(renderer_state.light_pipeline) orelse break :light_pass;
+                const light_uniform = gctx.lookupResource(renderer_state.lights_uniform_buffer.handle) orelse break :light_pass;
+                const light_bg = gctx.lookupResource(renderer_state.lights_bind_group) orelse break :light_pass;
+                gctx.queue.writeBuffer(light_uniform, 0, sf.LightingUniform, &.{
+                    .position = .{ -1.0, 1.0, 1.0 },
+                    .color = .{ 1.0, 1.0, 1.0 },
+                });
+                light_pass.setBindGroup(light_bg, null);
+                light_pass.setPipeline(light_pipe);
+                var query_desc = ecs.query_desc_t{};
+                query_desc.filter.terms[0] = .{ .id = ecs.id(sf.components.Mesh) };
+                var q = try ecs.query_init(scene.world.id, &query_desc);
+                var it = ecs.query_iter(scene.world.id, q);
+                while (ecs.query_next(&it)) {
+                    const entities = it.entities();
+                    var i: usize = 0;
+                    while (i < it.count()) : (i += 1) {
+                        if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
+                        if (ecs.field(&it, sf.components.Mesh, 3)) |meshes| {
+                            const mesh_comp = meshes[i];
+                            light_pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                         }
                     }
                 }

@@ -6,6 +6,7 @@ pub const LightingUniform = @import("renderer/renderer_types.zig").LightingUnifo
 pub const PhongData = @import("renderer/renderer_types.zig").PhongData;
 pub const Transform = @import("renderer/renderer_types.zig").Transform;
 pub const RendererState = @import("renderer/renderer.zig").RendererState;
+pub const Renderer = @import("renderer/renderer.zig").Renderer;
 pub const Mesh = @import("renderer/mesh.zig").Mesh;
 pub const MeshAsset = @import("renderer/mesh.zig").MeshAsset;
 pub const MeshManager = @import("renderer/mesh.zig").MeshManager;
