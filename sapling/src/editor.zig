@@ -178,7 +178,8 @@ pub const Editor = struct {
                 } })) {
                     size = zgui.getWindowSize();
                     try self.current_scene.update_no_systems(gctx.stats.delta_time);
-                    try self.scene_renderer.draw_to_texture(&scene_color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
+                    // try self.scene_renderer.draw_to_texture(&scene_color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
+                    try self.deferred_renderer.draw_deferred_to_texture(&scene_color_view, @intFromFloat(size[0]), @intFromFloat(size[1]), &self.current_scene);
                     zgui.image(scene_color_view, .{ .w = size[0], .h = size[1] });
                 }
                 zgui.end();

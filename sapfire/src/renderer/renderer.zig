@@ -345,7 +345,7 @@ pub const Renderer = struct {
         out_renderer.local_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.Uniforms));
         // bgls
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, false, 0),
         });
         defer gctx.releaseResource(global_uniform_bgl);
         out_renderer.global_uniform_bind_group = gctx.createBindGroup(global_uniform_bgl, &.{
@@ -357,7 +357,7 @@ pub const Renderer = struct {
             },
         });
         const local_uniform_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
+            zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, false, 0),
         });
         defer gctx.releaseResource(local_uniform_bgl);
         out_renderer.local_uniform_bind_group = gctx.createBindGroup(local_uniform_bgl, &.{
@@ -508,6 +508,8 @@ pub const Renderer = struct {
             200.0,
         );
         const cam_world_to_clip = zm.mul(cam_world_to_view, cam_view_to_clip);
+        const view_proj = zm.transpose(cam_world_to_clip);
+        const inv_view_proj = zm.inverse(view_proj);
         const back_buffer_view = gctx.swapchain.getCurrentTextureView();
         defer back_buffer_view.release();
         const commands = commands: {
@@ -552,7 +554,10 @@ pub const Renderer = struct {
                 gbuffer_pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
                 gbuffer_pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
                 gctx.queue.writeBuffer(global_uniform_buffer, 0, sf.GlobalUniforms, &.{
-                    .view_projection = zm.transpose(cam_world_to_clip),
+                    .{
+                        .view_projection = view_proj,
+                        .inv_view_projection = inv_view_proj,
+                    },
                 });
                 gbuffer_pass.setBindGroup(0, global_uniform_bind_group, null);
                 var query_desc = ecs.query_desc_t{};
@@ -576,9 +581,11 @@ pub const Renderer = struct {
                                 const local_uniform_bg = gctx.lookupResource(renderer_state.local_uniform_bind_group) orelse break :pass_gbuffer;
                                 const pipeline = gctx.lookupResource(renderer_state.g_buffer_pipeline) orelse break :pass_gbuffer;
                                 gctx.queue.writeBuffer(local_uniform_buffer, 0, sf.Uniforms, &.{
-                                    .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
-                                    .mip_level = @as(f32, @floatFromInt(renderer_state.mip_level)),
-                                    .model = zm.transpose(object_to_world),
+                                    .{
+                                        .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
+                                        .mip_level = @as(f32, @floatFromInt(renderer_state.mip_level)),
+                                        .model = zm.transpose(object_to_world),
+                                    },
                                 });
                                 gbuffer_pass.setBindGroup(1, local_uniform_bg, null);
                                 gbuffer_pass.setPipeline(pipeline);
@@ -608,14 +615,27 @@ pub const Renderer = struct {
                 }
                 light_pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
                 light_pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
+                const g_buffer_bg = gctx.lookupResource(renderer_state.g_buffer_textures_bind_group) orelse break :light_pass;
+                const global_uniform_bg = gctx.lookupResource(renderer_state.global_uniform_bind_group) orelse break :light_pass;
+                const global_uniform_buffer = gctx.lookupResource(renderer_state.global_uniform_buffer.handle) orelse break :light_pass;
                 const light_pipe = gctx.lookupResource(renderer_state.light_pipeline) orelse break :light_pass;
                 const light_uniform = gctx.lookupResource(renderer_state.lights_uniform_buffer.handle) orelse break :light_pass;
                 const light_bg = gctx.lookupResource(renderer_state.lights_bind_group) orelse break :light_pass;
                 gctx.queue.writeBuffer(light_uniform, 0, sf.LightingUniform, &.{
-                    .position = .{ -1.0, 1.0, 1.0 },
-                    .color = .{ 1.0, 1.0, 1.0 },
+                    .{
+                        .position = .{ -1.0, 1.0, 1.0 },
+                        .color = .{ 1.0, 1.0, 1.0 },
+                    },
                 });
-                light_pass.setBindGroup(light_bg, null);
+                light_pass.setBindGroup(0, g_buffer_bg, null);
+                light_pass.setBindGroup(1, light_bg, null);
+                gctx.queue.writeBuffer(global_uniform_buffer, 0, sf.GlobalUniforms, &.{
+                    .{
+                        .view_projection = view_proj,
+                        .inv_view_projection = inv_view_proj,
+                    },
+                });
+                light_pass.setBindGroup(2, global_uniform_bg, null);
                 light_pass.setPipeline(light_pipe);
                 var query_desc = ecs.query_desc_t{};
                 query_desc.filter.terms[0] = .{ .id = ecs.id(sf.components.Mesh) };
