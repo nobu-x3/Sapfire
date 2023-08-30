@@ -329,17 +329,17 @@ pub const Renderer = struct {
     g_buffer_pipeline: zgpu.RenderPipelineHandle,
     light_pipeline: zgpu.RenderPipelineHandle,
 
-    pub var renderer: ?*RendererState = null;
-    pub var color_view: ?*zgpu.wgpu.TextureView = null;
+    pub var renderer: ?*Renderer = null;
     pub var fb_width: u32 = 800;
     pub var fb_height: u32 = 600;
 
     pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, fb_width_passed: u32, fb_height_passed: u32, out_renderer: *Renderer) !void {
         out_renderer.arena = std.heap.ArenaAllocator.init(allocator);
-        out_renderer.depth_texture = sf.Texture.create_depth(gctx, fb_width_passed, fb_height_passed);
+        out_renderer.depth_texture = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .depth24_plus);
         fb_height = fb_height_passed;
-        out_renderer.texture_gbuffer_2d_f16 = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 2 }, .rgba16_float);
-        out_renderer.texture_albedo = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 2 }, .bgra8_unorm);
+        fb_width = fb_width_passed;
+        out_renderer.texture_gbuffer_2d_f16 = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .rgba16_float);
+        out_renderer.texture_albedo = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .bgra8_unorm);
         out_renderer.global_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.GlobalUniforms));
         out_renderer.lights_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.LightingUniform));
         out_renderer.local_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.Uniforms));
@@ -360,7 +360,7 @@ pub const Renderer = struct {
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
         });
         defer gctx.releaseResource(local_uniform_bgl);
-        out_renderer.global_uniform_bind_group = gctx.createBindGroup(local_uniform_bgl, &.{
+        out_renderer.local_uniform_bind_group = gctx.createBindGroup(local_uniform_bgl, &.{
             .{
                 .binding = 0,
                 .buffer_handle = out_renderer.local_uniform_buffer.handle,
@@ -402,11 +402,11 @@ pub const Renderer = struct {
         // pipelines
         var write_gbuffers_pipeline_layout = gctx.createPipelineLayout(&.{ global_uniform_bgl, local_uniform_bgl });
         defer gctx.releaseResource(write_gbuffers_pipeline_layout);
-        var light_pipeline_layout = gctx.createPipelineLayout(.{ gbuffer_textures_bgl, lights_bgl });
+        var light_pipeline_layout = gctx.createPipelineLayout(&.{ gbuffer_textures_bgl, lights_bgl, global_uniform_bgl });
         defer gctx.releaseResource(light_pipeline_layout);
         const vs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.vertexWriteGBuffers, "vs");
         defer vs_gbuffer.release();
-        const fs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.vertexWriteGBuffers, "fs");
+        const fs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.fragmentWriteGBuffers, "fs");
         defer fs_gbuffer.release();
         const g_color_targets = [_]zgpu.wgpu.ColorTargetState{
             .{
@@ -484,9 +484,6 @@ pub const Renderer = struct {
         out_renderer.light_pipeline = gctx.createRenderPipeline(light_pipeline_layout, light_pipeline_descriptor);
         out_renderer.gctx = gctx;
         out_renderer.depth_texture = out_renderer.depth_texture;
-        // NOTE: ugly hack
-        out_renderer.vertex_buffer = sf.Scene.scene.?.vertex_buffer;
-        out_renderer.index_buffer = sf.Scene.scene.?.index_buffer;
     }
 
     pub fn destroy(renderer_state: *Renderer, allocator: std.mem.Allocator) void {

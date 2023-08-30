@@ -9,6 +9,8 @@ pub fn main() !void {
     var editor: Editor = undefined;
     try Editor.init(allocator, "project/project_config.json", &editor);
     sf.scene.Scene.scene = &editor.current_scene;
+    editor.deferred_renderer.vertex_buffer = sf.scene.Scene.scene.?.vertex_buffer;
+    editor.deferred_renderer.index_buffer = sf.scene.Scene.scene.?.index_buffer;
     defer editor.destroy(allocator);
     try editor.run(allocator);
 }

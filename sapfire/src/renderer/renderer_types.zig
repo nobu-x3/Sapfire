@@ -20,6 +20,7 @@ pub const Uniforms = extern struct {
 
 pub const GlobalUniforms = extern struct {
     view_projection: zm.Mat,
+    inv_view_projection: zm.Mat = zm.identity(),
 };
 
 pub const LightingUniform = extern struct {
