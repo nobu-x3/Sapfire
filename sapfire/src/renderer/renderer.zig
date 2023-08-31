@@ -338,6 +338,7 @@ pub const Renderer = struct {
     pub var fb_height: u32 = 600;
 
     pub fn create_with_gctx(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, fb_width_passed: u32, fb_height_passed: u32, out_renderer: *Renderer, vb: *sf.Buffer, ib: *sf.Buffer) !void {
+        out_renderer.camera = .{};
         out_renderer.arena = std.heap.ArenaAllocator.init(allocator);
         out_renderer.vertex_buffer = vb.*;
         out_renderer.index_buffer = ib.*;
@@ -462,7 +463,7 @@ pub const Renderer = struct {
         const light_color_targets = [_]zgpu.wgpu.ColorTargetState{
             .{
                 .format = zgpu.GraphicsContext.swapchain_format,
-                .blend = &.{ .color = zgpu.wgpu.BlendComponent{}, .alpha = zgpu.wgpu.BlendComponent{} },
+                // .blend = &.{ .color = zgpu.wgpu.BlendComponent{}, .alpha = zgpu.wgpu.BlendComponent{} },
             },
         };
         const vs_light = zgpu.createWgslShaderModule(gctx.device, sf.vertexTextureQuad, "vs");
@@ -530,6 +531,7 @@ pub const Renderer = struct {
                 const gcolor_view = gctx.lookupResource(renderer_state.texture_gbuffer_2d_f16.view) orelse break :pass_gbuffer;
                 const galbedo_view = gctx.lookupResource(renderer_state.texture_albedo.view) orelse break :pass_gbuffer;
                 const global_uniform_bind_group = gctx.lookupResource(renderer_state.global_uniform_bind_group) orelse break :pass_gbuffer;
+                const pipeline = gctx.lookupResource(renderer_state.g_buffer_pipeline) orelse break :pass_gbuffer;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{ .{
                     .view = gcolor_view,
                     .load_op = .clear,
@@ -557,15 +559,16 @@ pub const Renderer = struct {
                     gbuffer_pass.end();
                     gbuffer_pass.release();
                 }
+                gbuffer_pass.setPipeline(pipeline);
                 gbuffer_pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
                 gbuffer_pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
+                gbuffer_pass.setBindGroup(0, global_uniform_bind_group, null);
                 gctx.queue.writeBuffer(global_uniform_buffer, 0, sf.GlobalUniforms, &.{
                     .{
                         .view_projection = view_proj,
                         .inv_view_projection = inv_view_proj,
                     },
                 });
-                gbuffer_pass.setBindGroup(0, global_uniform_bind_group, null);
                 var query_desc = ecs.query_desc_t{};
                 query_desc.filter.terms[0] = .{ .id = ecs.id(sf.Material) };
                 query_desc.filter.terms[1] = .{ .id = ecs.id(sf.components.Transform) };
@@ -585,7 +588,7 @@ pub const Renderer = struct {
                                 const object_to_world = transform.world;
                                 const local_uniform_buffer = gctx.lookupResource(renderer_state.local_uniform_buffer.handle) orelse break :pass_gbuffer;
                                 const local_uniform_bg = gctx.lookupResource(renderer_state.local_uniform_bind_group) orelse break :pass_gbuffer;
-                                const pipeline = gctx.lookupResource(renderer_state.g_buffer_pipeline) orelse break :pass_gbuffer;
+                                gbuffer_pass.setBindGroup(1, local_uniform_bg, null);
                                 gctx.queue.writeBuffer(local_uniform_buffer, 0, sf.Uniforms, &.{
                                     .{
                                         .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
@@ -593,8 +596,6 @@ pub const Renderer = struct {
                                         .model = zm.transpose(object_to_world),
                                     },
                                 });
-                                gbuffer_pass.setBindGroup(1, local_uniform_bg, null);
-                                gbuffer_pass.setPipeline(pipeline);
                                 gbuffer_pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                             }
                         }
@@ -603,8 +604,8 @@ pub const Renderer = struct {
             }
             // light pass.
             light_pass: {
-                const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer.handle) orelse break :light_pass;
-                const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :light_pass;
+                // const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer.handle) orelse break :light_pass;
+                // const ib_info = gctx.lookupResourceInfo(scene.index_buffer.handle) orelse break :light_pass;
                 const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{.{
                     .view = color_view_passed.*,
                     .load_op = .clear,
@@ -619,45 +620,46 @@ pub const Renderer = struct {
                     light_pass.end();
                     light_pass.release();
                 }
-                light_pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
-                light_pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
                 const g_buffer_bg = gctx.lookupResource(renderer_state.g_buffer_textures_bind_group) orelse break :light_pass;
                 const global_uniform_bg = gctx.lookupResource(renderer_state.global_uniform_bind_group) orelse break :light_pass;
                 const global_uniform_buffer = gctx.lookupResource(renderer_state.global_uniform_buffer.handle) orelse break :light_pass;
                 const light_pipe = gctx.lookupResource(renderer_state.light_pipeline) orelse break :light_pass;
                 const light_uniform = gctx.lookupResource(renderer_state.lights_uniform_buffer.handle) orelse break :light_pass;
                 const light_bg = gctx.lookupResource(renderer_state.lights_bind_group) orelse break :light_pass;
+                light_pass.setPipeline(light_pipe);
+                // light_pass.setVertexBuffer(0, vb_info.gpuobj.?, 0, vb_info.size);
+                // light_pass.setIndexBuffer(ib_info.gpuobj.?, .uint32, 0, ib_info.size);
+                light_pass.setBindGroup(0, g_buffer_bg, null);
+                light_pass.setBindGroup(1, light_bg, null);
                 gctx.queue.writeBuffer(light_uniform, 0, sf.LightingUniform, &.{
                     .{
                         .position = .{ -1.0, 1.0, 1.0 },
                         .color = .{ 1.0, 1.0, 1.0 },
                     },
                 });
-                light_pass.setBindGroup(0, g_buffer_bg, null);
-                light_pass.setBindGroup(1, light_bg, null);
+                light_pass.setBindGroup(2, global_uniform_bg, null);
                 gctx.queue.writeBuffer(global_uniform_buffer, 0, sf.GlobalUniforms, &.{
                     .{
                         .view_projection = view_proj,
                         .inv_view_projection = inv_view_proj,
                     },
                 });
-                light_pass.setBindGroup(2, global_uniform_bg, null);
-                light_pass.setPipeline(light_pipe);
-                var query_desc = ecs.query_desc_t{};
-                query_desc.filter.terms[0] = .{ .id = ecs.id(sf.components.Mesh) };
-                var q = try ecs.query_init(scene.world.id, &query_desc);
-                var it = ecs.query_iter(scene.world.id, q);
-                while (ecs.query_next(&it)) {
-                    const entities = it.entities();
-                    var i: usize = 0;
-                    while (i < it.count()) : (i += 1) {
-                        if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
-                        if (ecs.field(&it, sf.components.Mesh, 1)) |meshes| {
-                            const mesh_comp = meshes[i];
-                            light_pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
-                        }
-                    }
-                }
+                light_pass.draw(6, 1, 0, 0);
+                // var query_desc = ecs.query_desc_t{};
+                // query_desc.filter.terms[0] = .{ .id = ecs.id(sf.components.Mesh) };
+                // var q = try ecs.query_init(scene.world.id, &query_desc);
+                // var it = ecs.query_iter(scene.world.id, q);
+                // while (ecs.query_next(&it)) {
+                //     const entities = it.entities();
+                //     var i: usize = 0;
+                //     while (i < it.count()) : (i += 1) {
+                //         if (!ecs.is_valid(it.world, entities[i]) or !ecs.is_alive(it.world, entities[i])) continue;
+                //         if (ecs.field(&it, sf.components.Mesh, 1)) |meshes| {
+                //             const mesh_comp = meshes[i];
+                //             light_pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
+                //         }
+                //     }
+                // }
             }
             break :commands encoder.finish(null);
         };

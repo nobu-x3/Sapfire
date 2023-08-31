@@ -15,6 +15,7 @@ pub const wgsl_common =
 \\  }
 \\  struct Globals {
 \\      view_proj: mat4x4<f32>,
+\\      inv_view_proj: mat4x4<f32>,
 \\  }
 \\  struct Lights {
 \\      position: vec3<f32>,
@@ -110,7 +111,7 @@ pub const fragmentWriteGBuffers =
 \\      return output;
 \\  }
 ;
-pub const vertexTextureQuad = wgsl_common ++
+pub const vertexTextureQuad = 
 \\  @vertex fn main(
 \\      @builtin(vertex_index) VertexIndex: u32,
 \\  ) -> @builtin(position) vec4<f32> {
@@ -145,6 +146,7 @@ pub const fragmentDeferredRendering =
 \\fn main(
 \\  @builtin(position) coord : vec4<f32>
 \\) -> @location(0) vec4<f32> {
+\\  return vec4<f32>(0.0, 1.0, 0.0, 1.0);
 \\  var result : vec3<f32>;
 \\  let depth = textureLoad(
 \\  gBufferDepth,
