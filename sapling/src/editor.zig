@@ -66,7 +66,8 @@ pub const Editor = struct {
         }, .{
             .width = out_editor.gctx.swapchain_descriptor.width,
             .height = out_editor.gctx.swapchain_descriptor.height,
-        }, out_editor.gctx.swapchain_descriptor.format);
+            // }, out_editor.gctx.swapchain_descriptor.format);
+        }, zgpu.GraphicsContext.swapchain_format);
         out_editor.scene_renderer = try RendererState.create_with_gctx(allocator, out_editor.gctx, out_editor.gctx.swapchain_descriptor.width, out_editor.gctx.swapchain_descriptor.height);
         out_editor.game_renderer = null;
         RendererState.renderer = null;

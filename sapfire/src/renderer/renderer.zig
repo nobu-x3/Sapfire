@@ -477,7 +477,7 @@ pub const Renderer = struct {
                 .entry_point = "main",
             },
             .primitive = .{
-                .front_face = .cw,
+                .front_face = .ccw,
                 .cull_mode = .back,
                 .topology = .triangle_list,
             },
