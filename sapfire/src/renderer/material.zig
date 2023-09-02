@@ -139,7 +139,7 @@ pub const Material = struct {
     phong_data: sf.PhongData,
 
     pub fn draw_inspect(self: *Material, world: *ecs.world_t, entity: ecs.entity_t, asset_manager: *sf.AssetManager) !void {
-        const gctx = sf.RendererState.renderer.?.gctx;
+        const gctx = sf.Renderer.renderer.?.gctx;
         zgui.text("Material:", .{});
         if (zgui.button("Mat. Options", .{})) {
             zgui.openPopup("Material Component Context", .{});

@@ -73,6 +73,7 @@ pub const Editor = struct {
         RendererState.renderer = null;
         try sapfire.scene.Scene.init(allocator, out_editor.gctx, "project/scenes/test_scene.json", &out_editor.current_scene);
         try Renderer.create_with_gctx(allocator, out_editor.gctx, out_editor.gctx.swapchain_descriptor.width, out_editor.gctx.swapchain_descriptor.height, &out_editor.deferred_renderer, &out_editor.current_scene.vertex_buffer, &out_editor.current_scene.index_buffer);
+        Renderer.renderer = &out_editor.deferred_renderer;
     }
 
     var play_mode = false;

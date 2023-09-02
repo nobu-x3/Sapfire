@@ -381,12 +381,12 @@ pub const Scene = struct {
                             if (self.asset.geometry_paths.count() > 0) {
                                 var iter = self.asset.geometry_paths.keyIterator();
                                 var path = iter.next().?;
-                                _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(path.*)).?);
                                 _ = sf.MeshAsset.load_mesh(path.*, &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
                                     log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.closeCurrentPopup();
                                     return;
                                 };
+                                _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(path.*)).?);
                             } else {
                                 if (asset_manager.mesh_manager.mesh_map.count() > 0) {
                                     var iter = asset_manager.mesh_manager.mesh_map.iterator();
