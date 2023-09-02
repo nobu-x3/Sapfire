@@ -286,7 +286,7 @@ pub const Scene = struct {
     }
 
     pub fn recreate_buffers(self: *Scene) void {
-        const gctx = sf.RendererState.renderer.?.gctx;
+        const gctx = sf.Renderer.renderer.?.gctx;
         gctx.releaseResource(self.index_buffer.handle);
         gctx.releaseResource(self.vertex_buffer.handle);
         self.vertex_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .vertex = true }, sf.Vertex, self.vertices.items);
@@ -383,7 +383,9 @@ pub const Scene = struct {
                                 var path = iter.next().?;
                                 _ = sf.MeshAsset.load_mesh(path.*, &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
                                     log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
+                                    zgui.endPopup();
                                     zgui.closeCurrentPopup();
+                                    zgui.end();
                                     return;
                                 };
                                 _ = ecs.set(self.world.id, currently_selected_entity, Mesh, self.mesh_manager.mesh_map.get(sf.AssetManager.generate_guid(path.*)).?);
@@ -401,7 +403,9 @@ pub const Scene = struct {
                                     const path = entry.value_ptr.path;
                                     const mesh = sf.MeshAsset.load_mesh(path, &asset_manager.mesh_manager, null, &self.vertices, &self.indices) catch |e| {
                                         std.log.err("Failed to add mesh component. {s}.", .{@typeName(@TypeOf(e))});
+                                        zgui.endPopup();
                                         zgui.closeCurrentPopup();
+                                        zgui.end();
                                         return;
                                     };
                                     try self.mesh_manager.mesh_assets_map.put(entry.key_ptr.*, entry.value_ptr.*);
@@ -413,7 +417,7 @@ pub const Scene = struct {
                             self.recreate_buffers();
                         }
                         { // Material
-                            const gctx = sf.RendererState.renderer.?.gctx;
+                            const gctx = sf.Renderer.renderer.?.gctx;
                             var guid: [64]u8 = undefined;
                             ecs.add(self.world.id, currently_selected_entity, Material);
                             if (self.material_manager.materials.count() > 0) {
@@ -460,11 +464,15 @@ pub const Scene = struct {
                                 self.pipeline_system.add_pipeline(gctx, &.{ global_uniform_bgl, local_bgl }, false, &new_pipeline.handle) catch |e| {
                                     std.log.err("Error when adding a new pipeline. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.endPopup();
+                                    zgui.closeCurrentPopup();
+                                    zgui.end();
                                     return;
                                 };
                                 self.pipeline_system.add_material(&new_pipeline, guid) catch |e| {
                                     std.log.err("Error when adding material to the newly created pipeline. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.endPopup();
+                                    zgui.closeCurrentPopup();
+                                    zgui.end();
                                     return;
                                 };
                             }
