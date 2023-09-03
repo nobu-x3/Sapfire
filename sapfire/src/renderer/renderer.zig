@@ -425,9 +425,9 @@ pub const Renderer = struct {
         defer gctx.releaseResource(write_gbuffers_pipeline_layout);
         var light_pipeline_layout = gctx.createPipelineLayout(&.{ gbuffer_textures_bgl, lights_bgl, global_uniform_bgl });
         defer gctx.releaseResource(light_pipeline_layout);
-        const vs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.vertexWriteGBuffers, "vs");
+        const vs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.vertexWriteGBuffers, "vs_gbuffer");
         defer vs_gbuffer.release();
-        const fs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.fragmentWriteGBuffers, "fs");
+        const fs_gbuffer = zgpu.createWgslShaderModule(gctx.device, sf.fragmentWriteGBuffers, "fs_gbuffer");
         defer fs_gbuffer.release();
         const g_color_targets = [_]zgpu.wgpu.ColorTargetState{
             .{
@@ -483,9 +483,9 @@ pub const Renderer = struct {
                 // .blend = &.{ .color = zgpu.wgpu.BlendComponent{}, .alpha = zgpu.wgpu.BlendComponent{} },
             },
         };
-        const vs_light = zgpu.createWgslShaderModule(gctx.device, sf.vertexTextureQuad, "vs");
+        const vs_light = zgpu.createWgslShaderModule(gctx.device, sf.vertexTextureQuad, "vs_light");
         defer vs_light.release();
-        const fs_light = zgpu.createWgslShaderModule(gctx.device, sf.fragmentDeferredRendering, "fs");
+        const fs_light = zgpu.createWgslShaderModule(gctx.device, sf.fragmentDeferredRendering, "fs_light");
         defer fs_light.release();
         // Create light render pipeline.
         const light_pipeline_descriptor = zgpu.wgpu.RenderPipelineDescriptor{
