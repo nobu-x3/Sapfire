@@ -103,7 +103,7 @@ pub const fragmentWriteGBuffers = wgsl_common ++
 \\      var output : GBufferOutput;
 \\      output.normal = vec4<f32>(fragNormal, 1.0);
 \\      output.albedo = vec4<f32>(c, c, c, 1.0);
-\\      output.diffuse = textureSampleLevel(image, image_sampler, uv, uniforms.mip_level);
+\\      output.diffuse = textureSampleLevel(image, image_sampler, fragUv, uniforms.mip_level);
 \\      return output;
 \\  }
 ;
@@ -166,8 +166,14 @@ pub const fragmentDeferredRendering =
 \\      vec2<i32>(floor(coord.xy)),
 \\      0
 \\  ).rgb;
+\\  let color = textureLoad(
+\\      gBufferColor,
+\\      vec2<i32>(floor(coord.xy)),
+\\      0
+\\  ).rgb;
 \\  // some manual ambient
 \\  result += vec3(0.2);
+\\  result += color;
 \\  return vec4(result, 1.0);
 \\}
 // zig fmt: on

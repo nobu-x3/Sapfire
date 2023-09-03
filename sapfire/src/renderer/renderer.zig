@@ -330,6 +330,7 @@ pub const Renderer = struct {
     local_uniform_buffer: sf.Buffer,
     texture_gbuffer_2d_f16: sf.Texture,
     texture_albedo: sf.Texture,
+    texture_diffuse: sf.Texture,
     g_buffer_pipeline: zgpu.RenderPipelineHandle,
     light_pipeline: zgpu.RenderPipelineHandle,
 
@@ -346,10 +347,12 @@ pub const Renderer = struct {
         fb_height = fb_height_passed;
         fb_width = fb_width_passed;
         out_renderer.texture_gbuffer_2d_f16 = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .rgba16_float);
+        out_renderer.texture_diffuse = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .rgba16_float);
         out_renderer.texture_albedo = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .bgra8_unorm);
         out_renderer.global_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.GlobalUniforms));
         out_renderer.lights_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.LightingUniform));
         out_renderer.local_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.Uniforms));
+        out_renderer.mip_level = 0;
         // bgls
         const global_uniform_bgl = gctx.createBindGroupLayout(&.{
             zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, false, 0),
@@ -379,6 +382,7 @@ pub const Renderer = struct {
             zgpu.textureEntry(0, .{ .fragment = true }, .unfilterable_float, .tvdim_2d, false),
             zgpu.textureEntry(1, .{ .fragment = true }, .unfilterable_float, .tvdim_2d, false),
             zgpu.textureEntry(2, .{ .fragment = true }, .depth, .tvdim_2d, false),
+            zgpu.textureEntry(3, .{ .fragment = true }, .unfilterable_float, .tvdim_2d, false),
         });
         defer gctx.releaseResource(gbuffer_textures_bgl);
 
@@ -394,6 +398,10 @@ pub const Renderer = struct {
             .{
                 .binding = 2,
                 .texture_view_handle = out_renderer.depth_texture.view,
+            },
+            .{
+                .binding = 3,
+                .texture_view_handle = out_renderer.texture_diffuse.view,
             },
         });
         var lights_bgl = gctx.createBindGroupLayout(&.{
@@ -427,6 +435,9 @@ pub const Renderer = struct {
             },
             .{
                 .format = zgpu.GraphicsContext.swapchain_format,
+            },
+            .{
+                .format = .rgba16_float,
             },
         };
         const g_vertex_attributes = [_]zgpu.wgpu.VertexAttribute{
@@ -535,20 +546,30 @@ pub const Renderer = struct {
                 const global_uniform_buffer = gctx.lookupResource(renderer_state.global_uniform_buffer.handle) orelse break :pass_gbuffer;
                 const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass_gbuffer;
                 const gcolor_view = gctx.lookupResource(renderer_state.texture_gbuffer_2d_f16.view) orelse break :pass_gbuffer;
+                const gdiffuse_view = gctx.lookupResource(renderer_state.texture_diffuse.view) orelse break :pass_gbuffer;
                 const galbedo_view = gctx.lookupResource(renderer_state.texture_albedo.view) orelse break :pass_gbuffer;
                 const global_uniform_bind_group = gctx.lookupResource(renderer_state.global_uniform_bind_group) orelse break :pass_gbuffer;
                 const pipeline = gctx.lookupResource(renderer_state.g_buffer_pipeline) orelse break :pass_gbuffer;
-                const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{ .{
-                    .view = gcolor_view,
-                    .load_op = .clear,
-                    .store_op = .store,
-                    .clear_value = .{ .r = 0.0, .g = 0.0, .b = 1.0, .a = 1.0 },
-                }, .{
-                    .view = galbedo_view,
-                    .load_op = .clear,
-                    .store_op = .store,
-                    .clear_value = .{ .r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0 },
-                } };
+                const color_attachments = [_]zgpu.wgpu.RenderPassColorAttachment{
+                    .{
+                        .view = gcolor_view,
+                        .load_op = .clear,
+                        .store_op = .store,
+                        .clear_value = .{ .r = 0.0, .g = 0.0, .b = 1.0, .a = 1.0 },
+                    },
+                    .{
+                        .view = galbedo_view,
+                        .load_op = .clear,
+                        .store_op = .store,
+                        .clear_value = .{ .r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0 },
+                    },
+                    .{
+                        .view = gdiffuse_view,
+                        .load_op = .clear,
+                        .store_op = .store,
+                        .clear_value = .{ .r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0 },
+                    },
+                };
                 const depth_attachment = zgpu.wgpu.RenderPassDepthStencilAttachment{
                     .view = depth_view,
                     .depth_load_op = .clear,
