@@ -6,6 +6,7 @@ const json = std.json;
 const sf = struct {
     usingnamespace @import("../core.zig");
     usingnamespace @import("pipeline.zig");
+    usingnamespace @import("buffer.zig");
     usingnamespace @import("renderer_types.zig");
     usingnamespace @import("texture.zig");
     usingnamespace @import("mesh.zig");
@@ -135,6 +136,7 @@ pub const MaterialManager = struct {
 pub const Material = struct {
     guid: [64]u8,
     bind_group: zgpu.BindGroupHandle,
+    buffer: sf.Buffer,
     sampler: zgpu.SamplerHandle, // in case we need it later
     phong_data: sf.PhongData,
 
@@ -187,11 +189,10 @@ pub const Material = struct {
                             }
                             const material = asset_manager.material_manager.materials.getPtr(entry.value_ptr.guid) orelse val: {
                                 asset_manager.material_manager.add_material(entry.value_ptr.path, gctx, &asset_manager.texture_manager, &.{
-                                    zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                                    zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                                    zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-                                    zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
-                                }, @sizeOf(sf.Uniforms), entry.value_ptr.texture_guid.?) catch |e| {
+                                    zgpu.textureEntry(0, .{ .fragment = true }, .float, .tvdim_2d, false),
+                                    zgpu.samplerEntry(1, .{ .fragment = true }, .filtering),
+                                    zgpu.bufferEntry(2, .{ .fragment = true }, .uniform, false, @sizeOf(sf.PhongData)),
+                                }, @sizeOf(sf.PhongData), entry.value_ptr.texture_guid.?) catch |e| {
                                     std.log.err("Error when adding material to editor material manager. {s}.", .{@typeName(@TypeOf(e))});
                                     zgui.endPopup();
                                     return;
@@ -205,10 +206,9 @@ pub const Material = struct {
                             defer gctx.releaseResource(global_uniform_bgl);
                             const local_bgl = gctx.createBindGroupLayout(
                                 &.{
-                                    zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                                    zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                                    zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-                                    zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
+                                    zgpu.textureEntry(0, .{ .fragment = true }, .float, .tvdim_2d, false),
+                                    zgpu.samplerEntry(1, .{ .fragment = true }, .filtering),
+                                    zgpu.bufferEntry(2, .{ .fragment = true }, .uniform, true, 0),
                                 },
                             );
                             defer gctx.releaseResource(local_bgl);
@@ -265,20 +265,20 @@ pub const Material = struct {
             .address_mode_v = .repeat,
             .address_mode_w = .repeat,
         });
+        const buffer = sf.Buffer.create_and_load(gctx, .{ .uniform = true, .copy_dst = true }, sf.PhongData, &.{phong_data});
         const local_bg = gctx.createBindGroup(
             local_bgl,
             &.{
-                .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = uniform_size },
                 .{
-                    .binding = 1,
+                    .binding = 0,
                     .texture_view_handle = sf.TextureManager.get_texture(texture_system, texture_guid).view,
                 },
-                .{ .binding = 2, .sampler_handle = sampler },
+                .{ .binding = 1, .sampler_handle = sampler },
                 .{
-                    .binding = 3,
-                    .buffer_handle = gctx.uniforms.buffer,
-                    .offset = 512,
-                    .size = @as(u64, @sizeOf(sf.PhongData)),
+                    .binding = 2,
+                    .buffer_handle = buffer.handle,
+                    .offset = 0,
+                    .size = uniform_size,
                 },
             },
         );
@@ -287,6 +287,7 @@ pub const Material = struct {
             .guid = sf.AssetManager.generate_guid(name),
             .bind_group = local_bg,
             .sampler = sampler,
+            .buffer = buffer,
         };
         return material;
     }
@@ -294,10 +295,9 @@ pub const Material = struct {
     pub fn create_default(material_manager: *MaterialManager, texture_manager: *sf.TextureManager, gctx: *zgpu.GraphicsContext) !void {
         const local_bgl = gctx.createBindGroupLayout(
             &.{
-                zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-                zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
+                zgpu.textureEntry(0, .{ .fragment = true }, .float, .tvdim_2d, false),
+                zgpu.samplerEntry(1, .{ .fragment = true }, .filtering),
+                zgpu.bufferEntry(2, .{ .fragment = true }, .uniform, true, 0),
             },
         );
         defer gctx.releaseResource(local_bgl);
@@ -314,17 +314,23 @@ pub const Material = struct {
             };
             break :val texture_manager.default_texture.?;
         };
-        const local_bg = gctx.createBindGroup(local_bgl, &.{
-            .{ .binding = 0, .buffer_handle = gctx.uniforms.buffer, .offset = 0, .size = @sizeOf(sf.Uniforms) },
+        const buffer = sf.Buffer.create_and_load(gctx, .{ .uniform = true, .copy_dst = true }, sf.PhongData, &.{
             .{
-                .binding = 1,
+                .ambient = 1.0,
+                .diffuse = 0.0,
+                .reflection = 0.0,
+            },
+        });
+        const local_bg = gctx.createBindGroup(local_bgl, &.{
+            .{
+                .binding = 0,
                 .texture_view_handle = default_texture.view,
             },
-            .{ .binding = 2, .sampler_handle = sampler },
+            .{ .binding = 1, .sampler_handle = sampler },
             .{
-                .binding = 3,
-                .buffer_handle = gctx.uniforms.buffer,
-                .offset = 512,
+                .binding = 2,
+                .buffer_handle = buffer.handle,
+                .offset = 0,
                 .size = @sizeOf(sf.PhongData),
             },
         });
@@ -339,6 +345,7 @@ pub const Material = struct {
             .guid = guid,
             .bind_group = local_bg,
             .sampler = sampler,
+            .buffer = buffer,
         };
         try material_manager.materials.put(guid, material_manager.default_material.?);
         const material_asset = MaterialAsset{

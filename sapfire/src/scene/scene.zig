@@ -798,11 +798,10 @@ pub const World = struct {
                 const material_asset = material_manager.material_asset_map.get(sf.AssetManager.generate_guid(material_path.*)).?;
                 // TODO: look into making multiple textures per material
                 try sf.MaterialManager.add_material(material_manager, material_path.*, gctx, texture_manager, &.{
-                    zgpu.bufferEntry(0, .{ .vertex = true, .fragment = true }, .uniform, true, 0),
-                    zgpu.textureEntry(1, .{ .fragment = true }, .float, .tvdim_2d, false),
-                    zgpu.samplerEntry(2, .{ .fragment = true }, .filtering),
-                    zgpu.bufferEntry(3, .{ .fragment = true }, .uniform, true, 0),
-                }, @sizeOf(sf.Uniforms), material_asset.texture_guid.?);
+                    zgpu.textureEntry(0, .{ .fragment = true }, .float, .tvdim_2d, false),
+                    zgpu.samplerEntry(1, .{ .fragment = true }, .filtering),
+                    zgpu.bufferEntry(2, .{ .fragment = true }, .uniform, false, @sizeOf(sf.PhongData)),
+                }, @sizeOf(sf.PhongData), material_asset.texture_guid.?);
                 try pipeline_system.add_material(&pipeline, sf.AssetManager.generate_guid(material_path.*));
             }
         }

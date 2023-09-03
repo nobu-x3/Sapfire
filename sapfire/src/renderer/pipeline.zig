@@ -21,6 +21,11 @@ pub const wgsl_common =
 \\      position: vec3<f32>,
 \\      color: vec3<f32>,
 \\  }
+\\  struct PhongData {
+\\       ambient: f32,
+\\       diffuse: f32,
+\\       reflection: f32,
+\\  }
 \\  @group(0) @binding(0) var<uniform> globalUniforms: Globals;
 \\  @group(1) @binding(0) var<uniform> uniforms: Uniforms;
 ;
@@ -46,11 +51,6 @@ pub const wgsl_vs = wgsl_common ++
 ;
 
 pub const wgsl_fs = wgsl_common ++
-\\  struct PhongData {
-\\       ambient: f32,
-\\       diffuse: f32,
-\\       reflection: f32,
-\\  }
 \\  @group(1) @binding(1) var image: texture_2d<f32>;
 \\  @group(1) @binding(2) var image_sampler: sampler;
 \\  @group(1) @binding(3) var<uniform> phong_data: PhongData;
@@ -74,10 +74,9 @@ pub const vertexWriteGBuffers = wgsl_common ++
 \\      @location(2) tangent: vec4<f32>,
 \\      @location(3) uv: vec2<f32>,
 \\  ) -> VertexOut {
-\\      //let p = vec2(position.x / uniforms.aspect_ratio, position.y);
 \\      var output: VertexOut;
-\\      //output.position_clip = vec4(p, 0.0, 1.0);
-\\      output.position_clip = vec4(position, 1.0) * uniforms.model * globalUniforms.view_proj;
+\\      let p = vec2(position.x / uniforms.aspect_ratio, position.y);
+\\      output.position_clip = vec4(p, 0.0, 1.0) * uniforms.model * globalUniforms.view_proj;
 \\      output.uv = uv;
 \\      output.tangent = tangent;
 \\      output.normal = normal; // TODO: fix this
@@ -85,19 +84,15 @@ pub const vertexWriteGBuffers = wgsl_common ++
 \\  }
 ;
 
-pub const fragmentWriteGBuffers = 
-\\  struct PhongData {
-\\       ambient: f32,
-\\       diffuse: f32,
-\\       reflection: f32,
-\\  }
+pub const fragmentWriteGBuffers = wgsl_common ++  
 \\  struct GBufferOutput {
 \\       @location(0) normal: vec4<f32>,
 \\       @location(1) albedo: vec4<f32>,
+\\       @location(2) diffuse: vec4<f32>,
 \\  }
-\\  @group(1) @binding(1) var image: texture_2d<f32>;
-\\  @group(1) @binding(2) var image_sampler: sampler;
-\\  @group(1) @binding(3) var<uniform> phong_data: PhongData;
+\\  @group(2) @binding(0) var image: texture_2d<f32>;
+\\  @group(2) @binding(1) var image_sampler: sampler;
+\\  @group(2) @binding(2) var<uniform> phong_data: PhongData;
 \\  @fragment fn main(
 \\      @location(0) fragNormal: vec3<f32>,
 \\      @location(1) fragTangent: vec4<f32>,
@@ -108,6 +103,7 @@ pub const fragmentWriteGBuffers =
 \\      var output : GBufferOutput;
 \\      output.normal = vec4<f32>(fragNormal, 1.0);
 \\      output.albedo = vec4<f32>(c, c, c, 1.0);
+\\      output.diffuse = textureSampleLevel(image, image_sampler, uv, uniforms.mip_level);
 \\      return output;
 \\  }
 ;
@@ -125,6 +121,7 @@ pub const fragmentDeferredRendering =
 \\@group(0) @binding(0) var gBufferNormal: texture_2d<f32>;
 \\@group(0) @binding(1) var gBufferAlbedo: texture_2d<f32>;
 \\@group(0) @binding(2) var gBufferDepth: texture_depth_2d;
+\\@group(0) @binding(3) var gBufferColor: texture_2d<f32>;
 \\struct LightData {
 \\  position : vec3<f32>,
 \\  color : vec3<f32>,
