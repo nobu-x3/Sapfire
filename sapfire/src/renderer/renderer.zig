@@ -330,7 +330,7 @@ pub const Renderer = struct {
     local_uniform_buffer: sf.Buffer,
     texture_gbuffer_2d_f16: sf.Texture,
     texture_albedo: sf.Texture,
-    texture_diffuse: sf.Texture,
+    texture_phong_data: sf.Texture,
     g_buffer_pipeline: zgpu.RenderPipelineHandle,
     light_pipeline: zgpu.RenderPipelineHandle,
 
@@ -347,7 +347,7 @@ pub const Renderer = struct {
         fb_height = fb_height_passed;
         fb_width = fb_width_passed;
         out_renderer.texture_gbuffer_2d_f16 = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .rgba16_float);
-        out_renderer.texture_diffuse = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .rgba16_float);
+        out_renderer.texture_phong_data = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .rgba16_float);
         out_renderer.texture_albedo = sf.Texture.create_with_wgpu_format(gctx, .{ .render_attachment = true, .texture_binding = true }, .{ .width = gctx.swapchain_descriptor.width, .height = gctx.swapchain_descriptor.height, .depth_or_array_layers = 1 }, .bgra8_unorm);
         out_renderer.global_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.GlobalUniforms));
         out_renderer.lights_uniform_buffer = sf.Buffer.create(gctx, .{ .uniform = true, .copy_dst = true }, @sizeOf(sf.LightingUniform));
@@ -401,11 +401,12 @@ pub const Renderer = struct {
             },
             .{
                 .binding = 3,
-                .texture_view_handle = out_renderer.texture_diffuse.view,
+                .texture_view_handle = out_renderer.texture_phong_data.view,
             },
         });
+        const light_size: u64 = @sizeOf(sf.LightingUniform);
         var lights_bgl = gctx.createBindGroupLayout(&.{
-            zgpu.bufferEntry(0, .{ .fragment = true }, .uniform, false, @as(u64, @sizeOf(sf.LightingUniform))),
+            zgpu.bufferEntry(0, .{ .fragment = true }, .uniform, false, light_size),
         });
         defer gctx.releaseResource(lights_bgl);
         var material_bgl = gctx.createBindGroupLayout(&.{
@@ -546,7 +547,7 @@ pub const Renderer = struct {
                 const global_uniform_buffer = gctx.lookupResource(renderer_state.global_uniform_buffer.handle) orelse break :pass_gbuffer;
                 const depth_view = gctx.lookupResource(renderer_state.depth_texture.view) orelse break :pass_gbuffer;
                 const gcolor_view = gctx.lookupResource(renderer_state.texture_gbuffer_2d_f16.view) orelse break :pass_gbuffer;
-                const gdiffuse_view = gctx.lookupResource(renderer_state.texture_diffuse.view) orelse break :pass_gbuffer;
+                const gphong_view = gctx.lookupResource(renderer_state.texture_phong_data.view) orelse break :pass_gbuffer;
                 const galbedo_view = gctx.lookupResource(renderer_state.texture_albedo.view) orelse break :pass_gbuffer;
                 const global_uniform_bind_group = gctx.lookupResource(renderer_state.global_uniform_bind_group) orelse break :pass_gbuffer;
                 const pipeline = gctx.lookupResource(renderer_state.g_buffer_pipeline) orelse break :pass_gbuffer;
@@ -564,7 +565,7 @@ pub const Renderer = struct {
                         .clear_value = .{ .r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0 },
                     },
                     .{
-                        .view = gdiffuse_view,
+                        .view = gphong_view,
                         .load_op = .clear,
                         .store_op = .store,
                         .clear_value = .{ .r = 0.0, .g = 0.0, .b = 0.0, .a = 1.0 },
@@ -661,8 +662,8 @@ pub const Renderer = struct {
                 light_pass.setBindGroup(1, light_bg, null);
                 gctx.queue.writeBuffer(light_uniform, 0, sf.LightingUniform, &.{
                     .{
-                        .position = .{ -1.0, 1.0, 1.0 },
-                        .color = .{ 1.0, 1.0, 1.0 },
+                        .position = .{ -1.0, 1.0, 1.0, 1.0 },
+                        .color = .{ 1.0, 0.0, 0.0, 1.0 },
                     },
                 });
                 light_pass.setBindGroup(2, global_uniform_bg, null);

@@ -1,7 +1,7 @@
 @group(0) @binding(0) var gBufferNormal: texture_2d<f32>;
 @group(0) @binding(1) var gBufferAlbedo: texture_2d<f32>;
 @group(0) @binding(2) var gBufferDepth: texture_depth_2d;
-@group(0) @binding(3) var gBufferColor: texture_2d<f32>;
+@group(0) @binding(3) var gBufferPhong: texture_2d<f32>;
 struct LightData {
   position : vec3<f32>,
   color : vec3<f32>,
@@ -46,14 +46,12 @@ fn main(
       vec2<i32>(floor(coord.xy)),
       0
   ).rgb;
-  let color = textureLoad(
-      gBufferColor,
+  let phong_data = textureLoad(
+      gBufferPhong,
       vec2<i32>(floor(coord.xy)),
       0
   ).rgb;
-  // some manual ambient
-  result += vec3(0.2);
-  result += albedo;
+  result = albedo * phong_data.x * light.color;
   return vec4(result, 1.0);
 }
 

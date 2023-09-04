@@ -1,7 +1,7 @@
 struct GBufferOutput {
    @location(0) normal: vec4<f32>,
    @location(1) albedo: vec4<f32>,
-   @location(2) diffuse: vec4<f32>,
+   @location(2) phong_data: vec4<f32>,
 }
 @group(2) @binding(0) var image: texture_2d<f32>;
 @group(2) @binding(1) var image_sampler: sampler;
@@ -14,5 +14,6 @@ struct GBufferOutput {
   var output : GBufferOutput;
   output.normal = vec4<f32>(fragNormal, 1.0);
   output.albedo = textureSampleLevel(image, image_sampler, fragUv, uniforms.mip_level);
+  output.phong_data = vec4<f32>(phong_data.ambient,phong_data.diffuse,phong_data.specular, 1.0);
   return output;
 }

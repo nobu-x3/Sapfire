@@ -14,7 +14,7 @@ struct Lights {
 struct PhongData {
    ambient: f32,
    diffuse: f32,
-   reflection: f32,
+   specular: f32,
 }
 @group(0) @binding(0) var<uniform> globalUniforms: Globals;
 @group(1) @binding(0) var<uniform> uniforms: Uniforms;

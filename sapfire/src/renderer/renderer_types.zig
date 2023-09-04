@@ -24,8 +24,8 @@ pub const GlobalUniforms = extern struct {
 };
 
 pub const LightingUniform = extern struct {
-    position: [3]f32,
-    color: [3]f32,
+    position: [4]f32,
+    color: [4]f32,
 };
 
 pub const PhongData = extern struct {

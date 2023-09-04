@@ -123,7 +123,7 @@ pub const MaterialManager = struct {
         const guid = sf.AssetManager.generate_guid(name);
         if (!system.materials.contains(guid)) {
             var material = try Material.create(gctx, .{
-                .ambient = 1.0,
+                .ambient = 0.1,
                 .diffuse = 0.0,
                 .reflection = 0.0,
             }, name, texture_system, layout, uniform_size, texture_guid);
