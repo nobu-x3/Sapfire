@@ -461,7 +461,7 @@ pub const Renderer = struct {
                 .buffers = &g_vertex_buffers,
             },
             .primitive = .{
-                .front_face = .cw,
+                .front_face = .ccw,
                 .cull_mode = .back,
                 .topology = .triangle_list,
             },
@@ -614,6 +614,8 @@ pub const Renderer = struct {
                             if (ecs.field(&it, sf.components.Mesh, 3)) |meshes| {
                                 const mesh_comp = meshes[i];
                                 const object_to_world = transform.world;
+                                const model_matrix = zm.transpose(object_to_world);
+                                const invert_model: zm.Mat = zm.inverse(model_matrix);
                                 const local_uniform_buffer = gctx.lookupResource(renderer_state.local_uniform_buffer.handle) orelse break :pass_gbuffer;
                                 const local_uniform_bg = gctx.lookupResource(renderer_state.local_uniform_bind_group) orelse break :pass_gbuffer;
                                 gbuffer_pass.setBindGroup(1, local_uniform_bg, null);
@@ -621,7 +623,8 @@ pub const Renderer = struct {
                                     .{
                                         .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
                                         .mip_level = @as(f32, @floatFromInt(renderer_state.mip_level)),
-                                        .model = zm.transpose(object_to_world),
+                                        .model = model_matrix,
+                                        .normal_model = zm.transpose(invert_model),
                                     },
                                 });
                                 if (ecs.field(&it, sf.Material, 1)) |materials| {

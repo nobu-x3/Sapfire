@@ -16,6 +16,7 @@ pub const Uniforms = extern struct {
     aspect_ratio: f32,
     mip_level: f32,
     model: zm.Mat,
+    normal_model: zm.Mat,
 };
 
 pub const GlobalUniforms = extern struct {

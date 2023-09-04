@@ -113,11 +113,14 @@ pub fn run(it: *ecs.iter_t) callconv(.C) void {
                             if (ecs.field(it, components.Mesh, 3)) |meshes| {
                                 const mesh_comp = meshes[i];
                                 const object_to_world = transform.world;
+                                const model = zm.transpose(object_to_world);
+                                const invert_model: zm.Mat = zm.inverse(model);
                                 const mem = gctx.uniformsAllocate(sf.Uniforms, 1);
                                 mem.slice[0] = .{
                                     .aspect_ratio = @as(f32, @floatFromInt(fb_width)) / @as(f32, @floatFromInt(fb_height)),
                                     .mip_level = @floatFromInt(renderer_state.mip_level),
-                                    .model = zm.transpose(object_to_world),
+                                    .model = model,
+                                    .normal_model = zm.transpose(invert_model),
                                 };
                                 if (should_bind_group) {
                                     const bind_group = gctx.lookupResource(current_material.bind_group) orelse break :pass;

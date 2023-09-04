@@ -2,6 +2,7 @@ struct Uniforms {
   aspect_ratio: f32,
   mip_level: f32,
   model: mat4x4<f32>,
+  normal_model: mat4x4<f32>,
 }
 struct Globals {
   view_proj: mat4x4<f32>,
