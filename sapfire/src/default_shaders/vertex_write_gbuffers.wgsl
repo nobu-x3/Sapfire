@@ -11,8 +11,7 @@ struct VertexOut {
   @location(3) uv: vec2<f32>,
 ) -> VertexOut {
   var output: VertexOut;
-  let p = vec2(position.x / uniforms.aspect_ratio, position.y);
-  output.position_clip = vec4(p, 0.0, 1.0) * uniforms.model * globalUniforms.view_proj;
+  output.position_clip = vec4(position, 1.0) * uniforms.model * globalUniforms.view_proj;
   output.uv = uv;
   output.tangent = tangent;
   output.normal = normalize((uniforms.normal_model * vec4(normal, 1.0)).xyz); 

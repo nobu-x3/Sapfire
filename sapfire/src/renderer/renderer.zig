@@ -461,7 +461,7 @@ pub const Renderer = struct {
                 .buffers = &g_vertex_buffers,
             },
             .primitive = .{
-                .front_face = .ccw,
+                .front_face = .cw,
                 .cull_mode = .back,
                 .topology = .triangle_list,
             },
@@ -624,7 +624,7 @@ pub const Renderer = struct {
                                         .aspect_ratio = @as(f32, @floatFromInt(fb_width_passed)) / @as(f32, @floatFromInt(fb_height_passed)),
                                         .mip_level = @as(f32, @floatFromInt(renderer_state.mip_level)),
                                         .model = model_matrix,
-                                        .normal_model = zm.transpose(invert_model),
+                                        .normal_model = invert_model,
                                     },
                                 });
                                 if (ecs.field(&it, sf.Material, 1)) |materials| {
@@ -665,7 +665,7 @@ pub const Renderer = struct {
                 light_pass.setBindGroup(1, light_bg, null);
                 gctx.queue.writeBuffer(light_uniform, 0, sf.LightingUniform, &.{
                     .{
-                        .position = .{ -1.0, 1.0, 1.0, 1.0 },
+                        .position = .{ -1.5, 1.0, 2.0, 1.0 },
                         .color = .{ 1.0, 0.0, 0.0, 1.0 },
                     },
                 });
