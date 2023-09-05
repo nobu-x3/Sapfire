@@ -36,7 +36,6 @@ fn main(
   let bufferSize = textureDimensions(gBufferDepth);
   let coordUV = coord.xy / vec2<f32>(bufferSize);
   let position = world_from_screen_coord(coordUV, depth);
-  let light_dir = normalize(light.position - position);
   let normal = textureLoad(
       gBufferNormal,
       vec2<i32>(floor(coord.xy)),
@@ -52,9 +51,17 @@ fn main(
       vec2<i32>(floor(coord.xy)),
       0
   ).rgb;
-  let diffuse_strength = max(dot(normal, light_dir), 0.0);
+  // diffuse
+  let light_dir = normalize(light.position - position);
+  let diffuse_strength = phong_data.y * max(dot(normal, light_dir), 0.0);
   let diffuse_color = light.color * diffuse_strength;
-  result = albedo * (phong_data.x + diffuse_color) * light.color ;
+  // specular
+  let camera_position = camera.viewProjectionMatrix[3];
+  let view_dir = normalize(camera_position.xyz - position);
+  let reflect_dir = reflect(-light_dir, normal);
+  let spec_strength = pow(max(dot(view_dir, reflect_dir), 0.0), 32.0);
+  let spec_color = spec_strength * light.color;
+  result = albedo * (phong_data.x + diffuse_color + spec_color) * light.color ;
   return vec4(result, 1.0);
 }
 

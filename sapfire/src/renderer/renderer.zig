@@ -630,7 +630,9 @@ pub const Renderer = struct {
                                 if (ecs.field(&it, sf.Material, 1)) |materials| {
                                     const mat = materials[i];
                                     const mat_bg = gctx.lookupResource(mat.bind_group) orelse break :pass_gbuffer;
+                                    const mat_buffer = gctx.lookupResource(mat.buffer.handle) orelse break :pass_gbuffer;
                                     gbuffer_pass.setBindGroup(2, mat_bg, null);
+                                    gctx.queue.writeBuffer(mat_buffer, 0, sf.PhongData, &.{mat.phong_data});
                                 }
                                 gbuffer_pass.drawIndexed(mesh_comp.num_indices, 1, mesh_comp.index_offset, mesh_comp.vertex_offset, 0);
                             }

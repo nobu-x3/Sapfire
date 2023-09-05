@@ -124,8 +124,8 @@ pub const MaterialManager = struct {
         if (!system.materials.contains(guid)) {
             var material = try Material.create(gctx, .{
                 .ambient = 0.1,
-                .diffuse = 0.0,
-                .reflection = 0.0,
+                .diffuse = 0.4,
+                .reflection = 0.3,
             }, name, texture_system, layout, uniform_size, texture_guid);
             try system.materials.put(guid, material);
             log.info("Added material at path {s} with guid\n{d}", .{ name, guid });
