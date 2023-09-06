@@ -232,8 +232,12 @@ pub const Scene = struct {
         self.index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, self.indices.items);
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
         ecs.SYSTEM(self.world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
-        var render_color_system = @import("systems/render_color_system.zig").system();
-        ecs.SYSTEM(self.world.id, "render", ecs.OnStore, &render_color_system);
+        // var render_color_system = @import("systems/render_color_system.zig").system();
+        // ecs.SYSTEM(self.world.id, "render", ecs.OnStore, &render_color_system);
+        var phong_gbuffer_system = @import("systems/phong_gbuffer_pass_system.zig").system();
+        ecs.SYSTEM(self.world.id, "Write to gbuffers", ecs.PreStore, &phong_gbuffer_system);
+        var phong_light_pass_system = @import("systems/phong_lighting_pass_system.zig").system();
+        ecs.SYSTEM(self.world.id, "Light pass", ecs.PreStore, &phong_light_pass_system);
     }
 
     pub fn init(allocator: std.mem.Allocator, gctx: *zgpu.GraphicsContext, path: [:0]const u8, out_scene: *Scene) !void {
@@ -281,8 +285,12 @@ pub const Scene = struct {
         out_scene.index_buffer = sf.Buffer.create_and_load(gctx, .{ .copy_dst = true, .index = true }, u32, out_scene.indices.items);
         var update_transforms_system = @import("systems/update_transforms_system.zig").system();
         ecs.SYSTEM(out_scene.world.id, "Local to world transforms", ecs.PreUpdate, &update_transforms_system);
-        var render_color_system = @import("systems/render_color_system.zig").system();
-        ecs.SYSTEM(out_scene.world.id, "render", ecs.OnStore, &render_color_system);
+        // var render_color_system = @import("systems/render_color_system.zig").system();
+        // ecs.SYSTEM(self.world.id, "render", ecs.OnStore, &render_color_system);
+        var phong_gbuffer_system = @import("systems/phong_gbuffer_pass_system.zig").system();
+        ecs.SYSTEM(out_scene.world.id, "Write to gbuffers", ecs.PreStore, &phong_gbuffer_system);
+        var phong_light_pass_system = @import("systems/phong_lighting_pass_system.zig").system();
+        ecs.SYSTEM(out_scene.world.id, "Light pass", ecs.PreStore, &phong_light_pass_system);
     }
 
     pub fn recreate_buffers(self: *Scene) void {

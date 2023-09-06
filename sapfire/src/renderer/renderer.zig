@@ -335,6 +335,7 @@ pub const Renderer = struct {
     light_pipeline: zgpu.RenderPipelineHandle,
 
     pub var renderer: ?*Renderer = null;
+    pub var color_view: ?*zgpu.wgpu.TextureView = null;
     pub var fb_width: u32 = 800;
     pub var fb_height: u32 = 600;
 
@@ -516,6 +517,8 @@ pub const Renderer = struct {
         allocator.destroy(renderer_state);
     }
 
+    pub var encoder: ?zgpu.wgpu.CommandEncoder = null;
+
     pub fn draw_deferred_to_texture(renderer_state: *Renderer, color_view_passed: *zgpu.wgpu.TextureView, fb_width_passed: u32, fb_height_passed: u32, scene: *sf.Scene) !void {
         renderer = renderer_state;
         fb_width = fb_width_passed;
@@ -535,11 +538,11 @@ pub const Renderer = struct {
         const cam_world_to_clip = zm.mul(cam_world_to_view, cam_view_to_clip);
         const view_proj = zm.transpose(cam_world_to_clip);
         const inv_view_proj = zm.inverse(view_proj);
-        const back_buffer_view = gctx.swapchain.getCurrentTextureView();
-        defer back_buffer_view.release();
         const commands = commands: {
-            const encoder = gctx.device.createCommandEncoder(null);
-            defer encoder.release();
+            encoder = gctx.device.createCommandEncoder(null);
+            defer {
+                encoder = null;
+            }
             // GBuffer pass.
             pass_gbuffer: {
                 const vb_info = gctx.lookupResourceInfo(scene.vertex_buffer.handle) orelse break :pass_gbuffer;
@@ -582,7 +585,7 @@ pub const Renderer = struct {
                     .color_attachments = &color_attachments,
                     .depth_stencil_attachment = &depth_attachment,
                 };
-                const gbuffer_pass = encoder.beginRenderPass(render_pass_info);
+                const gbuffer_pass = encoder.?.beginRenderPass(render_pass_info);
                 defer {
                     gbuffer_pass.end();
                     gbuffer_pass.release();
@@ -651,7 +654,7 @@ pub const Renderer = struct {
                     .color_attachment_count = color_attachments.len,
                     .color_attachments = &color_attachments,
                 };
-                const light_pass = encoder.beginRenderPass(render_pass_info);
+                const light_pass = encoder.?.beginRenderPass(render_pass_info);
                 defer {
                     light_pass.end();
                     light_pass.release();
@@ -667,7 +670,7 @@ pub const Renderer = struct {
                 light_pass.setBindGroup(1, light_bg, null);
                 gctx.queue.writeBuffer(light_uniform, 0, sf.LightingUniform, &.{
                     .{
-                        .position = .{ -1.5, 1.0, 2.0, 1.0 },
+                        .position = .{ -0.5, 0.0, 4.0, 1.0 },
                         .color = .{ 1.0, 0.0, 0.0, 1.0 },
                     },
                 });
@@ -680,7 +683,7 @@ pub const Renderer = struct {
                 });
                 light_pass.draw(6, 1, 0, 0);
             }
-            break :commands encoder.finish(null);
+            break :commands encoder.?.finish(null);
         };
         defer commands.release();
         gctx.submit(&.{commands});
