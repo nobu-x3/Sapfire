@@ -1,12 +1,22 @@
 {
   "configurations": {
-    "launch": {
-      "adapter": "CodeLLDB",
-      "filetypes": [ "zig" ],
+    "Launch": {
+      "adapter": "vscode-cpptools",
+      "filetypes": [ "cpp", "c", "objc", "rust" ], // optional
       "configuration": {
         "request": "launch",
-        "program": "${workspaceRoot}/zig-out/bin/Sapling",
-        "cwd": "${workspaceRoot}/"
+        "program": "${workspaceFolder}/build/Sandbox.exe",
+        "cwd": "${workspaceFolder}/build",
+        "environment": [],
+        "externalConsole": true,
+        "MIMode": "gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ]
       }
     }
   }

@@ -24,3 +24,7 @@ zig-out/
 zig-cache/
 logs/
 imgui.ini
+build/
+.cache/
+*.log
+SapfireProfile*.json

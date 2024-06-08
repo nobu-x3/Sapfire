@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Emacs",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Sandbox.exe",
+            "args": ["-q"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb"
+        }
+    ]
+}

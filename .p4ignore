@@ -1,0 +1,12 @@
+/bin/
+/build/
+.cache/
+.vs/
+.vscode/
+\Sapfire*.json
+\Sapfire.log
+*.git/
+!/vendor/dxc/
+!/vendor/DirectXAgilitySDK
+!/vendor/DirectXAgilitySDK/build
+\imgui.ini

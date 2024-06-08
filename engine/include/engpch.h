@@ -1,0 +1,35 @@
+#pragma once
+
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <future>
+#include <iomanip>
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <mutex>
+#include <random>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <thread>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
+#include "core/file_system.h"
+#include "core/logger.h"
+#include "core/memory.h"
+#include "core/platform.h"
+#include "core/stl/shared_ptr.h"
+#include "core/stl/unique_ptr.h"
+#include "core/uuid.h"
+#include "tools/profiling.h"
