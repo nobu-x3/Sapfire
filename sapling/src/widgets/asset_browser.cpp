@@ -6,8 +6,8 @@ namespace widgets {
 
 	constexpr Sapfire::u32 PADDING = 5;
 
-	AssetBrowser::AssetBrowser(const Sapfire::stl::string& mesh_registry_path) :
-		m_MeshRegistryPath(mesh_registry_path), m_MeshRegistry(m_MeshRegistryPath) {}
+	AssetBrowser::AssetBrowser(const Sapfire::stl::string& mesh_registry_path, const Sapfire::stl::string& texture_registry_path) :
+		m_MeshRegistryPath(mesh_registry_path), m_MeshRegistry(m_MeshRegistryPath), m_TextureRegistry(texture_registry_path) {}
 
 	bool AssetBrowser::update(Sapfire::f32 delta_time) {
 		if (ImGui::Begin("Asset Browser")) {

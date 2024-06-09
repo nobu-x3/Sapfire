@@ -30,7 +30,7 @@ namespace Sapfire::d3d {
 	};
 
 	// If texture data is uploaded elsewhere, use TextureFromData and fully initialize TextureCreationDesc.
-	enum class TextureUsage { DepthStencil, RenderTarget, TextureFromPath, TextureFromData, HDRTextureFromPath, CubeMap, UAVTexture };
+	enum class TextureUsage : u8 { DepthStencil, RenderTarget, TextureFromPath, TextureFromData, HDRTextureFromPath, CubeMap, UAVTexture };
 
 	struct SFAPI TextureCreationDesc {
 		TextureUsage usage{};

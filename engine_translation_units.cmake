@@ -10,6 +10,7 @@ set(RELATIVE_SAPFIRE_TRANSLATION_UNITS
         engine/src/core/rtti.cpp
         engine/src/core/memory.cpp
         engine/src/assets/mesh_manager.cpp
+        engine/src/assets/texture_manager.cpp
         engine/src/components/components.cpp
         engine/src/components/transform.cpp
         engine/src/components/name_component.cpp

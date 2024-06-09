@@ -36,10 +36,12 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 	m_ECManager->create_entity();
 	m_ECManager->create_entity();
 	m_ECManager->create_entity();
-	m_Widgets.emplace_back(stl::make_unique<widgets::AssetBrowser>(mem::ENUM::Editor, "mesh_registry.db"));
-	auto* asset_browser = m_Widgets.back().get();
+	m_Widgets.emplace_back(stl::make_unique<widgets::AssetBrowser>(mem::ENUM::Editor, "mesh_registry.db", "texture_registry.db"));
+	auto* asset_browser = static_cast<widgets::AssetBrowser*>(m_Widgets.back().get());
+    /* asset_browser->texture_registry_ptr()->import_texture(*gfx_device, "assets/textures/ceramics.jpg"); */
+    /* asset_browser->texture_registry_ptr()->serialize(); */
 	auto scene_view = stl::make_unique<widgets::SSceneView>(mem::ENUM::Editor, m_ECManager.get(), gfx_device,
-															static_cast<widgets::AssetBrowser*>(asset_browser)->mesh_registry_ptr());
+															asset_browser->mesh_registry_ptr());
 	scene_view->add_render_component(parent, "assets/models/monkey.obj");
 	scene_view->add_render_component(parent, "assets/models/cube.obj");
 	m_Widgets.push_back(std::move(scene_view));

@@ -49,8 +49,6 @@ namespace Sapfire::assets {
 
 	void MeshRegistry::serialize() {
 		nlohmann::json j;
-		stl::vector<UUID> serialized_uuids{m_PathToMeshAssetMap.size()};
-		stl::vector<stl::string> serialized_paths{m_PathToMeshAssetMap.size()};
 		for (auto&& [path, asset] : m_PathToMeshAssetMap) {
 			nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}};
 			j["assets"].push_back(j_obj);

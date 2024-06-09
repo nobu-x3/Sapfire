@@ -28,3 +28,4 @@ build/
 .cache/
 *.log
 SapfireProfile*.json
+*.db
