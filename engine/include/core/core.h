@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <iostream>
 #include "core/platform.h"
 #ifdef SF_PLATFORM_WINDOWS
 #ifdef SF_BUILD_DLL

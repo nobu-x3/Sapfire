@@ -1,5 +1,4 @@
 #include "engpch.h"
-
 #include <DirectXMath.h>
 #include "components/ec_manager.h"
 #include "components/movement_component.h"
@@ -7,6 +6,8 @@
 #include "physics/physics_engine.h"
 
 namespace Sapfire::physics {
+
+	using namespace DirectX;
 
 	PhysicsEngine::PhysicsEngine(ECManager* ec_manager) : m_ECManager(*ec_manager) {}
 

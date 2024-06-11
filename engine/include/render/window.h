@@ -17,7 +17,7 @@ namespace Sapfire {
 		u64 width, height;
 		stl::string name;
 		EventCallbackFn callback;
-		LRESULT CALLBACK (*window_proc)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = nullptr;
+		LRESULT (*window_proc)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = nullptr;
 	};
 
 	struct WindowExtent {

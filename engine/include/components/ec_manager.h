@@ -6,7 +6,7 @@
 #include "core/stl/unique_ptr.h"
 
 namespace Sapfire {
-	class ECManager {
+	class SFAPI ECManager {
 	public:
 		ECManager();
 		Entity create_entity();

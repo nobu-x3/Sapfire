@@ -27,7 +27,6 @@ namespace Sapfire {
 			m_TextureRegistry.import_texture(*m_GraphicsDevice, texture_path);
 			texture = m_TextureRegistry.get(texture_path);
 		}
-<<<<<<< HEAD
 		if (texture->data.dsv_index == d3d::INVALID_INDEX_U32 || texture->data.srv_index == d3d::INVALID_INDEX_U32) {
 			texture->data = m_GraphicsDevice->create_texture(d3d::TextureCreationDesc{
 				.usage = d3d::TextureUsage::TextureFromPath,
@@ -35,8 +34,6 @@ namespace Sapfire {
 				.path = d3d::AnsiToWString(texture_path),
 			});
 		}
-=======
->>>>>>> 1a9c437 (Texture registry serialization-deserialization)
 		if (texture) {
 			assets::TextureResource text_res{
 				.gpu_idx = texture->data.srv_index,

@@ -8,6 +8,7 @@
 #include "events/event.h"
 #include "events/input_event.h"
 #include "events/keyboard_event.h"
+#include "core/logger.h"
 
 namespace Sapfire {
 
@@ -17,7 +18,7 @@ namespace Sapfire {
 		stl::string_view name = "";
 		u32 width = 800;
 		u32 height = 600;
-		LRESULT CALLBACK (*window_proc)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = nullptr;
+		LRESULT (*window_proc)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = nullptr;
 	};
 
 	namespace d3d {
@@ -60,7 +61,7 @@ namespace Sapfire {
 		virtual bool on_key_released(KeyReleasedEvent& e);
 
 	protected:
-		virtual void event_loop(f32 delta_time) = 0;
+		virtual void event_loop(f32 delta_time) { CORE_INFO("HELOOO"); };
 
 	protected:
 		stl::string m_Name;
