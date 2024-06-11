@@ -26,7 +26,7 @@ option(ENABLE_SPECTRE_MITIGATION "Build using /Qspectre for MSVC" OFF)
 
 option(DISABLE_MSVC_ITERATOR_DEBUGGING "Disable iterator debugging in Debug configurations with the MSVC CRT" OFF)
 
-option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on build" OFF)
+option(ENABLE_CODE_ANALYSIS "Use Static Code Analysis on _build" OFF)
 
 option(USE_PREBUILT_SHADERS "Use externally built HLSL shaders" OFF)
 
@@ -325,7 +325,7 @@ if(BUILD_GAMEINPUT)
     set(CMAKE_REQUIRED_QUIET ON)
     CHECK_INCLUDE_FILE_CXX(GameInput.h GAMEINPUT_HEADER)
     if(NOT GAMEINPUT_HEADER)
-        message(FATAL_ERROR "Microsoft GDK required to build GameInput. See https://aka.ms/gdk")
+        message(FATAL_ERROR "Microsoft GDK required to _build GameInput. See https://aka.ms/gdk")
     endif()
     target_compile_definitions(${PROJECT_NAME} PUBLIC USING_GAMEINPUT)
 elseif(BUILD_WGI)
@@ -352,7 +352,7 @@ install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/build/${PROJECT_NAME}-config.cmake.in
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/_build/${PROJECT_NAME}-config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_NAME}-config.cmake
   INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PACKAGE_NAME})
 
@@ -370,7 +370,7 @@ install(FILES
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PACKAGE_NAME})
 
 # Create pkg-config file
-include(build/JoinPaths.cmake)
+include(_build/JoinPaths.cmake)
 # from: https://github.com/jtojnar/cmake-snips#concatenating-paths-when-building-pkg-config-files
 join_paths(DIRECTXTK12_INCLUDEDIR_FOR_PKG_CONFIG "\${prefix}" "${CMAKE_INSTALL_INCLUDEDIR}")
 join_paths(DIRECTXTK12_LIBDIR_FOR_PKG_CONFIG "\${prefix}"     "${CMAKE_INSTALL_LIBDIR}")
@@ -389,7 +389,7 @@ if(DEP_L)
 endif()
 
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/build/DirectXTK12.pc.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/_build/DirectXTK12.pc.in"
     "${CMAKE_CURRENT_BINARY_DIR}/DirectXTK12.pc" @ONLY)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/DirectXTK12.pc"
@@ -405,7 +405,7 @@ if(MSVC)
     endif()
 endif()
 
-include(build/CompilerAndLinker.cmake)
+include(_build/CompilerAndLinker.cmake)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE ${COMPILER_DEFINES})
 target_compile_options(${PROJECT_NAME} PRIVATE ${COMPILER_SWITCHES})
