@@ -16,7 +16,7 @@ namespace Sapfire {
 
 	// Setting the Agility SDK parameters.
 	extern "C" {
-	__declspec(dllexport) extern const UINT D3D12SDKVersion = 613u;
+	__declspec(dllexport) extern const UINT D3D12SDKVersion = 614u;
 	}
 	extern "C" {
 	__declspec(dllexport) extern const char* D3D12SDKPath = ".\\";
