@@ -6,9 +6,9 @@
 namespace Sapfire::components {
 	ENGINE_COMPONENT_IMPL(RenderComponent);
 
-	RenderComponent::RenderComponent(UUID mesh_uuid, CPUData cpu_data, PerDrawConstants per_draw_constants,
+	RenderComponent::RenderComponent(UUID mesh_uuid, UUID texture_uuid, CPUData cpu_data, PerDrawConstants per_draw_constants,
 									 stl::function<void(RenderComponent*)> optional_setter) :
-		m_MeshUUID(mesh_uuid), m_CPUData(cpu_data), m_PerDrawConstants(per_draw_constants), m_OptionalSetter(optional_setter) {
+		m_MeshUUID(mesh_uuid), m_TextureUUID(texture_uuid), m_CPUData(cpu_data), m_PerDrawConstants(per_draw_constants), m_OptionalSetter(optional_setter) {
 		register_rtti();
 	}
 

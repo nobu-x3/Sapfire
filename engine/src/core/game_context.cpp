@@ -9,7 +9,8 @@
 
 namespace Sapfire {
 
-	GameContext::GameContext(const GameContextCreationDesc& desc) : m_MeshRegistry(desc.mesh_registry_path) {
+	GameContext::GameContext(const GameContextCreationDesc& desc) :
+		m_MeshRegistry(desc.mesh_registry_path), m_TextureRegistry(desc.texture_registry_path) {
 		m_ClientExtent = desc.client_extent;
 		m_PhysicsEngine = stl::make_unique<physics::PhysicsEngine>(mem::ENUM::Engine_Scene, &m_ECManager);
 		m_GraphicsDevice = stl::make_unique<d3d::GraphicsDevice>(
@@ -20,51 +21,71 @@ namespace Sapfire {
 
 	void GameContext::init() { load_contents(); }
 
-	void GameContext::create_render_component(Entity entity, stl::string& mesh_path) {
-		// @TODO: add materials and textures
-		auto* asset = m_MeshRegistry.get(mesh_path);
-		if (!asset) {
-			m_MeshRegistry.import_mesh(mesh_path);
-			asset = m_MeshRegistry.get(mesh_path);
+	void GameContext::add_texture(const stl::string& texture_path) {
+		auto* texture = m_TextureRegistry.get(texture_path);
+		if (!texture) {
+			m_TextureRegistry.import_texture(*m_GraphicsDevice, texture_path);
+			texture = m_TextureRegistry.get(texture_path);
 		}
-		if (asset && asset->data.has_value()) {
-			assert(asset->data->indices32.size() > 0);
-			assert(asset->data->positions.size() > 0);
-			assert(asset->data->normals.size() > 0);
-			assert(asset->data->texcs.size() > 0);
+		if (texture) {
+			assets::TextureResource text_res{
+				.gpu_idx = texture->data.srv_index,
+			};
+			m_TextureManager.add(texture_path, texture->uuid, text_res);
+		}
+	}
+
+	void GameContext::create_render_component(Entity entity, const stl::string& mesh_path, const stl::string& texture_path) {
+		// @TODO: add materials and textures
+		auto* mesh_asset = m_MeshRegistry.get(mesh_path);
+		auto* texture_asset = m_TextureRegistry.get(texture_path);
+		if (!mesh_asset) {
+			m_MeshRegistry.import_mesh(mesh_path);
+			mesh_asset = m_MeshRegistry.get(mesh_path);
+		}
+		if (!texture_asset) {
+			m_TextureRegistry.import_texture(*m_GraphicsDevice, texture_path);
+			texture_asset = m_TextureRegistry.get(texture_path);
+		}
+		if (mesh_asset && texture_asset && mesh_asset->data.has_value()) {
+			assert(mesh_asset->data->indices32.size() > 0);
+			assert(mesh_asset->data->positions.size() > 0);
+			assert(mesh_asset->data->normals.size() > 0);
+			assert(mesh_asset->data->texcs.size() > 0);
 			m_RTIndexBuffers.push_back(m_GraphicsDevice->create_buffer<u16>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::IndexBuffer,
 				},
-				asset->data->indices16()));
+				mesh_asset->data->indices16()));
 			m_VertexPosBuffers.push_back(m_GraphicsDevice->create_buffer<DirectX::XMFLOAT3>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::StructuredBuffer,
 				},
-				asset->data->positions));
+				mesh_asset->data->positions));
 			m_VertexNormalBuffers.push_back(m_GraphicsDevice->create_buffer<DirectX::XMFLOAT3>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::StructuredBuffer,
 				},
-				asset->data->normals));
+				mesh_asset->data->normals));
 			bool should_add_tangent = false;
-			if (asset->data->tangentus.size() > 0) {
+			if (mesh_asset->data->tangentus.size() > 0) {
 				m_VertexTangentBuffers.push_back(m_GraphicsDevice->create_buffer<DirectX::XMFLOAT3>(
 					d3d::BufferCreationDesc{
 						.usage = d3d::BufferUsage::StructuredBuffer,
 					},
-					asset->data->tangentus));
+					mesh_asset->data->tangentus));
 				should_add_tangent = true;
 			}
 			m_VertexUVBuffers.push_back(m_GraphicsDevice->create_buffer<DirectX::XMFLOAT2>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::StructuredBuffer,
 				},
-				asset->data->texcs));
+				mesh_asset->data->texcs));
 			components::RenderComponent render_component{
-				asset->uuid,
+				mesh_asset->uuid,
+				texture_asset->uuid,
 				components::CPUData{
-					.indices_size = static_cast<u32>(asset->data->indices32.size()),
+					.indices_size = static_cast<u32>(mesh_asset->data->indices32.size()),
 					.index_id = static_cast<u32>(m_RTIndexBuffers.size() - 1),
 					.position_idx = static_cast<u32>(m_VertexPosBuffers.size() - 1),
 					.normal_idx = static_cast<u32>(m_VertexNormalBuffers.size() - 1),
@@ -79,7 +100,9 @@ namespace Sapfire {
 					.scene_cbuffer_idx = m_TransformBuffers.back().cbv_index,
 					.pass_cbuffer_idx = m_MainPassCB.cbv_index,
 					.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
-					.texture_cbuffer_idx = 0,
+					.texture_cbuffer_idx = m_TextureManager.texture_resources.contains(texture_path)
+						? m_TextureManager.texture_resources[texture_path].gpu_idx
+						: 0,
 				},
 			};
 			m_ECManager.add_engine_component<components::RenderComponent>(entity, render_component);

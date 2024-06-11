@@ -9,6 +9,11 @@
 
 namespace Sapfire::assets {
 
+	void TextureManager::add(const Sapfire::stl::string& path, Sapfire::UUID uuid, TextureResource resource) {
+		texture_resources[path] = resource;
+		uuid_to_path_map[uuid] = path;
+	}
+
 	TextureRegistry::TextureRegistry(const stl::string& registry_file_path) {
 		auto full_path = fs::FileSystem::get_full_path(fs::FileSystem::root_directory() + registry_file_path);
 		auto relative_path = fs::FileSystem::root_directory() + registry_file_path;
@@ -47,43 +52,39 @@ namespace Sapfire::assets {
 							  full_path);
 				break;
 			}
-            if(!desc_json.contains("usage") || !desc_json["usage"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'usage' field.",
-							  full_path);
+			if (!desc_json.contains("usage") || !desc_json["usage"].is_number_unsigned()) {
+				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'usage' field.", full_path);
 				break;
-            }
-            if(!desc_json.contains("width") || !desc_json["width"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'width' field.",
-							  full_path);
+			}
+			if (!desc_json.contains("width") || !desc_json["width"].is_number_unsigned()) {
+				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'width' field.", full_path);
 				break;
-            }
-            if(!desc_json.contains("height") || !desc_json["height"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'height' field.",
-							  full_path);
+			}
+			if (!desc_json.contains("height") || !desc_json["height"].is_number_unsigned()) {
+				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'height' field.", full_path);
 				break;
-            }
-            if(!desc_json.contains("format") || !desc_json["format"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'format' field.",
-							  full_path);
+			}
+			if (!desc_json.contains("format") || !desc_json["format"].is_number_unsigned()) {
+				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'format' field.", full_path);
 				break;
-            }
-            if(!desc_json.contains("mip_levels") || !desc_json["mip_levels"].is_number_unsigned()) {
+			}
+			if (!desc_json.contains("mip_levels") || !desc_json["mip_levels"].is_number_unsigned()) {
 				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'mip_levels' field.",
 							  full_path);
 				break;
-            }
-            if(!desc_json.contains("depth_or_array_size") || !desc_json["depth_or_array_size"].is_number_unsigned()) {
+			}
+			if (!desc_json.contains("depth_or_array_size") || !desc_json["depth_or_array_size"].is_number_unsigned()) {
 				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'depth_or_array_size' field.",
 							  full_path);
 				break;
-            }
-            if(!desc_json.contains("bytes_per_pixel") || !desc_json["bytes_per_pixel"].is_number_unsigned()) {
+			}
+			if (!desc_json.contains("bytes_per_pixel") || !desc_json["bytes_per_pixel"].is_number_unsigned()) {
 				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'bytes_per_pixel' field.",
 							  full_path);
 				break;
-            }
+			}
 			stl::string path = asset["path"];
-            stl::wstring path_wstring = d3d::AnsiToWString(path);
+			stl::wstring path_wstring = d3d::AnsiToWString(path);
 			d3d::TextureCreationDesc desc{
 				.usage = desc_json["usage"],
 				.width = desc_json["width"],
@@ -95,9 +96,9 @@ namespace Sapfire::assets {
 				.name = path_wstring,
 				.path = path_wstring,
 			};
-            if(desc_json.contains("optional_initial_state")) {
-                desc.optional_initial_state = desc_json["optional_initial_state"];
-            }
+			if (desc_json.contains("optional_initial_state")) {
+				desc.optional_initial_state = desc_json["optional_initial_state"];
+			}
 			m_PathToMeshAssetMap[path] = TextureAsset{
 				.uuid = UUID{asset["UUID"]},
 				.description = desc,
@@ -199,7 +200,7 @@ namespace Sapfire::assets {
 				{"format", desc.format},
 				{"mip_levels", desc.mipLevels},
 				{"depth_or_array_size", desc.depthOrArraySize},
-                {"bytes_per_pixel", desc.bytesPerPixel},
+				{"bytes_per_pixel", desc.bytesPerPixel},
 			};
 			if (desc.optional_initial_state.has_value()) {
 				desc_j["optional_initial_state"] = desc.optional_initial_state.value();

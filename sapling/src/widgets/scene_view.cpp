@@ -235,7 +235,7 @@ namespace widgets {
 				.texture_cbuffer_idx = 0,
 			};
             SLevelEditor::level_editor()->mesh_manager().mesh_resources[mesh_path] = {cpu_data, gpu_data};
-			components::RenderComponent render_component{asset->uuid, cpu_data, gpu_data,
+			components::RenderComponent render_component{asset->uuid, {}, cpu_data, gpu_data,
 														 [this, entity](components::RenderComponent* component) {
 															 if (component) {
 																 const auto old_cpu_data = component->cpu_data();

@@ -19,5 +19,4 @@ private:
 private:
 	Sapfire::d3d::Texture m_DepthTexture{};
 	Sapfire::d3d::PipelineState m_PipelineState{};
-	Sapfire::d3d::Texture m_WoodTexture{};
 };

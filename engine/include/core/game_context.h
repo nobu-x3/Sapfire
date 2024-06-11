@@ -1,8 +1,8 @@
 #pragma once
 
 #include "assets/mesh_manager.h"
+#include "assets/texture_manager.h"
 #include "components/ec_manager.h"
-#include "components/transform.h"
 #include "core/core.h"
 #include "core/stl/unique_ptr.h"
 #include "math/math_helper.h"
@@ -29,6 +29,7 @@ namespace Sapfire {
 		ClientExtent* client_extent;
 		HWND window_handle;
 		stl::string mesh_registry_path{"mesh_registry.db"};
+		stl::string texture_registry_path{"texture_registry.db"};
 	};
 
 	constexpr f32 CAMERA_FOV = TO_RADIANS(90);
@@ -37,7 +38,8 @@ namespace Sapfire {
 		GameContext(const GameContextCreationDesc& desc);
 		virtual ~GameContext() {}
 		void init();
-        void create_render_component(Entity entity, stl::string& mesh_path);
+        void add_texture(const stl::string& texture_path);
+		void create_render_component(Entity entity, const stl::string& mesh_path, const stl::string& texture_path);
 		virtual void on_window_resize();
 		virtual void load_contents() = 0;
 		virtual void update(f32 delta_time);
@@ -53,8 +55,10 @@ namespace Sapfire {
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_VertexUVBuffers{};
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_TransformBuffers{};
 		Sapfire::stl::vector<Sapfire::d3d::Material> m_Materials{};
-        Sapfire::d3d::Buffer m_MainPassCB{};
+		Sapfire::d3d::Buffer m_MainPassCB{};
 		assets::MeshRegistry m_MeshRegistry;
+		assets::TextureRegistry m_TextureRegistry;
+        assets::TextureManager m_TextureManager;
 		ECManager m_ECManager{};
 		ClientExtent* m_ClientExtent;
 		Camera m_MainCamera{};

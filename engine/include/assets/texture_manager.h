@@ -1,3 +1,5 @@
+#pragma once
+
 #include "core/core.h"
 #include "core/uuid.h"
 #include "render/resources.h"
@@ -18,6 +20,7 @@ namespace Sapfire::assets {
 	struct SFAPI TextureManager {
 		Sapfire::stl::unordered_map<Sapfire::stl::string, TextureResource> texture_resources;
 		Sapfire::stl::unordered_map<Sapfire::UUID, Sapfire::stl::string> uuid_to_path_map;
+        void add(const Sapfire::stl::string& path, Sapfire::UUID uuid, TextureResource resource);
 	};
 
 	struct SFAPI TextureAsset {
