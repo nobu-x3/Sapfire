@@ -58,7 +58,7 @@ namespace Sapfire {
 		Sapfire::d3d::Buffer m_MainPassCB{};
 		assets::MeshRegistry m_MeshRegistry;
 		assets::TextureRegistry m_TextureRegistry;
-        assets::TextureManager m_TextureManager;
+        assets::TextureManager m_TextureManager{};
 		ECManager m_ECManager{};
 		ClientExtent* m_ClientExtent;
 		Camera m_MainCamera{};

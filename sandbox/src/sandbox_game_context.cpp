@@ -127,7 +127,7 @@ void SandboxGameContext::load_contents() {
 	});
 	m_Materials.push_back(grass);
 	components::RenderComponent cube_rc{
-		{}, m_TextureRegistry.get("assets/textures/ceramics.jgp")->uuid,
+		{}, m_TextureRegistry.get("assets/textures/ceramics.jpg")->uuid,
 		components::CPUData{
 			.indices_size = static_cast<u32>(cube.indices32.size()),
 			.index_id = 0,
