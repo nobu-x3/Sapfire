@@ -23,6 +23,7 @@ target_link_libraries(Sandbox
         spdlog::spdlog
         )
 
+## Copying dep dlls to sandbox
 add_custom_command(TARGET Sandbox POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:Engine> $<TARGET_FILE_DIR:Sandbox>/$<TARGET_FILE_NAME:Engine>
 )
