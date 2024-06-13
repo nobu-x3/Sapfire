@@ -89,11 +89,11 @@ namespace Sapfire::d3d {
 		void init_bindless_root_signature();
 		// TODO: void init_mimap_generator();
 		void create_backbuffer_rtvs();
-		[[nodiscard]] u32 create_cbv(const CbvCreationDesc& desc) const;
-		[[nodiscard]] u32 create_srv(const SrvCreationDesc& desc, ID3D12Resource* resource) const;
-		[[nodiscard]] u32 create_uav(const UavCreationDesc& desc, ID3D12Resource* resource) const;
-		[[nodiscard]] u32 create_rtv(const RtvCreationDesc& desc, ID3D12Resource* resource) const;
-		[[nodiscard]] u32 create_dsv(const DsvCreationDesc& desc, ID3D12Resource* resource) const;
+		u32 create_cbv(const CbvCreationDesc& desc) const;
+		u32 create_srv(const SrvCreationDesc& desc, ID3D12Resource* resource) const;
+		u32 create_uav(const UavCreationDesc& desc, ID3D12Resource* resource) const;
+		u32 create_rtv(const RtvCreationDesc& desc, ID3D12Resource* resource) const;
+		u32 create_dsv(const DsvCreationDesc& desc, ID3D12Resource* resource) const;
 
 	private:
 		Microsoft::WRL::ComPtr<IDXGIFactory6> m_Factory{};

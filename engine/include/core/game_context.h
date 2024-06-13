@@ -23,7 +23,7 @@ namespace Sapfire {
 
 	class Application;
 	class Window;
-	class ClientExtent;
+	struct ClientExtent;
 
 	struct GameContextCreationDesc {
 		ClientExtent* client_extent;

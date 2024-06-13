@@ -8,7 +8,7 @@ namespace D3D12MA {
 	class Allocator;
 }
 
-class ID3D12Device;
+struct ID3D12Device;
 class IDXGIAdapter;
 
 namespace Sapfire::d3d {

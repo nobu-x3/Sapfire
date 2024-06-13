@@ -98,7 +98,7 @@ namespace Sapfire::d3d {
 		if (resource_creation_desc.resource_desc.MipLevels >= resource_creation_desc.resource_desc.Height) {
 			resource_creation_desc.resource_desc.MipLevels = static_cast<UINT16>(resource_creation_desc.resource_desc.Height - 1);
 		}
-		const u32 mip_levels = resource_creation_desc.resource_desc.MipLevels;
+		//const u32 mip_levels = resource_creation_desc.resource_desc.MipLevels;
 		// Since we copy data from upload buffer to texture with UpdateSubresource, we do not care about the heap's state, so can be
 		// STATE_COMMON and HEAP_DEFAULT. Depth stencil are set to DEPTH_WRITE to avoid validation errors.
 		D3D12_RESOURCE_STATES resource_state = D3D12_RESOURCE_STATE_COMMON;

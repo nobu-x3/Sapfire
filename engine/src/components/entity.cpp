@@ -6,7 +6,7 @@ namespace Sapfire {
 
 	Entity::Entity(UUID uuid, stl::generational_index id) : m_UUID(uuid), m_Id(id) {}
 
-	Entity::Entity(stl::generational_index id) : m_Id(id), m_UUID() {}
+	Entity::Entity(stl::generational_index id) : m_UUID(), m_Id(id) {}
 
 	bool Entity::operator==(const Entity& other) const { return m_UUID == other.m_UUID; }
 

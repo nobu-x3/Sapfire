@@ -44,13 +44,9 @@ namespace widgets {
 	using namespace Sapfire;
 	SSceneView::SSceneView(Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device,
 						   Sapfire::assets::MeshRegistry* mesh_reg) :
-		m_ECManager(*ec_manager), m_GraphicsDevice(*gfx_device), m_MeshRegistry(*mesh_reg), m_DepthTexture(m_GraphicsDevice.create_texture({
-																								.usage = d3d::TextureUsage::DepthStencil,
-																								.width = 800,
-																								.height = 600,
-																								.format = DXGI_FORMAT_D32_FLOAT,
-																								.name = L"Scene View Depth Texture",
-																							})),
+		m_ECManager(*ec_manager),
+		m_MeshRegistry(*mesh_reg), m_GraphicsDevice(*gfx_device),
+		m_PhysicsEngine(stl::make_unique<physics::PhysicsEngine>(mem::ENUM::Editor, ec_manager)),
 		m_PipelineState(m_GraphicsDevice.create_pipeline_state({
 			.shader_module =
 				{
@@ -61,11 +57,18 @@ namespace widgets {
 				},
 			.pipeline_name = L"Scene View Bindless Pipeline",
 		})),
+		m_DepthTexture(m_GraphicsDevice.create_texture({
+			.usage = d3d::TextureUsage::DepthStencil,
+			.width = 800,
+			.height = 600,
+			.format = DXGI_FORMAT_D32_FLOAT,
+			.name = L"Scene View Depth Texture",
+		})),
 		m_MainPassCB(m_GraphicsDevice.create_buffer<PassConstants>(d3d::BufferCreationDesc{
 			.usage = d3d::BufferUsage::ConstantBuffer,
 			.name = L"Scene View Main Pass Constant Buffer",
-		})),
-		m_PhysicsEngine(stl::make_unique<physics::PhysicsEngine>(mem::ENUM::Editor, ec_manager)) {
+		}))
+	{
 		for (int i = 0; i < d3d::MAX_FRAMES_IN_FLIGHT; ++i) {
 			m_OffscreenTextures.push_back(m_GraphicsDevice.create_texture({
 				.usage = Sapfire::d3d::TextureUsage::RenderTarget,

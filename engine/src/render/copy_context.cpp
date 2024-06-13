@@ -7,7 +7,7 @@
 #include "render/graphics_device.h"
 
 namespace Sapfire::d3d {
-	CopyContext::CopyContext(GraphicsDevice* device) : m_GraphicsDevice(*device) {
+	CopyContext::CopyContext(GraphicsDevice* device) {
 		d3d_check(device->device()->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, IID_PPV_ARGS(&m_CommandAllocator)));
 		d3d_check(device->device()->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_COPY, m_CommandAllocator.Get(), nullptr,
 													  IID_PPV_ARGS(&m_CommandList)));

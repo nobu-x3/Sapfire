@@ -99,7 +99,7 @@ void SandboxGameContext::load_contents() {
 	auto& transforms = m_ECManager.engine_components<components::Transform>();
 	m_TransformBuffers.reserve(transforms.size());
 	auto index = 0;
-	for (auto& transform : transforms) {
+	for (auto& _ : transforms) {
 		m_TransformBuffers.emplace_back(m_GraphicsDevice->create_buffer<ObjectConstants>({
 			.usage = d3d::BufferUsage::ConstantBuffer,
 			.name = L"Transform buffer " + std::to_wstring(index),

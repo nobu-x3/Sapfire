@@ -63,6 +63,9 @@ namespace Sapfire::mem {
 		case ENUM::Engine_Input:
 			os << "Engine Input";
 			break;
+		case ENUM::Engine_FileSystem:
+			os << "Engine File System";
+			break;
 		}
 		return os;
 	}

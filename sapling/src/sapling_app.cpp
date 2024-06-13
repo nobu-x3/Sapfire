@@ -164,7 +164,7 @@ bool SaplingApp::on_window_resize_finished(WindowResizeFinishedEvent& e) {
 }
 
 bool SaplingApp::on_window_resize(WindowResizeEvent& e) {
-	bool return_val = Application::on_window_resize(e);
+	Application::on_window_resize(e);
 	/* if (m_Window && !m_Window->is_minimized() && !m_Window->is_resizing()) */
 	/* 	m_GameContext.on_window_resize(); */
 	/* if (!m_Window->is_resizing() && !m_Window->is_minimized()) { */

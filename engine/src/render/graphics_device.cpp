@@ -148,9 +148,10 @@ namespace Sapfire::d3d {
 			break;
 		};
 		if (texture_data || hdr_texture_data) {
+			auto buffer_name = L"Upload Buffer - " + stl::wstring(texture_desc.name);
 			const BufferCreationDesc upload_buffer_creation_desc{
 				.usage = BufferUsage::UploadBuffer,
-				.name = L"Upload Buffer - " + stl::wstring(texture_desc.name),
+				.name = buffer_name,
 			};
 			const u64 upload_buffer_size = GetRequiredIntermediateSize(texture.allocation.resource.Get(), 0, 1);
 			const ResourceCreationDesc resource_creation_desc =
@@ -203,7 +204,7 @@ namespace Sapfire::d3d {
 		// SRVs for mip levels, accesed through texture.srv_index + i
 		if (texture_desc.mipLevels > 1 && texture_desc.usage == TextureUsage::UAVTexture) {
 			for (u32 i = 1; i < texture_desc.mipLevels; ++i) {
-				u32 srv_index = create_srv(
+				create_srv(
 					{
 						.srv_desc =
 							{

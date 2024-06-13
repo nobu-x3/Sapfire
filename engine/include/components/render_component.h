@@ -54,8 +54,6 @@ namespace Sapfire::components {
 		inline UUID mesh_uuid() const { return m_MeshUUID; }
 
 	private:
-		d3d::GraphicsDevice* m_Device{};
-		assets::MeshRegistry* m_MeshRegistry{};
 		UUID m_MeshUUID;
 		UUID m_MaterialUUID;
 		UUID m_TextureUUID;
