@@ -120,7 +120,7 @@ namespace Sapfire {
 				case MK_RBUTTON:
 					button = MouseButton::RMB;
 					break;
-				case MK_MBUTTON:
+				default:
 					button = MouseButton::MMB;
 					break;
 				}

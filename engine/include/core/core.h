@@ -4,6 +4,7 @@
 #include <bitset>
 #include <deque>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <mutex>
 #include <optional>
@@ -17,7 +18,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <iostream>
 #include "core/platform.h"
 #ifdef SF_PLATFORM_WINDOWS
 #ifdef SF_BUILD_DLL
@@ -27,6 +27,10 @@
 #endif
 #else
 #error Sapfire only supports Windows!
+#endif
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4251)
 #endif
 
 namespace Sapfire {
@@ -51,44 +55,44 @@ namespace Sapfire {
 
 	namespace stl {
 		template <class _This, class... _Rest>
-		using tuple = std::tuple<_This, _Rest...>;
+		using tuple = SFAPI std::tuple<_This, _Rest...>;
 		template <class _Ty>
-		using reference_wrapper = std::reference_wrapper<_Ty>;
+		using reference_wrapper = SFAPI std::reference_wrapper<_Ty>;
 		template <typename _Ty, class _Container = std::deque<_Ty>>
-		using queue = std::queue<_Ty, _Container>;
+		using queue = SFAPI std::queue<_Ty, _Container>;
 
 		template <typename T>
-		using function = std::function<T>;
-		using string = std::string;
-		using string_view = std::string_view;
-		using stringstream = std::stringstream;
+		using function = SFAPI std::function<T>;
+		using string = SFAPI std::string;
+		using string_view = SFAPI std::string_view;
+		using stringstream = SFAPI std::stringstream;
 		template <typename T>
-		using vector = std::vector<T>;
-		using mutex = std::mutex;
+		using vector = SFAPI std::vector<T>;
+		using mutex = SFAPI std::mutex;
 		template <typename Mutex>
-		using lock_guard = std::lock_guard<Mutex>;
+		using lock_guard = SFAPI std::lock_guard<Mutex>;
 		template <typename Mutex>
-		using unique_lock = std::unique_lock<Mutex>;
+		using unique_lock = SFAPI std::unique_lock<Mutex>;
 		template <typename Mutex>
-		using scoped_lock = std::scoped_lock<Mutex>;
-		using thread = std::thread;
-		using jthread = std::jthread;
+		using scoped_lock = SFAPI std::scoped_lock<Mutex>;
+		using thread = SFAPI std::thread;
+		using jthread = SFAPI std::jthread;
 		template <typename T>
-		using optional = std::optional<T>;
+		using optional = SFAPI std::optional<T>;
 		template <typename T, std::size_t Extent = std::dynamic_extent>
-		using span = std::span<T, Extent>;
+		using span = SFAPI std::span<T, Extent>;
 		template <class _Kty, class _Ty, class _Hasher = std::hash<_Kty>, class _Keyeq = std::equal_to<_Kty>,
 				  class _Alloc = std::allocator<std::pair<const _Kty, _Ty>>>
-		using unordered_map = std::unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
+		using unordered_map = SFAPI std::unordered_map<_Kty, _Ty, _Hasher, _Keyeq, _Alloc>;
 		template <class Key, class T, class Compare = std::less<Key>, class Allocator = std::allocator<std::pair<const Key, T>>>
-		using map = std::map<Key, T, Compare, Allocator>;
+		using map = SFAPI std::map<Key, T, Compare, Allocator>;
 		template <class _Ty, size_t _Size>
-		using array = std::array<_Ty, _Size>;
-		using wstring = std::wstring;
-		using wstring_view = std::wstring_view;
-		using recursive_mutex = std::recursive_mutex;
+		using array = SFAPI std::array<_Ty, _Size>;
+		using wstring = SFAPI std::wstring;
+		using wstring_view = SFAPI std::wstring_view;
+		using recursive_mutex = SFAPI std::recursive_mutex;
 		template <size_t Size>
-		using bitset = std::bitset<Size>;
+		using bitset = SFAPI std::bitset<Size>;
 
 		struct SFAPI generational_index {
 			u32 index = 0;

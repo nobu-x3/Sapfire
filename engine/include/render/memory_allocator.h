@@ -9,7 +9,7 @@ namespace D3D12MA {
 }
 
 struct ID3D12Device;
-class IDXGIAdapter;
+struct IDXGIAdapter;
 
 namespace Sapfire::d3d {
 

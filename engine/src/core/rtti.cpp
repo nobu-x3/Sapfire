@@ -3,6 +3,7 @@
 #include <DirectXMath.h>
 #include "core/rtti.h"
 
+#pragma warning(disable : 4244)
 namespace Sapfire::rtti {
 
 	void set_rtti_field_value(rtti_object* obj, rtti_field* field, void* value) {
@@ -101,9 +102,9 @@ namespace Sapfire::rtti {
 			}
 		case rtti_type::REFERENCE:
 			{
-                auto* ptr = static_cast<u8*>(obj->head) + field->offset;
-                auto data = *static_cast<Sapfire::UUID*>(value);
-                *ptr = data;
+				auto* ptr = static_cast<u8*>(obj->head) + field->offset;
+				auto data = *static_cast<Sapfire::UUID*>(value);
+				*ptr = data;
 				break;
 			}
 		}
@@ -117,3 +118,4 @@ namespace Sapfire::rtti {
 		*value = ptr + field->offset;
 	}
 } // namespace Sapfire::rtti
+#pragma warning(default : 4244)

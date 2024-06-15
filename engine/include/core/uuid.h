@@ -4,7 +4,7 @@
 
 namespace Sapfire {
 
-	class UUID {
+	class SFAPI UUID {
 	public:
 		UUID();
 		UUID(uint64_t uuid);
