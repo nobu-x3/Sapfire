@@ -10,49 +10,33 @@
 namespace Sapfire {
 
 	GameContext::GameContext(const GameContextCreationDesc& desc) :
-		m_MeshRegistry(desc.mesh_registry_path), m_TextureRegistry(desc.texture_registry_path) {
-		m_ClientExtent = desc.client_extent;
-		m_PhysicsEngine = stl::make_unique<physics::PhysicsEngine>(mem::ENUM::Engine_Scene, &m_ECManager);
-		m_GraphicsDevice = stl::make_unique<d3d::GraphicsDevice>(
+		m_ClientExtent(desc.client_extent),
+		m_GraphicsDevice(stl::make_unique<d3d::GraphicsDevice>(
 			mem::ENUM::Engine_Scene,
 			d3d::SwapchainCreationDesc{static_cast<u32>(m_ClientExtent->width), static_cast<u32>(m_ClientExtent->height), 120,
-									   d3d::MAX_FRAMES_IN_FLIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, desc.window_handle});
+									   d3d::MAX_FRAMES_IN_FLIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, desc.window_handle})),
+		m_AssetManager(assets::AssetManagerCreationDesc{
+			.device = m_GraphicsDevice.get(),
+			.mesh_registry_path = desc.mesh_registry_path,
+			.texture_registry_path = desc.texture_registry_path,
+			.material_registry_path = desc.material_registry_path,
+		}) {
+		m_PhysicsEngine = stl::make_unique<physics::PhysicsEngine>(mem::ENUM::Engine_Scene, &m_ECManager);
 	}
 
 	void GameContext::init() { load_contents(); }
 
-	void GameContext::add_texture(const stl::string& texture_path) {
-		auto* texture = m_TextureRegistry.get(texture_path);
-		if (!texture) {
-			m_TextureRegistry.import_texture(*m_GraphicsDevice, texture_path);
-			texture = m_TextureRegistry.get(texture_path);
-		}
-		if (texture->data.dsv_index == d3d::INVALID_INDEX_U32 || texture->data.srv_index == d3d::INVALID_INDEX_U32) {
-			texture->data = m_GraphicsDevice->create_texture(d3d::TextureCreationDesc{
-				.usage = d3d::TextureUsage::TextureFromPath,
-				.name = d3d::AnsiToWString(texture_path),
-				.path = d3d::AnsiToWString(texture_path),
-			});
-		}
-		if (texture) {
-			assets::TextureResource text_res{
-				.gpu_idx = texture->data.srv_index,
-			};
-			m_TextureManager.add(texture_path, texture->uuid, text_res);
-		}
-	}
-
 	void GameContext::create_render_component(Entity entity, const stl::string& mesh_path, const stl::string& texture_path) {
 		// @TODO: add materials and textures
-		auto* mesh_asset = m_MeshRegistry.get(mesh_path);
-		auto* texture_asset = m_TextureRegistry.get(texture_path);
+		auto* mesh_asset = m_AssetManager.get_mesh(mesh_path);
+		auto* texture_asset = m_AssetManager.get_texture(texture_path);
 		if (!mesh_asset) {
-			m_MeshRegistry.import_mesh(mesh_path);
-			mesh_asset = m_MeshRegistry.get(mesh_path);
+			m_AssetManager.import_mesh(mesh_path);
+			mesh_asset = m_AssetManager.get_mesh(mesh_path);
 		}
 		if (!texture_asset) {
-			m_TextureRegistry.import_texture(*m_GraphicsDevice, texture_path);
-			texture_asset = m_TextureRegistry.get(texture_path);
+			m_AssetManager.load_runtime_texture(texture_path);
+			texture_asset = m_AssetManager.get_texture(texture_path);
 		}
 		if (mesh_asset && texture_asset && mesh_asset->data.has_value()) {
 			assert(mesh_asset->data->indices32.size() > 0);
@@ -107,8 +91,8 @@ namespace Sapfire {
 					.scene_cbuffer_idx = m_TransformBuffers.back().cbv_index,
 					.pass_cbuffer_idx = m_MainPassCB.cbv_index,
 					.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
-					.texture_cbuffer_idx = m_TextureManager.texture_resources.contains(texture_path)
-						? m_TextureManager.texture_resources[texture_path].gpu_idx
+					.texture_cbuffer_idx = m_AssetManager.texture_resource_exists(texture_path)
+						? m_AssetManager.get_texture_resource(texture_path).gpu_idx
 						: 0,
 				},
 			};

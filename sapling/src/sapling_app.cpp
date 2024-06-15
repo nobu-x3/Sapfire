@@ -65,7 +65,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_MBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 		{
-			MouseButton button;
+			MouseButton button{};
 			switch (wParam) {
 			case MK_LBUTTON:
 				button = MouseButton::LMB;
@@ -85,7 +85,7 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	case WM_MBUTTONUP:
 	case WM_RBUTTONUP:
 		{
-			MouseButton button;
+			MouseButton button{};
 			switch (wParam) {
 			case MK_LBUTTON:
 				button = MouseButton::LMB;

@@ -20,9 +20,10 @@ namespace Sapfire::assets {
 	public:
 		explicit AssetManager(const AssetManagerCreationDesc& desc);
 		AssetManager(const AssetManager&) = delete;
-		AssetManager(AssetManager&&) = delete;
+		AssetManager(AssetManager&&);
 		AssetManager& operator=(const AssetManager&) = delete;
-		AssetManager& operator=(AssetManager&&) = delete;
+		AssetManager& operator=(AssetManager&&);
+		void load_runtime_texture(const stl::string& path);
 		inline void import_texture(const stl::string& path) { m_TextureRegistry.import_texture(m_Device, path); }
 		inline void move_texture(const stl::string& old_path, const stl::string& new_path) {
 			m_TextureRegistry.move_texture(m_Device, old_path, new_path);
@@ -31,6 +32,8 @@ namespace Sapfire::assets {
 		inline TextureAsset* get_texture(const stl::string& path) const { return m_TextureRegistry.get(path); }
 		inline TextureAsset* get_texture(UUID uuid) const { return m_TextureRegistry.get(uuid); }
 		inline stl::string get_texture_path(UUID uuid) const { return m_TextureRegistry.get_path(uuid); }
+		inline TextureResource get_texture_resource(const stl::string& path) { return m_TextureManager.texture_resources[path]; }
+		inline bool texture_resource_exists(const stl::string& path) { return m_TextureManager.texture_resources.contains(path); }
 		inline const stl::unordered_map<stl::string, TextureAsset>& path_texture_map() const { return m_TextureRegistry.path_asset_map(); }
 		inline void import_mesh(const stl::string& path) { return m_MeshRegistry.import_mesh(path); }
 		inline void move_mesh(const stl::string& old_path, const stl::string& new_path) { m_MeshRegistry.move_mesh(old_path, new_path); }

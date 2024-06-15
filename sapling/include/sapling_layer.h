@@ -1,13 +1,11 @@
 #pragma once
 
 #include "Sapfire.h"
-#include "core/core.h"
+#include "subeditors/subeditor.h"
 
 namespace widgets {
 	class SSceneHierarchy;
 }
-
-class SSubeditor;
 
 class SaplingLayer final : public Sapfire::Layer {
 public:

@@ -5,7 +5,6 @@
 #include "icons.h"
 #include "imgui.h"
 #include "subeditors/level_editor.h"
-#include "subeditors/subeditor.h"
 #include "tools/profiling.h"
 
 using namespace Sapfire;

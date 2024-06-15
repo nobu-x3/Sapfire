@@ -114,7 +114,7 @@ void SandboxGameContext::load_contents() {
 		.format = DXGI_FORMAT_D32_FLOAT,
 		.name = L"Depth Texture",
 	});
-    add_texture("assets/textures/ceramics.jpg");
+    m_AssetManager.load_runtime_texture("assets/textures/ceramics.jpg");
 	// Materials
 	d3d::Material grass{};
 	grass.name = "grass";
@@ -127,7 +127,7 @@ void SandboxGameContext::load_contents() {
 	});
 	m_Materials.push_back(grass);
 	components::RenderComponent cube_rc{
-		{}, m_TextureRegistry.get("assets/textures/ceramics.jpg")->uuid,
+		{}, m_AssetManager.get_texture("assets/textures/ceramics.jpg")->uuid,
 		components::CPUData{
 			.indices_size = static_cast<u32>(cube.indices32.size()),
 			.index_id = 0,
@@ -144,7 +144,7 @@ void SandboxGameContext::load_contents() {
 			.scene_cbuffer_idx = m_TransformBuffers[0].cbv_index,
 			.pass_cbuffer_idx = m_MainPassCB.cbv_index,
 			.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
-			.texture_cbuffer_idx = m_TextureManager.texture_resources["assets/textures/ceramics.jpg"].gpu_idx,
+			.texture_cbuffer_idx = m_AssetManager.get_texture_resource("assets/textures/ceramics.jpg").gpu_idx,
 		},
 	};
 	m_ECManager.add_engine_component<components::RenderComponent>(entity1, cube_rc);
