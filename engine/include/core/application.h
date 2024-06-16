@@ -3,12 +3,12 @@
 #include <functional>
 #include <windows.h>
 #include "core/layer_stack.h"
+#include "core/logger.h"
 #include "core/stl/unique_ptr.h"
 #include "events/application_event.h"
 #include "events/event.h"
 #include "events/input_event.h"
 #include "events/keyboard_event.h"
-#include "core/logger.h"
 
 namespace Sapfire {
 

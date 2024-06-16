@@ -1,10 +1,9 @@
 #include "widgets/asset_browser.h"
 #include "icons.h"
 #include "imgui.h"
+#include "subeditors/level_editor.h"
 
 namespace widgets {
-	AssetBrowser::AssetBrowser(const Sapfire::stl::string& mesh_registry_path, const Sapfire::stl::string& texture_registry_path) :
-		m_MeshRegistryPath(mesh_registry_path), m_MeshRegistry(m_MeshRegistryPath), m_TextureRegistry(texture_registry_path) {}
 
 	bool AssetBrowser::update(Sapfire::f32 delta_time) {
 		if (ImGui::Begin("Asset Browser")) {
@@ -12,7 +11,7 @@ namespace widgets {
 			filter.Draw("Filter by name: inc, -exc");
 			ImGui::NewLine();
 			ImGuiStyle& style = ImGui::GetStyle();
-			for (auto&& [path, asset] : m_MeshRegistry.path_asset_map()) {
+			for (auto&& [path, asset] : SLevelEditor::level_editor()->asset_manager().path_mesh_map()) {
 				if (filter.PassFilter(path.c_str())) {
 					ImVec2 real_estate = ImGui::GetWindowSize();
 					ImVec2 sz = ImGui::CalcTextSize(path.c_str());

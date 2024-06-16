@@ -11,7 +11,12 @@ Sapfire::stl::shared_ptr<SLevelEditor> SLevelEditor::s_Instance{nullptr};
 Sapfire::stl::shared_ptr<SLevelEditor> SLevelEditor::level_editor() { return s_Instance; }
 
 SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
-	SSubeditor("Level Editor"), m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)) {
+	SSubeditor("Level Editor"), m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)),
+	m_AssetManager(assets::AssetManagerCreationDesc{
+		.device = gfx_device,
+		.mesh_registry_path = "mesh_registry.db",
+		.texture_registry_path = "texture_registry.db",
+	}) {
 	s_Instance.reset(this);
 	m_Widgets.push_back(
 		stl::make_unique<widgets::SSceneHierarchy>(mem::ENUM::Editor, m_ECManager.get(), BIND_EVENT_FN(SLevelEditor::on_entity_selected)));
@@ -36,12 +41,8 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 	m_ECManager->create_entity();
 	m_ECManager->create_entity();
 	m_ECManager->create_entity();
-	m_Widgets.emplace_back(stl::make_unique<widgets::AssetBrowser>(mem::ENUM::Editor, "mesh_registry.db", "texture_registry.db"));
-	auto* asset_browser = static_cast<widgets::AssetBrowser*>(m_Widgets.back().get());
-    /* asset_browser->texture_registry_ptr()->import_texture(*gfx_device, "assets/textures/ceramics.jpg"); */
-    /* asset_browser->texture_registry_ptr()->serialize(); */
-	auto scene_view = stl::make_unique<widgets::SSceneView>(mem::ENUM::Editor, m_ECManager.get(), gfx_device,
-															asset_browser->mesh_registry_ptr());
+	m_Widgets.emplace_back(stl::make_unique<widgets::AssetBrowser>(mem::ENUM::Editor));
+	auto scene_view = stl::make_unique<widgets::SSceneView>(mem::ENUM::Editor, m_ECManager.get(), gfx_device);
 	scene_view->add_render_component(parent, "assets/models/monkey.obj");
 	scene_view->add_render_component(parent, "assets/models/cube.obj");
 	m_Widgets.push_back(std::move(scene_view));

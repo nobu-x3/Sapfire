@@ -42,10 +42,8 @@ namespace widgets {
 	};
 
 	using namespace Sapfire;
-	SSceneView::SSceneView(Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device,
-						   Sapfire::assets::MeshRegistry* mesh_reg) :
-		m_ECManager(*ec_manager),
-		m_MeshRegistry(*mesh_reg), m_GraphicsDevice(*gfx_device),
+	SSceneView::SSceneView(Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device) :
+		m_ECManager(*ec_manager), m_GraphicsDevice(*gfx_device),
 		m_PhysicsEngine(stl::make_unique<physics::PhysicsEngine>(mem::ENUM::Editor, ec_manager)),
 		m_PipelineState(m_GraphicsDevice.create_pipeline_state({
 			.shader_module =
@@ -67,8 +65,7 @@ namespace widgets {
 		m_MainPassCB(m_GraphicsDevice.create_buffer<PassConstants>(d3d::BufferCreationDesc{
 			.usage = d3d::BufferUsage::ConstantBuffer,
 			.name = L"Scene View Main Pass Constant Buffer",
-		}))
-	{
+		})) {
 		for (int i = 0; i < d3d::MAX_FRAMES_IN_FLIGHT; ++i) {
 			m_OffscreenTextures.push_back(m_GraphicsDevice.create_texture({
 				.usage = Sapfire::d3d::TextureUsage::RenderTarget,
@@ -93,90 +90,20 @@ namespace widgets {
 		s_Instance.reset(this);
 	}
 
-	void SSceneView::allocate_mesh(const Sapfire::stl::string& mesh_path) {
-		auto* asset = m_MeshRegistry.get(mesh_path);
-		if (!asset) {
-			m_MeshRegistry.import_mesh(mesh_path);
-			asset = m_MeshRegistry.get(mesh_path);
-		}
-		if (asset && asset->data.has_value()) {
-			assert(asset->data->indices32.size() > 0);
-			assert(asset->data->positions.size() > 0);
-			assert(asset->data->normals.size() > 0);
-			assert(asset->data->texcs.size() > 0);
-			m_TransformBuffers.emplace_back(m_GraphicsDevice.create_buffer<ObjectConstants>({
-				.usage = d3d::BufferUsage::ConstantBuffer,
-				.name = L"Transform buffer " + d3d::AnsiToWString(mesh_path),
-			}));
-			m_RTIndexBuffers.push_back(m_GraphicsDevice.create_buffer<u16>(
-				d3d::BufferCreationDesc{
-					.usage = d3d::BufferUsage::IndexBuffer,
-					.name = L"Index buffer " + d3d::AnsiToWString(mesh_path),
-				},
-				asset->data->indices16()));
-			m_VertexPosBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
-				d3d::BufferCreationDesc{
-					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex Pos buffer " + d3d::AnsiToWString(mesh_path),
-				},
-				asset->data->positions));
-			m_VertexNormalBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
-				d3d::BufferCreationDesc{
-					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex Norm buffer " + d3d::AnsiToWString(mesh_path),
-				},
-				asset->data->normals));
-			bool should_add_tangent = false;
-			if (asset->data->tangentus.size() > 0) {
-				m_VertexTangentBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
-					d3d::BufferCreationDesc{
-						.usage = d3d::BufferUsage::StructuredBuffer,
-						.name = L"Vertex Tang buffer " + d3d::AnsiToWString(mesh_path),
-					},
-					asset->data->tangentus));
-				should_add_tangent = true;
-			}
-			m_VertexUVBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT2>(
-				d3d::BufferCreationDesc{
-					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex UV buffer " + d3d::AnsiToWString(mesh_path),
-				},
-				asset->data->texcs));
-			auto cpu_data = components::CPUData{
-				.indices_size = static_cast<u32>(asset->data->indices32.size()),
-				.index_id = static_cast<u32>(m_RTIndexBuffers.size() - 1),
-				.position_idx = static_cast<u32>(m_VertexPosBuffers.size() - 1),
-				.normal_idx = static_cast<u32>(m_VertexNormalBuffers.size() - 1),
-				.tangent_idx = static_cast<u32>(should_add_tangent ? m_VertexTangentBuffers.size() - 1 : 0),
-				.uv_idx = static_cast<u32>(m_VertexUVBuffers.size() - 1),
-			};
-			auto gpu_data = components::PerDrawConstants{
-				.position_buffer_idx = m_VertexPosBuffers.back().srv_index,
-				.normal_buffer_idx = m_VertexNormalBuffers.back().srv_index,
-				.tangent_buffer_idx = should_add_tangent ? m_VertexTangentBuffers.back().srv_index : 0,
-				.uv_buffer_idx = m_VertexUVBuffers.back().srv_index,
-				.scene_cbuffer_idx = m_TransformBuffers.back().cbv_index,
-				.pass_cbuffer_idx = m_MainPassCB.cbv_index,
-				.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
-				.texture_cbuffer_idx = 0,
-			};
-			SLevelEditor::level_editor()->mesh_manager().mesh_resources[mesh_path] = {cpu_data, gpu_data};
-		}
-	}
-
 	void SSceneView::add_render_component(Sapfire::Entity entity, const Sapfire::stl::string& mesh_path) {
 		// @TODO: add materials and textures
 		bool already_has_component = m_ECManager.has_engine_component<components::RenderComponent>(entity);
-		auto* asset = m_MeshRegistry.get(mesh_path);
-		if (!asset) {
-			m_MeshRegistry.import_mesh(mesh_path);
-			asset = m_MeshRegistry.get(mesh_path);
+		auto* mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(mesh_path);
+		if (!mesh_asset) {
+
+			SLevelEditor::level_editor()->asset_manager().import_mesh(mesh_path);
+			mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(mesh_path);
 		}
-		if (asset && asset->data.has_value()) {
-			assert(asset->data->indices32.size() > 0);
-			assert(asset->data->positions.size() > 0);
-			assert(asset->data->normals.size() > 0);
-			assert(asset->data->texcs.size() > 0);
+		if (mesh_asset && mesh_asset->data.has_value()) {
+			assert(mesh_asset->data->indices32.size() > 0);
+			assert(mesh_asset->data->positions.size() > 0);
+			assert(mesh_asset->data->normals.size() > 0);
+			assert(mesh_asset->data->texcs.size() > 0);
 			if (!already_has_component) {
 				m_TransformBuffers.emplace_back(m_GraphicsDevice.create_buffer<ObjectConstants>({
 					.usage = d3d::BufferUsage::ConstantBuffer,
@@ -188,27 +115,27 @@ namespace widgets {
 					.usage = d3d::BufferUsage::IndexBuffer,
 					.name = L"Index buffer " + d3d::AnsiToWString(mesh_path),
 				},
-				asset->data->indices16()));
+				mesh_asset->data->indices16()));
 			m_VertexPosBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::StructuredBuffer,
 					.name = L"Vertex Pos buffer " + d3d::AnsiToWString(mesh_path),
 				},
-				asset->data->positions));
+				mesh_asset->data->positions));
 			m_VertexNormalBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::StructuredBuffer,
 					.name = L"Vertex Norm buffer " + d3d::AnsiToWString(mesh_path),
 				},
-				asset->data->normals));
+				mesh_asset->data->normals));
 			bool should_add_tangent = false;
-			if (asset->data->tangentus.size() > 0) {
+			if (mesh_asset->data->tangentus.size() > 0) {
 				m_VertexTangentBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 					d3d::BufferCreationDesc{
 						.usage = d3d::BufferUsage::StructuredBuffer,
 						.name = L"Vertex Tang buffer " + d3d::AnsiToWString(mesh_path),
 					},
-					asset->data->tangentus));
+					mesh_asset->data->tangentus));
 				should_add_tangent = true;
 			}
 			m_VertexUVBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT2>(
@@ -216,9 +143,9 @@ namespace widgets {
 					.usage = d3d::BufferUsage::StructuredBuffer,
 					.name = L"Vertex UV buffer " + d3d::AnsiToWString(mesh_path),
 				},
-				asset->data->texcs));
+				mesh_asset->data->texcs));
 			auto cpu_data = components::CPUData{
-				.indices_size = static_cast<u32>(asset->data->indices32.size()),
+				.indices_size = static_cast<u32>(mesh_asset->data->indices32.size()),
 				.index_id = static_cast<u32>(m_RTIndexBuffers.size() - 1),
 				.position_idx = static_cast<u32>(m_VertexPosBuffers.size() - 1),
 				.normal_idx = static_cast<u32>(m_VertexNormalBuffers.size() - 1),
@@ -237,20 +164,20 @@ namespace widgets {
 				.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
 				.texture_cbuffer_idx = 0,
 			};
-            SLevelEditor::level_editor()->mesh_manager().mesh_resources[mesh_path] = {cpu_data, gpu_data};
-			components::RenderComponent render_component{asset->uuid, {}, cpu_data, gpu_data,
-														 [this, entity](components::RenderComponent* component) {
-															 if (component) {
-																 const auto old_cpu_data = component->cpu_data();
-																 const auto old_gpu_data = component->per_draw_constants();
-																 const auto uuid = component->mesh_uuid();
-																 const auto path = m_MeshRegistry.get_path(uuid);
-																 auto data = SLevelEditor::level_editor()->mesh_manager().mesh_resources[path];
-																 data.gpu_data.scene_cbuffer_idx = old_gpu_data->scene_cbuffer_idx;
-																 component->cpu_data(data.cpu_data);
-																 component->per_draw_constants(data.gpu_data);
-															 }
-														 }};
+			SLevelEditor::level_editor()->asset_manager().load_mesh_resource(mesh_path, {cpu_data, gpu_data});
+			components::RenderComponent render_component{
+				mesh_asset->uuid, {}, cpu_data, gpu_data, [this, entity](components::RenderComponent* component) {
+					if (component) {
+						const auto old_cpu_data = component->cpu_data();
+						const auto old_gpu_data = component->per_draw_constants();
+						const auto uuid = component->mesh_uuid();
+						const auto path = SLevelEditor::level_editor()->asset_manager().get_mesh_path(uuid);
+						auto data = SLevelEditor::level_editor()->asset_manager().get_mesh_resource(path);
+						data.gpu_data.scene_cbuffer_idx = old_gpu_data->scene_cbuffer_idx;
+						component->cpu_data(data.cpu_data);
+						component->per_draw_constants(data.gpu_data);
+					}
+				}};
 			m_ECManager.add_engine_component<components::RenderComponent>(entity, render_component);
 		}
 	}

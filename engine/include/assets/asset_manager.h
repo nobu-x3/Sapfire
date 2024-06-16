@@ -40,6 +40,10 @@ namespace Sapfire::assets {
 		inline void release_mesh(const stl::string& path) { m_MeshRegistry.release_mesh(path); }
 		inline MeshAsset* get_mesh(const stl::string& path) const { return m_MeshRegistry.get(path); }
 		inline MeshAsset* get_mesh(UUID uuid) const { return m_MeshRegistry.get(uuid); }
+		inline stl::string get_mesh_path(UUID uuid) { return m_MeshRegistry.get_path(uuid); }
+		inline const stl::unordered_map<stl::string, MeshAsset>& path_mesh_map() const { return m_MeshRegistry.path_asset_map(); }
+		inline void load_mesh_resource(const stl::string& path, MeshResource res) { m_MeshManager.mesh_resources[path] = res; }
+		inline MeshResource get_mesh_resource(const stl::string& path) const { return m_MeshManager.mesh_resources.at(path); }
 		void serialize();
 
 	private:

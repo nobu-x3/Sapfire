@@ -9,7 +9,7 @@ namespace widgets {
 
 	class SSceneView final : public IWidget {
 	public:
-		SSceneView(Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device, Sapfire::assets::MeshRegistry* mesh_reg);
+		explicit SSceneView(Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device);
 		void add_render_component(Sapfire::Entity entity, const Sapfire::stl::string& mesh_path);
 		bool update(Sapfire::f32 delta_time) override;
 		void render(Sapfire::d3d::GraphicsContext& gfx_ctx) override;
@@ -20,11 +20,9 @@ namespace widgets {
 		void update_pass_cb(Sapfire::f32 delta_time);
 		void update_materials();
 		void update_transform_buffer();
-		void allocate_mesh(const Sapfire::stl::string& mesh_path);
 
 	private:
 		Sapfire::ECManager& m_ECManager;
-		Sapfire::assets::MeshRegistry& m_MeshRegistry;
 		Sapfire::d3d::GraphicsDevice& m_GraphicsDevice;
 		Sapfire::stl::unique_ptr<Sapfire::physics::PhysicsEngine> m_PhysicsEngine;
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_RTIndexBuffers{};
