@@ -181,4 +181,13 @@ namespace Sapfire::assets {
 		file << std::setw(4) << j << std::endl;
 		file.close();
 	}
+
+	stl::string MeshRegistry::to_string() {
+		nlohmann::json j;
+		for (auto&& [path, asset] : m_PathToMeshAssetMap) {
+			nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}};
+			j.push_back(j_obj);
+		}
+		return j.dump();
+	}
 } // namespace Sapfire::assets

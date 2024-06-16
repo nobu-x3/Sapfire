@@ -228,4 +228,26 @@ namespace Sapfire::assets {
 	}
 
 	stl::string TextureRegistry::get_path(UUID uuid) const { return m_UUIDToPathMap.at(uuid); }
+
+	stl::string TextureRegistry::to_string() {
+		nlohmann::json j;
+		for (auto&& [path, asset] : m_PathToMeshAssetMap) {
+			auto& desc = asset.description;
+			nlohmann::json desc_j{
+				{"usage", static_cast<u32>(desc.usage)},
+				{"width", desc.width},
+				{"height", desc.height},
+				{"format", desc.format},
+				{"mip_levels", desc.mipLevels},
+				{"depth_or_array_size", desc.depthOrArraySize},
+				{"bytes_per_pixel", desc.bytesPerPixel},
+			};
+			if (desc.optional_initial_state.has_value()) {
+				desc_j["optional_initial_state"] = desc.optional_initial_state.value();
+			}
+			nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}, {"description", desc_j}};
+			j.push_back(j_obj);
+		}
+		return j.dump();
+	}
 } // namespace Sapfire::assets

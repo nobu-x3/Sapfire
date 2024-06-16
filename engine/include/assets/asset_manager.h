@@ -45,6 +45,7 @@ namespace Sapfire::assets {
 		inline void load_mesh_resource(const stl::string& path, MeshResource res) { m_MeshManager.mesh_resources[path] = res; }
 		inline MeshResource get_mesh_resource(const stl::string& path) const { return m_MeshManager.mesh_resources.at(path); }
 		void serialize();
+		stl::string to_string();
 
 	private:
 		MeshRegistry m_MeshRegistry;

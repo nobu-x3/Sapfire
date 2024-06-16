@@ -43,6 +43,7 @@ namespace Sapfire::assets {
 		stl::vector<DirectX::XMFLOAT3> all_tangents() const;
 		stl::vector<DirectX::XMFLOAT2> all_texture_coordinates() const;
 		std::vector<u16> all_indices16();
+		stl::string to_string();
 
 		static void create_default(const stl::string& registry_file_path);
 

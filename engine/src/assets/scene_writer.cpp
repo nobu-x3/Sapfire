@@ -63,6 +63,7 @@ namespace Sapfire::assets {
 			nlohmann::json entity_json{{"uuid", static_cast<u64>(uuid)}, {"components", j_eng_comps}};
 			j["entities"].push_back(entity_json);
 		}
+		j["assets"] = nlohmann::json::parse(m_AssetManager.to_string()); 
 		std::ofstream file{relative_path};
 		file.clear();
 		file << std::setw(4) << j << std::endl;

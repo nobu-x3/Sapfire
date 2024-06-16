@@ -1,6 +1,7 @@
 #include "engpch.h"
 
 #include "assets/asset_manager.h"
+#include "nlohmann/json.hpp"
 #include "render/graphics_device.h"
 
 namespace Sapfire::assets {
@@ -27,6 +28,13 @@ namespace Sapfire::assets {
 			};
 			m_TextureManager.add(texture_path, texture->uuid, text_res);
 		}
+	}
+
+	stl::string AssetManager::to_string() {
+		nlohmann::json j;
+		j["texture_registry"] = nlohmann::json::parse(m_TextureRegistry.to_string());
+		j["mesh_registry"] = nlohmann::json::parse(m_MeshRegistry.to_string());
+		return j.dump();
 	}
 
 	void Sapfire::assets::AssetManager::serialize() {
