@@ -14,5 +14,8 @@ namespace widgets {
 	class AssetBrowser final : public IWidget {
 	public:
 		bool update(Sapfire::f32 delta_time) override;
+
+	private:
+		AssetType m_CurrentAssetTypeFilter{AssetType::Mesh};
 	};
 } // namespace widgets
