@@ -69,7 +69,7 @@ namespace widgets {
 								ImGui::EndDragDropSource();
 							}
 							ImGui::SetCursorPosX(cursor.x + sz.x / 2 - 32);
-							ImGui::Image(icons::get_im_id(icons::MESH_ICON_64_ID), {64, 64});
+							ImGui::Image(icons::get_im_id(icons::IMAGE_ICON_64_ID), {64, 64});
 							ImGui::AlignTextToFramePadding();
 							ImGui::Text("%s", path.c_str());
 							ImGui::PopID();

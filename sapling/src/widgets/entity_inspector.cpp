@@ -73,10 +73,10 @@ namespace widgets {
 							m_ECManager.add_engine_component<components::MovementComponent>(m_SelectedEntity.value());
 							m_ShowAddComponentContextMenu = false;
 						}
-                        if(ImGui::Button(components::RenderComponent::to_string().c_str())) {
-                            SSceneView::scene_view()->add_render_component(m_SelectedEntity.value(), "assets/models/cube.obj");
-                            m_ShowAddComponentContextMenu = false;
-                        }
+						if (ImGui::Button(components::RenderComponent::to_string().c_str())) {
+							SSceneView::scene_view()->add_render_component(m_SelectedEntity.value(), "assets/models/cube.obj");
+							m_ShowAddComponentContextMenu = false;
+						}
 						for (const auto& [key, component_list] : components::ComponentRegistry::s_CustomComponentLists) {
 							components::ComponentType type = components::ComponentRegistry::s_ComponentTypes[key];
 							stl::string component_list_name = component_list->to_string();
