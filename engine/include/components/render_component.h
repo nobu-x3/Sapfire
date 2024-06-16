@@ -52,6 +52,8 @@ namespace Sapfire::components {
 		inline CPUData cpu_data() const { return m_CPUData; }
 		inline void cpu_data(CPUData data) { m_CPUData = data; }
 		inline UUID mesh_uuid() const { return m_MeshUUID; }
+		inline UUID material_uuid() const { return m_MaterialUUID; }
+		inline UUID texture_uuid() const { return m_TextureUUID; }
 
 	private:
 		UUID m_MeshUUID;

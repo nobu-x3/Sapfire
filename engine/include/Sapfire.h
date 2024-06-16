@@ -28,6 +28,7 @@
 //////// ASSETS /////////////////
 #include "assets/mesh_manager.h"
 #include "assets/texture_manager.h"
+#include "assets/scene_writer.h"
 /////////////////////////////////
 
 //////// EVENTS /////////////////

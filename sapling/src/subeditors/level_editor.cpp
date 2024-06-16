@@ -42,10 +42,13 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 	m_ECManager->create_entity();
 	m_ECManager->create_entity();
 	m_Widgets.emplace_back(stl::make_unique<widgets::AssetBrowser>(mem::ENUM::Editor));
+	m_AssetManager.import_texture("assets/textures/ceramics.jpg");
 	auto scene_view = stl::make_unique<widgets::SSceneView>(mem::ENUM::Editor, m_ECManager.get(), gfx_device);
 	scene_view->add_render_component(parent, "assets/models/monkey.obj");
 	scene_view->add_render_component(parent, "assets/models/cube.obj");
 	m_Widgets.push_back(std::move(scene_view));
+    assets::SceneWriter writer{m_ECManager.get(), &m_AssetManager};
+    writer.serialize("test_scene.scene");
 }
 
 void SLevelEditor::on_entity_selected(Sapfire::stl::optional<Sapfire::Entity> entity) {

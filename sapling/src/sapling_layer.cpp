@@ -17,6 +17,8 @@ SaplingLayer::SaplingLayer() : Sapfire::Layer("Sapling Layer") {
 								   d3d::MAX_FRAMES_IN_FLIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, app.window()->handle()});
 	icons::add(*m_GraphicsDevice, L"editor_assets/icons/mesh_icon_64.png", icons::MESH_ICON_64_ID);
 	icons::add(*m_GraphicsDevice, L"editor_assets/icons/mesh_icon_16.png", icons::MESH_ICON_16_ID);
+	icons::add(*m_GraphicsDevice, L"editor_assets/icons/image_icon_16.png", icons::IMAGE_ICON_16_ID);
+	icons::add(*m_GraphicsDevice, L"editor_assets/icons/image_icon_64.png", icons::IMAGE_ICON_64_ID);
 }
 
 void SaplingLayer::on_attach() {

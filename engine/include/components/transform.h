@@ -51,4 +51,4 @@ namespace Sapfire::components {
 		s32 m_ParentIndex{-1};
 		bool m_Dirty{true};
 	};
-} // namespace Sapfire::core
+} // namespace Sapfire::components

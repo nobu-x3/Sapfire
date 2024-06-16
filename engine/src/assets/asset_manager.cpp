@@ -1,7 +1,7 @@
 #include "engpch.h"
 
-#include "render/graphics_device.h"
 #include "assets/asset_manager.h"
+#include "render/graphics_device.h"
 
 namespace Sapfire::assets {
 
@@ -27,5 +27,10 @@ namespace Sapfire::assets {
 			};
 			m_TextureManager.add(texture_path, texture->uuid, text_res);
 		}
+	}
+
+	void Sapfire::assets::AssetManager::serialize() {
+		m_MeshRegistry.serialize();
+		m_TextureRegistry.serialize();
 	}
 } // namespace Sapfire::assets
