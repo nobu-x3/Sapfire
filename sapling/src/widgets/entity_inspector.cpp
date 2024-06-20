@@ -88,6 +88,9 @@ namespace widgets {
 							}
 						}
 						ImGui::EndPopup();
+						if (ImGui::IsAnyMouseDown() && !ImGui::IsAnyItemHovered() && m_ShowAddComponentContextMenu) {
+							m_ShowAddComponentContextMenu = false;
+						}
 					}
 				}
 			}
