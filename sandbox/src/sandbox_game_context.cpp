@@ -149,7 +149,7 @@ void SandboxGameContext::load_contents() {
 	};
 	m_ECManager.add_engine_component<components::RenderComponent>(entity1, cube_rc);
 	stl::string monkey_path = "assets/models/monkey.obj";
-	create_render_component(entity2, monkey_path, "assets/textures/ceramics.jpg");
+	create_render_component(entity2, {monkey_path, "assets/textures/ceramics.jpg"});
 }
 
 void SandboxGameContext::update(f32 delta_time) {

@@ -20,8 +20,8 @@ namespace Sapfire::rtti {
 	};
 
 	struct rtti_object {
-		void* head;
-		stl::vector<rtti_field> fields;
+		void* head{nullptr};
+		stl::vector<rtti_field> fields{1};
 	};
 
 	void set_rtti_field_value(rtti_object* obj, rtti_field* field, void* value);

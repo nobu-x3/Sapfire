@@ -11,10 +11,10 @@ namespace Sapfire::d3d::primitives {
 		Vertex(float px, float py, float pz, float nx, float ny, float nz, float tx, float ty, float tz, float u, float v) :
 			position(px, py, pz), normal(nx, ny, nz), tangentu(tx, ty, tz), texc(u, v) {}
 
-		DirectX::XMFLOAT3 position;
-		DirectX::XMFLOAT3 normal;
-		DirectX::XMFLOAT3 tangentu;
-		DirectX::XMFLOAT2 texc;
+		DirectX::XMFLOAT3 position{};
+		DirectX::XMFLOAT3 normal{};
+		DirectX::XMFLOAT3 tangentu{};
+		DirectX::XMFLOAT2 texc{};
 	};
 
 	struct SFAPI MeshData {

@@ -14,9 +14,9 @@ namespace Sapfire {
 		DirectX::XMMATRIX view() const;
         components::MovementComponent movement_component;
 		input::InputComponent input;
-		f32 fov;
-		f32 aspect;
-		f32 near_plane;
-		f32 far_plane;
+		f32 fov{};
+		f32 aspect{};
+		f32 near_plane{};
+		f32 far_plane{};
 	};
 } // namespace Sapfire

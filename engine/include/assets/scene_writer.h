@@ -2,7 +2,7 @@
 
 namespace Sapfire {
 	class ECManager;
-	class RenderComponentResourcePaths;
+	struct RenderComponentResourcePaths;
 	namespace assets {
 		class AssetManager;
 	} // namespace assets

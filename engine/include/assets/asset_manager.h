@@ -9,7 +9,7 @@ namespace Sapfire {
 namespace Sapfire::assets {
 
 	struct SFAPI AssetManagerCreationDesc {
-		d3d::GraphicsDevice* device;
+		d3d::GraphicsDevice* device{nullptr};
 		stl::string mesh_registry_path{"mesh_registry.db"};
 		stl::string texture_registry_path{"texture_registry.db"};
 		stl::string material_registry_path{"material_registry.db"};
