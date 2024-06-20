@@ -40,9 +40,9 @@ namespace Sapfire::components {
 	public:
 		RenderComponent();
 		RenderComponent(const RenderComponent& other);
-		RenderComponent(RenderComponent&& other);
+		RenderComponent(RenderComponent&& other) noexcept;
 		RenderComponent& operator=(const RenderComponent& other);
-		RenderComponent& operator=(RenderComponent&& other);
+		RenderComponent& operator=(RenderComponent&& other) noexcept;
 		RenderComponent(UUID mesh_uuid, UUID texture_uuid, CPUData cpu_data, PerDrawConstants per_draw_constants,
 						stl::function<void(RenderComponent*)> = nullptr);
 		void register_rtti();

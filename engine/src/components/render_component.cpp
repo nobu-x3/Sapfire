@@ -8,7 +8,8 @@ namespace Sapfire::components {
 
 	RenderComponent::RenderComponent(UUID mesh_uuid, UUID texture_uuid, CPUData cpu_data, PerDrawConstants per_draw_constants,
 									 stl::function<void(RenderComponent*)> optional_setter) :
-		m_MeshUUID(mesh_uuid), m_TextureUUID(texture_uuid), m_CPUData(cpu_data), m_PerDrawConstants(per_draw_constants), m_OptionalSetter(optional_setter) {
+		m_MeshUUID(mesh_uuid),
+		m_TextureUUID(texture_uuid), m_CPUData(cpu_data), m_PerDrawConstants(per_draw_constants), m_OptionalSetter(optional_setter) {
 		register_rtti();
 	}
 
@@ -20,7 +21,7 @@ namespace Sapfire::components {
 		register_rtti();
 	}
 
-	RenderComponent::RenderComponent(RenderComponent&& other) :
+	RenderComponent::RenderComponent(RenderComponent&& other) noexcept :
 		m_MeshUUID(std::move(other.m_MeshUUID)), m_MaterialUUID(std::move(other.m_MaterialUUID)),
 		m_TextureUUID(std::move(other.m_TextureUUID)), m_CPUData(std::move(other.m_CPUData)),
 		m_PerDrawConstants(std::move(other.m_PerDrawConstants)), m_OptionalSetter(std::move(other.m_OptionalSetter)) {
@@ -38,7 +39,7 @@ namespace Sapfire::components {
 		return *this;
 	}
 
-	RenderComponent& RenderComponent::operator=(RenderComponent&& other) {
+	RenderComponent& RenderComponent::operator=(RenderComponent&& other) noexcept {
 		m_MeshUUID = std::move(other.m_MeshUUID);
 		m_MaterialUUID = std::move(other.m_MaterialUUID);
 		m_TextureUUID = std::move(other.m_TextureUUID);
@@ -55,6 +56,10 @@ namespace Sapfire::components {
 			if (m_OptionalSetter)
 				m_OptionalSetter(this);
 		});
+		ADD_RTTI_REFERENCE(rtti::rtti_reference_type::Texture, "Texture", &m_TextureUUID, [this]() {
+			if (m_OptionalSetter)
+				m_OptionalSetter(this);
+		})
 		END_RTTI();
 	}
 } // namespace Sapfire::components

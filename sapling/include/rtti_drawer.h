@@ -99,7 +99,7 @@ void draw_rtti(T* component) {
 						if (payload_asset.type == widgets::AssetType::Mesh && field.ref_type == rtti::rtti_reference_type::Mesh) {
 							*data = payload_asset.uuid;
 							rtti::set_rtti_field_value(&type_info, &field, static_cast<void*>(data));
-                            return;
+							return;
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -201,7 +201,10 @@ void draw_rtti(Sapfire::stl::shared_ptr<Sapfire::components::IComponent> custom_
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_ASSET_UUID")) {
 						IM_ASSERT(payload->DataSize == sizeof(widgets::AssetDragAndDropPayload));
 						widgets::AssetDragAndDropPayload payload_asset = *(const widgets::AssetDragAndDropPayload*)payload->Data;
-						if (payload_asset.type == widgets::AssetType::Mesh && field.ref_type == rtti::rtti_reference_type::Mesh) {
+						bool should_accept =
+							(payload_asset.type == widgets::AssetType::Mesh && field.ref_type == rtti::rtti_reference_type::Mesh) ||
+							(payload_asset.type == widgets::AssetType::Texture && field.ref_type == rtti::rtti_reference_type::Texture);
+						if (should_accept) {
 							*data = payload_asset.uuid;
 							rtti::set_rtti_field_value(&type_info, &field, static_cast<void*>(data));
 						}

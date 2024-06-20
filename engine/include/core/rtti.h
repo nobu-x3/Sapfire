@@ -8,6 +8,7 @@ namespace Sapfire::rtti {
 	enum class rtti_reference_type {
 		None,
 		Mesh,
+		Texture,
 	};
 
 	struct rtti_field {
@@ -57,5 +58,7 @@ private:                                                                        
 											 .setter = extra_setter,                                                                       \
 											 .ref_type = rtti_reference_type});
 
-#define BEGIN_RTTI() m_Rtti.fields.clear(); m_Rtti.head = reinterpret_cast<void*>(this);
+#define BEGIN_RTTI()                                                                                                                       \
+	m_Rtti.fields.clear();                                                                                                                 \
+	m_Rtti.head = reinterpret_cast<void*>(this);
 #define END_RTTI()
