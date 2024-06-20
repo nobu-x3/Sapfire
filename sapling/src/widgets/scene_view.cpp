@@ -90,14 +90,19 @@ namespace widgets {
 		s_Instance.reset(this);
 	}
 
-	void SSceneView::add_render_component(Sapfire::Entity entity, const Sapfire::stl::string& mesh_path) {
-		// @TODO: add materials and textures
+	void SSceneView::add_render_component(Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
+		// @TODO: add materials
 		bool already_has_component = m_ECManager.has_engine_component<components::RenderComponent>(entity);
-		auto* mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(mesh_path);
+		auto* mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(resource_paths.mesh_path);
+		auto* texture_asset = SLevelEditor::level_editor()->asset_manager().get_texture(resource_paths.texture_path);
 		if (!mesh_asset) {
 
-			SLevelEditor::level_editor()->asset_manager().import_mesh(mesh_path);
-			mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(mesh_path);
+			SLevelEditor::level_editor()->asset_manager().import_mesh(resource_paths.mesh_path);
+			mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(resource_paths.mesh_path);
+		}
+		if (!texture_asset || !SLevelEditor::level_editor()->asset_manager().is_texture_loaded_for_runtime(texture_asset->uuid)) {
+			SLevelEditor::level_editor()->asset_manager().load_runtime_texture(resource_paths.texture_path);
+			texture_asset = SLevelEditor::level_editor()->asset_manager().get_texture(resource_paths.texture_path);
 		}
 		if (mesh_asset && mesh_asset->data.has_value()) {
 			assert(mesh_asset->data->indices32.size() > 0);
@@ -107,25 +112,25 @@ namespace widgets {
 			if (!already_has_component) {
 				m_TransformBuffers.emplace_back(m_GraphicsDevice.create_buffer<ObjectConstants>({
 					.usage = d3d::BufferUsage::ConstantBuffer,
-					.name = L"Transform buffer " + d3d::AnsiToWString(mesh_path),
+					.name = L"Transform buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
 				}));
 			}
 			m_RTIndexBuffers.push_back(m_GraphicsDevice.create_buffer<u16>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::IndexBuffer,
-					.name = L"Index buffer " + d3d::AnsiToWString(mesh_path),
+					.name = L"Index buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
 				},
 				mesh_asset->data->indices16()));
 			m_VertexPosBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex Pos buffer " + d3d::AnsiToWString(mesh_path),
+					.name = L"Vertex Pos buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
 				},
 				mesh_asset->data->positions));
 			m_VertexNormalBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex Norm buffer " + d3d::AnsiToWString(mesh_path),
+					.name = L"Vertex Norm buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
 				},
 				mesh_asset->data->normals));
 			bool should_add_tangent = false;
@@ -133,7 +138,7 @@ namespace widgets {
 				m_VertexTangentBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 					d3d::BufferCreationDesc{
 						.usage = d3d::BufferUsage::StructuredBuffer,
-						.name = L"Vertex Tang buffer " + d3d::AnsiToWString(mesh_path),
+						.name = L"Vertex Tang buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
 					},
 					mesh_asset->data->tangentus));
 				should_add_tangent = true;
@@ -141,7 +146,7 @@ namespace widgets {
 			m_VertexUVBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT2>(
 				d3d::BufferCreationDesc{
 					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex UV buffer " + d3d::AnsiToWString(mesh_path),
+					.name = L"Vertex UV buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
 				},
 				mesh_asset->data->texcs));
 			auto cpu_data = components::CPUData{
@@ -162,11 +167,13 @@ namespace widgets {
 					: m_TransformBuffers.back().cbv_index,
 				.pass_cbuffer_idx = m_MainPassCB.cbv_index,
 				.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
-				.texture_cbuffer_idx = 0,
+				.texture_cbuffer_idx = SLevelEditor::level_editor()->asset_manager().texture_resource_exists(resource_paths.texture_path)
+					? SLevelEditor::level_editor()->asset_manager().get_texture_resource(resource_paths.texture_path).gpu_idx
+					: 0,
 			};
-			SLevelEditor::level_editor()->asset_manager().load_mesh_resource(mesh_path, {cpu_data, gpu_data});
+			SLevelEditor::level_editor()->asset_manager().load_mesh_resource(resource_paths.mesh_path, {cpu_data, gpu_data});
 			components::RenderComponent render_component{
-				mesh_asset->uuid, {}, cpu_data, gpu_data, [this, entity](components::RenderComponent* component) {
+				mesh_asset->uuid, texture_asset->uuid, cpu_data, gpu_data, [this, entity](components::RenderComponent* component) {
 					if (component) {
 						const auto old_cpu_data = component->cpu_data();
 						const auto old_gpu_data = component->per_draw_constants();

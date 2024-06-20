@@ -2,8 +2,9 @@
 
 namespace Sapfire {
 	class ECManager;
+	class RenderComponentResourcePaths;
 	namespace assets {
-        class AssetManager;
+		class AssetManager;
 	} // namespace assets
 } // namespace Sapfire
 
@@ -12,10 +13,12 @@ namespace Sapfire::assets {
 	public:
 		explicit SceneWriter(ECManager* ec, AssetManager* am);
 		void serialize(const stl::string& scene_path);
-		void deserealize(const stl::string& scene_path);
+		void deserealize(const stl::string& scene_path,
+						 stl::function<void(Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths)>
+							 render_component_setter);
 
 	private:
 		ECManager& m_ECManager;
-        AssetManager& m_AssetManager;
+		AssetManager& m_AssetManager;
 	};
 } // namespace Sapfire::assets

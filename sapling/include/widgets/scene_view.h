@@ -10,7 +10,7 @@ namespace widgets {
 	class SSceneView final : public IWidget {
 	public:
 		explicit SSceneView(Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device);
-		void add_render_component(Sapfire::Entity entity, const Sapfire::stl::string& mesh_path);
+		void add_render_component(Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths);
 		bool update(Sapfire::f32 delta_time) override;
 		void render(Sapfire::d3d::GraphicsContext& gfx_ctx) override;
 

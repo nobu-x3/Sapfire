@@ -32,13 +32,18 @@ namespace Sapfire {
 		stl::string material_registry_path{"material_registry.db"};
 	};
 
+	struct SFAPI RenderComponentResourcePaths {
+		stl::string mesh_path;
+		stl::string texture_path;
+	};
+
 	constexpr f32 CAMERA_FOV = TO_RADIANS(90);
 	class SFAPI GameContext {
 	public:
 		GameContext(const GameContextCreationDesc& desc);
 		virtual ~GameContext() {}
 		void init();
-		void create_render_component(Entity entity, const stl::string& mesh_path, const stl::string& texture_path);
+		void create_render_component(Entity entity, const RenderComponentResourcePaths& resource_paths);
 		virtual void on_window_resize();
 		virtual void load_contents() = 0;
 		virtual void update(f32 delta_time);

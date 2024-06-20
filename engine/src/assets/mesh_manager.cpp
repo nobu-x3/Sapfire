@@ -69,6 +69,14 @@ namespace Sapfire::assets {
 		m_UUIDToPathMap[uuid] = path;
 	}
 
+	void MeshRegistry::import_mesh(const stl::string& path, UUID uuid) {
+		m_PathToMeshAssetMap[path] = MeshAsset{
+			.uuid = uuid,
+			.data = tools::OBJLoader::load_mesh(path),
+		};
+		m_UUIDToPathMap[uuid] = path;
+	}
+
 	void MeshRegistry::move_mesh(const stl::string& old_path, const stl::string& new_path) {
 		if (!m_PathToMeshAssetMap.contains(old_path)) {
 			CORE_WARN("Mesh at path {} does not exist, adding new.", old_path);
@@ -190,4 +198,27 @@ namespace Sapfire::assets {
 		}
 		return j.dump();
 	}
+
+	void MeshRegistry::deserialize(const stl::string& data) {
+		nlohmann::json j = nlohmann::json::parse(data)["assets"];
+		if (!j.contains("mesh_registry")) {
+			CORE_CRITICAL("Given mesh registry does not exist. Mesh registry will not be loaded.");
+			return;
+		}
+		for (auto&& mesh_asset : j["mesh_registry"]) {
+			stl::string path = mesh_asset["path"];
+			if (!mesh_asset.contains("path")) {
+				CORE_ERROR("An asset in the mesh registry does not contain a path. It will not be loaded. Dump:\n{}", data);
+				continue;
+			}
+			if (!mesh_asset.contains("UUID")) {
+				CORE_ERROR("An asset in the mesh registry with path {} does not contain a UUID. It will not be loaded. Dump:\n{}", path,
+						   data);
+				continue;
+			}
+			UUID uuid{mesh_asset["UUID"]};
+			import_mesh(path, uuid);
+		}
+	}
+
 } // namespace Sapfire::assets

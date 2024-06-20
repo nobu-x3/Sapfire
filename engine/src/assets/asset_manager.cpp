@@ -30,6 +30,24 @@ namespace Sapfire::assets {
 		}
 	}
 
+	bool AssetManager::is_texture_loaded_for_runtime(UUID uuid) {
+		bool loaded = true;
+		if (!m_TextureManager.uuid_to_path_map.contains(uuid)) {
+			loaded = false;
+		}
+		stl::string& path = m_TextureManager.uuid_to_path_map[uuid];
+		if (!m_TextureManager.texture_resources.contains(path)) {
+			loaded = false;
+		}
+		return loaded;
+	}
+
+	void AssetManager::load_all_runtime_textures() {
+		for (auto&& [path, asset] : m_TextureRegistry.path_asset_map()) {
+			load_runtime_texture(path);
+		}
+	}
+
 	stl::string AssetManager::to_string() {
 		nlohmann::json j;
 		j["texture_registry"] = nlohmann::json::parse(m_TextureRegistry.to_string());
@@ -37,8 +55,14 @@ namespace Sapfire::assets {
 		return j.dump();
 	}
 
+	void AssetManager::deserialize(const stl::string& data) {
+		m_MeshRegistry.deserialize(data);
+		m_TextureRegistry.deserialize(m_Device, data);
+	}
+
 	void Sapfire::assets::AssetManager::serialize() {
 		m_MeshRegistry.serialize();
 		m_TextureRegistry.serialize();
+		load_all_runtime_textures();
 	}
 } // namespace Sapfire::assets

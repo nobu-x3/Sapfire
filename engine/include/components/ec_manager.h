@@ -9,7 +9,7 @@ namespace Sapfire {
 	class SFAPI ECManager {
 	public:
 		ECManager();
-		Entity create_entity();
+		Entity create_entity(UUID uuid = {});
 		void destroy_entity(Entity entity);
 		inline bool is_valid(stl::generational_index index) const { return m_EntityRegistry->is_valid(index); }
 		inline bool is_valid(Entity entity) const { return m_EntityRegistry->is_valid(entity); }

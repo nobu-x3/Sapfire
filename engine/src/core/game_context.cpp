@@ -26,17 +26,17 @@ namespace Sapfire {
 
 	void GameContext::init() { load_contents(); }
 
-	void GameContext::create_render_component(Entity entity, const stl::string& mesh_path, const stl::string& texture_path) {
-		// @TODO: add materials and textures
-		auto* mesh_asset = m_AssetManager.get_mesh(mesh_path);
-		auto* texture_asset = m_AssetManager.get_texture(texture_path);
+	void GameContext::create_render_component(Entity entity, const RenderComponentResourcePaths& resource_paths) {
+		// @TODO: add materials
+		auto* mesh_asset = m_AssetManager.get_mesh(resource_paths.mesh_path);
+		auto* texture_asset = m_AssetManager.get_texture(resource_paths.texture_path);
 		if (!mesh_asset) {
-			m_AssetManager.import_mesh(mesh_path);
-			mesh_asset = m_AssetManager.get_mesh(mesh_path);
+			m_AssetManager.import_mesh(resource_paths.mesh_path);
+			mesh_asset = m_AssetManager.get_mesh(resource_paths.mesh_path);
 		}
 		if (!texture_asset) {
-			m_AssetManager.load_runtime_texture(texture_path);
-			texture_asset = m_AssetManager.get_texture(texture_path);
+			m_AssetManager.load_runtime_texture(resource_paths.texture_path);
+			texture_asset = m_AssetManager.get_texture(resource_paths.texture_path);
 		}
 		if (mesh_asset && texture_asset && mesh_asset->data.has_value()) {
 			assert(mesh_asset->data->indices32.size() > 0);
@@ -91,8 +91,8 @@ namespace Sapfire {
 					.scene_cbuffer_idx = m_TransformBuffers.back().cbv_index,
 					.pass_cbuffer_idx = m_MainPassCB.cbv_index,
 					.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
-					.texture_cbuffer_idx = m_AssetManager.texture_resource_exists(texture_path)
-						? m_AssetManager.get_texture_resource(texture_path).gpu_idx
+					.texture_cbuffer_idx = m_AssetManager.texture_resource_exists(resource_paths.texture_path)
+						? m_AssetManager.get_texture_resource(resource_paths.texture_path).gpu_idx
 						: 0,
 				},
 			};

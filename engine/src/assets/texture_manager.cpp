@@ -119,11 +119,11 @@ namespace Sapfire::assets {
 	}
 
 	void TextureRegistry::import_texture(d3d::GraphicsDevice& device, const stl::string& path) {
-		auto abs_path = fs::FileSystem::root_directory() + path;
 		auto uuid = UUID{};
 		s32 width{};
 		s32 height{};
 		void* data = tools::texture_loader::load(path.c_str(), width, height, 4);
+		auto name = d3d::AnsiToWString(path);
 		m_PathToMeshAssetMap[path] = TextureAsset{
 			.uuid = uuid,
 			.description =
@@ -131,16 +131,31 @@ namespace Sapfire::assets {
 					.usage = d3d::TextureUsage::TextureFromPath,
 					.width = static_cast<u32>(width),
 					.height = static_cast<u32>(height),
-					.name = d3d::AnsiToWString(path),
+					.name = name,
 					.path = d3d::AnsiToWString(path),
 				},
 			.data = device.create_texture(
 				d3d::TextureCreationDesc{
 					.usage = d3d::TextureUsage::TextureFromPath,
-					.name = d3d::AnsiToWString(path),
+					.name = name,
 					.path = d3d::AnsiToWString(path),
 				},
 				data),
+		};
+		m_UUIDToPathMap[uuid] = path;
+	}
+
+	void TextureRegistry::import_texture(d3d::GraphicsDevice& device, const stl::string& path, const d3d::TextureCreationDesc& desc,
+										 UUID uuid) {
+		auto name = d3d::AnsiToWString(path);
+		m_PathToMeshAssetMap[path] = TextureAsset{
+			.uuid = uuid,
+			.description = desc,
+			.data = device.create_texture(d3d::TextureCreationDesc{
+				.usage = d3d::TextureUsage::TextureFromPath,
+				.name = name,
+				.path = d3d::AnsiToWString(path),
+			}),
 		};
 		m_UUIDToPathMap[uuid] = path;
 	}
@@ -152,6 +167,7 @@ namespace Sapfire::assets {
 			s32 width{};
 			s32 height{};
 			void* data = tools::texture_loader::load(new_path.c_str(), width, height, 4);
+			auto name = d3d::AnsiToWString(new_path);
 			m_PathToMeshAssetMap[new_path] = TextureAsset{
 				.uuid = uuid,
 				.description =
@@ -159,13 +175,13 @@ namespace Sapfire::assets {
 						.usage = d3d::TextureUsage::TextureFromPath,
 						.width = static_cast<u32>(width),
 						.height = static_cast<u32>(height),
-						.name = d3d::AnsiToWString(new_path),
+						.name = name,
 						.path = d3d::AnsiToWString(new_path),
 					},
 				.data = device.create_texture(
 					d3d::TextureCreationDesc{
 						.usage = d3d::TextureUsage::TextureFromPath,
-						.name = d3d::AnsiToWString(new_path),
+						.name = name,
 						.path = d3d::AnsiToWString(new_path),
 					},
 					data),
@@ -250,4 +266,84 @@ namespace Sapfire::assets {
 		}
 		return j.dump();
 	}
+
+	void TextureRegistry::deserialize(d3d::GraphicsDevice& device, const stl::string& data) {
+		nlohmann::json j = nlohmann::json::parse(data)["assets"];
+		if (!j.contains("texture_registry")) {
+			CORE_CRITICAL("Given texture registry string for deserialization deos not contain texture registry. The texture registry will "
+						  "not be loaded.");
+			return;
+		}
+		for (auto&& asset : j["texture_registry"]) {
+			if (!asset.contains("path")) {
+				CORE_ERROR("One of the textures in the texture registry is missing a path to raw texture. It will not be loaded. Dump:\n{}",
+						   data);
+				continue;
+			}
+			stl::string path = asset["path"];
+			if (!asset.contains("UUID")) {
+				CORE_ERROR("Texture with path {} is missing UUID at deserialization. It will not be loaded. Dump:\n{}", path, data);
+				continue;
+			}
+			if (!asset.contains("description")) {
+				CORE_ERROR("Texture with path {} is missing texture creation description. It will not be loaded. Dump:\n{}", path, data);
+				continue;
+			}
+			UUID uuid{asset["UUID"]};
+			auto& description = asset["description"];
+			if (!description.contains("usage")) {
+				CORE_ERROR("Texture with path {} is missing texture creation description's 'usage' field. It will not be loaded. Dump:\n{}",
+						   path, data);
+				continue;
+			}
+			if (!description.contains("width")) {
+				CORE_ERROR("Texture with path {} is missing texture creation description's 'width' field. It will not be loaded. Dump:\n{}",
+						   path, data);
+				continue;
+			}
+			if (!description.contains("height")) {
+				CORE_ERROR(
+					"Texture with path {} is missing texture creation description's 'height' field. It will not be loaded. Dump:\n{}", path,
+					data);
+				continue;
+			}
+			if (!description.contains("format")) {
+				CORE_ERROR(
+					"Texture with path {} is missing texture creation description's 'format' field. It will not be loaded. Dump:\n{}", path,
+					data);
+				continue;
+			}
+			if (!description.contains("mip_levels")) {
+				CORE_ERROR(
+					"Texture with path {} is missing texture creation description's 'mip_levels' field. It will not be loaded. Dump:\n{}",
+					path, data);
+				continue;
+			}
+			if (!description.contains("depth_or_array_size")) {
+				CORE_ERROR("Texture with path {} is missing texture creation description's 'depth_or_array_size' field. It will not be "
+						   "loaded. Dump:\n{}",
+						   path, data);
+				continue;
+			}
+			if (!description.contains("bytes_per_pixel")) {
+				CORE_ERROR("Texture with path {} is missing texture creation description's 'bytes_per_pixel' field. It will not be loaded. "
+						   "Dump:\n{}",
+						   path, data);
+				continue;
+			}
+			d3d::TextureCreationDesc desc;
+			desc.width = description["width"];
+			desc.height = description["height"];
+			desc.usage = description["usage"];
+			desc.path = d3d::AnsiToWString(path);
+			desc.bytesPerPixel = description["bytes_per_pixel"];
+			desc.format = description["format"];
+			desc.mipLevels = description["mip_levels"];
+			if (description.contains("optional_initial_state")) {
+				desc.optional_initial_state = description["optional_initial_state"];
+			}
+			import_texture(device, path, desc, uuid);
+		}
+	}
+
 } // namespace Sapfire::assets

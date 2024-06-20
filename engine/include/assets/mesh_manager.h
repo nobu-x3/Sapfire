@@ -31,9 +31,11 @@ namespace Sapfire::assets {
 		MeshRegistry& operator=(const MeshRegistry&) = delete;
 		MeshRegistry& operator=(MeshRegistry&&) = delete;
 		void import_mesh(const stl::string& path);
+		void import_mesh(const stl::string& path, UUID uuid);
 		void move_mesh(const stl::string& old_path, const stl::string& new_path);
 		void release_mesh(const stl::string& path);
 		void serialize();
+		void deserialize(const stl::string& data);
 		MeshAsset* get(const stl::string& path) const;
 		MeshAsset* get(UUID uuid) const;
         stl::string get_path(UUID uuid) const;

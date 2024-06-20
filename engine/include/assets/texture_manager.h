@@ -39,9 +39,11 @@ namespace Sapfire::assets {
 		TextureRegistry& operator=(const TextureRegistry&) = delete;
 		TextureRegistry& operator=(TextureRegistry&&) = delete;
 		void import_texture(d3d::GraphicsDevice& device, const stl::string& path);
+		void import_texture(d3d::GraphicsDevice& device, const stl::string& path, const d3d::TextureCreationDesc& desc, UUID uuid = {});
 		void move_texture(d3d::GraphicsDevice& device, const stl::string& old_path, const stl::string& new_path);
 		void release_texture(const stl::string& path);
 		void serialize();
+		void deserialize(d3d::GraphicsDevice& device, const stl::string& data);
 		TextureAsset* get(const stl::string& path) const;
 		TextureAsset* get(UUID uuid) const;
         stl::string get_path(UUID uuid) const;
