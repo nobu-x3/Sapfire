@@ -48,6 +48,10 @@ namespace Sapfire::assets {
 		inline void load_mesh_resource(const stl::string& path, MeshResource res) { m_MeshManager.mesh_resources[path] = res; }
 		inline bool mesh_resource_exists(const stl::string& path) const { return m_MeshManager.mesh_resources.contains(path); }
 		inline MeshResource get_mesh_resource(const stl::string& path) const { return m_MeshManager.mesh_resources.at(path); }
+		inline MeshResource get_mesh_resource(UUID uuid) const {
+			auto path = m_MeshRegistry.get_path(uuid);
+			return m_MeshManager.mesh_resources.at(path);
+		}
 		void serialize();
 		void deserialize(const stl::string& data);
 		stl::string to_string();

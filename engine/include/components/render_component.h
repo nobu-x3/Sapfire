@@ -31,6 +31,7 @@ namespace Sapfire::components {
 		Sapfire::u32 normal_idx = 0;
 		Sapfire::u32 tangent_idx = 0;
 		Sapfire::u32 uv_idx = 0;
+		Sapfire::u32 transform_buffer_idx = 0;
 	};
 
 	class RenderComponent {

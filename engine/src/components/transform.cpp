@@ -81,16 +81,13 @@ namespace Sapfire::components {
 
 	void Transform::update(stl::vector<Transform>& transforms) {
 		PROFILE_FUNCTION();
-		if (m_Dirty) {
-			/* auto scale = XMMatrixScalingFromVector(m_Scale); */
-			/* m_RotationMatrix = XMMatrixRotationQuaternion(m_Rotation); */
-			/* auto transl = XMMatrixTranslationFromVector(m_Position); */
-			m_Transform = XMMatrixAffineTransformation(m_Scale, m_Position, m_Rotation, m_Position);
-			/* m_Transform = scale * m_RotationMatrix * transl; */
-			if (m_ParentIndex >= 0) {
-				m_Transform = transforms[m_ParentIndex].m_Transform * m_Transform;
-			}
-			m_Dirty = false;
+		/* auto scale = XMMatrixScalingFromVector(m_Scale); */
+		/* m_RotationMatrix = XMMatrixRotationQuaternion(m_Rotation); */
+		/* auto transl = XMMatrixTranslationFromVector(m_Position); */
+		m_Transform = XMMatrixAffineTransformation(m_Scale, m_Position, m_Rotation, m_Position);
+		/* m_Transform = scale * m_RotationMatrix * transl; */
+		if (m_ParentIndex >= 0) {
+			m_Transform = transforms[m_ParentIndex].m_Transform * m_Transform;
 		}
 	}
 

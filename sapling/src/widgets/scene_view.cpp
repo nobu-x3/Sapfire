@@ -96,7 +96,6 @@ namespace widgets {
 		auto* mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(resource_paths.mesh_path);
 		auto* texture_asset = SLevelEditor::level_editor()->asset_manager().get_texture(resource_paths.texture_path);
 		if (!mesh_asset) {
-
 			SLevelEditor::level_editor()->asset_manager().import_mesh(resource_paths.mesh_path);
 			mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(resource_paths.mesh_path);
 		}
@@ -115,40 +114,43 @@ namespace widgets {
 					.name = L"Transform buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
 				}));
 			}
-			m_RTIndexBuffers.push_back(m_GraphicsDevice.create_buffer<u16>(
-				d3d::BufferCreationDesc{
-					.usage = d3d::BufferUsage::IndexBuffer,
-					.name = L"Index buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
-				},
-				mesh_asset->data->indices16()));
-			m_VertexPosBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
-				d3d::BufferCreationDesc{
-					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex Pos buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
-				},
-				mesh_asset->data->positions));
-			m_VertexNormalBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
-				d3d::BufferCreationDesc{
-					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex Norm buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
-				},
-				mesh_asset->data->normals));
 			bool should_add_tangent = false;
-			if (mesh_asset->data->tangentus.size() > 0) {
-				m_VertexTangentBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
+			bool should_allocate_mesh = !SLevelEditor::level_editor()->asset_manager().mesh_resource_exists(resource_paths.mesh_path);
+			if (should_allocate_mesh) {
+				m_RTIndexBuffers.push_back(m_GraphicsDevice.create_buffer<u16>(
+					d3d::BufferCreationDesc{
+						.usage = d3d::BufferUsage::IndexBuffer,
+						.name = L"Index buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+					},
+					mesh_asset->data->indices16()));
+				m_VertexPosBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 					d3d::BufferCreationDesc{
 						.usage = d3d::BufferUsage::StructuredBuffer,
-						.name = L"Vertex Tang buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+						.name = L"Vertex Pos buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
 					},
-					mesh_asset->data->tangentus));
-				should_add_tangent = true;
+					mesh_asset->data->positions));
+				m_VertexNormalBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
+					d3d::BufferCreationDesc{
+						.usage = d3d::BufferUsage::StructuredBuffer,
+						.name = L"Vertex Norm buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+					},
+					mesh_asset->data->normals));
+				if (mesh_asset->data->tangentus.size() > 0) {
+					m_VertexTangentBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
+						d3d::BufferCreationDesc{
+							.usage = d3d::BufferUsage::StructuredBuffer,
+							.name = L"Vertex Tang buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+						},
+						mesh_asset->data->tangentus));
+					should_add_tangent = true;
+				}
+				m_VertexUVBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT2>(
+					d3d::BufferCreationDesc{
+						.usage = d3d::BufferUsage::StructuredBuffer,
+						.name = L"Vertex UV buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+					},
+					mesh_asset->data->texcs));
 			}
-			m_VertexUVBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT2>(
-				d3d::BufferCreationDesc{
-					.usage = d3d::BufferUsage::StructuredBuffer,
-					.name = L"Vertex UV buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
-				},
-				mesh_asset->data->texcs));
 			auto cpu_data = components::CPUData{
 				.indices_size = static_cast<u32>(mesh_asset->data->indices32.size()),
 				.index_id = static_cast<u32>(m_RTIndexBuffers.size() - 1),
@@ -156,6 +158,10 @@ namespace widgets {
 				.normal_idx = static_cast<u32>(m_VertexNormalBuffers.size() - 1),
 				.tangent_idx = static_cast<u32>(should_add_tangent ? m_VertexTangentBuffers.size() - 1 : 0),
 				.uv_idx = static_cast<u32>(m_VertexUVBuffers.size() - 1),
+				.transform_buffer_idx = already_has_component
+					? m_ECManager.engine_component<components::RenderComponent>(entity).cpu_data().transform_buffer_idx
+					: static_cast<u32>(m_TransformBuffers.size() - 1),
+
 			};
 			auto gpu_data = components::PerDrawConstants{
 				.position_buffer_idx = m_VertexPosBuffers.back().srv_index,
@@ -171,6 +177,16 @@ namespace widgets {
 					? SLevelEditor::level_editor()->asset_manager().get_texture_resource(resource_paths.texture_path).gpu_idx
 					: 0,
 			};
+			if (!should_allocate_mesh) {
+				cpu_data = SLevelEditor::level_editor()->asset_manager().get_mesh_resource(mesh_asset->uuid).cpu_data;
+				gpu_data = SLevelEditor::level_editor()->asset_manager().get_mesh_resource(mesh_asset->uuid).gpu_data;
+				gpu_data.scene_cbuffer_idx = already_has_component
+					? m_ECManager.engine_component<components::RenderComponent>(entity).per_draw_constants()->scene_cbuffer_idx
+					: m_TransformBuffers.back().cbv_index;
+				cpu_data.transform_buffer_idx = already_has_component
+					? m_ECManager.engine_component<components::RenderComponent>(entity).cpu_data().transform_buffer_idx
+					: static_cast<u32>(m_TransformBuffers.size() - 1);
+			}
 			SLevelEditor::level_editor()->asset_manager().load_mesh_resource(resource_paths.mesh_path, {cpu_data, gpu_data});
 			components::RenderComponent render_component{
 				mesh_asset->uuid, texture_asset->uuid, cpu_data, gpu_data, [this, entity](components::RenderComponent* component) {
@@ -310,12 +326,19 @@ namespace widgets {
 	}
 
 	void SSceneView::update_transform_buffer() {
-		auto& transforms = m_ECManager.engine_components<components::Transform>();
-		for (u32 i = 0; i < m_TransformBuffers.size(); ++i) {
-			DirectX::XMMATRIX world = transforms[i].transform();
+		auto& entities = m_ECManager.entities();
+		for (auto& entry : entities) {
+			if (!entry.has_value())
+				continue;
+			auto entity = entry.value().value;
+			if (!m_ECManager.has_engine_component<components::RenderComponent>(entity))
+				continue;
+			auto& render_component = m_ECManager.engine_component<components::RenderComponent>(entity);
+			auto transform = m_ECManager.engine_component<components::Transform>(entity);
+			DirectX::XMMATRIX world = transform.transform();
 			ObjectConstants obj_constants;
 			XMStoreFloat4x4(&obj_constants.World, XMMatrixTranspose(world));
-			m_TransformBuffers[i].update(&obj_constants);
+			m_TransformBuffers[render_component.cpu_data().transform_buffer_idx].update(&obj_constants);
 		}
 	}
 
