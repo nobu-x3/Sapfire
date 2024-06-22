@@ -7,8 +7,10 @@
 
 using namespace Sapfire;
 
-Sapfire::stl::shared_ptr<SLevelEditor> SLevelEditor::s_Instance{nullptr};
-Sapfire::stl::shared_ptr<SLevelEditor> SLevelEditor::level_editor() { return s_Instance; }
+SLevelEditor* SLevelEditor::s_Instance{nullptr};
+SLevelEditor* SLevelEditor::level_editor() {
+	return s_Instance;
+}
 
 SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 	SSubeditor("Level Editor"), m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)),
@@ -17,7 +19,7 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 		.mesh_registry_path = "mesh_registry.db",
 		.texture_registry_path = "texture_registry.db",
 	}) {
-	s_Instance.reset(this);
+	s_Instance = this;
 	m_Widgets.push_back(
 		stl::make_unique<widgets::SSceneHierarchy>(mem::ENUM::Editor, m_ECManager.get(), BIND_EVENT_FN(SLevelEditor::on_entity_selected)));
 	auto entity_inspector = stl::make_unique<widgets::SEntityInspector>(mem::ENUM::Editor, m_ECManager.get());

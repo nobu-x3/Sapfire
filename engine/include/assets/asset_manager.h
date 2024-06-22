@@ -46,6 +46,7 @@ namespace Sapfire::assets {
 		inline stl::string get_mesh_path(UUID uuid) { return m_MeshRegistry.get_path(uuid); }
 		inline const stl::unordered_map<stl::string, MeshAsset>& path_mesh_map() const { return m_MeshRegistry.path_asset_map(); }
 		inline void load_mesh_resource(const stl::string& path, MeshResource res) { m_MeshManager.mesh_resources[path] = res; }
+		inline bool mesh_resource_exists(const stl::string& path) const { return m_MeshManager.mesh_resources.contains(path); }
 		inline MeshResource get_mesh_resource(const stl::string& path) const { return m_MeshManager.mesh_resources.at(path); }
 		void serialize();
 		void deserialize(const stl::string& data);

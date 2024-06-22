@@ -177,8 +177,16 @@ namespace widgets {
 					if (component) {
 						const auto old_cpu_data = component->cpu_data();
 						const auto old_gpu_data = component->per_draw_constants();
-						const auto uuid = component->mesh_uuid();
-						const auto path = SLevelEditor::level_editor()->asset_manager().get_mesh_path(uuid);
+						// This happens after the mesh uuid is set to the new one, so we're getting the just assigned uuid
+						const auto mesh_uuid = component->mesh_uuid();
+						// The mesh we just assigned may not be allocated yet
+						const auto texture_uuid = component->texture_uuid();
+						const auto texture_path = SLevelEditor::level_editor()->asset_manager().get_texture_path(texture_uuid);
+						const auto path = SLevelEditor::level_editor()->asset_manager().get_mesh_path(mesh_uuid);
+						if (!SLevelEditor::level_editor()->asset_manager().mesh_resource_exists(path)) {
+							add_render_component(entity, {.mesh_path = path, .texture_path = texture_path});
+							return;
+						}
 						auto data = SLevelEditor::level_editor()->asset_manager().get_mesh_resource(path);
 						data.gpu_data.scene_cbuffer_idx = old_gpu_data->scene_cbuffer_idx;
 						component->cpu_data(data.cpu_data);
@@ -337,6 +345,7 @@ namespace widgets {
 		auto& render_components = m_ECManager.engine_components<components::RenderComponent>();
 		for (auto& comp : render_components) {
 			components::CPUData cpu_data = comp.cpu_data();
+			auto pdc = comp.per_draw_constants();
 			gfx_ctx.set_index_buffer(m_RTIndexBuffers[cpu_data.index_id]);
 			gfx_ctx.set_32_bit_graphics_constants(comp.per_draw_constants());
 			gfx_ctx.draw_instance_indexed(cpu_data.indices_size);
