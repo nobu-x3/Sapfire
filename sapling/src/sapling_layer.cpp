@@ -54,7 +54,7 @@ void SaplingLayer::on_attach() {
 			},
 		.pipeline_name = L"Sapling Layer Bindless Pipeline",
 	});
-	m_Subeditors.push_back(stl::make_unique<SLevelEditor>(Sapfire::mem::ENUM::Editor, m_GraphicsDevice.get()));
+	m_Subeditors[ESubeditor::LevelEditor] = stl::make_unique<SLevelEditor>(Sapfire::mem::ENUM::Editor, m_GraphicsDevice.get());
 }
 
 void SaplingLayer::on_detach() {
