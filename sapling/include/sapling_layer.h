@@ -8,11 +8,11 @@ namespace widgets {
 }
 
 namespace ESubeditor {
-    enum TYPE {
-        LevelEditor = 0,
-        //MaterialEditor = 1,
-        COUNT,
-    };
+	enum TYPE {
+		LevelEditor = 0,
+		// MaterialEditor = 1,
+		COUNT,
+	};
 }
 
 class SaplingLayer final : public Sapfire::Layer {
@@ -33,6 +33,6 @@ private:
 private:
 	Sapfire::stl::array<Sapfire::stl::unique_ptr<SSubeditor>, 2> m_Subeditors{};
 	Sapfire::stl::unique_ptr<Sapfire::d3d::GraphicsDevice> m_GraphicsDevice{};
-    Sapfire::d3d::PipelineState m_PipelineState{};
+	Sapfire::d3d::PipelineState m_PipelineState{};
 	Sapfire::d3d::Texture m_DepthTexture{};
 };
