@@ -10,7 +10,7 @@ namespace widgets {
 namespace ESubeditor {
     enum TYPE {
         LevelEditor = 0,
-        MaterialEditor = 1,
+        //MaterialEditor = 1,
         COUNT,
     };
 }

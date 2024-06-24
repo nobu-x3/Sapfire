@@ -72,17 +72,32 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	ImGui::ShowDemoWindow();
-	for (auto& subeditor : m_Subeditors) {
-		subeditor->update(delta_time);
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	ImGui::Begin("Sapling", nullptr, window_flags);
+	ImGuiID dockspace_id = ImGui::GetID("SaplingDockspace");
+	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
+	for (int i = 0; i < ESubeditor::COUNT; ++i) {
+		m_Subeditors[i]->update(delta_time);
 	}
+	ImGui::End();
+	ImGui::PopStyleVar(3);
 }
 
 void SaplingLayer::on_render() {
 	PROFILE_FUNCTION();
 	m_GraphicsDevice->begin_frame();
 	auto& gfx_ctx = m_GraphicsDevice->current_graphics_contexts();
-	for (auto&& editor : m_Subeditors) {
-		editor->render(*gfx_ctx);
+	for (int i = 0; i < ESubeditor::COUNT; ++i) {
+		m_Subeditors[i]->render(*gfx_ctx);
 	}
 	auto& current_backbuffer = m_GraphicsDevice->current_back_buffer();
 	gfx_ctx->add_resource_barrier(current_backbuffer.allocation.resource.Get(), D3D12_RESOURCE_STATE_PRESENT,
