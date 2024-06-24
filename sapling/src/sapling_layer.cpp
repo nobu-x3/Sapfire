@@ -54,7 +54,7 @@ void SaplingLayer::on_attach() {
 			},
 		.pipeline_name = L"Sapling Layer Bindless Pipeline",
 	});
-	m_Subeditors[ESubeditor::LevelEditor] = stl::make_unique<SLevelEditor>(Sapfire::mem::ENUM::Editor, m_GraphicsDevice.get());
+	//m_Subeditors[ESubeditor::LevelEditor] = stl::make_unique<SLevelEditor>(Sapfire::mem::ENUM::Editor, m_GraphicsDevice.get());
 }
 
 void SaplingLayer::on_detach() {
@@ -83,9 +83,30 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 	ImGui::Begin("Sapling", nullptr, window_flags);
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginMenu("Subeditors")) {
+			for (int i = 0; i < ESubeditor::COUNT; ++i) {
+				if (ImGui::MenuItem(g_SubeditorNames[i].c_str())) {
+					auto type = static_cast<ESubeditor::TYPE>(i);
+					if (!is_subeditor_active(type)) {
+						m_Subeditors[i].reset(subeditor_factory(type));
+						m_ActiveSubeditors |= 1 << i;
+					}
+				}
+			}
+			ImGui::EndMenu();
+		}
+		for (int i = 0; i < ESubeditor::COUNT; ++i) {
+			if (is_subeditor_active(static_cast<ESubeditor::TYPE>(i)))
+				m_Subeditors[i]->draw_menu();
+		}
+		ImGui::EndMenuBar();
+	}
 	ImGuiID dockspace_id = ImGui::GetID("SaplingDockspace");
 	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
 	for (int i = 0; i < ESubeditor::COUNT; ++i) {
+		if (!is_subeditor_active(static_cast<ESubeditor::TYPE>(i)))
+			continue;
 		m_Subeditors[i]->update(delta_time);
 	}
 	ImGui::End();
@@ -97,6 +118,8 @@ void SaplingLayer::on_render() {
 	m_GraphicsDevice->begin_frame();
 	auto& gfx_ctx = m_GraphicsDevice->current_graphics_contexts();
 	for (int i = 0; i < ESubeditor::COUNT; ++i) {
+		if (!is_subeditor_active(static_cast<ESubeditor::TYPE>(i)))
+			continue;
 		m_Subeditors[i]->render(*gfx_ctx);
 	}
 	auto& current_backbuffer = m_GraphicsDevice->current_back_buffer();
@@ -171,4 +194,13 @@ bool SaplingLayer::on_window_resize(WindowResizeEvent& e) {
 		});
 	}
 	return true;
+}
+
+bool SaplingLayer::is_subeditor_active(ESubeditor::TYPE type) { return m_ActiveSubeditors >> type == 1; }
+
+SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type) {
+	switch (type) {
+	case ESubeditor::LevelEditor:
+		return mem_new(Sapfire::mem::ENUM::Editor) SLevelEditor(m_GraphicsDevice.get());
+	}
 }

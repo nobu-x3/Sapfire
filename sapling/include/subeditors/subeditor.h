@@ -10,6 +10,8 @@ public:
 	virtual ~SSubeditor() = default;
 	virtual bool update(Sapfire::f32 delta_time);
 	virtual void render(Sapfire::d3d::GraphicsContext&);
+	virtual void draw_menu(){};
+	inline const Sapfire::stl::string& name() const { return m_Name; }
 
 protected:
 	Sapfire::stl::vector<Sapfire::stl::unique_ptr<IWidget>> m_Widgets;
