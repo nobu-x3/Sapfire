@@ -9,10 +9,12 @@
 #include "core/memory.h"
 #include "core/rtti.h"
 #include "core/uuid.h"
+#include "core/file_system.h"
 /////////////////////////////////
 
 ///////// STL ///////////////////
 #include "core/stl/unique_ptr.h"
+#include "core/stl/shared_ptr.h"
 /////////////////////////////////
 
 ///////// COMPONENTS ////////////

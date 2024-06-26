@@ -7,3 +7,6 @@
 [submodule "sapling/vendor/imgui"]
 	path = sapling/vendor/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "sapling/vendor/ImGuiFileDialog"]
+	path = sapling/vendor/ImGuiFileDialog
+	url = https://github.com/aiekick/ImGuiFileDialog

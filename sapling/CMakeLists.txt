@@ -10,6 +10,9 @@ file(GLOB IMGUI_FILES "vendor/imgui/*.h"
     "vendor/imgui/backends/imgui_impl_win32.cpp"
     "vendor/imgui/backends/imgui_impl_dx12.h"
     "vendor/imgui/backends/imgui_impl_dx12.cpp"
+    "vendor/ImGuiFileDialog/ImGuiFileDialog.cpp"
+    "vendor/ImGuiFileDialog/ImGuiFileDialog.h"
+    "vendor/ImGuiFileDialog/ImGuiFileDialogConfig.h"
     )
 
 add_executable(Sapling
@@ -25,7 +28,7 @@ add_executable(Sapling
     src/widgets/tiny_widgets/buttons.cpp
     ${IMGUI_FILES}
     )
-target_include_directories(Sapling PUBLIC ${ROOT_PATH_ABS}/engine/include include vendor/imgui)
+target_include_directories(Sapling PUBLIC ${ROOT_PATH_ABS}/engine/include include vendor/imgui vendor/ImGuiFileDialog)
 target_link_libraries(Sapling PUBLIC Engine)
 
 ## Copying dep dlls to sapling

@@ -1,4 +1,6 @@
 #include "subeditors/level_editor.h"
+#include "ImGuiFileDialog.h"
+#include "imgui.h"
 #include "subeditors/subeditor.h"
 #include "widgets/asset_browser.h"
 #include "widgets/entity_inspector.h"
@@ -8,9 +10,7 @@
 using namespace Sapfire;
 
 SLevelEditor* SLevelEditor::s_Instance{nullptr};
-SLevelEditor* SLevelEditor::level_editor() {
-	return s_Instance;
-}
+SLevelEditor* SLevelEditor::level_editor() { return s_Instance; }
 
 SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 	SSubeditor("Level Editor"), m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)),
@@ -31,6 +31,7 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 	writer.deserealize("test_scene.scene", [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
 		scene_view->add_render_component(entity, resource_paths);
 	});
+	m_SceneViewIndex = static_cast<u32>(m_Widgets.size());
 	m_Widgets.push_back(std::move(scene_view));
 }
 
@@ -38,4 +39,33 @@ void SLevelEditor::on_entity_selected(Sapfire::stl::optional<Sapfire::Entity> en
 	for (auto& f : m_EntitySelectedCallbacks) {
 		f(entity);
 	}
+}
+
+void SLevelEditor::draw_menu() {
+	if (ImGui::BeginMenu("Level Editor")) {
+		if (ImGui::MenuItem("Open scene...")) {
+			IGFD::FileDialogConfig config{};
+			config.path = Sapfire::fs::FileSystem::root_directory();
+			ImGuiFileDialog::Instance()->OpenDialog("OpenSceneFileDlg", "Open scene", ".scene", config);
+		}
+		ImGui::EndMenu();
+	}
+}
+
+bool SLevelEditor::update(Sapfire::f32 delta_time) {
+	bool ret_val = SSubeditor::update(delta_time);
+	if (ImGuiFileDialog::Instance()->Display("OpenSceneFileDlg")) {
+		if (ImGuiFileDialog::Instance()->IsOk()) {
+			stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
+			if (!filepath.empty()) {
+				assets::SceneWriter writer{m_ECManager.get(), &m_AssetManager};
+				writer.deserealize(filepath, [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
+					auto widget = m_Widgets[m_SceneViewIndex].get();
+					static_cast<widgets::SSceneView*>(widget)->add_render_component(entity, resource_paths);
+				});
+			}
+		}
+		ImGuiFileDialog::Instance()->Close();
+	}
+	return ret_val;
 }
