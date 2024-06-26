@@ -97,7 +97,8 @@ namespace Sapfire::components {
 			component_list->entity_destroyed(entity);
 		}
 		for (auto& [_, component_list] : m_CustomComponentLists) {
-			component_list->entity_destroyed(entity);
+			if (component_list)
+				component_list->entity_destroyed(entity);
 		}
 	}
 } // namespace Sapfire::components
