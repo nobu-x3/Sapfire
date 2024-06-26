@@ -32,7 +32,8 @@ private:
 	bool on_window_resize_finished(Sapfire::WindowResizeFinishedEvent&);
 	bool on_window_resize(Sapfire::WindowResizeEvent& e);
 	bool is_subeditor_active(ESubeditor::TYPE type);
-	SSubeditor* subeditor_factory(ESubeditor::TYPE type);
+	SSubeditor* subeditor_factory(ESubeditor::TYPE type, bool is_callback = false);
+	Sapfire::stl::bitset<ESubeditor::COUNT> m_ShouldExecuteSubeditorCreationCallback{};
 
 private:
 	Sapfire::stl::array<Sapfire::stl::unique_ptr<SSubeditor>, 2> m_Subeditors{};

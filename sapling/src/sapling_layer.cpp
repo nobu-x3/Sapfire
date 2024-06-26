@@ -1,4 +1,5 @@
 #include "sapling_layer.h"
+#include "../vendor/ImGuiFileDialog/ImGuiFileDialog.h"
 #include "backends/imgui_impl_dx12.h"
 #include "backends/imgui_impl_win32.h"
 #include "core/core.h"
@@ -54,7 +55,7 @@ void SaplingLayer::on_attach() {
 			},
 		.pipeline_name = L"Sapling Layer Bindless Pipeline",
 	});
-	//m_Subeditors[ESubeditor::LevelEditor] = stl::make_unique<SLevelEditor>(Sapfire::mem::ENUM::Editor, m_GraphicsDevice.get());
+	// m_Subeditors[ESubeditor::LevelEditor] = stl::make_unique<SLevelEditor>(Sapfire::mem::ENUM::Editor, m_GraphicsDevice.get());
 }
 
 void SaplingLayer::on_detach() {
@@ -90,7 +91,8 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 					auto type = static_cast<ESubeditor::TYPE>(i);
 					if (!is_subeditor_active(type)) {
 						m_Subeditors[i].reset(subeditor_factory(type));
-						m_ActiveSubeditors |= 1 << i;
+						if (m_Subeditors[i])
+							m_ActiveSubeditors |= 1 << i;
 					}
 				}
 			}
@@ -111,6 +113,15 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 	}
 	ImGui::End();
 	ImGui::PopStyleVar(3);
+	for (int i = 0; i < ESubeditor::COUNT; ++i) {
+		if (m_ShouldExecuteSubeditorCreationCallback[i]) {
+			m_Subeditors[i].reset(subeditor_factory(static_cast<ESubeditor::TYPE>(i), true));
+			if (m_Subeditors[i]) {
+			 	m_ActiveSubeditors |= 1 << i;
+				m_ShouldExecuteSubeditorCreationCallback[i] = false;
+			}
+		}
+	}
 }
 
 void SaplingLayer::on_render() {
@@ -198,9 +209,25 @@ bool SaplingLayer::on_window_resize(WindowResizeEvent& e) {
 
 bool SaplingLayer::is_subeditor_active(ESubeditor::TYPE type) { return m_ActiveSubeditors >> type == 1; }
 
-SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type) {
+SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type, bool is_callback) {
 	switch (type) {
 	case ESubeditor::LevelEditor:
-		return mem_new(Sapfire::mem::ENUM::Editor) SLevelEditor(m_GraphicsDevice.get());
+		if (!is_callback) {
+			m_ShouldExecuteSubeditorCreationCallback[ESubeditor::LevelEditor] = true;
+			IGFD::FileDialogConfig config{};
+			config.path = Sapfire::fs::FileSystem::root_directory();
+			ImGuiFileDialog::Instance()->OpenDialog("OpenSceneEditorDlg", "Open scene", ".scene", config);
+			return nullptr;
+		}
+		if (ImGuiFileDialog::Instance()->Display("OpenSceneEditorDlg")) {
+			if (ImGuiFileDialog::Instance()->IsOk()) {
+				stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
+				if (!filepath.empty()) {
+					return mem_new(mem::Editor) SLevelEditor(m_GraphicsDevice.get(), filepath);
+				}
+			}
+			ImGuiFileDialog::Instance()->Close();
+		}
 	}
+	return nullptr;
 }

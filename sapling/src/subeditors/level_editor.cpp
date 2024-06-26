@@ -12,7 +12,7 @@ using namespace Sapfire;
 SLevelEditor* SLevelEditor::s_Instance{nullptr};
 SLevelEditor* SLevelEditor::level_editor() { return s_Instance; }
 
-SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
+SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device, const Sapfire::stl::string& scene_path) :
 	SSubeditor("Level Editor"), m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)),
 	m_AssetManager(assets::AssetManagerCreationDesc{
 		.device = gfx_device,
@@ -28,7 +28,7 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 	assets::SceneWriter writer{m_ECManager.get(), &m_AssetManager};
 	m_Widgets.emplace_back(stl::make_unique<widgets::AssetBrowser>(mem::ENUM::Editor));
 	auto scene_view = stl::make_unique<widgets::SSceneView>(mem::ENUM::Editor, m_ECManager.get(), gfx_device);
-	writer.deserealize("test_scene.scene", [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
+	writer.deserealize(scene_path, [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
 		scene_view->add_render_component(entity, resource_paths);
 	});
 	m_SceneViewIndex = static_cast<u32>(m_Widgets.size());

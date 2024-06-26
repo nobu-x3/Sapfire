@@ -14,7 +14,7 @@ using on_entity_selected_callback = Sapfire::stl::function<void(Sapfire::stl::op
 
 class SLevelEditor final : public SSubeditor {
 public:
-	SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device);
+	SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device, const Sapfire::stl::string& scene_path);
 	static SLevelEditor* level_editor();
 	Sapfire::assets::AssetManager& asset_manager() { return m_AssetManager; }
 
