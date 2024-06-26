@@ -93,14 +93,14 @@ namespace widgets {
 				ImGui::OpenPopup("scene_hierarchy_context_menu_for_entity");
 			}
 			if (ImGui::BeginPopup("scene_hierarchy_context_menu_for_entity")) {
-				if (ImGui::Button("Create")) {
+				if (ImGui::MenuItem("Create")) {
 					auto entity = m_ECManager.create_entity();
 					auto& transform_component = m_ECManager.engine_component<components::Transform>(entity);
 					transform_component.parent(parent_entity.id().index);
 					m_ShowContextMenu = false;
 					ImGui::CloseCurrentPopup();
 				}
-				if (ImGui::Button("Remove")) {
+				if (ImGui::MenuItem("Remove")) {
 					// destroy_entity() takes care of children
 					m_ECManager.destroy_entity(parent_entity);
 					m_ShowContextMenu = false;

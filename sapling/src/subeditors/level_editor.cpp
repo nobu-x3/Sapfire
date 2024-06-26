@@ -26,34 +26,12 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device) :
 	m_EntitySelectedCallbacks.push_back(BIND_EVENT_FN_FOR_OBJ(entity_inspector.get(), widgets::SEntityInspector::select_entity));
 	m_Widgets.push_back(std::move(entity_inspector));
 	assets::SceneWriter writer{m_ECManager.get(), &m_AssetManager};
-	// 	auto parent = m_ECManager->create_entity();
-	// 	auto& transform = m_ECManager->engine_component<components::Transform>(parent);
-	// 	transform.position(DirectX::XMVECTOR{0.f, 0.f, 5.f});
-	// 	auto& parent_name = m_ECManager->engine_component<components::NameComponent>(parent);
-	// 	auto test_component = stl::make_shared<components::TestCustomComponent>(mem::ENUM::Editor, "HELLOOOO");
-	// 	m_ECManager->add_component(parent, test_component);
-	// 	m_ECManager->add_engine_component<components::MovementComponent>(parent);
-	// 	parent_name.name("Parent");
-	// 	m_ECManager->create_entity();
-	// 	auto child = m_ECManager->create_entity();
-	// 	auto& child_transform = m_ECManager->engine_component<components::Transform>(child);
-	// 	auto& child_name = m_ECManager->engine_component<components::NameComponent>(child);
-	// child_name.name("Child");
-	// child_transform.parent(parent.id().index);
-	// m_ECManager->create_entity();
-	// m_ECManager->create_entity();
-	// m_ECManager->create_entity();
-	// m_ECManager->create_entity();
 	m_Widgets.emplace_back(stl::make_unique<widgets::AssetBrowser>(mem::ENUM::Editor));
-	// 	m_AssetManager.import_texture("assets/textures/ceramics.jpg");
 	auto scene_view = stl::make_unique<widgets::SSceneView>(mem::ENUM::Editor, m_ECManager.get(), gfx_device);
 	writer.deserealize("test_scene.scene", [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
 		scene_view->add_render_component(entity, resource_paths);
 	});
-	// 	scene_view->add_render_component(parent, {"assets/models/monkey.obj", "assets/textures/ceramics.jpg"});
-	// 	scene_view->add_render_component(parent, {"assets/models/cube.obj", "assets/textures/ceramics.jpg"});
 	m_Widgets.push_back(std::move(scene_view));
-	//writer.serialize("test_scene.scene");
 }
 
 void SLevelEditor::on_entity_selected(Sapfire::stl::optional<Sapfire::Entity> entity) {
