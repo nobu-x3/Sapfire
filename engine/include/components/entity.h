@@ -40,9 +40,9 @@ namespace Sapfire{
 		[[nodiscard]] stl::optional<Entity> entity(stl::generational_index valid_index);
 
 	private:
-		stl::vector<Signature> m_Signatures;
-		stl::generational_index_allocator m_Allocator;
-		stl::generational_vector<Entity> m_Entities;
+		stl::vector<Signature> m_Signatures{};
+		stl::generational_index_allocator m_Allocator{};
+		stl::generational_vector<Entity> m_Entities{};
 	};
 } // namespace Sapfire
   //

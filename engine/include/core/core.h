@@ -130,8 +130,8 @@ namespace Sapfire {
 				bool is_alive = false;
 				u32 generation = 0;
 			};
-			stl::vector<entry> m_Entries;
-			stl::vector<u32> m_FreeIndices;
+			stl::vector<entry> m_Entries{};
+			stl::vector<u32> m_FreeIndices{};
 		};
 
 		template <typename T>

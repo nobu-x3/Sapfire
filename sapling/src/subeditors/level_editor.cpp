@@ -58,6 +58,7 @@ bool SLevelEditor::update(Sapfire::f32 delta_time) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
 			stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
 			if (!filepath.empty()) {
+				m_ECManager->reset();
 				assets::SceneWriter writer{m_ECManager.get(), &m_AssetManager};
 				writer.deserealize(filepath, [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
 					auto widget = m_Widgets[m_SceneViewIndex].get();

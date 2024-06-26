@@ -33,10 +33,10 @@ namespace Sapfire::components {
 
 		void insert(Entity entity, T component) {
 			if (m_EntityToIndexMap.contains(entity)) {
-                auto index = m_EntityToIndexMap[entity];
-                m_Components[index] = component;
+				auto index = m_EntityToIndexMap[entity];
+				m_Components[index] = component;
 				/* remove(entity); */
-                return;
+				return;
 			}
 			m_EntityToIndexMap[entity] = m_Components.size();
 			m_IndexToEntityMap[m_Components.size()] = entity;
@@ -143,7 +143,8 @@ namespace Sapfire::components {
 		template <typename T>
 		bool has_engine_component(Entity entity) {
 			const char* type_name = typeid(T).name();
-			return std::static_pointer_cast<EngineComponentList<T>>(m_EngineComponentLists[type_name])->exists(entity);
+			return m_EngineComponentLists.contains(type_name) &&
+				std::static_pointer_cast<EngineComponentList<T>>(m_EngineComponentLists[type_name])->exists(entity);
 		}
 
 		template <typename T>

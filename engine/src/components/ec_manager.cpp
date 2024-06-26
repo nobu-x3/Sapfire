@@ -11,6 +11,11 @@ namespace Sapfire {
 		m_ComponentRegistry(stl::make_unique<components::ComponentRegistry>(mem::ENUM::Engine_Components)),
 		m_EntityRegistry(stl::make_unique<EntityRegistry>(mem::ENUM::Engine_Components)) {}
 
+	void ECManager::reset() {
+		m_ComponentRegistry = stl::make_unique<components::ComponentRegistry>(mem::ENUM::Engine_Components);
+		m_EntityRegistry = stl::make_unique<EntityRegistry>(mem::ENUM::Engine_Components);
+	}
+
 	Entity ECManager::create_entity(UUID uuid) {
 		auto entity = m_EntityRegistry->create_entity(uuid);
 		m_ComponentRegistry->add_engine_component<components::NameComponent>(entity, {});
