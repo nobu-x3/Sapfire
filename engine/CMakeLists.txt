@@ -62,6 +62,7 @@ target_link_libraries(Engine PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/vendor/dxc/lib/x64/dxcompiler.lib
     DirectXTK12
     D3D12MemoryAllocator
-    nlohmann_json::nlohmann_json
     tinyobjloader
+    PRIVATE
+    nlohmann_json::nlohmann_json
     )

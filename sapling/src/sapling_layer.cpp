@@ -1,5 +1,6 @@
 #include "sapling_layer.h"
-#include "../vendor/ImGuiFileDialog/ImGuiFileDialog.h"
+#include "ImGuiFileDialog.h"
+#include "assets/project_reader.h"
 #include "backends/imgui_impl_dx12.h"
 #include "backends/imgui_impl_win32.h"
 #include "core/core.h"
@@ -16,6 +17,12 @@ SaplingLayer::SaplingLayer() : Sapfire::Layer("Sapling Layer") {
 		Sapfire::mem::ENUM::Editor,
 		d3d::SwapchainCreationDesc{static_cast<u32>(app.client_extent()->width), static_cast<u32>(app.client_extent()->height), 120,
 								   d3d::MAX_FRAMES_IN_FLIGHT, DXGI_FORMAT_R16G16B16A16_FLOAT, app.window()->handle()});
+	m_AssetManager = Sapfire::stl::make_unique<Sapfire::assets::AssetManager>(mem::Editor,
+																			  Sapfire::assets::AssetManagerCreationDesc{
+																				  .device = m_GraphicsDevice.get(),
+																				  .mesh_registry_path = "mesh_registry.db",
+																				  .texture_registry_path = "texture_registry.db",
+																			  });
 	icons::add(*m_GraphicsDevice, L"editor_assets/icons/mesh_icon_64.png", icons::MESH_ICON_64_ID);
 	icons::add(*m_GraphicsDevice, L"editor_assets/icons/mesh_icon_16.png", icons::MESH_ICON_16_ID);
 	icons::add(*m_GraphicsDevice, L"editor_assets/icons/image_icon_16.png", icons::IMAGE_ICON_16_ID);
@@ -55,7 +62,10 @@ void SaplingLayer::on_attach() {
 			},
 		.pipeline_name = L"Sapling Layer Bindless Pipeline",
 	});
-	// m_Subeditors[ESubeditor::LevelEditor] = stl::make_unique<SLevelEditor>(Sapfire::mem::ENUM::Editor, m_GraphicsDevice.get());
+	IGFD::FileDialogConfig config{};
+	config.path = Sapfire::fs::FileSystem::root_directory();
+	config.countSelectionMax = 1;
+	ImGuiFileDialog::Instance()->OpenDialog("OpenProjectDlg", "Open project", ".sfproj", config);
 }
 
 void SaplingLayer::on_detach() {
@@ -83,8 +93,70 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
 	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	ImGui::Begin("Sapling", nullptr, window_flags);
+	if (m_ProjectPath.empty()) {
+		if (ImGuiFileDialog::Instance()->Display("OpenProjectDlg")) {
+			if (ImGuiFileDialog::Instance()->IsOk()) {
+				auto selection = ImGuiFileDialog::Instance()->GetSelection();
+				if (selection.size() > 1)
+					return;
+				auto& [filename, filepath] = *selection.begin();
+				m_ProjectPath = filepath;
+				::assets::ProjectReader reader{m_AssetManager.get(), m_ProjectName};
+				reader.deserealize(filepath);
+				if (m_ProjectName.empty()) {
+					m_ProjectName = filename;
+					reader.serialize(filepath);
+				}
+			}
+			ImGuiFileDialog::Instance()->Close();
+		}
+	} else {
+		ImGui::Begin("Sapling", nullptr, window_flags);
+		draw_menu_bar();
+		ImGuiID dockspace_id = ImGui::GetID("SaplingDockspace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
+		for (int i = 0; i < ESubeditor::COUNT; ++i) {
+			if (!is_subeditor_active(static_cast<ESubeditor::TYPE>(i)))
+				continue;
+			m_Subeditors[i]->update(delta_time);
+		}
+		ImGui::End();
+		for (int i = 0; i < ESubeditor::COUNT; ++i) {
+			if (m_ShouldExecuteSubeditorCreationCallback[i]) {
+				m_Subeditors[i].reset(subeditor_factory(static_cast<ESubeditor::TYPE>(i), true));
+				if (m_Subeditors[i]) {
+					m_ActiveSubeditors |= 1 << i;
+					m_ShouldExecuteSubeditorCreationCallback[i] = false;
+				}
+			}
+		}
+	}
+	ImGui::PopStyleVar(3);
+}
+
+void SaplingLayer::draw_menu_bar() {
 	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginMenu("Project")) {
+			if (ImGui::MenuItem("Open...", "Ctrl + O")) {
+				IGFD::FileDialogConfig config{};
+				m_ProjectPath = "";
+				m_AssetManager =
+					Sapfire::stl::make_unique<Sapfire::assets::AssetManager>(mem::Editor,
+																			 Sapfire::assets::AssetManagerCreationDesc{
+																				 .device = m_GraphicsDevice.get(),
+																				 .mesh_registry_path = "mesh_registry.db",
+																				 .texture_registry_path = "texture_registry.db",
+																			 });
+				config.path = Sapfire::fs::FileSystem::root_directory();
+				config.countSelectionMax = 1;
+				ImGuiFileDialog::Instance()->OpenDialog("OpenProjectDlg", "Open project", ".sfproj", config);
+			}
+			if (ImGui::MenuItem("Save", "CTRL + S")) {
+				::assets::ProjectReader reader{m_AssetManager.get(), m_ProjectName};
+				reader.serialize(m_ProjectPath);
+			}
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginMenu("Subeditors")) {
 			for (int i = 0; i < ESubeditor::COUNT; ++i) {
 				if (ImGui::MenuItem(g_SubeditorNames[i].c_str())) {
@@ -103,24 +175,6 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 				m_Subeditors[i]->draw_menu();
 		}
 		ImGui::EndMenuBar();
-	}
-	ImGuiID dockspace_id = ImGui::GetID("SaplingDockspace");
-	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
-	for (int i = 0; i < ESubeditor::COUNT; ++i) {
-		if (!is_subeditor_active(static_cast<ESubeditor::TYPE>(i)))
-			continue;
-		m_Subeditors[i]->update(delta_time);
-	}
-	ImGui::End();
-	ImGui::PopStyleVar(3);
-	for (int i = 0; i < ESubeditor::COUNT; ++i) {
-		if (m_ShouldExecuteSubeditorCreationCallback[i]) {
-			m_Subeditors[i].reset(subeditor_factory(static_cast<ESubeditor::TYPE>(i), true));
-			if (m_Subeditors[i]) {
-			 	m_ActiveSubeditors |= 1 << i;
-				m_ShouldExecuteSubeditorCreationCallback[i] = false;
-			}
-		}
 	}
 }
 
@@ -212,22 +266,7 @@ bool SaplingLayer::is_subeditor_active(ESubeditor::TYPE type) { return m_ActiveS
 SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type, bool is_callback) {
 	switch (type) {
 	case ESubeditor::LevelEditor:
-		if (!is_callback) {
-			m_ShouldExecuteSubeditorCreationCallback[ESubeditor::LevelEditor] = true;
-			IGFD::FileDialogConfig config{};
-			config.path = Sapfire::fs::FileSystem::root_directory();
-			ImGuiFileDialog::Instance()->OpenDialog("OpenSceneEditorDlg", "Open scene", ".scene", config);
-			return nullptr;
-		}
-		if (ImGuiFileDialog::Instance()->Display("OpenSceneEditorDlg")) {
-			if (ImGuiFileDialog::Instance()->IsOk()) {
-				stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
-				if (!filepath.empty()) {
-					return mem_new(mem::Editor) SLevelEditor(m_GraphicsDevice.get(), filepath);
-				}
-			}
-			ImGuiFileDialog::Instance()->Close();
-		}
+		return mem_new(mem::Editor) SLevelEditor(m_GraphicsDevice.get(), m_AssetManager.get(), "");
 	}
 	return nullptr;
 }

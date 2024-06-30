@@ -10,3 +10,6 @@
 [submodule "sapling/vendor/ImGuiFileDialog"]
 	path = sapling/vendor/ImGuiFileDialog
 	url = https://github.com/aiekick/ImGuiFileDialog
+[submodule "sapling/vendor/json"]
+	path = sapling/vendor/json
+	url = https://github.com/nlohmann/json.git

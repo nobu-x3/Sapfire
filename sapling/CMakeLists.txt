@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
 project(Sapling VERSION 0.1)
 
+add_subdirectory(vendor/json)
+
 file(GLOB IMGUI_FILES "vendor/imgui/*.h"
     "vendor/imgui/*.cpp"
     "vendor/imgui/backends/imgui_impl_win32.h"
@@ -26,10 +28,24 @@ add_executable(Sapling
     src/widgets/scene_view.cpp
     src/widgets/asset_browser.cpp
     src/widgets/tiny_widgets/buttons.cpp
+    src/assets/project_reader.cpp
     ${IMGUI_FILES}
     )
-target_include_directories(Sapling PUBLIC ${ROOT_PATH_ABS}/engine/include include vendor/imgui vendor/ImGuiFileDialog)
-target_link_libraries(Sapling PUBLIC Engine)
+
+target_include_directories(Sapling PUBLIC
+    ${ROOT_PATH_ABS}/engine/include 
+    include 
+    vendor/imgui 
+    vendor/ImGuiFileDialog
+    vendor/json/include
+    )
+
+target_link_libraries(Sapling 
+    PUBLIC 
+    Engine 
+    PRIVATE
+    nlohmann_json::nlohmann_json
+    )
 
 ## Copying dep dlls to sapling
 add_custom_command(TARGET Sapling POST_BUILD
