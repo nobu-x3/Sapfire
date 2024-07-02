@@ -1,6 +1,7 @@
 #pragma once
 #include "mesh_manager.h"
 #include "texture_manager.h"
+#include "core/file_system.h"
 
 namespace Sapfire {
 	class GraphicsDevice;
@@ -31,7 +32,7 @@ namespace Sapfire::assets {
 			m_TextureRegistry.move_texture(m_Device, old_path, new_path);
 		}
 		inline void release_texture(const stl::string& path) { m_TextureRegistry.release_texture(path); };
-		inline TextureAsset* get_texture(const stl::string& path) const { return m_TextureRegistry.get(path); }
+		inline TextureAsset* get_texture(const stl::string& path) const { return m_TextureRegistry.get(fs::relative_path(path)); }
 		inline TextureAsset* get_texture(UUID uuid) const { return m_TextureRegistry.get(uuid); }
 		inline stl::string get_texture_path(UUID uuid) const { return m_TextureRegistry.get_path(uuid); }
 		inline TextureResource get_texture_resource(const stl::string& path) { return m_TextureManager.texture_resources[path]; }
@@ -41,7 +42,7 @@ namespace Sapfire::assets {
 		inline void import_mesh(const stl::string& path, UUID uuid) { return m_MeshRegistry.import_mesh(path, uuid); }
 		inline void move_mesh(const stl::string& old_path, const stl::string& new_path) { m_MeshRegistry.move_mesh(old_path, new_path); }
 		inline void release_mesh(const stl::string& path) { m_MeshRegistry.release_mesh(path); }
-		inline MeshAsset* get_mesh(const stl::string& path) const { return m_MeshRegistry.get(path); }
+		inline MeshAsset* get_mesh(const stl::string& path) const { return m_MeshRegistry.get(fs::relative_path(path)); }
 		inline MeshAsset* get_mesh(UUID uuid) const { return m_MeshRegistry.get(uuid); }
 		inline stl::string get_mesh_path(UUID uuid) { return m_MeshRegistry.get_path(uuid); }
 		inline const stl::unordered_map<stl::string, MeshAsset>& path_mesh_map() const { return m_MeshRegistry.path_asset_map(); }

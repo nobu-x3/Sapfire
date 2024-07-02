@@ -26,7 +26,7 @@ namespace Sapfire::tools::shader_compiler {
 			d3d_check(::DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils)));
 			d3d_check(::DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
 			d3d_check(utils->CreateDefaultIncludeHandler(&includeHandler));
-			shader_directory = fs::FileSystem::get_full_path(L"assets/shaders");
+			shader_directory = fs::full_path(L"assets/shaders");
 			CORE_INFO("Shader base directory: {}", d3d::WStringToANSI(shader_directory));
 		}
 		CORE_INFO("Compiling shader at path: {}", path);
@@ -116,7 +116,11 @@ namespace Sapfire::tools::shader_compiler {
 			d3d_check(::DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&utils)));
 			d3d_check(::DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&compiler)));
 			d3d_check(utils->CreateDefaultIncludeHandler(&includeHandler));
-			shader_directory = fs::FileSystem::get_full_path(L"assets/shaders");
+			shader_directory = fs::full_path(L"assets/shaders");
+			if (shader_directory.empty()) {
+				CORE_WARN("Filesystem failed to find shader directory in assets/shaders. Taking a wild guess.");
+				shader_directory = d3d::AnsiToWString(fs::FileSystem::root_directory()) + L"assets/shaders";
+			}
 			CORE_INFO("Shader base directory: {}", d3d::WStringToANSI(shader_directory));
 		}
         stl::wstring full_path = shader_directory + L"/" + stl::wstring{path};

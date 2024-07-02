@@ -110,7 +110,11 @@ namespace Sapfire::d3d {
 		PROFILE_FUNCTION();
 		Texture texture{};
 		TextureCreationDesc texture_desc = desc;
-		texture_desc.path = fs::FileSystem::get_full_path(texture_desc.path);
+		texture_desc.path = fs::full_path(texture_desc.path);
+		if (texture_desc.path.empty()) {
+			CORE_WARN("Texture at path {} could not be located by the filesystem. Taking a wild guess.", d3d::WStringToANSI(desc.path));
+			texture_desc.path = d3d::AnsiToWString(fs::FileSystem::root_directory()) + desc.path;
+		}
 		s32 width{};
 		s32 height{};
 		s32 component_count{4};

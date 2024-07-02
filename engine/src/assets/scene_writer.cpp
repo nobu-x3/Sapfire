@@ -19,8 +19,8 @@ namespace Sapfire::assets {
 	SceneWriter::SceneWriter(ECManager* ec, AssetManager* am) : m_ECManager(*ec), m_AssetManager(*am) {}
 
 	void SceneWriter::serialize(const stl::string& scene_path) {
-		auto full_path = fs::FileSystem::get_full_path(fs::FileSystem::root_directory() + scene_path);
-		auto relative_path = fs::FileSystem::root_directory() + scene_path;
+		auto full_path = fs::full_path(scene_path);
+		auto relative_path = fs::relative_path(scene_path);
 		nlohmann::json j;
 		for (auto&& entry : m_ECManager.entities()) {
 			if (!entry.has_value() || !m_ECManager.is_valid(entry->value))
@@ -75,8 +75,8 @@ namespace Sapfire::assets {
 	void SceneWriter::deserealize(
 		const stl::string& scene_path,
 		stl::function<void(Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths)> render_component_setter) {
-		auto full_path = fs::FileSystem::get_full_path(fs::FileSystem::root_directory() + scene_path);
-		auto relative_path = fs::FileSystem::root_directory() + scene_path;
+		auto full_path = fs::full_path(scene_path);
+		auto relative_path = fs::relative_path(scene_path);
 		std::ifstream file{relative_path};
 		if (!file.is_open()) {
 			CORE_CRITICAL("Scene at path {} could not be open.", full_path);

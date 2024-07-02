@@ -12,8 +12,8 @@
 namespace Sapfire::assets {
 
 	MeshRegistry::MeshRegistry(const stl::string& registry_file_path) {
-		auto full_path = fs::FileSystem::get_full_path(fs::FileSystem::root_directory() + registry_file_path);
-		auto relative_path = fs::FileSystem::root_directory() + registry_file_path;
+		auto full_path = fs::full_path(registry_file_path);
+		auto relative_path = fs::relative_path(registry_file_path);
 		m_RegistryFilePath = relative_path;
 		std::ifstream file{relative_path};
 		if (!file.is_open()) {
@@ -60,16 +60,29 @@ namespace Sapfire::assets {
 	}
 
 	void MeshRegistry::import_mesh(const stl::string& path) {
-		auto abs_path = fs::FileSystem::root_directory() + path;
+		auto abs_path = fs::full_path(path);
+		if (abs_path.empty()) {
+			CORE_WARN("The filesystem failed to locate mesh at path {}. Taking a wild guess.", path);
+			abs_path = fs::FileSystem::root_directory() + path;
+		}
+		auto maybe_mesh_data = tools::OBJLoader::load_mesh(abs_path);
+		if (!maybe_mesh_data.has_value()) {
+			CORE_WARN("Could not load mesh at path {}. Will attempt to load on path {}.", abs_path, path);
+			maybe_mesh_data = tools::OBJLoader::load_mesh(path);
+		}
+		if (m_PathToMeshAssetMap.contains(fs::relative_path(path)))
+			return;
 		auto uuid = UUID{};
 		m_PathToMeshAssetMap[path] = MeshAsset{
 			.uuid = uuid,
-			.data = tools::OBJLoader::load_mesh(abs_path),
+			.data = maybe_mesh_data,
 		};
 		m_UUIDToPathMap[uuid] = path;
 	}
 
 	void MeshRegistry::import_mesh(const stl::string& path, UUID uuid) {
+		if (m_PathToMeshAssetMap.contains(fs::relative_path(path)))
+			return;
 		m_PathToMeshAssetMap[path] = MeshAsset{
 			.uuid = uuid,
 			.data = tools::OBJLoader::load_mesh(path),

@@ -15,8 +15,8 @@ namespace Sapfire::assets {
 	}
 
 	TextureRegistry::TextureRegistry(const stl::string& registry_file_path) {
-		auto full_path = fs::FileSystem::get_full_path(fs::FileSystem::root_directory() + registry_file_path);
-		auto relative_path = fs::FileSystem::root_directory() + registry_file_path;
+		auto full_path = fs::relative_path(registry_file_path);
+		auto relative_path = fs::relative_path(registry_file_path);
 		m_RegistryFilePath = relative_path;
 		std::ifstream file{relative_path};
 		if (!file.is_open()) {
@@ -122,9 +122,10 @@ namespace Sapfire::assets {
 		auto uuid = UUID{};
 		s32 width{};
 		s32 height{};
-		void* data = tools::texture_loader::load(path.c_str(), width, height, 4);
+		void* data = tools::texture_loader::load(fs::full_path(path).c_str(), width, height, 4);
 		auto name = d3d::AnsiToWString(path);
-		m_PathToMeshAssetMap[path] = TextureAsset{
+		auto relative_path = fs::relative_path(path);
+		m_PathToMeshAssetMap[relative_path] = TextureAsset{
 			.uuid = uuid,
 			.description =
 				d3d::TextureCreationDesc{
@@ -132,32 +133,33 @@ namespace Sapfire::assets {
 					.width = static_cast<u32>(width),
 					.height = static_cast<u32>(height),
 					.name = name,
-					.path = d3d::AnsiToWString(path),
+					.path = d3d::AnsiToWString(relative_path),
 				},
 			.data = device.create_texture(
 				d3d::TextureCreationDesc{
 					.usage = d3d::TextureUsage::TextureFromPath,
 					.name = name,
-					.path = d3d::AnsiToWString(path),
+					.path = d3d::AnsiToWString(fs::full_path(path)),
 				},
 				data),
 		};
-		m_UUIDToPathMap[uuid] = path;
+		m_UUIDToPathMap[uuid] = relative_path;
 	}
 
 	void TextureRegistry::import_texture(d3d::GraphicsDevice& device, const stl::string& path, const d3d::TextureCreationDesc& desc,
 										 UUID uuid) {
 		auto name = d3d::AnsiToWString(path);
-		m_PathToMeshAssetMap[path] = TextureAsset{
+		auto relative_path = fs::relative_path(path);
+		m_PathToMeshAssetMap[relative_path] = TextureAsset{
 			.uuid = uuid,
 			.description = desc,
 			.data = device.create_texture(d3d::TextureCreationDesc{
 				.usage = d3d::TextureUsage::TextureFromPath,
 				.name = name,
-				.path = d3d::AnsiToWString(path),
+				.path = d3d::AnsiToWString(fs::full_path(path)),
 			}),
 		};
-		m_UUIDToPathMap[uuid] = path;
+		m_UUIDToPathMap[uuid] = relative_path;
 	}
 
 	void TextureRegistry::move_texture(d3d::GraphicsDevice& device, const stl::string& old_path, const stl::string& new_path) {
