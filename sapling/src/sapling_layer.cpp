@@ -107,8 +107,8 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 					m_ProjectName = filename;
 					reader.serialize(filepath);
 				}
+				ImGuiFileDialog::Instance()->Close();
 			}
-			ImGuiFileDialog::Instance()->Close();
 		}
 	} else {
 		ImGui::Begin("Sapling", nullptr, window_flags);
