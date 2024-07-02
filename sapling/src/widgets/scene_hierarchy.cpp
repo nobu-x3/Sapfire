@@ -28,6 +28,19 @@ namespace widgets {
 					}
 					ImGui::EndDragDropTarget();
 				}
+				if (ImGui::IsItemHovered() && m_ShowContextMenu) {
+					ImGui::OpenPopup("scene_hierarchy_context_menu_for_entity");
+				}
+				if (ImGui::BeginPopup("scene_hierarchy_context_menu_for_entity")) {
+					if (ImGui::MenuItem("Create")) {
+						auto entity = m_ECManager.create_entity();
+						auto& transform_component = m_ECManager.engine_component<components::Transform>(entity);
+						transform_component.parent(-1);
+						m_ShowContextMenu = false;
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::EndPopup();
+				}
 				// Go through all valid entities and make tree nodes recursively
 				for (u32 i = 0; i < valid_indices.size(); ++i) {
 					stl::generational_index parent_index = valid_indices[i];
@@ -88,30 +101,7 @@ namespace widgets {
 				m_SelectedEntity = parent_entity;
 				m_SelectEntity = false;
 			}
-			// Right clicking will open a "context menu" as a popup
-			if (ImGui::IsItemHovered() && m_ShowContextMenu) {
-				ImGui::OpenPopup("scene_hierarchy_context_menu_for_entity");
-			}
-			if (ImGui::BeginPopup("scene_hierarchy_context_menu_for_entity")) {
-				if (ImGui::MenuItem("Create")) {
-					auto entity = m_ECManager.create_entity();
-					auto& transform_component = m_ECManager.engine_component<components::Transform>(entity);
-					transform_component.parent(parent_entity.id().index);
-					m_ShowContextMenu = false;
-					ImGui::CloseCurrentPopup();
-				}
-				if (ImGui::MenuItem("Remove")) {
-					// destroy_entity() takes care of children
-					m_ECManager.destroy_entity(parent_entity);
-					m_ShowContextMenu = false;
-					if (m_SelectedEntity.has_value() && m_SelectedEntity.value() == parent_entity) {
-						m_SelectedEntity = {};
-						m_EntitySelectedCallback(m_SelectedEntity);
-					}
-					ImGui::CloseCurrentPopup();
-				}
-				ImGui::EndPopup();
-			}
+			draw_entity_context_menu(parent_entity);
 			// Iterate over all entities again in case we reparented someone
 			for (u32 next_valid_index = 0; next_valid_index < indices.size(); ++next_valid_index) {
 				auto& next_index = indices[next_valid_index];
@@ -127,6 +117,33 @@ namespace widgets {
 			}
 			ImGui::PopID();
 			ImGui::TreePop();
+		}
+	}
+
+	void SSceneHierarchy::draw_entity_context_menu(const Sapfire::Entity& parent_entity) {
+		// Right clicking will open a "context menu" as a popup
+		if (ImGui::IsItemHovered() && m_ShowContextMenu) {
+			ImGui::OpenPopup("scene_hierarchy_context_menu_for_entity");
+		}
+		if (ImGui::BeginPopup("scene_hierarchy_context_menu_for_entity")) {
+			if (ImGui::MenuItem("Create")) {
+				auto entity = m_ECManager.create_entity();
+				auto& transform_component = m_ECManager.engine_component<components::Transform>(entity);
+				transform_component.parent(parent_entity.id().index);
+				m_ShowContextMenu = false;
+				ImGui::CloseCurrentPopup();
+			}
+			if (ImGui::MenuItem("Remove")) {
+				// destroy_entity() takes care of children
+				m_ECManager.destroy_entity(parent_entity);
+				m_ShowContextMenu = false;
+				if (m_SelectedEntity.has_value() && m_SelectedEntity.value() == parent_entity) {
+					m_SelectedEntity = {};
+					m_EntitySelectedCallback(m_SelectedEntity);
+				}
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
 		}
 	}
 

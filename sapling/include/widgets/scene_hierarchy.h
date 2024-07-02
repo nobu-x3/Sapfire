@@ -21,6 +21,7 @@ namespace widgets {
 
 	private:
 		void build_tree_for_entity(const Sapfire::stl::vector<Sapfire::stl::generational_index>& indices, Sapfire::u32 valid_parent_index);
+		void draw_entity_context_menu(const Sapfire::Entity& parent_entity);
 
 	private:
 		Sapfire::ECManager& m_ECManager;
