@@ -1,6 +1,6 @@
 #pragma once
-#include "d3dcommon.h"
 #include "core/core.h"
+#include "d3dcommon.h"
 #if defined(SF_PLATFORM_WINDOWS)
 #include <D3Dcompiler.h>
 #include <comdef.h>
@@ -42,11 +42,11 @@ namespace Sapfire::d3d {
 			// Get the string description of the error code.
 			_com_error err(ErrorCode);
 #ifdef UNICODE
-            std::wstring msg = err.ErrorMessage();
-            return FunctionName + L" failed in " + Filename + L"; line " + std::to_wstring(LineNumber) + L"; error: " + msg;
+			std::wstring msg = err.ErrorMessage();
+			return FunctionName + L" failed in " + Filename + L"; line " + std::to_wstring(LineNumber) + L"; error: " + msg;
 #else
-            std::wstring msg = AnsiToWString(err.ErrorMessage());
-            return FunctionName + L" failed in " + Filename + L"; line " + std::to_wstring(LineNumber) + L"; error: " + msg;
+			std::wstring msg = AnsiToWString(err.ErrorMessage());
+			return FunctionName + L" failed in " + Filename + L"; line " + std::to_wstring(LineNumber) + L"; error: " + msg;
 #endif
 		}
 
@@ -61,6 +61,7 @@ namespace Sapfire::d3d {
 		HRESULT hr__ = (x);                                                                                                                \
 		std::wstring wfn = d3d::AnsiToWString(__FILE__);                                                                                   \
 		if (FAILED(hr__)) {                                                                                                                \
+			__debugbreak();                                                                                                                \
 			throw d3d::DxException(hr__, L#x, wfn, __LINE__);                                                                              \
 		}                                                                                                                                  \
 	}
