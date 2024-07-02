@@ -28,6 +28,7 @@ public:
 	void on_render() final;
 
 private:
+	void serialize();
 	void draw_menu_bar();
 	void update_pass_cb(Sapfire::f32 delta_time);
 	bool on_window_resize_finished(Sapfire::WindowResizeFinishedEvent&);

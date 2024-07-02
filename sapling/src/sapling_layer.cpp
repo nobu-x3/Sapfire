@@ -152,8 +152,7 @@ void SaplingLayer::draw_menu_bar() {
 				ImGuiFileDialog::Instance()->OpenDialog("OpenProjectDlg", "Open project", ".sfproj", config);
 			}
 			if (ImGui::MenuItem("Save", "CTRL + S")) {
-				::assets::ProjectReader reader{m_AssetManager.get(), m_ProjectName};
-				reader.serialize(m_ProjectPath);
+				serialize();
 			}
 			ImGui::EndMenu();
 		}
@@ -176,6 +175,11 @@ void SaplingLayer::draw_menu_bar() {
 		}
 		ImGui::EndMenuBar();
 	}
+}
+
+void SaplingLayer::serialize() {
+	::assets::ProjectReader reader{m_AssetManager.get(), m_ProjectName};
+	reader.serialize(m_ProjectPath);
 }
 
 void SaplingLayer::on_render() {
@@ -266,7 +270,7 @@ bool SaplingLayer::is_subeditor_active(ESubeditor::TYPE type) { return m_ActiveS
 SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type, bool is_callback) {
 	switch (type) {
 	case ESubeditor::LevelEditor:
-		return mem_new(mem::Editor) SLevelEditor(m_GraphicsDevice.get(), m_AssetManager.get(), "");
+		return mem_new(mem::Editor) SLevelEditor(m_GraphicsDevice.get(), m_AssetManager.get(), "", [this]() { serialize(); });
 	}
 	return nullptr;
 }
