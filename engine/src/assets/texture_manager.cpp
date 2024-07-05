@@ -125,6 +125,8 @@ namespace Sapfire::assets {
 		void* data = tools::texture_loader::load(fs::full_path(path).c_str(), width, height, 4);
 		auto name = d3d::AnsiToWString(path);
 		auto relative_path = fs::relative_path(path);
+		if (m_PathToMeshAssetMap.contains(relative_path))
+			return;
 		m_PathToMeshAssetMap[relative_path] = TextureAsset{
 			.uuid = uuid,
 			.description =
@@ -150,6 +152,8 @@ namespace Sapfire::assets {
 										 UUID uuid) {
 		auto name = d3d::AnsiToWString(path);
 		auto relative_path = fs::relative_path(path);
+		if (m_PathToMeshAssetMap.contains(relative_path))
+			return;
 		m_PathToMeshAssetMap[relative_path] = TextureAsset{
 			.uuid = uuid,
 			.description = desc,
