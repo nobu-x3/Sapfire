@@ -14,8 +14,7 @@ SLevelEditor* SLevelEditor::level_editor() { return s_Instance; }
 
 SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device, Sapfire::assets::AssetManager* am,
 						   const Sapfire::stl::string& scene_path, Sapfire::stl::function<void()> asset_imported_callback) :
-	SSubeditor("Level Editor"),
-	m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)), m_AssetManager(*am) {
+	SSubeditor("Level Editor"), m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)), m_AssetManager(*am) {
 	s_Instance = this;
 	m_Widgets.push_back(
 		stl::make_unique<widgets::SSceneHierarchy>(mem::ENUM::Editor, m_ECManager.get(), BIND_EVENT_FN(SLevelEditor::on_entity_selected)));

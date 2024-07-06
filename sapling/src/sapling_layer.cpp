@@ -222,7 +222,7 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 void SaplingLayer::draw_menu_bar() {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("Project")) {
-			if (ImGui::MenuItem("Open...", "Ctrl + O")) {
+			if (ImGui::MenuItem("Open...", "Ctrl+O")) {
 				IGFD::FileDialogConfig config{};
 				m_ProjectPath = "";
 				m_AssetManager =
@@ -236,7 +236,7 @@ void SaplingLayer::draw_menu_bar() {
 				config.countSelectionMax = 1;
 				ImGuiFileDialog::Instance()->OpenDialog("OpenProjectDlg", "Open project", ".sfproj", config);
 			}
-			if (ImGui::MenuItem("Save", "CTRL + S")) {
+			if (ImGui::MenuItem("Save", "CTRL+S")) {
 				serialize();
 			}
 			ImGui::EndMenu();

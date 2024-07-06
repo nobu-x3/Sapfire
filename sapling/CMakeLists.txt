@@ -23,6 +23,7 @@ add_executable(Sapling
     src/icons.cpp
     src/subeditors/subeditor.cpp
     src/subeditors/level_editor.cpp
+    src/subeditors/material_editor.cpp
     src/widgets/scene_hierarchy.cpp
     src/widgets/entity_inspector.cpp
     src/widgets/scene_view.cpp
@@ -33,16 +34,16 @@ add_executable(Sapling
     )
 
 target_include_directories(Sapling PUBLIC
-    ${ROOT_PATH_ABS}/engine/include 
-    include 
-    vendor/imgui 
+    ${ROOT_PATH_ABS}/engine/include
+    include
+    vendor/imgui
     vendor/ImGuiFileDialog
     vendor/json/include
     )
 
-target_link_libraries(Sapling 
-    PUBLIC 
-    Engine 
+target_link_libraries(Sapling
+    PUBLIC
+    Engine
     PRIVATE
     nlohmann_json::nlohmann_json
     )
