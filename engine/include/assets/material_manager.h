@@ -45,7 +45,7 @@ namespace Sapfire::assets {
 		MaterialAsset* get(const stl::string& path) const;
 		MaterialAsset* get(UUID uuid) const;
 		stl::string get_path(UUID uuid) const;
-		const stl::unordered_map<stl::string, MaterialAsset>& path_asset_map() const { return m_PathToMaterialAssetMap; }
+		stl::unordered_map<stl::string, MaterialAsset>& path_asset_map() { return m_PathToMaterialAssetMap; }
 		stl::string to_string();
 
         static void create_default(const stl::string& registry_file_path);

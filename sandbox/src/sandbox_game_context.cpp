@@ -114,20 +114,12 @@ void SandboxGameContext::load_contents() {
 		.format = DXGI_FORMAT_D32_FLOAT,
 		.name = L"Depth Texture",
 	});
-    m_AssetManager.load_runtime_texture("assets/textures/ceramics.jpg");
-	// Materials
-	d3d::Material grass{};
-	grass.name = "grass";
-	grass.material_cb_index = 0;
-	grass.diffuse_albedo = DirectX::XMFLOAT4{0.2f, 0.6f, 0.6f, 1.0f};
-	grass.roughness = 0.125f;
-	grass.material_buffer = m_GraphicsDevice->create_buffer<d3d::MaterialConstants>({
-		.usage = d3d::BufferUsage::ConstantBuffer,
-		.name = L"Material Buffer - Grass",
-	});
-	m_Materials.push_back(grass);
+	m_AssetManager.load_runtime_texture("assets/textures/ceramics.jpg");
+	m_AssetManager.import_material("assets/materials/default.mat");
 	components::RenderComponent cube_rc{
-		{}, m_AssetManager.get_texture("assets/textures/ceramics.jpg")->uuid,
+		{},
+		m_AssetManager.get_texture("assets/textures/ceramics.jpg")->uuid,
+		m_AssetManager.get_material("assets/materials/default.mat")->uuid,
 		components::CPUData{
 			.indices_size = static_cast<u32>(cube.indices32.size()),
 			.index_id = 0,
@@ -143,13 +135,15 @@ void SandboxGameContext::load_contents() {
 			.uv_buffer_idx = m_VertexUVBuffers[0].srv_index,
 			.scene_cbuffer_idx = m_TransformBuffers[0].cbv_index,
 			.pass_cbuffer_idx = m_MainPassCB.cbv_index,
-			.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
+			.material_cbuffer_idx = m_AssetManager.material_resource_exists("assets/materials/default.mat")
+				? m_AssetManager.get_material_resource("assets/materials/default.mat").gpu_idx
+				: 0,
 			.texture_cbuffer_idx = m_AssetManager.get_texture_resource("assets/textures/ceramics.jpg").gpu_idx,
 		},
 	};
 	m_ECManager.add_engine_component<components::RenderComponent>(entity1, cube_rc);
 	stl::string monkey_path = "assets/models/monkey.obj";
-	create_render_component(entity2, {monkey_path, "assets/textures/ceramics.jpg"});
+	create_render_component(entity2, {monkey_path, "assets/textures/ceramics.jpg", "assets/materials/default.mat"});
 }
 
 void SandboxGameContext::update(f32 delta_time) {
@@ -200,14 +194,14 @@ void SandboxGameContext::update_pass_cb(f32 delta_time) {
 
 void SandboxGameContext::update_materials(f32 delta_time) {
 	auto index = 0;
-	for (auto& material : m_Materials) {
+	for (auto&& [path, asset] : m_AssetManager.path_material_map()) {
 		d3d::MaterialConstants data{
-			.diffuse_albedo = material.diffuse_albedo,
-			.fresnel_r0 = material.fresnel_r0,
-			.roughness = material.roughness,
+			.diffuse_albedo = asset.material.diffuse_albedo,
+			.fresnel_r0 = asset.material.fresnel_r0,
+			.roughness = asset.material.roughness,
 		};
-		material.material_buffer.update(&data);
-		material.material_cb_index = index;
+		asset.material.material_buffer.update(&data);
+		asset.material.material_cb_index = index;
 		index++;
 	}
 }

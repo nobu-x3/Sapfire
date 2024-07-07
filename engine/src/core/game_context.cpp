@@ -30,6 +30,7 @@ namespace Sapfire {
 		// @TODO: add materials
 		auto* mesh_asset = m_AssetManager.get_mesh(resource_paths.mesh_path);
 		auto* texture_asset = m_AssetManager.get_texture(resource_paths.texture_path);
+		auto* material_asset = m_AssetManager.get_material(resource_paths.material_path);
 		if (!mesh_asset) {
 			m_AssetManager.import_mesh(resource_paths.mesh_path);
 			mesh_asset = m_AssetManager.get_mesh(resource_paths.mesh_path);
@@ -38,7 +39,11 @@ namespace Sapfire {
 			m_AssetManager.load_runtime_texture(resource_paths.texture_path);
 			texture_asset = m_AssetManager.get_texture(resource_paths.texture_path);
 		}
-		if (mesh_asset && texture_asset && mesh_asset->data.has_value()) {
+		if (!material_asset) {
+			m_AssetManager.import_material(resource_paths.material_path);
+			material_asset = m_AssetManager.get_material(resource_paths.material_path);
+		}
+		if (mesh_asset && texture_asset && material_asset && mesh_asset->data.has_value()) {
 			assert(mesh_asset->data->indices32.size() > 0);
 			assert(mesh_asset->data->positions.size() > 0);
 			assert(mesh_asset->data->normals.size() > 0);
@@ -75,6 +80,7 @@ namespace Sapfire {
 			components::RenderComponent render_component{
 				mesh_asset->uuid,
 				texture_asset->uuid,
+				material_asset->uuid,
 				components::CPUData{
 					.indices_size = static_cast<u32>(mesh_asset->data->indices32.size()),
 					.index_id = static_cast<u32>(m_RTIndexBuffers.size() - 1),
@@ -90,7 +96,9 @@ namespace Sapfire {
 					.uv_buffer_idx = m_VertexUVBuffers.back().srv_index,
 					.scene_cbuffer_idx = m_TransformBuffers.back().cbv_index,
 					.pass_cbuffer_idx = m_MainPassCB.cbv_index,
-					.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
+					.material_cbuffer_idx = m_AssetManager.material_resource_exists(resource_paths.material_path)
+						? m_AssetManager.get_material_resource(resource_paths.material_path).gpu_idx
+						: 0,
 					.texture_cbuffer_idx = m_AssetManager.texture_resource_exists(resource_paths.texture_path)
 						? m_AssetManager.get_texture_resource(resource_paths.texture_path).gpu_idx
 						: 0,

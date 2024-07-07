@@ -9,6 +9,7 @@ namespace Sapfire::rtti {
 		None,
 		Mesh,
 		Texture,
+		Material
 	};
 
 	struct rtti_field {

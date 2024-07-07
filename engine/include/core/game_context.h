@@ -35,6 +35,7 @@ namespace Sapfire {
 	struct SFAPI RenderComponentResourcePaths {
 		stl::string mesh_path;
 		stl::string texture_path;
+		stl::string material_path;
 	};
 
 	constexpr f32 CAMERA_FOV = TO_RADIANS(90);
@@ -59,7 +60,6 @@ namespace Sapfire {
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_VertexTangentBuffers{};
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_VertexUVBuffers{};
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_TransformBuffers{};
-		Sapfire::stl::vector<Sapfire::d3d::Material> m_Materials{};
 		Sapfire::d3d::Buffer m_MainPassCB{};
 		assets::AssetManager m_AssetManager;
 		ECManager m_ECManager{};

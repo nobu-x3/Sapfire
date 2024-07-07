@@ -20,7 +20,7 @@ namespace Sapfire::assets {
 	struct SFAPI TextureManager {
 		Sapfire::stl::unordered_map<Sapfire::stl::string, TextureResource> texture_resources;
 		Sapfire::stl::unordered_map<Sapfire::UUID, Sapfire::stl::string> uuid_to_path_map;
-        void add(const Sapfire::stl::string& path, Sapfire::UUID uuid, TextureResource resource);
+		void add(const Sapfire::stl::string& path, Sapfire::UUID uuid, TextureResource resource);
 	};
 
 	struct SFAPI TextureAsset {
@@ -46,8 +46,8 @@ namespace Sapfire::assets {
 		void deserialize(d3d::GraphicsDevice& device, const stl::string& data);
 		TextureAsset* get(const stl::string& path) const;
 		TextureAsset* get(UUID uuid) const;
-        stl::string get_path(UUID uuid) const;
-        const stl::unordered_map<stl::string, TextureAsset>& path_asset_map() const { return m_PathToTextureAssetMap; }
+		stl::string get_path(UUID uuid) const;
+		const stl::unordered_map<stl::string, TextureAsset>& path_asset_map() const { return m_PathToTextureAssetMap; }
 		stl::string to_string();
 
 		static void create_default(const stl::string& registry_file_path);

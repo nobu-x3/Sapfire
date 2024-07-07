@@ -124,10 +124,9 @@ namespace Sapfire::assets {
 		s32 height{};
 		void* data = tools::texture_loader::load(fs::full_path(path).c_str(), width, height, 4);
 		auto name = d3d::AnsiToWString(path);
-		auto relative_path = fs::relative_path(path);
-		if (m_PathToTextureAssetMap.contains(relative_path))
+		if (m_PathToTextureAssetMap.contains(path))
 			return;
-		m_PathToTextureAssetMap[relative_path] = TextureAsset{
+		m_PathToTextureAssetMap[path] = TextureAsset{
 			.uuid = uuid,
 			.description =
 				d3d::TextureCreationDesc{
@@ -135,7 +134,7 @@ namespace Sapfire::assets {
 					.width = static_cast<u32>(width),
 					.height = static_cast<u32>(height),
 					.name = name,
-					.path = d3d::AnsiToWString(relative_path),
+					.path = d3d::AnsiToWString(path),
 				},
 			.data = device.create_texture(
 				d3d::TextureCreationDesc{
@@ -145,16 +144,15 @@ namespace Sapfire::assets {
 				},
 				data),
 		};
-		m_UUIDToPathMap[uuid] = relative_path;
+		m_UUIDToPathMap[uuid] = path;
 	}
 
 	void TextureRegistry::import_texture(d3d::GraphicsDevice& device, const stl::string& path, const d3d::TextureCreationDesc& desc,
 										 UUID uuid) {
 		auto name = d3d::AnsiToWString(path);
-		auto relative_path = fs::relative_path(path);
-		if (m_PathToTextureAssetMap.contains(relative_path))
+		if (m_PathToTextureAssetMap.contains(path))
 			return;
-		m_PathToTextureAssetMap[relative_path] = TextureAsset{
+		m_PathToTextureAssetMap[path] = TextureAsset{
 			.uuid = uuid,
 			.description = desc,
 			.data = device.create_texture(d3d::TextureCreationDesc{
@@ -163,7 +161,7 @@ namespace Sapfire::assets {
 				.path = d3d::AnsiToWString(fs::full_path(path)),
 			}),
 		};
-		m_UUIDToPathMap[uuid] = relative_path;
+		m_UUIDToPathMap[uuid] = path;
 	}
 
 	void TextureRegistry::move_texture(d3d::GraphicsDevice& device, const stl::string& old_path, const stl::string& new_path) {

@@ -81,7 +81,7 @@ namespace Sapfire::assets {
 	}
 
 	void MeshRegistry::import_mesh(const stl::string& path, UUID uuid) {
-		if (m_PathToMeshAssetMap.contains(fs::relative_path(path)))
+		if (m_PathToMeshAssetMap.contains(path))
 			return;
 		m_PathToMeshAssetMap[path] = MeshAsset{
 			.uuid = uuid,

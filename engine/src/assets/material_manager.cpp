@@ -19,14 +19,13 @@ namespace Sapfire::assets {
 	}
 
 	MaterialRegistry::MaterialRegistry(const stl::string& registry_file_path) {
-		auto full_path = fs::relative_path(registry_file_path);
-		auto relative_path = fs::relative_path(registry_file_path);
-		m_RegistryFilePath = relative_path;
-		std::ifstream file{relative_path};
+		auto full_path = fs::full_path(registry_file_path);
+		m_RegistryFilePath = registry_file_path;
+		std::ifstream file{registry_file_path};
 		if (!file.is_open()) {
 			CORE_WARN("Texture registry at path {} could not be open, created the default registry at given path.", full_path);
-			create_default(relative_path);
-			file.open(relative_path);
+			create_default(registry_file_path);
+			file.open(registry_file_path);
 		}
 		nlohmann::json j;
 		file >> j;
@@ -84,35 +83,34 @@ namespace Sapfire::assets {
 	}
 
 	void MaterialRegistry::import_material(d3d::GraphicsDevice& device, const stl::string& path) {
-		auto relative_path = fs::relative_path(path);
-		if (m_PathToMaterialAssetMap.contains(relative_path))
+		if (m_PathToMaterialAssetMap.contains(path))
 			return;
-		std::ifstream file{relative_path};
+		std::ifstream file{path};
 		if (!file.is_open()) {
-			CORE_ERROR("Material at path {} could not be open.", relative_path);
+			CORE_ERROR("Material at path {} could not be open.", path);
 			return;
 		}
 		nlohmann::json j;
 		file >> j;
 		file.close();
 		if (!j.contains("UUID")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain UUID.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain UUID.", path);
 			return;
 		}
 		if (!j.contains("name")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain name.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain name.", path);
 			return;
 		}
 		if (!j.contains("diffuse_albedo")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain diffuse albedo.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain diffuse albedo.", path);
 			return;
 		}
 		if (!j.contains("fresnel_r0")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain fresnel r0.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain fresnel r0.", path);
 			return;
 		}
 		if (!j.contains("roughness")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain roughness.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain roughness.", path);
 			return;
 		}
 		UUID uuid = UUID{j["UUID"]};
@@ -125,39 +123,38 @@ namespace Sapfire::assets {
 			.name = d3d::AnsiToWString(material.name),
 		});
 		material.material_cb_index = material.material_buffer.cbv_index;
-		m_PathToMaterialAssetMap[relative_path] = MaterialAsset{
+		m_PathToMaterialAssetMap[path] = MaterialAsset{
 			.uuid = uuid,
 			.material = material,
 		};
-		m_UUIDToPathMap[uuid] = relative_path;
+		m_UUIDToPathMap[uuid] = path;
 	}
 
 	void MaterialRegistry::import_material(d3d::GraphicsDevice& device, const stl::string& path, UUID uuid) {
-		auto relative_path = fs::relative_path(path);
-		if (m_PathToMaterialAssetMap.contains(relative_path))
+		if (m_PathToMaterialAssetMap.contains(path))
 			return;
-		std::ifstream file{relative_path};
+		std::ifstream file{path};
 		if (!file.is_open()) {
-			CORE_ERROR("Material at path {} could not be open.", relative_path);
+			CORE_ERROR("Material at path {} could not be open.", path);
 			return;
 		}
 		nlohmann::json j;
 		file >> j;
 		file.close();
 		if (!j.contains("name")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain name.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain name.", path);
 			return;
 		}
 		if (!j.contains("diffuse_albedo")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain diffuse albedo.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain diffuse albedo.", path);
 			return;
 		}
 		if (!j.contains("fresnel_r0")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain fresnel r0.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain fresnel r0.", path);
 			return;
 		}
 		if (!j.contains("roughness")) {
-			CORE_CRITICAL("Broken material at path {}. Does not contain roughness.", relative_path);
+			CORE_CRITICAL("Broken material at path {}. Does not contain roughness.", path);
 			return;
 		}
 		d3d::Material material{.name = fs::file_name(j["name"])};
@@ -169,11 +166,11 @@ namespace Sapfire::assets {
 			.name = d3d::AnsiToWString(material.name),
 		});
 		material.material_cb_index = material.material_buffer.cbv_index;
-		m_PathToMaterialAssetMap[relative_path] = MaterialAsset{
+		m_PathToMaterialAssetMap[path] = MaterialAsset{
 			.uuid = uuid,
 			.material = material,
 		};
-		m_UUIDToPathMap[uuid] = relative_path;
+		m_UUIDToPathMap[uuid] = path;
 	}
 
 	void MaterialRegistry::move_material(d3d::GraphicsDevice& device, const stl::string& old_path, const stl::string& new_path) {}

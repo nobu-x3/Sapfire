@@ -1,0 +1,7 @@
+{
+	"name" : "default",
+	"UUID" : 13700118063961433558,
+	"roughness" : 0.125,
+	"diffuse_albedo" : [0.2, 0.6, 0.6, 1.0],
+	"fresnel_r0" : [0, 0, 0]
+}

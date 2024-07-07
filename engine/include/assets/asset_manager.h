@@ -28,7 +28,7 @@ namespace Sapfire::assets {
 		void load_runtime_texture(const stl::string& path);
 		void load_all_runtime_textures();
 		bool is_texture_loaded_for_runtime(UUID uuid);
-		inline void import_texture(const stl::string& path) { m_TextureRegistry.import_texture(m_Device, path); }
+		inline void import_texture(const stl::string& path) { m_TextureRegistry.import_texture(m_Device, fs::relative_path(path)); }
 		inline void move_texture(const stl::string& old_path, const stl::string& new_path) {
 			m_TextureRegistry.move_texture(m_Device, old_path, new_path);
 		}
@@ -36,13 +36,13 @@ namespace Sapfire::assets {
 		inline TextureAsset* get_texture(const stl::string& path) const { return m_TextureRegistry.get(fs::relative_path(path)); }
 		inline TextureAsset* get_texture(UUID uuid) const { return m_TextureRegistry.get(uuid); }
 		inline stl::string get_texture_path(UUID uuid) const { return m_TextureRegistry.get_path(uuid); }
-		inline TextureResource get_texture_resource(const stl::string& path) { return m_TextureManager.texture_resources[path]; }
-		inline bool texture_resource_exists(const stl::string& path) { return m_TextureManager.texture_resources.contains(path); }
+		inline TextureResource get_texture_resource(const stl::string& path) { return m_TextureManager.texture_resources[fs::relative_path(path)]; }
+		inline bool texture_resource_exists(const stl::string& path) { return m_TextureManager.texture_resources.contains(fs::relative_path(path)); }
 		inline const stl::unordered_map<stl::string, TextureAsset>& path_texture_map() const { return m_TextureRegistry.path_asset_map(); }
-		inline void import_mesh(const stl::string& path) { return m_MeshRegistry.import_mesh(path); }
-		inline void import_mesh(const stl::string& path, UUID uuid) { return m_MeshRegistry.import_mesh(path, uuid); }
-		inline void move_mesh(const stl::string& old_path, const stl::string& new_path) { m_MeshRegistry.move_mesh(old_path, new_path); }
-		inline void release_mesh(const stl::string& path) { m_MeshRegistry.release_mesh(path); }
+		inline void import_mesh(const stl::string& path) { return m_MeshRegistry.import_mesh(fs::relative_path(path)); }
+		inline void import_mesh(const stl::string& path, UUID uuid) { return m_MeshRegistry.import_mesh(fs::relative_path(path), uuid); }
+		inline void move_mesh(const stl::string& old_path, const stl::string& new_path) { m_MeshRegistry.move_mesh(fs::relative_path(old_path), fs::relative_path(new_path)); }
+		inline void release_mesh(const stl::string& path) { m_MeshRegistry.release_mesh(fs::relative_path(path)); }
 		inline MeshAsset* get_mesh(const stl::string& path) const { return m_MeshRegistry.get(fs::relative_path(path)); }
 		inline MeshAsset* get_mesh(UUID uuid) const { return m_MeshRegistry.get(uuid); }
 		inline stl::string get_mesh_path(UUID uuid) { return m_MeshRegistry.get_path(uuid); }
@@ -54,7 +54,12 @@ namespace Sapfire::assets {
 			auto path = m_MeshRegistry.get_path(uuid);
 			return m_MeshManager.mesh_resources.at(path);
 		}
-		inline void import_material(const stl::string& path) { m_MaterialRegistry.import_material(m_Device, path); }
+		inline void import_material(const stl::string& path) {
+			auto relative_path = fs::relative_path(path);
+			m_MaterialRegistry.import_material(m_Device, relative_path);
+			m_MaterialManager.add(relative_path, m_MaterialRegistry.get(relative_path)->uuid,
+								  {.gpu_idx = static_cast<u32>(m_MaterialRegistry.get(relative_path)->material.material_cb_index)});
+		}
 		inline void move_material(const stl::string& old_path, const stl::string& new_path) {
 			m_MaterialRegistry.move_material(m_Device, old_path, new_path);
 		}
@@ -62,11 +67,9 @@ namespace Sapfire::assets {
 		inline MaterialAsset* get_material(const stl::string& path) const { return m_MaterialRegistry.get(fs::relative_path(path)); }
 		inline MaterialAsset* get_material(UUID uuid) const { return m_MaterialRegistry.get(uuid); }
 		inline stl::string get_material_path(UUID uuid) const { return m_MaterialRegistry.get_path(uuid); }
-		inline MaterialResource get_material_resource(const stl::string& path) { return m_MaterialManager.material_resources[path]; }
-		inline bool material_resource_exists(const stl::string& path) { return m_MaterialManager.material_resources.contains(path); }
-		inline const stl::unordered_map<stl::string, MaterialAsset>& path_material_map() const {
-			return m_MaterialRegistry.path_asset_map();
-		}
+		inline MaterialResource get_material_resource(const stl::string& path) { return m_MaterialManager.material_resources[fs::relative_path(path)]; }
+		inline bool material_resource_exists(const stl::string& path) { return m_MaterialManager.material_resources.contains(fs::relative_path(path)); }
+		inline stl::unordered_map<stl::string, MaterialAsset>& path_material_map() { return m_MaterialRegistry.path_asset_map(); }
 		void serialize();
 		void deserialize(const stl::string& data);
 		stl::string to_string();
