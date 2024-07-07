@@ -47,14 +47,14 @@ namespace Sapfire::assets {
 		TextureAsset* get(const stl::string& path) const;
 		TextureAsset* get(UUID uuid) const;
         stl::string get_path(UUID uuid) const;
-        const stl::unordered_map<stl::string, TextureAsset>& path_asset_map() const { return m_PathToMeshAssetMap; }
+        const stl::unordered_map<stl::string, TextureAsset>& path_asset_map() const { return m_PathToTextureAssetMap; }
 		stl::string to_string();
 
 		static void create_default(const stl::string& registry_file_path);
 
 	private:
 		stl::string m_RegistryFilePath;
-		stl::unordered_map<stl::string, TextureAsset> m_PathToMeshAssetMap{};
+		stl::unordered_map<stl::string, TextureAsset> m_PathToTextureAssetMap{};
 		stl::unordered_map<UUID, stl::string> m_UUIDToPathMap{};
 	};
 } // namespace Sapfire::assets

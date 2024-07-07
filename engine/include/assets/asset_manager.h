@@ -1,7 +1,8 @@
 #pragma once
+#include "core/file_system.h"
+#include "material_manager.h"
 #include "mesh_manager.h"
 #include "texture_manager.h"
-#include "core/file_system.h"
 
 namespace Sapfire {
 	class GraphicsDevice;
@@ -53,6 +54,19 @@ namespace Sapfire::assets {
 			auto path = m_MeshRegistry.get_path(uuid);
 			return m_MeshManager.mesh_resources.at(path);
 		}
+		inline void import_material(const stl::string& path) { m_MaterialRegistry.import_material(m_Device, path); }
+		inline void move_material(const stl::string& old_path, const stl::string& new_path) {
+			m_MaterialRegistry.move_material(m_Device, old_path, new_path);
+		}
+		inline void release_material(const stl::string& path) { m_MaterialRegistry.release_material(path); };
+		inline MaterialAsset* get_material(const stl::string& path) const { return m_MaterialRegistry.get(fs::relative_path(path)); }
+		inline MaterialAsset* get_material(UUID uuid) const { return m_MaterialRegistry.get(uuid); }
+		inline stl::string get_material_path(UUID uuid) const { return m_MaterialRegistry.get_path(uuid); }
+		inline MaterialResource get_material_resource(const stl::string& path) { return m_MaterialManager.material_resources[path]; }
+		inline bool material_resource_exists(const stl::string& path) { return m_MaterialManager.material_resources.contains(path); }
+		inline const stl::unordered_map<stl::string, MaterialAsset>& path_material_map() const {
+			return m_MaterialRegistry.path_asset_map();
+		}
 		void serialize();
 		void deserialize(const stl::string& data);
 		stl::string to_string();
@@ -62,6 +76,8 @@ namespace Sapfire::assets {
 		MeshManager m_MeshManager;
 		TextureRegistry m_TextureRegistry;
 		TextureManager m_TextureManager;
+		MaterialRegistry m_MaterialRegistry;
+		MaterialManager m_MaterialManager;
 		d3d::GraphicsDevice& m_Device;
 	};
 } // namespace Sapfire::assets

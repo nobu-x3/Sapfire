@@ -99,7 +99,7 @@ namespace Sapfire::assets {
 			if (desc_json.contains("optional_initial_state")) {
 				desc.optional_initial_state = desc_json["optional_initial_state"];
 			}
-			m_PathToMeshAssetMap[path] = TextureAsset{
+			m_PathToTextureAssetMap[path] = TextureAsset{
 				.uuid = UUID{asset["UUID"]},
 				.description = desc,
 			};
@@ -125,9 +125,9 @@ namespace Sapfire::assets {
 		void* data = tools::texture_loader::load(fs::full_path(path).c_str(), width, height, 4);
 		auto name = d3d::AnsiToWString(path);
 		auto relative_path = fs::relative_path(path);
-		if (m_PathToMeshAssetMap.contains(relative_path))
+		if (m_PathToTextureAssetMap.contains(relative_path))
 			return;
-		m_PathToMeshAssetMap[relative_path] = TextureAsset{
+		m_PathToTextureAssetMap[relative_path] = TextureAsset{
 			.uuid = uuid,
 			.description =
 				d3d::TextureCreationDesc{
@@ -152,9 +152,9 @@ namespace Sapfire::assets {
 										 UUID uuid) {
 		auto name = d3d::AnsiToWString(path);
 		auto relative_path = fs::relative_path(path);
-		if (m_PathToMeshAssetMap.contains(relative_path))
+		if (m_PathToTextureAssetMap.contains(relative_path))
 			return;
-		m_PathToMeshAssetMap[relative_path] = TextureAsset{
+		m_PathToTextureAssetMap[relative_path] = TextureAsset{
 			.uuid = uuid,
 			.description = desc,
 			.data = device.create_texture(d3d::TextureCreationDesc{
@@ -167,14 +167,14 @@ namespace Sapfire::assets {
 	}
 
 	void TextureRegistry::move_texture(d3d::GraphicsDevice& device, const stl::string& old_path, const stl::string& new_path) {
-		if (!m_PathToMeshAssetMap.contains(old_path)) {
+		if (!m_PathToTextureAssetMap.contains(old_path)) {
 			CORE_WARN("Texture at path {} does not exist, adding new.", old_path);
 			auto uuid = UUID{};
 			s32 width{};
 			s32 height{};
 			void* data = tools::texture_loader::load(new_path.c_str(), width, height, 4);
 			auto name = d3d::AnsiToWString(new_path);
-			m_PathToMeshAssetMap[new_path] = TextureAsset{
+			m_PathToTextureAssetMap[new_path] = TextureAsset{
 				.uuid = uuid,
 				.description =
 					d3d::TextureCreationDesc{
@@ -195,25 +195,25 @@ namespace Sapfire::assets {
 			m_UUIDToPathMap[uuid] = new_path;
 			return;
 		}
-		auto mesh_data = m_PathToMeshAssetMap[old_path];
-		m_PathToMeshAssetMap.erase(old_path);
-		m_PathToMeshAssetMap[new_path] = mesh_data;
+		auto mesh_data = m_PathToTextureAssetMap[old_path];
+		m_PathToTextureAssetMap.erase(old_path);
+		m_PathToTextureAssetMap[new_path] = mesh_data;
 		m_UUIDToPathMap[mesh_data.uuid] = new_path;
 	}
 
 	void TextureRegistry::release_texture(const stl::string& path) {
-		if (!m_PathToMeshAssetMap.contains(path)) {
+		if (!m_PathToTextureAssetMap.contains(path)) {
 			CORE_ERROR("Texture at path {} does not exist", path);
 			return;
 		}
-		auto uuid = m_PathToMeshAssetMap[path].uuid;
-		m_PathToMeshAssetMap.erase(path);
+		auto uuid = m_PathToTextureAssetMap[path].uuid;
+		m_PathToTextureAssetMap.erase(path);
 		m_UUIDToPathMap.erase(uuid);
 	}
 
 	void TextureRegistry::serialize() {
 		nlohmann::json j;
-		for (auto&& [path, asset] : m_PathToMeshAssetMap) {
+		for (auto&& [path, asset] : m_PathToTextureAssetMap) {
 			auto& desc = asset.description;
 			nlohmann::json desc_j{
 				{"usage", static_cast<u32>(desc.usage)},
@@ -237,9 +237,9 @@ namespace Sapfire::assets {
 	}
 
 	TextureAsset* TextureRegistry::get(const stl::string& path) const {
-		if (!m_PathToMeshAssetMap.contains(path))
+		if (!m_PathToTextureAssetMap.contains(path))
 			return nullptr;
-		return const_cast<TextureAsset*>(&m_PathToMeshAssetMap.at(path));
+		return const_cast<TextureAsset*>(&m_PathToTextureAssetMap.at(path));
 	}
 
 	TextureAsset* TextureRegistry::get(UUID uuid) const {
@@ -253,7 +253,7 @@ namespace Sapfire::assets {
 
 	stl::string TextureRegistry::to_string() {
 		nlohmann::json j;
-		for (auto&& [path, asset] : m_PathToMeshAssetMap) {
+		for (auto&& [path, asset] : m_PathToTextureAssetMap) {
 			auto& desc = asset.description;
 			nlohmann::json desc_j{
 				{"usage", static_cast<u32>(desc.usage)},

@@ -11,6 +11,7 @@ set(RELATIVE_SAPFIRE_TRANSLATION_UNITS
         engine/src/core/memory.cpp
         engine/src/assets/mesh_manager.cpp
         engine/src/assets/texture_manager.cpp
+        engine/src/assets/material_manager.cpp
         engine/src/assets/asset_manager.cpp
         engine/src/assets/scene_writer.cpp
         engine/src/components/components.cpp

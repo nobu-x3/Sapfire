@@ -53,17 +53,20 @@ namespace Sapfire::assets {
 		nlohmann::json j;
 		j["texture_registry"] = nlohmann::json::parse(m_TextureRegistry.to_string());
 		j["mesh_registry"] = nlohmann::json::parse(m_MeshRegistry.to_string());
+		j["material_registry"] = nlohmann::json::parse(m_MaterialRegistry.to_string());
 		return j.dump();
 	}
 
 	void AssetManager::deserialize(const stl::string& data) {
 		m_MeshRegistry.deserialize(data);
 		m_TextureRegistry.deserialize(m_Device, data);
+		m_MaterialRegistry.deserialize(m_Device, data);
 	}
 
 	void Sapfire::assets::AssetManager::serialize() {
 		m_MeshRegistry.serialize();
 		m_TextureRegistry.serialize();
+		m_MaterialRegistry.serialize();
 		load_all_runtime_textures();
 	}
 } // namespace Sapfire::assets
