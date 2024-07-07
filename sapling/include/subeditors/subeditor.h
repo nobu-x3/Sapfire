@@ -1,8 +1,7 @@
 #pragma once
 
 #include "Sapfire.h"
-
-class IWidget;
+#include "widgets/widget.h"
 
 class SSubeditor {
 public:

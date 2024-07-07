@@ -1,7 +1,6 @@
 #include "subeditors/subeditor.h"
 #include "events/input_event.h"
 #include "imgui.h"
-#include "widgets/widget.h"
 
 using namespace Sapfire;
 
