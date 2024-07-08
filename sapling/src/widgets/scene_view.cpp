@@ -95,6 +95,7 @@ namespace widgets {
 		bool already_has_component = m_ECManager.has_engine_component<components::RenderComponent>(entity);
 		auto* mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(resource_paths.mesh_path);
 		auto* texture_asset = SLevelEditor::level_editor()->asset_manager().get_texture(resource_paths.texture_path);
+		auto* material_asset = SLevelEditor::level_editor()->asset_manager().get_material(resource_paths.material_path);
 		if (!mesh_asset) {
 			SLevelEditor::level_editor()->asset_manager().import_mesh(resource_paths.mesh_path);
 			mesh_asset = SLevelEditor::level_editor()->asset_manager().get_mesh(resource_paths.mesh_path);
@@ -102,6 +103,10 @@ namespace widgets {
 		if (!texture_asset || !SLevelEditor::level_editor()->asset_manager().is_texture_loaded_for_runtime(texture_asset->uuid)) {
 			SLevelEditor::level_editor()->asset_manager().load_runtime_texture(resource_paths.texture_path);
 			texture_asset = SLevelEditor::level_editor()->asset_manager().get_texture(resource_paths.texture_path);
+		}
+		if (!material_asset || !SLevelEditor::level_editor()->asset_manager().material_resource_exists(resource_paths.material_path)) {
+			SLevelEditor::level_editor()->asset_manager().import_material(resource_paths.material_path);
+			material_asset = SLevelEditor::level_editor()->asset_manager().get_material(resource_paths.material_path);
 		}
 		if (mesh_asset && mesh_asset->data.has_value()) {
 			assert(mesh_asset->data->indices32.size() > 0);
@@ -172,7 +177,9 @@ namespace widgets {
 					? m_ECManager.engine_component<components::RenderComponent>(entity).per_draw_constants()->scene_cbuffer_idx
 					: m_TransformBuffers.back().cbv_index,
 				.pass_cbuffer_idx = m_MainPassCB.cbv_index,
-				.material_cbuffer_idx = m_Materials[0].material_buffer.cbv_index,
+				.material_cbuffer_idx = SLevelEditor::level_editor()->asset_manager().material_resource_exists(resource_paths.material_path)
+					? SLevelEditor::level_editor()->asset_manager().get_material_resource(resource_paths.material_path).gpu_idx
+					: 0,
 				.texture_cbuffer_idx = SLevelEditor::level_editor()->asset_manager().texture_resource_exists(resource_paths.texture_path)
 					? SLevelEditor::level_editor()->asset_manager().get_texture_resource(resource_paths.texture_path).gpu_idx
 					: 0,
@@ -189,7 +196,12 @@ namespace widgets {
 			}
 			SLevelEditor::level_editor()->asset_manager().load_mesh_resource(resource_paths.mesh_path, {cpu_data, gpu_data});
 			components::RenderComponent render_component{
-				mesh_asset->uuid, texture_asset->uuid, cpu_data, gpu_data, [this, entity](components::RenderComponent* component) {
+				mesh_asset->uuid,
+				texture_asset->uuid,
+				material_asset->uuid,
+				cpu_data,
+				gpu_data,
+				[this, entity](components::RenderComponent* component) {
 					if (component) {
 						const auto old_cpu_data = component->cpu_data();
 						const auto old_gpu_data = component->per_draw_constants();
@@ -198,12 +210,14 @@ namespace widgets {
 						// The mesh we just assigned may not be allocated yet
 						const auto texture_uuid = component->texture_uuid();
 						const auto texture_path = SLevelEditor::level_editor()->asset_manager().get_texture_path(texture_uuid);
-						const auto path = SLevelEditor::level_editor()->asset_manager().get_mesh_path(mesh_uuid);
-						if (!SLevelEditor::level_editor()->asset_manager().mesh_resource_exists(path)) {
-							add_render_component(entity, {.mesh_path = path, .texture_path = texture_path});
+						const auto mesh_path = SLevelEditor::level_editor()->asset_manager().get_mesh_path(mesh_uuid);
+						const auto material_uuid = component->material_uuid();
+						const auto material_path = SLevelEditor::level_editor()->asset_manager().get_material_path(material_uuid);
+						if (!SLevelEditor::level_editor()->asset_manager().mesh_resource_exists(mesh_path)) {
+							add_render_component(entity, {.mesh_path = mesh_path, .texture_path = texture_path, .material_path = material_path});
 							return;
 						}
-						auto data = SLevelEditor::level_editor()->asset_manager().get_mesh_resource(path);
+						auto data = SLevelEditor::level_editor()->asset_manager().get_mesh_resource(mesh_path);
 						data.gpu_data.scene_cbuffer_idx = old_gpu_data->scene_cbuffer_idx;
 						component->cpu_data(data.cpu_data);
 						component->per_draw_constants(data.gpu_data);
