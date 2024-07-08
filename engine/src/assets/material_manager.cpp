@@ -215,7 +215,12 @@ namespace Sapfire::assets {
 				return;
 			}
 			stl::string path = asset["path"];
-			import_material(device, path);
+			stl::string relative_path = fs::relative_path(path);
+			if (relative_path.empty()) {
+				CORE_WARN("Could not locate material at path {}.", path);
+				continue;
+			}
+			import_material(device, relative_path);
 		}
 	}
 
