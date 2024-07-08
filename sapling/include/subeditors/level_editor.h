@@ -24,6 +24,7 @@ private:
 	void on_mesh_added();
 	void draw_menu() override;
 	bool update(Sapfire::f32 delta_time) override;
+	void draw_open_scene_dialog();
 
 private:
 	Sapfire::stl::unique_ptr<Sapfire::ECManager> m_ECManager;

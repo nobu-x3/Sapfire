@@ -14,7 +14,8 @@ SLevelEditor* SLevelEditor::level_editor() { return s_Instance; }
 
 SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device, Sapfire::assets::AssetManager* am,
 						   const Sapfire::stl::string& scene_path, Sapfire::stl::function<void()> asset_imported_callback) :
-	SSubeditor("Level Editor"), m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)), m_AssetManager(*am) {
+	SSubeditor("Level Editor"),
+	m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)), m_AssetManager(*am) {
 	s_Instance = this;
 	m_Widgets.push_back(
 		stl::make_unique<widgets::SSceneHierarchy>(mem::ENUM::Editor, m_ECManager.get(), BIND_EVENT_FN(SLevelEditor::on_entity_selected)));
@@ -58,6 +59,11 @@ void SLevelEditor::draw_menu() {
 
 bool SLevelEditor::update(Sapfire::f32 delta_time) {
 	bool ret_val = SSubeditor::update(delta_time);
+	draw_open_scene_dialog();
+	return ret_val;
+}
+
+void SLevelEditor::draw_open_scene_dialog() {
 	if (ImGuiFileDialog::Instance()->Display("OpenSceneFileDlg")) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
 			stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
@@ -73,5 +79,4 @@ bool SLevelEditor::update(Sapfire::f32 delta_time) {
 		}
 		ImGuiFileDialog::Instance()->Close();
 	}
-	return ret_val;
 }

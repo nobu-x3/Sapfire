@@ -13,6 +13,8 @@ namespace widgets {
 			return AssetType::Mesh;
 		} else if (Sapfire::fs::extension(filename) == ".dds" || Sapfire::fs::extension(filename) == ".png") {
 			return AssetType::Texture;
+		} else if (Sapfire::fs::extension(filename) == ".mat") {
+			return AssetType::Material;
 		}
 		return AssetType::Unknown;
 	}
@@ -129,6 +131,35 @@ namespace widgets {
 					}
 					break;
 				}
+			case AssetType::Material:
+			{
+					for (auto&& [path, material_asset] : SLevelEditor::level_editor()->asset_manager().path_material_map()) {
+						if (filter.PassFilter(path.c_str())) {
+							auto asset_name = Sapfire::fs::file_name(path);
+							ImVec2 real_estate = ImGui::GetWindowSize();
+							ImVec2 sz = ImGui::CalcTextSize(asset_name.c_str());
+							ImVec2 cursor = ImGui::GetCursorPos();
+							AssetDragAndDropPayload payload{material_asset.uuid, AssetType::Texture};
+							ImGui::BeginGroup();
+							ImGui::PushID(asset_name.c_str());
+							ImGui::InvisibleButton("invisible_button", {sz.x, sz.y + 64 + style.ItemSpacing.y});
+							ImGui::SetCursorPos(cursor);
+							if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+								ImGui::SetDragDropPayload("DND_ASSET_UUID", &payload, sizeof(AssetDragAndDropPayload));
+								ImGui::EndDragDropSource();
+							}
+							ImGui::SetCursorPosX(cursor.x + sz.x / 2 - 32);
+							ImGui::Image(icons::get_im_id(icons::IMAGE_ICON_64_ID), {64, 64});
+							ImGui::AlignTextToFramePadding();
+							ImGui::Text("%s", asset_name.c_str());
+							ImGui::PopID();
+							ImGui::EndGroup();
+							if (cursor.x + (2 * sz.x) < real_estate.x)
+								ImGui::SameLine();
+						}
+					}
+					break;
+			}
 			}
 		}
 		ImGui::End();

@@ -50,6 +50,14 @@ namespace assets {
 			CLIENT_CRITICAL("Broken scene at path {}. Missing mesh registry.", project_path);
 			return;
 		}
+		if (!registries.contains("texture_registry")) {
+			CLIENT_CRITICAL("Broken scene at path {}. Missing texture registry.", project_path);
+			return;
+		}
+		if (!registries.contains("material_registry")) {
+			CLIENT_CRITICAL("Broken scene at path {}. Missing material registry.", project_path);
+			return;
+		}
 		m_AssetManager.deserialize(j.dump());
 	}
 

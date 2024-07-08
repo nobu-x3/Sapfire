@@ -10,12 +10,12 @@ namespace widgets {
 namespace ESubeditor {
 	enum TYPE {
 		LevelEditor = 0,
-		// MaterialEditor = 1,
+		MaterialEditor = 1,
 		COUNT,
 	};
 }
 
-static Sapfire::stl::array<Sapfire::stl::string, ESubeditor::COUNT> g_SubeditorNames = {"Level Editor"};
+static Sapfire::stl::array<Sapfire::stl::string, ESubeditor::COUNT> g_SubeditorNames = {"Level Editor", "Material Editor"};
 
 class SaplingLayer final : public Sapfire::Layer {
 public:

@@ -27,7 +27,6 @@ namespace Sapfire {
 	void GameContext::init() { load_contents(); }
 
 	void GameContext::create_render_component(Entity entity, const RenderComponentResourcePaths& resource_paths) {
-		// @TODO: add materials
 		auto* mesh_asset = m_AssetManager.get_mesh(resource_paths.mesh_path);
 		auto* texture_asset = m_AssetManager.get_texture(resource_paths.texture_path);
 		auto* material_asset = m_AssetManager.get_material(resource_paths.material_path);

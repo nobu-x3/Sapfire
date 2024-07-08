@@ -74,9 +74,12 @@ namespace widgets {
 							m_ShowAddComponentContextMenu = false;
 						}
 						if (ImGui::Button(components::RenderComponent::to_string().c_str())) {
-							SSceneView::scene_view()->add_render_component(
-								m_SelectedEntity.value(),
-								{.mesh_path = "assets/models/cube.obj", .texture_path = "assets/textures/ceramics.jpg"});
+							SSceneView::scene_view()->add_render_component(m_SelectedEntity.value(),
+																		   {
+																			   .mesh_path = "assets/models/cube.obj",
+																			   .texture_path = "assets/textures/ceramics.jpg",
+																			   .material_path = "assets/materials/default.mat",
+																		   });
 							m_ShowAddComponentContextMenu = false;
 						}
 						for (const auto& [key, component_list] : components::ComponentRegistry::s_CustomComponentLists) {

@@ -7,6 +7,7 @@
 #include "icons.h"
 #include "imgui.h"
 #include "subeditors/level_editor.h"
+#include "subeditors/material_editor.h"
 #include "tools/profiling.h"
 
 using namespace Sapfire;
@@ -356,6 +357,8 @@ SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type, bool is_callb
 	switch (type) {
 	case ESubeditor::LevelEditor:
 		return mem_new(mem::Editor) SLevelEditor(m_GraphicsDevice.get(), m_AssetManager.get(), "", [this]() { serialize(); });
+	case ESubeditor::MaterialEditor:
+		return mem_new(mem::Editor) SMaterialEditor(m_AssetManager.get());
 	}
 	return nullptr;
 }

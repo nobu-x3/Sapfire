@@ -210,47 +210,12 @@ namespace Sapfire::assets {
 	void MaterialRegistry::deserialize(d3d::GraphicsDevice& device, const stl::string& data) {
 		nlohmann::json j = nlohmann::json::parse(data)["assets"];
 		for (auto&& asset : j["material_registry"]) {
-			if (!asset.contains("UUID")) {
-				CORE_CRITICAL("Broken material registry. At least one registry entry does not contain UUID.");
-				return;
-			}
 			if (!asset.contains("path")) {
 				CORE_CRITICAL("Broken material registry. At least one registry entry does not contain path to the raw asset.");
 				return;
 			}
-			if (!asset.contains("name")) {
-				CORE_CRITICAL("Broken material registry. At least one registry entry does not contain name.");
-				return;
-			}
-			if (!asset.contains("diffuse_albedo")) {
-				CORE_CRITICAL("Broken material registry. At least one registry entry does not contain diffuse albedo.");
-				return;
-			}
-			if (!asset.contains("fresnel_r0")) {
-				CORE_CRITICAL("Broken material registry. At least one registry entry does not contain fresnel r0.");
-				return;
-			}
-			if (!asset.contains("roughness")) {
-				CORE_CRITICAL("Broken material registry. At least one registry entry does not contain roughness.");
-				return;
-			}
-			UUID uuid{asset["UUID"]};
-			d3d::Material material{.name = fs::file_name(j["name"])};
-			const stl::string& path = asset["path"];
-			material.roughness = j["roughness"];
-			material.diffuse_albedo =
-				XMFLOAT4(j["diffuse_albedo"][0], j["diffuse_albedo"][1], j["diffuse_albedo"][2], j["diffuse_albedo"][3]);
-			material.fresnel_r0 = XMFLOAT3(j["fresnel_r0"][0], j["fresnel_r0"][1], j["fresnel_r0"][2]);
-			material.material_buffer = device.create_buffer<d3d::MaterialConstants>({
-				.usage = d3d::BufferUsage::ConstantBuffer,
-				.name = d3d::AnsiToWString(material.name),
-			});
-			material.material_cb_index = material.material_buffer.cbv_index;
-			m_PathToMaterialAssetMap[path] = MaterialAsset{
-				.uuid = uuid,
-				.material = material,
-			};
-			m_UUIDToPathMap[uuid] = path;
+			stl::string path = asset["path"];
+			import_material(device, path);
 		}
 	}
 
