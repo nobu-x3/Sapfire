@@ -3,6 +3,8 @@
 
 using namespace Sapfire;
 
+constexpr f32 ROUGHNESS_SLIDER_SENSITIVITY = 0.005f;
+
 namespace widgets {
 	bool SMaterialInspector::update(Sapfire::f32 delta_time) {
 		ImGui::Begin("Material Inspector", nullptr);
@@ -28,7 +30,7 @@ namespace widgets {
 			}
 		};
 		Funcs::MyInputText("Name", &m_CurrentMaterial->material.name, ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16));
-		ImGui::InputFloat("Roughness", &m_CurrentMaterial->material.roughness);
+		ImGui::InputFloat("Roughness", &m_CurrentMaterial->material.roughness, ROUGHNESS_SLIDER_SENSITIVITY);
 		float albedo[4]{
 			m_CurrentMaterial->material.diffuse_albedo.x,
 			m_CurrentMaterial->material.diffuse_albedo.y,
