@@ -4,6 +4,7 @@
 #include "backends/imgui_impl_dx12.h"
 #include "backends/imgui_impl_win32.h"
 #include "core/core.h"
+#include "globals.h"
 #include "icons.h"
 #include "imgui.h"
 #include "subeditors/level_editor.h"
@@ -11,6 +12,10 @@
 #include "tools/profiling.h"
 
 using namespace Sapfire;
+
+SaplingLayer* g_Editor{nullptr};
+
+SaplingLayer* editor() { return g_Editor; }
 
 SaplingLayer::SaplingLayer() : Sapfire::Layer("Sapling Layer") {
 	auto& app = Application::get();
@@ -28,6 +33,7 @@ SaplingLayer::SaplingLayer() : Sapfire::Layer("Sapling Layer") {
 	icons::add(*m_GraphicsDevice, L"editor_assets/icons/mesh_icon_16.png", icons::MESH_ICON_16_ID);
 	icons::add(*m_GraphicsDevice, L"editor_assets/icons/image_icon_16.png", icons::IMAGE_ICON_16_ID);
 	icons::add(*m_GraphicsDevice, L"editor_assets/icons/image_icon_64.png", icons::IMAGE_ICON_64_ID);
+	g_Editor = this;
 }
 
 void setup_imgui_style() {
@@ -358,7 +364,7 @@ SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type, bool is_callb
 	case ESubeditor::LevelEditor:
 		return mem_new(mem::Editor) SLevelEditor(m_GraphicsDevice.get(), m_AssetManager.get(), "", [this]() { serialize(); });
 	case ESubeditor::MaterialEditor:
-		return mem_new(mem::Editor) SMaterialEditor(m_AssetManager.get());
+		return mem_new(mem::Editor) SMaterialEditor(m_AssetManager.get(), m_GraphicsDevice.get());
 	}
 	return nullptr;
 }

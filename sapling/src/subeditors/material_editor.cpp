@@ -1,13 +1,25 @@
 #include "subeditors/material_editor.h"
-#include "widgets/material_inspector.h"
 #include "ImGuiFileDialog.h"
 #include "imgui.h"
+#include "widgets/material_inspector.h"
+#include "widgets/scene_view.h"
 
 using namespace Sapfire;
 
-SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am) :
-	SSubeditor("Material Editor"), m_AssetManager(*am), m_OpenedMaterial(nullptr) {
+SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d::GraphicsDevice* device) :
+	SSubeditor("Material Editor"), m_AssetManager(*am), m_OpenedMaterial(nullptr), m_ECManager(stl::make_unique<ECManager>(mem::Editor)) {
 	m_Widgets.push_back(Sapfire::stl::make_unique<widgets::SMaterialInspector>(Sapfire::mem::Editor));
+	m_MaterialEntity = m_ECManager->create_entity();
+	auto& transform = m_ECManager->engine_component<components::Transform>(m_MaterialEntity);
+	transform.position({0, 0, 5});
+	auto scene_view = Sapfire::stl::make_unique<widgets::SSceneView>(mem::Editor, m_ECManager.get(), device);
+	scene_view->add_render_component(m_MaterialEntity,
+									 {
+										 .mesh_path = "assets/models/cube.obj",
+										 .texture_path = "assets/textures/ceramics.jpg",
+										 .material_path = "assets/materials/default.mat",
+									 });
+	m_Widgets.push_back(std::move(scene_view));
 }
 
 void SMaterialEditor::draw_menu() {
@@ -38,7 +50,8 @@ void SMaterialEditor::draw_open_material_dialog() {
 				auto relative_path = Sapfire::fs::relative_path(filepath);
 				if (m_AssetManager.path_material_map().contains(relative_path)) {
 					m_OpenedMaterial = m_AssetManager.get_material(filepath);
-					widgets::SMaterialInspector* inspector = static_cast<widgets::SMaterialInspector*>(m_Widgets[EWidgetOrder::MaterialInspector].get());
+					widgets::SMaterialInspector* inspector =
+						static_cast<widgets::SMaterialInspector*>(m_Widgets[EWidgetOrder::MaterialInspector].get());
 					if (inspector) {
 						inspector->current_material(m_OpenedMaterial);
 					}

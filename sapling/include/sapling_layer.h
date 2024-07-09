@@ -27,6 +27,8 @@ public:
 	void on_event(Sapfire::Event& e) final;
 	void on_render() final;
 
+	Sapfire::assets::AssetManager* asset_manager() { return m_AssetManager.get(); }
+
 private:
 	void serialize();
 	void draw_menu_bar();

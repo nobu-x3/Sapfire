@@ -31,7 +31,6 @@ namespace widgets {
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_VertexTangentBuffers{};
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_VertexUVBuffers{};
 		Sapfire::stl::vector<Sapfire::d3d::Buffer> m_TransformBuffers{};
-		Sapfire::stl::vector<Sapfire::d3d::Material> m_Materials{};
 		Sapfire::stl::vector<Sapfire::d3d::Texture> m_OffscreenTextures;
 		Sapfire::d3d::PipelineState m_PipelineState{};
 		Sapfire::d3d::Texture m_DepthTexture;
