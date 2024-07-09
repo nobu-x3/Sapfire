@@ -28,6 +28,7 @@ add_executable(Sapling
     src/widgets/entity_inspector.cpp
     src/widgets/scene_view.cpp
     src/widgets/asset_browser.cpp
+    src/widgets/material_inspector.cpp
     src/widgets/tiny_widgets/buttons.cpp
     src/assets/project_reader.cpp
     ${IMGUI_FILES}
