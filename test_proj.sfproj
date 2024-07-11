@@ -1,0 +1,21 @@
+{
+    "assets": {
+        "mesh_registry": [
+            {
+                "UUID": 306072129635398900,
+                "path": "assets\\models\\monkey.obj"
+            },
+            {
+                "UUID": 5596545107579832551,
+                "path": "assets\\models\\cube.obj"
+            }
+        ],
+      "texture_registry": null,
+      "material_registry": [
+        {
+          "path" :  "assets/materials/default.mat"
+        }
+      ]
+    },
+    "name": "test_proj.sfproj"
+}
