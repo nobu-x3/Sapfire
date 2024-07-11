@@ -6,6 +6,9 @@
 namespace EWidgetOrder {
 	enum ENUM {
 		MaterialInspector = 0,
+		SceneView,
+		PreviewSettings,
+		AssetBrowser
 	};
 }
 

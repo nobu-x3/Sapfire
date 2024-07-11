@@ -24,6 +24,8 @@ namespace widgets {
 	void SAssetBrowser::register_asset_imported_events(event_fn fn) { asset_importer_events.push_back(fn); }
 
 	bool SAssetBrowser::update(Sapfire::f32 delta_time) {
+		if (!m_IsVisible)
+			return true;
 		if (ImGui::Begin("Asset Browser")) {
 			if (ImGui::IsWindowHovered() && m_ShowContextMenu) {
 				ImGui::OpenPopup("asset_browser_context_menu");

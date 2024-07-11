@@ -1,10 +1,10 @@
 #include "subeditors/material_editor.h"
 #include "ImGuiFileDialog.h"
 #include "imgui.h"
-#include "widgets/material_inspector.h"
-#include "widgets/scene_view.h"
-#include "widgets/material_preview_settings.h"
 #include "widgets/asset_browser.h"
+#include "widgets/material_inspector.h"
+#include "widgets/material_preview_settings.h"
+#include "widgets/scene_view.h"
 
 using namespace Sapfire;
 
@@ -25,6 +25,8 @@ SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d
 	m_Widgets.push_back(std::move(scene_view));
 	m_Widgets.push_back(stl::make_unique<SMaterialPreviewSettings>(mem::Editor, &render_component));
 	m_Widgets.push_back(stl::make_unique<widgets::SAssetBrowser>(mem::Editor));
+	m_Widgets[EWidgetOrder::PreviewSettings]->set_visible(false);
+	m_Widgets[EWidgetOrder::AssetBrowser]->set_visible(false);
 }
 
 void SMaterialEditor::draw_menu() {
@@ -36,6 +38,18 @@ void SMaterialEditor::draw_menu() {
 			ImGuiFileDialog::Instance()->OpenDialog("OpenMatDlg", "Open material", ".mat", config);
 		}
 		if (m_OpenedMaterial && ImGui::MenuItem("Save Material", "CTRL+M+S")) {
+		}
+		if (ImGui::BeginMenu("View")) {
+			bool preview_settings_shown = m_Widgets[EWidgetOrder::PreviewSettings]->is_visible();
+			if (ImGui::MenuItem("Preview settings", nullptr, &preview_settings_shown)) {
+				m_Widgets[EWidgetOrder::PreviewSettings]->set_visible(!m_Widgets[EWidgetOrder::PreviewSettings]->is_visible());
+				m_Widgets[EWidgetOrder::AssetBrowser]->set_visible(m_Widgets[EWidgetOrder::PreviewSettings]->is_visible());
+			}
+			bool asset_browser_shown = m_Widgets[EWidgetOrder::AssetBrowser]->is_visible();
+			if (ImGui::MenuItem("Asset Browser", nullptr, &asset_browser_shown)) {
+				m_Widgets[EWidgetOrder::AssetBrowser]->set_visible(!m_Widgets[EWidgetOrder::AssetBrowser]->is_visible());
+			}
+			ImGui::EndMenu();
 		}
 		ImGui::EndMenu();
 	}
