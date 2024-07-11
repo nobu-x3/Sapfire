@@ -1,4 +1,5 @@
 #include "subeditors/material_editor.h"
+#include <DirectXMath.h>
 #include "ImGuiFileDialog.h"
 #include "imgui.h"
 #include "widgets/asset_browser.h"
@@ -13,7 +14,8 @@ SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d
 	m_Widgets.push_back(Sapfire::stl::make_unique<widgets::SMaterialInspector>(Sapfire::mem::Editor));
 	m_MaterialEntity = m_ECManager->create_entity();
 	auto& transform = m_ECManager->engine_component<components::Transform>(m_MaterialEntity);
-	transform.position({0, 0, 5});
+	DirectX::XMVECTOR position{0, 0, 5};
+	transform.position(position);
 	auto scene_view = Sapfire::stl::make_unique<widgets::SSceneView>(mem::Editor, "Preview", m_ECManager.get(), device);
 	scene_view->add_render_component(m_MaterialEntity,
 									 {
