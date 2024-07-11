@@ -41,6 +41,7 @@ namespace Sapfire::assets {
 		void move_material(d3d::GraphicsDevice& device, const stl::string& old_path, const stl::string& new_path);
 		void release_material(const stl::string& path);
 		void serialize();
+		void serialize(const MaterialAsset& asset) const;
 		void deserialize(d3d::GraphicsDevice& device, const stl::string& data);
 		MaterialAsset* get(const stl::string& path) const;
 		MaterialAsset* get(UUID uuid) const;

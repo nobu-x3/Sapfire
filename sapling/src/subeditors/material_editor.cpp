@@ -40,6 +40,7 @@ void SMaterialEditor::draw_menu() {
 			ImGuiFileDialog::Instance()->OpenDialog("OpenMatDlg", "Open material", ".mat", config);
 		}
 		if (m_OpenedMaterial && ImGui::MenuItem("Save Material", "CTRL+M+S")) {
+			m_AssetManager.serialize(*m_OpenedMaterial);
 		}
 		if (ImGui::BeginMenu("View")) {
 			bool preview_settings_shown = m_Widgets[EWidgetOrder::PreviewSettings]->is_visible();

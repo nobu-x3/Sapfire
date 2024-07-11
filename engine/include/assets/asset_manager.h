@@ -71,6 +71,7 @@ namespace Sapfire::assets {
 		inline bool material_resource_exists(const stl::string& path) { return m_MaterialManager.material_resources.contains(fs::relative_path(path)); }
 		inline stl::unordered_map<stl::string, MaterialAsset>& path_material_map() { return m_MaterialRegistry.path_asset_map(); }
 		void serialize();
+		void serialize(const MaterialAsset& asset);
 		void deserialize(const stl::string& data);
 		stl::string to_string();
 

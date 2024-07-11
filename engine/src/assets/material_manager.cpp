@@ -199,12 +199,48 @@ namespace Sapfire::assets {
 				{"UUID", static_cast<u64>(uuid)},	{"path", path}, {"name", name}, {"roughness", roughness}, {"fresnel_r0", fresnel_r0},
 				{"diffuse_albedo", diffuse_albedo},
 			};
-			j["assets"].push_back(j_obj);
+			{
+				// @TODO: this is super slow because opening files in a loop. Rework this.
+				std::ofstream file{path};
+				file.clear();
+				file << std::setw(4) << j_obj << std::endl;
+				file.close();
+			}
+			{
+				nlohmann::json path_jobj = {"path", path};
+				j["assets"].push_back(path_jobj);
+			}
 		}
 		std::ofstream file{m_RegistryFilePath};
 		file.clear();
 		file << std::setw(4) << j << std::endl;
 		file.close();
+	}
+
+	void MaterialRegistry::serialize(const MaterialAsset& asset) const {
+		auto& uuid = asset.uuid;
+		if (!m_UUIDToPathMap.contains(uuid)) {
+			CORE_ERROR("Material asset with UUID {} has not been previously imported to the registry.", static_cast<u64>(uuid));
+			return;
+		}
+		const auto& path = m_UUIDToPathMap.at(uuid);
+		auto& material = asset.material;
+		auto& name = material.name;
+		auto& roughness = material.roughness;
+		float fresnel_r0[3] = {material.fresnel_r0.x, material.fresnel_r0.y, material.fresnel_r0.z};
+		float diffuse_albedo[4] = {material.diffuse_albedo.x, material.diffuse_albedo.y, material.diffuse_albedo.z,
+								   material.diffuse_albedo.w};
+		nlohmann::json j_obj = {
+			{"UUID", static_cast<u64>(uuid)},	{"path", path}, {"name", name}, {"roughness", roughness}, {"fresnel_r0", fresnel_r0},
+			{"diffuse_albedo", diffuse_albedo},
+		};
+		{
+			// @TODO: this is super slow because opening files in a loop. Rework this.
+			std::ofstream file{fs::full_path(path)};
+			file.clear();
+			file << std::setw(4) << j_obj << std::endl;
+			file.close();
+		}
 	}
 
 	void MaterialRegistry::deserialize(d3d::GraphicsDevice& device, const stl::string& data) {
@@ -238,7 +274,8 @@ namespace Sapfire::assets {
 				{"UUID", static_cast<u64>(uuid)},	{"path", path}, {"name", name}, {"roughness", roughness}, {"fresnel_r0", fresnel_r0},
 				{"diffuse_albedo", diffuse_albedo},
 			};
-			j.push_back(j_obj);
+			nlohmann::json path_jobj = {"path", path};
+			j.push_back(path_jobj);
 		}
 		return j.dump();
 	}

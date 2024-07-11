@@ -63,6 +63,8 @@ namespace Sapfire::assets {
 		m_MaterialRegistry.deserialize(m_Device, data);
 	}
 
+	void AssetManager::serialize(const MaterialAsset& asset) { m_MaterialRegistry.serialize(asset); }
+
 	void Sapfire::assets::AssetManager::serialize() {
 		m_MeshRegistry.serialize();
 		m_TextureRegistry.serialize();
