@@ -15,6 +15,7 @@ namespace widgets {
 
 	class SAssetBrowser final : public IWidget {
 	public:
+		explicit SAssetBrowser(Sapfire::stl::string_view name);
 		static void register_asset_imported_events(event_fn fn);
 		bool update(Sapfire::f32 delta_time) override;
 		void on_mouse_button_event(Sapfire::MouseButtonEvent&) override;
@@ -24,6 +25,7 @@ namespace widgets {
 
 	private:
 		EAssetType m_CurrentAssetTypeFilter{EAssetType::Mesh};
+		Sapfire::stl::string m_WidgetName;
 		bool m_ShowContextMenu{false};
 	};
 } // namespace widgets

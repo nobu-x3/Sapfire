@@ -44,7 +44,7 @@ namespace widgets {
 	};
 
 	using namespace Sapfire;
-	SSceneView::SSceneView(Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device) :
+	SSceneView::SSceneView(Sapfire::stl::string_view name, Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device) :
 		m_ECManager(*ec_manager), m_GraphicsDevice(*gfx_device),
 		m_PhysicsEngine(stl::make_unique<physics::PhysicsEngine>(mem::ENUM::Editor, ec_manager)),
 		m_PipelineState(m_GraphicsDevice.create_pipeline_state({
@@ -67,7 +67,8 @@ namespace widgets {
 		m_MainPassCB(m_GraphicsDevice.create_buffer<PassConstants>(d3d::BufferCreationDesc{
 			.usage = d3d::BufferUsage::ConstantBuffer,
 			.name = L"Scene View Main Pass Constant Buffer",
-		})) {
+		})),
+		m_WidgetName(name) {
 		for (int i = 0; i < d3d::MAX_FRAMES_IN_FLIGHT; ++i) {
 			m_OffscreenTextures.push_back(m_GraphicsDevice.create_texture({
 				.usage = Sapfire::d3d::TextureUsage::RenderTarget,
@@ -242,7 +243,7 @@ namespace widgets {
 		update_pass_cb(delta_time);
 		update_materials();
 		update_transform_buffer();
-		if (ImGui::Begin("Scene View")) {
+		if (ImGui::Begin(m_WidgetName.c_str())) {
 			auto work_size = ImGui::GetWindowSize();
 			if (DOCK_SIZE.x != work_size.x || DOCK_SIZE.y != work_size.y) {
 				m_Resizing = true;

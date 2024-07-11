@@ -14,7 +14,7 @@ SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d
 	m_MaterialEntity = m_ECManager->create_entity();
 	auto& transform = m_ECManager->engine_component<components::Transform>(m_MaterialEntity);
 	transform.position({0, 0, 5});
-	auto scene_view = Sapfire::stl::make_unique<widgets::SSceneView>(mem::Editor, m_ECManager.get(), device);
+	auto scene_view = Sapfire::stl::make_unique<widgets::SSceneView>(mem::Editor, "Preview", m_ECManager.get(), device);
 	scene_view->add_render_component(m_MaterialEntity,
 									 {
 										 .mesh_path = "assets/models/cube.obj",
@@ -24,7 +24,7 @@ SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d
 	auto& render_component = m_ECManager->engine_component<components::RenderComponent>(m_MaterialEntity);
 	m_Widgets.push_back(std::move(scene_view));
 	m_Widgets.push_back(stl::make_unique<SMaterialPreviewSettings>(mem::Editor, &render_component));
-	m_Widgets.push_back(stl::make_unique<widgets::SAssetBrowser>(mem::Editor));
+	m_Widgets.push_back(stl::make_unique<widgets::SAssetBrowser>(mem::Editor, "Preview Asset Browser"));
 	m_Widgets[EWidgetOrder::PreviewSettings]->set_visible(false);
 	m_Widgets[EWidgetOrder::AssetBrowser]->set_visible(false);
 }

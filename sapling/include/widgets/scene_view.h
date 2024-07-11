@@ -9,7 +9,7 @@ namespace widgets {
 
 	class SSceneView final : public IWidget {
 	public:
-		explicit SSceneView(Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device);
+		explicit SSceneView(Sapfire::stl::string_view name, Sapfire::ECManager* ec_manager, Sapfire::d3d::GraphicsDevice* gfx_device);
 		void add_render_component(Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths);
 		bool update(Sapfire::f32 delta_time) override;
 		void render(Sapfire::d3d::GraphicsContext& gfx_ctx) override;
@@ -36,6 +36,7 @@ namespace widgets {
 		Sapfire::d3d::Texture m_DepthTexture;
 		Sapfire::d3d::Buffer m_MainPassCB{};
 		Sapfire::Camera m_MainCamera;
+		Sapfire::stl::string m_WidgetName;
 		bool m_Resizing{false};
 
 		static Sapfire::stl::shared_ptr<SSceneView> s_Instance;
