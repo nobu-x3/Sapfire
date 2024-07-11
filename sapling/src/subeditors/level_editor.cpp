@@ -22,7 +22,7 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device, Sapfire::as
 	auto entity_inspector = stl::make_unique<widgets::SEntityInspector>(mem::ENUM::Editor, m_ECManager.get());
 	m_EntitySelectedCallbacks.push_back(BIND_EVENT_FN_FOR_OBJ(entity_inspector.get(), widgets::SEntityInspector::select_entity));
 	m_Widgets.push_back(std::move(entity_inspector));
-	auto asset_browser = stl::make_unique<widgets::AssetBrowser>(mem::ENUM::Editor);
+	auto asset_browser = stl::make_unique<widgets::SAssetBrowser>(mem::ENUM::Editor);
 	asset_browser->register_asset_imported_events(asset_imported_callback);
 	m_Widgets.emplace_back(std::move(asset_browser));
 	auto scene_view = stl::make_unique<widgets::SSceneView>(mem::ENUM::Editor, m_ECManager.get(), gfx_device);

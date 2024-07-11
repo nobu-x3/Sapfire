@@ -4,16 +4,16 @@
 #include "widgets/widget.h"
 
 namespace widgets {
-	enum class AssetType : Sapfire::u8 { Unknown, Mesh, Texture, Material };
+	enum class EAssetType : Sapfire::u8 { Unknown, Mesh, Texture, Material };
 
 	using event_fn = Sapfire::stl::function<void()>;
 
 	struct AssetDragAndDropPayload {
 		Sapfire::UUID uuid;
-		AssetType type;
+		EAssetType type;
 	};
 
-	class AssetBrowser final : public IWidget {
+	class SAssetBrowser final : public IWidget {
 	public:
 		static void register_asset_imported_events(event_fn fn);
 		bool update(Sapfire::f32 delta_time) override;
@@ -23,7 +23,7 @@ namespace widgets {
 		void execute_asset_imported_events();
 
 	private:
-		AssetType m_CurrentAssetTypeFilter{AssetType::Mesh};
+		EAssetType m_CurrentAssetTypeFilter{EAssetType::Mesh};
 		bool m_ShowContextMenu{false};
 	};
 } // namespace widgets

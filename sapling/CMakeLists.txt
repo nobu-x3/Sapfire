@@ -21,6 +21,7 @@ add_executable(Sapling
     src/sapling_app.cpp
     src/sapling_layer.cpp
     src/icons.cpp
+    src/rtti_drawer.cpp
     src/subeditors/subeditor.cpp
     src/subeditors/level_editor.cpp
     src/subeditors/material_editor.cpp
@@ -29,6 +30,7 @@ add_executable(Sapling
     src/widgets/scene_view.cpp
     src/widgets/asset_browser.cpp
     src/widgets/material_inspector.cpp
+    src/widgets/material_preview_settings.cpp
     src/widgets/tiny_widgets/buttons.cpp
     src/assets/project_reader.cpp
     ${IMGUI_FILES}

@@ -3,6 +3,8 @@
 #include "imgui.h"
 #include "widgets/material_inspector.h"
 #include "widgets/scene_view.h"
+#include "widgets/material_preview_settings.h"
+#include "widgets/asset_browser.h"
 
 using namespace Sapfire;
 
@@ -19,7 +21,10 @@ SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d
 										 .texture_path = "assets/textures/ceramics.jpg",
 										 .material_path = "assets/materials/default.mat",
 									 });
+	auto& render_component = m_ECManager->engine_component<components::RenderComponent>(m_MaterialEntity);
 	m_Widgets.push_back(std::move(scene_view));
+	m_Widgets.push_back(stl::make_unique<SMaterialPreviewSettings>(mem::Editor, &render_component));
+	m_Widgets.push_back(stl::make_unique<widgets::SAssetBrowser>(mem::Editor));
 }
 
 void SMaterialEditor::draw_menu() {

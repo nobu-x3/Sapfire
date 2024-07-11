@@ -1,18 +1,8 @@
-#pragma once
+#include "rtti_drawer.h"
 
-#include <DirectXMath.h>
-#include "Sapfire.h"
-#include "components/component.h"
-#include "core/core.h"
-#include "core/rtti.h"
-#include "imgui.h"
-#include "widgets/asset_browser.h"
-#include "components/render_component.h"
-
-template <typename T>
-void draw_rtti(T* component) {
+void draw_rtti(Sapfire::stl::shared_ptr<Sapfire::components::IComponent> custom_component) {
 	using namespace Sapfire;
-	auto& type_info = component->get_rtti();
+	auto& type_info = custom_component->get_rtti();
 	for (auto& field : type_info.fields) {
 		auto& name = field.name;
 		void* value = nullptr;
@@ -20,9 +10,11 @@ void draw_rtti(T* component) {
 		switch (field.type) {
 		case rtti::rtti_type::XMVECTOR:
 			{
+				void* value = nullptr;
+				rtti::get_rtti_field_value(&type_info, &field, &value);
 				auto data = *static_cast<DirectX::XMVECTOR*>(value);
 				stl::array<f32, 3> vec = {DirectX::XMVectorGetX(data), DirectX::XMVectorGetY(data), DirectX::XMVectorGetZ(data)};
-				if (ImGui::DragFloat3(name.c_str(), vec.data())) {
+				if (ImGui::InputFloat3(name.c_str(), vec.data())) {
 					rtti::set_rtti_field_value(&type_info, &field, static_cast<void*>(vec.data()));
 				}
 			}
@@ -69,7 +61,7 @@ void draw_rtti(T* component) {
 					}
 				};
 				auto* data = static_cast<stl::string*>(value);
-				if (Funcs::MyInputText(name.c_str(), data, ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16))) {
+				if (Funcs::MyInputText(name.c_str(), data, ImVec2(-FLT_MIN, ImGui::GetTextLineHeight()))) {
 					rtti::set_rtti_field_value(&type_info, &field, static_cast<void*>(data));
 				}
 			}
@@ -97,10 +89,13 @@ void draw_rtti(T* component) {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_ASSET_UUID")) {
 						IM_ASSERT(payload->DataSize == sizeof(widgets::AssetDragAndDropPayload));
 						widgets::AssetDragAndDropPayload payload_asset = *(const widgets::AssetDragAndDropPayload*)payload->Data;
-						if (payload_asset.type == widgets::EAssetType::Mesh && field.ref_type == rtti::rtti_reference_type::Mesh) {
+						bool should_accept =
+							(payload_asset.type == widgets::EAssetType::Mesh && field.ref_type == rtti::rtti_reference_type::Mesh) ||
+							(payload_asset.type == widgets::EAssetType::Texture && field.ref_type == rtti::rtti_reference_type::Texture) ||
+							(payload_asset.type == widgets::EAssetType::Material && field.ref_type == rtti::rtti_reference_type::Material);
+						if (should_accept) {
 							*data = payload_asset.uuid;
 							rtti::set_rtti_field_value(&type_info, &field, static_cast<void*>(data));
-							return;
 						}
 					}
 					ImGui::EndDragDropTarget();
@@ -112,5 +107,3 @@ void draw_rtti(T* component) {
 	ImGui::Spacing();
 	ImGui::Separator();
 }
-
-void draw_rtti(Sapfire::stl::shared_ptr<Sapfire::components::IComponent> custom_component);
