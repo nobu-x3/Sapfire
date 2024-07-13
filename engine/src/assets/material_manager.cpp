@@ -295,4 +295,30 @@ namespace Sapfire::assets {
 
 	stl::string MaterialRegistry::get_path(UUID uuid) const { return m_UUIDToPathMap.at(uuid); }
 
+	const UUID DEFAULT_MATERIAL_UUID = 13700118063961433558;
+	constexpr f32 DEFAULT_MATERIAL_ROUGHTNESS = 0.f;
+	constexpr DirectX::XMFLOAT4 DEFAULT_MATERIAL_ALBEDO = {1.f, 1.f, 1.f, 1.f};
+	constexpr DirectX::XMFLOAT3 DEFAULT_MATERIAL_FRESNEL = {1.f, 1.f, 1.f};
+	const stl::string DEFAULT_MATERIAL_NAME = "default";
+
+	MaterialAsset& MaterialRegistry::default_material(d3d::GraphicsDevice& device) {
+		static stl::wstring name = d3d::AnsiToWString(DEFAULT_MATERIAL_NAME);
+		static d3d::Buffer buffer = device.create_buffer<d3d::MaterialConstants>({
+			.usage = d3d::BufferUsage::ConstantBuffer,
+			.name = name,
+		});
+		static MaterialAsset default_material{
+			.uuid = DEFAULT_MATERIAL_UUID,
+			.material{
+				.name = DEFAULT_MATERIAL_NAME,
+				.diffuse_albedo = DEFAULT_MATERIAL_ALBEDO,
+				.fresnel_r0 = DEFAULT_MATERIAL_FRESNEL,
+				.roughness = DEFAULT_MATERIAL_ROUGHTNESS,
+				.material_buffer = buffer,
+				.material_cb_index = static_cast<s32>(buffer.cbv_index),
+			},
+		};
+		return default_material;
+	}
+
 } // namespace Sapfire::assets
