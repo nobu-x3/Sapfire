@@ -350,4 +350,55 @@ namespace Sapfire::assets {
 		}
 	}
 
+	constexpr u32 DEFAULT_TEXTURE_DIMENSIONS = 256;
+	constexpr u32 DEFAULT_TEXTURE_CHANNELS = 4;
+	constexpr u32 BYTE_COUNT = DEFAULT_TEXTURE_DIMENSIONS * DEFAULT_TEXTURE_DIMENSIONS * DEFAULT_TEXTURE_CHANNELS;
+	const d3d::TextureCreationDesc DEFAULT_TEXTURE_CREATION_INFO = {
+		.usage = d3d::TextureUsage::TextureFromData,
+		.width = 256,
+		.height = 256,
+		.format = DXGI_FORMAT_R8G8B8A8_UINT,
+		.depthOrArraySize = 1,
+		.bytesPerPixel = BYTE_COUNT,
+		.name = L"Default texture",
+	};
+
+	static char* default_texture_data() {
+		static char data[BYTE_COUNT]{255};
+		for (int row = 0; row < DEFAULT_TEXTURE_DIMENSIONS; ++row) {
+			for (int col = 0; col < DEFAULT_TEXTURE_DIMENSIONS; ++col) {
+				const int index = ((row * DEFAULT_TEXTURE_DIMENSIONS) + col) * DEFAULT_TEXTURE_CHANNELS;
+				if (row % 2 == 0) {
+					if (col % 2 == 0) {
+						data[index + 1] = 0;
+					} else {
+						data[index] = 0;
+						data[index + 1] = 0;
+						data[index + 2] = 0;
+					}
+				} else {
+					if (col % 2 == 0) {
+						data[index + 1] = 0;
+					} else {
+						data[index] = 0;
+						data[index + 1] = 0;
+						data[index + 2] = 0;
+					}
+				}
+			}
+		}
+		return data;
+	}
+
+	TextureAsset& TextureRegistry::default_texture(d3d::GraphicsDevice& device) {
+		static UUID default_texture_uuid = UUID{5596545107579832553};
+		static auto data = default_texture_data();
+		static TextureAsset asset = {
+			.uuid = default_texture_uuid,
+			.description = DEFAULT_TEXTURE_CREATION_INFO,
+			.data = device.create_texture(DEFAULT_TEXTURE_CREATION_INFO, data),
+		};
+		return asset;
+	}
+
 } // namespace Sapfire::assets
