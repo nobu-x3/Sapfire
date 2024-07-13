@@ -110,10 +110,12 @@ namespace Sapfire::d3d {
 		PROFILE_FUNCTION();
 		Texture texture{};
 		TextureCreationDesc texture_desc = desc;
-		texture_desc.path = fs::full_path(texture_desc.path);
-		if (texture_desc.path.empty()) {
-			CORE_WARN("Texture at path {} could not be located by the filesystem. Taking a wild guess.", d3d::WStringToANSI(desc.path));
-			texture_desc.path = d3d::AnsiToWString(fs::FileSystem::root_directory()) + desc.path;
+		if (texture_desc.usage == TextureUsage::HDRTextureFromPath || texture_desc.usage == TextureUsage::TextureFromPath) {
+			texture_desc.path = fs::full_path(texture_desc.path);
+			if (texture_desc.path.empty()) {
+				CORE_WARN("Texture at path {} could not be located by the filesystem. Taking a wild guess.", d3d::WStringToANSI(desc.path));
+				texture_desc.path = d3d::AnsiToWString(fs::FileSystem::root_directory()) + desc.path;
+			}
 		}
 		s32 width{};
 		s32 height{};
@@ -123,6 +125,7 @@ namespace Sapfire::d3d {
 		if (texture_desc.usage == TextureUsage::TextureFromData) {
 			width = texture_desc.width;
 			height = texture_desc.height;
+			texture_data = const_cast<void*>(data);
 		} else if (texture_desc.usage == TextureUsage::TextureFromPath) {
 			texture_data = tools::texture_loader::load(WStringToANSI(texture_desc.path).c_str(), width, height, component_count);
 			texture_desc.width = width;
@@ -162,7 +165,8 @@ namespace Sapfire::d3d {
 				ResourceCreationDesc::create_buffer_resource_creation_desc(upload_buffer_size);
 			Allocation upload_allocation = m_MemoryAllocator->allocate_buffer_resource(upload_buffer_creation_desc, resource_creation_desc);
 			D3D12_SUBRESOURCE_DATA texture_subresource_data{
-				.pData = desc.usage == TextureUsage::TextureFromPath ? texture_data : hdr_texture_data,
+				.pData = desc.usage == TextureUsage::TextureFromPath || desc.usage == TextureUsage::TextureFromData ? texture_data
+																													: hdr_texture_data,
 				.RowPitch = width * texture_desc.bytesPerPixel,
 				.SlicePitch = width * height * texture_desc.bytesPerPixel,
 			};

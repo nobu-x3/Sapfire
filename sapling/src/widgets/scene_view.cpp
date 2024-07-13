@@ -1,12 +1,10 @@
-#include "Sapfire.h"
-
+#include "widgets/scene_view.h"
 #include "core/timer.h"
 #include "globals.h"
 #include "imgui.h"
 #include "render/d3d_util.h"
 #include "sapling_layer.h"
 #include "subeditors/level_editor.h"
-#include "widgets/scene_view.h"
 
 namespace widgets {
 
@@ -86,9 +84,12 @@ namespace widgets {
 	void SSceneView::add_render_component(Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
 		// @TODO: add materials
 		bool already_has_component = m_ECManager.has_engine_component<components::RenderComponent>(entity);
-		auto* mesh_asset = editor()->asset_manager()->get_mesh(resource_paths.mesh_path);
-		auto* texture_asset = editor()->asset_manager()->get_texture(resource_paths.texture_path);
-		auto* material_asset = editor()->asset_manager()->get_material(resource_paths.material_path);
+		auto* mesh_asset = resource_paths.mesh_path.empty() ? assets::MeshRegistry::default_mesh()
+															: editor()->asset_manager()->get_mesh(resource_paths.mesh_path);
+		auto* texture_asset = resource_paths.texture_path.empty() ? assets::TextureRegistry::default_texture(m_GraphicsDevice)
+																  : editor()->asset_manager()->get_texture(resource_paths.texture_path);
+		auto* material_asset = resource_paths.texture_path.empty() ? assets::MaterialRegistry::default_material(m_GraphicsDevice)
+																   : editor()->asset_manager()->get_material(resource_paths.material_path);
 		if (!mesh_asset) {
 			editor()->asset_manager()->import_mesh(resource_paths.mesh_path);
 			mesh_asset = editor()->asset_manager()->get_mesh(resource_paths.mesh_path);
@@ -97,7 +98,7 @@ namespace widgets {
 			editor()->asset_manager()->load_runtime_texture(resource_paths.texture_path);
 			texture_asset = editor()->asset_manager()->get_texture(resource_paths.texture_path);
 		}
-		if (!material_asset || !editor()->asset_manager()->material_resource_exists(resource_paths.material_path)) {
+		if (!material_asset || !editor()->asset_manager()->material_resource_exists(material_asset->uuid)) {
 			editor()->asset_manager()->import_material(resource_paths.material_path);
 			material_asset = editor()->asset_manager()->get_material(resource_paths.material_path);
 		}
@@ -115,29 +116,32 @@ namespace widgets {
 			bool should_add_tangent = false;
 			bool should_allocate_mesh = !editor()->asset_manager()->mesh_resource_exists(resource_paths.mesh_path);
 			if (should_allocate_mesh) {
+				stl::wstring name = mesh_asset->uuid == assets::MeshRegistry::default_mesh()->uuid
+					? L"Default Mesh"
+					: d3d::AnsiToWString(resource_paths.mesh_path);
 				m_RTIndexBuffers.push_back(m_GraphicsDevice.create_buffer<u16>(
 					d3d::BufferCreationDesc{
 						.usage = d3d::BufferUsage::IndexBuffer,
-						.name = L"Index buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+						.name = L"Index buffer " + name,
 					},
 					mesh_asset->data->indices16()));
 				m_VertexPosBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 					d3d::BufferCreationDesc{
 						.usage = d3d::BufferUsage::StructuredBuffer,
-						.name = L"Vertex Pos buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+						.name = L"Vertex Pos buffer " + name,
 					},
 					mesh_asset->data->positions));
 				m_VertexNormalBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 					d3d::BufferCreationDesc{
 						.usage = d3d::BufferUsage::StructuredBuffer,
-						.name = L"Vertex Norm buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+						.name = L"Vertex Norm buffer " + name,
 					},
 					mesh_asset->data->normals));
 				if (mesh_asset->data->tangentus.size() > 0) {
 					m_VertexTangentBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT3>(
 						d3d::BufferCreationDesc{
 							.usage = d3d::BufferUsage::StructuredBuffer,
-							.name = L"Vertex Tang buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+							.name = L"Vertex Tang buffer " + name,
 						},
 						mesh_asset->data->tangentus));
 					should_add_tangent = true;
@@ -145,7 +149,7 @@ namespace widgets {
 				m_VertexUVBuffers.push_back(m_GraphicsDevice.create_buffer<DirectX::XMFLOAT2>(
 					d3d::BufferCreationDesc{
 						.usage = d3d::BufferUsage::StructuredBuffer,
-						.name = L"Vertex UV buffer " + d3d::AnsiToWString(resource_paths.mesh_path),
+						.name = L"Vertex UV buffer " + name,
 					},
 					mesh_asset->data->texcs));
 			}
@@ -161,6 +165,22 @@ namespace widgets {
 					: static_cast<u32>(m_TransformBuffers.size() - 1),
 
 			};
+			u32 material_cbuffer_idx = 0;
+			if (material_asset->uuid == assets::MaterialRegistry::default_material(m_GraphicsDevice)->uuid) {
+				material_cbuffer_idx = material_asset->material.material_cb_index;
+			} else {
+				material_cbuffer_idx = editor()->asset_manager()->material_resource_exists(resource_paths.material_path)
+					? editor()->asset_manager()->get_material_resource(resource_paths.material_path).gpu_idx
+					: assets::MaterialRegistry::default_material(m_GraphicsDevice)->material.material_cb_index;
+			}
+			u32 texture_cbuffer_idx = 0;
+			if (texture_asset->uuid == assets::TextureRegistry::default_texture(m_GraphicsDevice)->uuid) {
+				texture_cbuffer_idx = texture_asset->data.srv_index;
+			} else {
+				texture_cbuffer_idx = editor()->asset_manager()->texture_resource_exists(resource_paths.texture_path)
+					? editor()->asset_manager()->get_texture_resource(resource_paths.texture_path).gpu_idx
+					: texture_asset->data.srv_index;
+			}
 			auto gpu_data = components::PerDrawConstants{
 				.position_buffer_idx = m_VertexPosBuffers.back().srv_index,
 				.normal_buffer_idx = m_VertexNormalBuffers.back().srv_index,
@@ -170,12 +190,8 @@ namespace widgets {
 					? m_ECManager.engine_component<components::RenderComponent>(entity).per_draw_constants()->scene_cbuffer_idx
 					: m_TransformBuffers.back().cbv_index,
 				.pass_cbuffer_idx = m_MainPassCB.cbv_index,
-				.material_cbuffer_idx = editor()->asset_manager()->material_resource_exists(resource_paths.material_path)
-					? editor()->asset_manager()->get_material_resource(resource_paths.material_path).gpu_idx
-					: 0,
-				.texture_cbuffer_idx = editor()->asset_manager()->texture_resource_exists(resource_paths.texture_path)
-					? editor()->asset_manager()->get_texture_resource(resource_paths.texture_path).gpu_idx
-					: 0,
+				.material_cbuffer_idx = material_cbuffer_idx,
+				.texture_cbuffer_idx = texture_cbuffer_idx,
 			};
 			if (!should_allocate_mesh) {
 				cpu_data = editor()->asset_manager()->get_mesh_resource(mesh_asset->uuid).cpu_data;

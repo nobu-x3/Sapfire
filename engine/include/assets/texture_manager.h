@@ -51,7 +51,7 @@ namespace Sapfire::assets {
 		stl::string to_string();
 
 		static void create_default(const stl::string& registry_file_path);
-		static TextureAsset& default_texture(d3d::GraphicsDevice& device);
+		static TextureAsset* default_texture(d3d::GraphicsDevice& device);
 
 	private:
 		stl::string m_RegistryFilePath;

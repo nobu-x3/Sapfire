@@ -47,7 +47,7 @@ namespace Sapfire::assets {
 		std::vector<u16> all_indices16();
 		stl::string to_string();
 
-		static MeshAsset& default_mesh();
+		static MeshAsset* default_mesh();
 
 		static void create_default(const stl::string& registry_file_path);
 

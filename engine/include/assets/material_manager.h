@@ -49,7 +49,7 @@ namespace Sapfire::assets {
 		stl::unordered_map<stl::string, MaterialAsset>& path_asset_map() { return m_PathToMaterialAssetMap; }
 		stl::string to_string();
 
-		static MaterialAsset& default_material(d3d::GraphicsDevice& device);
+		static MaterialAsset* default_material(d3d::GraphicsDevice& device);
 
         static void create_default(const stl::string& registry_file_path);
 
