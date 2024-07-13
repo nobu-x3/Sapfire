@@ -234,4 +234,14 @@ namespace Sapfire::assets {
 		}
 	}
 
+	const UUID DEFAULT_MESH_UUID{5596545107579832552};
+
+	Sapfire::assets::MeshAsset& MeshRegistry::default_mesh() {
+		static MeshAsset asset{
+			.uuid = DEFAULT_MESH_UUID,
+			.data = d3d::primitives::create_box(1, 1, 1, 0),
+		};
+		return asset;
+	}
+
 } // namespace Sapfire::assets
