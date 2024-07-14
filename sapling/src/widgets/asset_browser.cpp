@@ -37,7 +37,7 @@ namespace widgets {
 				if (ImGui::MenuItem("Import")) {
 					IGFD::FileDialogConfig config{};
 					config.path = Sapfire::fs::FileSystem::root_directory();
-					ImGuiFileDialog::Instance()->OpenDialog("ImportAssetDlg", "Import asset", ".obj,.png,.dds,.jpg", config);
+					ImGuiFileDialog::Instance()->OpenDialog("ImportAssetDlg", "Import asset", "Models{.obj},Textures{.png,.dds,.jpg},Materials{.mat}", config);
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::EndPopup();
