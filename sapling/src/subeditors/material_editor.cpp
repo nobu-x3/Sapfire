@@ -28,6 +28,12 @@ SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d
 
 void SMaterialEditor::draw_menu() {
 	if (ImGui::BeginMenu("Material Editor")) {
+		if (ImGui::MenuItem("New Material", "CTRL+M+N")) {
+			IGFD::FileDialogConfig config{};
+			config.path = Sapfire::fs::FileSystem::root_directory();
+			config.countSelectionMax = 0;
+			ImGuiFileDialog::Instance()->OpenDialog("NewMatDlg", "Create material", ".mat", config);
+		}
 		if (ImGui::MenuItem("Open Material", "CTRL+M+O")) {
 			IGFD::FileDialogConfig config{};
 			config.path = Sapfire::fs::FileSystem::root_directory();
@@ -65,6 +71,25 @@ void SMaterialEditor::draw_open_material_dialog() {
 			stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
 			if (!filepath.empty()) {
 				auto relative_path = Sapfire::fs::relative_path(filepath);
+				if (m_AssetManager.path_material_map().contains(relative_path)) {
+					m_OpenedMaterial = m_AssetManager.get_material(filepath);
+					widgets::SMaterialInspector* inspector =
+						static_cast<widgets::SMaterialInspector*>(m_Widgets[EWidgetOrder::MaterialInspector].get());
+					if (inspector) {
+						inspector->current_material(m_OpenedMaterial);
+					}
+				}
+			}
+		}
+		ImGuiFileDialog::Instance()->Close();
+	}
+	if (ImGuiFileDialog::Instance()->Display("NewMatDlg")) {
+		if (ImGuiFileDialog::Instance()->IsOk()) {
+			stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
+			if (!filepath.empty()) {
+				auto relative_path = Sapfire::fs::relative_path(filepath);
+				assets::MaterialAsset asset{};
+				m_AssetManager.import_material(relative_path, std::move(asset));
 				if (m_AssetManager.path_material_map().contains(relative_path)) {
 					m_OpenedMaterial = m_AssetManager.get_material(filepath);
 					widgets::SMaterialInspector* inspector =

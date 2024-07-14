@@ -179,6 +179,22 @@ namespace Sapfire::assets {
 		m_UUIDToPathMap[uuid] = path;
 	}
 
+	void MaterialRegistry::import_material(d3d::GraphicsDevice& device, MaterialAsset&& asset, const stl::string& path) {
+		if (m_PathToMaterialAssetMap.contains(path)) {
+			CORE_ERROR("Material with path {} already exists.", path);
+			return;
+		}
+		asset.material.name = fs::file_name(path);
+		asset.material.material_buffer = device.create_buffer<d3d::MaterialConstants>({
+			.usage = d3d::BufferUsage::ConstantBuffer,
+			.name = d3d::AnsiToWString(asset.material.name),
+		});
+		asset.material.material_cb_index = asset.material.material_buffer.cbv_index;
+		const UUID uuid{asset.uuid};
+		m_PathToMaterialAssetMap[path] = std::move(asset);
+		m_UUIDToPathMap[uuid] = path;
+	}
+
 	void MaterialRegistry::move_material(d3d::GraphicsDevice& device, const stl::string& old_path, const stl::string& new_path) {}
 
 	void MaterialRegistry::release_material(const stl::string& path) {

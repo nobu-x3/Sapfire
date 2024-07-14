@@ -68,6 +68,15 @@ namespace Sapfire::assets {
 			m_MaterialManager.add(relative_path, m_MaterialRegistry.get(relative_path)->uuid,
 								  {.gpu_idx = static_cast<u32>(m_MaterialRegistry.get(relative_path)->material.material_cb_index)});
 		}
+		inline void import_material(const stl::string& path, MaterialAsset&& material) {
+			if (path.empty()) {
+				return;
+			}
+			auto relative_path = fs::relative_path(path);
+			m_MaterialRegistry.import_material(m_Device, std::move(material), relative_path);
+			m_MaterialManager.add(relative_path, m_MaterialRegistry.get(relative_path)->uuid,
+								  {.gpu_idx = static_cast<u32>(m_MaterialRegistry.get(relative_path)->material.material_cb_index)});
+		}
 		inline void move_material(const stl::string& old_path, const stl::string& new_path) {
 			m_MaterialRegistry.move_material(m_Device, old_path, new_path);
 		}

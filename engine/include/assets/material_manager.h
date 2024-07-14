@@ -37,6 +37,7 @@ namespace Sapfire::assets {
 		MaterialRegistry& operator=(const MaterialRegistry&) = delete;
 		MaterialRegistry& operator=(MaterialRegistry&&) = delete;
 		void import_material(d3d::GraphicsDevice& device, const stl::string& path);
+		void import_material(d3d::GraphicsDevice& device, MaterialAsset&& asset, const stl::string& path);
 		void import_material(d3d::GraphicsDevice& device, const stl::string& path, UUID uuid);
 		void move_material(d3d::GraphicsDevice& device, const stl::string& old_path, const stl::string& new_path);
 		void release_material(const stl::string& path);
