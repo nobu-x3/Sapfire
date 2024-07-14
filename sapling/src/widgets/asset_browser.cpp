@@ -13,7 +13,8 @@ namespace widgets {
 	EAssetType get_asset_type(Sapfire::stl::string_view filename) {
 		if (Sapfire::fs::extension(filename) == ".obj") {
 			return EAssetType::Mesh;
-		} else if (Sapfire::fs::extension(filename) == ".dds" || Sapfire::fs::extension(filename) == ".png") {
+		} else if (Sapfire::fs::extension(filename) == ".dds" || Sapfire::fs::extension(filename) == ".png" ||
+				   Sapfire::fs::extension(filename) == ".jpg") {
 			return EAssetType::Texture;
 		} else if (Sapfire::fs::extension(filename) == ".mat") {
 			return EAssetType::Material;

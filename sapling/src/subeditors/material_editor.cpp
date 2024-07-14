@@ -17,7 +17,7 @@ SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d
 	DirectX::XMVECTOR position{0, 0, 5};
 	transform.position(position);
 	auto scene_view = Sapfire::stl::make_unique<widgets::SSceneView>(mem::Editor, "Preview", m_ECManager.get(), device);
-	scene_view->add_render_component(m_MaterialEntity, {.mesh_path = "assets/models/cube.obj"});
+	scene_view->add_render_component(m_MaterialEntity, {});
 	auto& render_component = m_ECManager->engine_component<components::RenderComponent>(m_MaterialEntity);
 	m_Widgets.push_back(std::move(scene_view));
 	m_Widgets.push_back(stl::make_unique<SMaterialPreviewSettings>(mem::Editor, &render_component));
