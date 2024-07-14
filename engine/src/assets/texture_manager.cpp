@@ -361,14 +361,14 @@ namespace Sapfire::assets {
 		.usage = d3d::TextureUsage::TextureFromData,
 		.width = 256,
 		.height = 256,
-		.format = DXGI_FORMAT_R8G8B8A8_UINT,
+		.format = DXGI_FORMAT_R8G8B8A8_UNORM,
 		.depthOrArraySize = 1,
 		.bytesPerPixel = DEFAULT_TEXTURE_CHANNELS,
 		.name = L"Default texture",
 	};
 
 	static char* default_texture_data() {
-		static char data[BYTE_COUNT]{255};
+		static char data[BYTE_COUNT];
 		for (int i = 0; i < BYTE_COUNT; ++i) {
 			data[i] = 255;
 		}

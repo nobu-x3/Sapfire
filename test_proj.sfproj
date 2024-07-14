@@ -1,37 +1,36 @@
 {
-    "assets": {
-        "material_registry": [
-            [
-                "path",
-                "assets\\materials\\default.mat"
-            ]
-        ],
-        "mesh_registry": [
-            {
-                "UUID": 5596545107579832551,
-                "path": "assets\\models\\cube.obj"
-            },
-            {
-                "UUID": 306072129635398900,
-                "path": "assets\\models\\monkey.obj"
-            }
-        ],
-        "texture_registry": [
-            {
-                "UUID": 1919734328056237210,
-                "description": {
-                    "bytes_per_pixel": 4,
-                    "depth_or_array_size": 1,
-                    "format": 28,
-                    "height": 4672,
-                    "mip_levels": 1,
-                    "optional_initial_state": 0,
-                    "usage": 2,
-                    "width": 7000
-                },
-                "path": "assets\\textures\\ceramics.jpg"
-            }
-        ]
-    },
-    "name": "test_proj.sfproj"
+  "assets": {
+    "material_registry": [
+      {
+        "path": "assets\\materials\\default.mat"
+      }
+    ],
+    "mesh_registry": [
+      {
+        "UUID": 5596545107579832551,
+        "path": "assets\\models\\cube.obj"
+      },
+      {
+        "UUID": 306072129635398900,
+        "path": "assets\\models\\monkey.obj"
+      }
+    ],
+    "texture_registry": [
+      {
+        "UUID": 1919734328056237210,
+        "description": {
+          "bytes_per_pixel": 4,
+          "depth_or_array_size": 1,
+          "format": 28,
+          "height": 4672,
+          "mip_levels": 1,
+          "optional_initial_state": 0,
+          "usage": 2,
+          "width": 7000
+        },
+        "path": "assets\\textures\\ceramics.jpg"
+      }
+    ]
+  },
+  "name": "test_proj.sfproj"
 }
