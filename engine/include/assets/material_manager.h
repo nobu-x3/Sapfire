@@ -24,7 +24,7 @@ namespace Sapfire::assets {
 	struct SFAPI MaterialManager {
 		Sapfire::stl::unordered_map<Sapfire::stl::string, MaterialResource> material_resources;
 		Sapfire::stl::unordered_map<Sapfire::UUID, Sapfire::stl::string> uuid_to_path_map;
-        void add(const Sapfire::stl::string& path, Sapfire::UUID uuid, MaterialResource resource);
+		void add(const Sapfire::stl::string& path, Sapfire::UUID uuid, MaterialResource resource);
 	};
 
 	class SFAPI MaterialRegistry {
@@ -49,9 +49,9 @@ namespace Sapfire::assets {
 		stl::unordered_map<stl::string, MaterialAsset>& path_asset_map() { return m_PathToMaterialAssetMap; }
 		stl::string to_string();
 
-		static MaterialAsset* default_material(d3d::GraphicsDevice& device);
+		static MaterialAsset* default_material(d3d::GraphicsDevice* device = nullptr);
 
-        static void create_default(const stl::string& registry_file_path);
+		static void create_default(const stl::string& registry_file_path);
 
 	private:
 		stl::string m_RegistryFilePath;

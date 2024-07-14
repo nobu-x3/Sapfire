@@ -145,7 +145,7 @@ namespace widgets {
 							ImVec2 real_estate = ImGui::GetWindowSize();
 							ImVec2 sz = ImGui::CalcTextSize(asset_name.c_str());
 							ImVec2 cursor = ImGui::GetCursorPos();
-							AssetDragAndDropPayload payload{material_asset.uuid, EAssetType::Texture};
+							AssetDragAndDropPayload payload{material_asset.uuid, EAssetType::Material};
 							ImGui::BeginGroup();
 							ImGui::PushID(asset_name.c_str());
 							ImGui::InvisibleButton("invisible_button", {sz.x, sz.y + 64 + style.ItemSpacing.y});

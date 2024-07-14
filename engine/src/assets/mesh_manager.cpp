@@ -119,18 +119,22 @@ namespace Sapfire::assets {
 
 	MeshAsset* MeshRegistry::get(const stl::string& path) const {
 		if (!m_PathToMeshAssetMap.contains(path))
-			return nullptr;
+			return MeshRegistry::default_mesh();
 		return const_cast<MeshAsset*>(&m_PathToMeshAssetMap.at(path));
 	}
 
 	MeshAsset* MeshRegistry::get(UUID uuid) const {
 		if (!m_UUIDToPathMap.contains(uuid))
-			return nullptr;
+			return MeshRegistry::default_mesh();
 		auto& path = m_UUIDToPathMap.at(uuid);
 		return get(path);
 	}
 
-	stl::string MeshRegistry::get_path(UUID uuid) const { return m_UUIDToPathMap.at(uuid); }
+	stl::string MeshRegistry::get_path(UUID uuid) const {
+		if (!m_UUIDToPathMap.contains(uuid))
+			return "";
+		return m_UUIDToPathMap.at(uuid);
+	}
 
 	stl::vector<DirectX::XMFLOAT3> MeshRegistry::all_positions() const {
 		stl::vector<DirectX::XMFLOAT3> positions{};

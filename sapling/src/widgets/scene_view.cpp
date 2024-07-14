@@ -86,9 +86,9 @@ namespace widgets {
 		bool already_has_component = m_ECManager.has_engine_component<components::RenderComponent>(entity);
 		auto* mesh_asset = resource_paths.mesh_path.empty() ? assets::MeshRegistry::default_mesh()
 															: editor()->asset_manager()->get_mesh(resource_paths.mesh_path);
-		auto* texture_asset = resource_paths.texture_path.empty() ? assets::TextureRegistry::default_texture(m_GraphicsDevice)
+		auto* texture_asset = resource_paths.texture_path.empty() ? assets::TextureRegistry::default_texture(&m_GraphicsDevice)
 																  : editor()->asset_manager()->get_texture(resource_paths.texture_path);
-		auto* material_asset = resource_paths.texture_path.empty() ? assets::MaterialRegistry::default_material(m_GraphicsDevice)
+		auto* material_asset = resource_paths.material_path.empty() ? assets::MaterialRegistry::default_material(&m_GraphicsDevice)
 																   : editor()->asset_manager()->get_material(resource_paths.material_path);
 		if (!mesh_asset) {
 			editor()->asset_manager()->import_mesh(resource_paths.mesh_path);
@@ -166,15 +166,15 @@ namespace widgets {
 
 			};
 			u32 material_cbuffer_idx = 0;
-			if (material_asset->uuid == assets::MaterialRegistry::default_material(m_GraphicsDevice)->uuid) {
+			if (material_asset->uuid == assets::MaterialRegistry::default_material(&m_GraphicsDevice)->uuid) {
 				material_cbuffer_idx = material_asset->material.material_cb_index;
 			} else {
 				material_cbuffer_idx = editor()->asset_manager()->material_resource_exists(resource_paths.material_path)
 					? editor()->asset_manager()->get_material_resource(resource_paths.material_path).gpu_idx
-					: assets::MaterialRegistry::default_material(m_GraphicsDevice)->material.material_cb_index;
+					: assets::MaterialRegistry::default_material(&m_GraphicsDevice)->material.material_cb_index;
 			}
 			u32 texture_cbuffer_idx = 0;
-			if (texture_asset->uuid == assets::TextureRegistry::default_texture(m_GraphicsDevice)->uuid) {
+			if (texture_asset->uuid == assets::TextureRegistry::default_texture(&m_GraphicsDevice)->uuid) {
 				texture_cbuffer_idx = texture_asset->data.srv_index;
 			} else {
 				texture_cbuffer_idx = editor()->asset_manager()->texture_resource_exists(resource_paths.texture_path)
@@ -199,6 +199,8 @@ namespace widgets {
 				gpu_data.scene_cbuffer_idx = already_has_component
 					? m_ECManager.engine_component<components::RenderComponent>(entity).per_draw_constants()->scene_cbuffer_idx
 					: m_TransformBuffers.back().cbv_index;
+				gpu_data.material_cbuffer_idx = material_cbuffer_idx;
+				gpu_data.texture_cbuffer_idx = texture_cbuffer_idx;
 				cpu_data.transform_buffer_idx = already_has_component
 					? m_ECManager.engine_component<components::RenderComponent>(entity).cpu_data().transform_buffer_idx
 					: static_cast<u32>(m_TransformBuffers.size() - 1);
@@ -222,7 +224,9 @@ namespace widgets {
 						const auto mesh_path = editor()->asset_manager()->get_mesh_path(mesh_uuid);
 						const auto material_uuid = component->material_uuid();
 						const auto material_path = editor()->asset_manager()->get_material_path(material_uuid);
-						if (!editor()->asset_manager()->mesh_resource_exists(mesh_path)) {
+						if (!editor()->asset_manager()->mesh_resource_exists(mesh_path) ||
+							!editor()->asset_manager()->material_resource_exists(material_path) ||
+							!editor()->asset_manager()->texture_resource_exists(texture_path)) {
 							add_render_component(entity,
 												 {.mesh_path = mesh_path, .texture_path = texture_path, .material_path = material_path});
 							return;
@@ -336,7 +340,6 @@ namespace widgets {
 	}
 
 	void SSceneView::update_materials() {
-		auto index = 0;
 		for (auto&& [path, asset] : editor()->asset_manager()->path_material_map()) {
 			d3d::MaterialConstants data{
 				.diffuse_albedo = asset.material.diffuse_albedo,
@@ -344,8 +347,6 @@ namespace widgets {
 				.roughness = asset.material.roughness,
 			};
 			asset.material.material_buffer.update(&data);
-			asset.material.material_cb_index = index;
-			index++;
 		}
 	}
 

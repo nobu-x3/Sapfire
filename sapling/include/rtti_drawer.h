@@ -3,11 +3,11 @@
 #include <DirectXMath.h>
 #include "Sapfire.h"
 #include "components/component.h"
+#include "components/render_component.h"
 #include "core/core.h"
 #include "core/rtti.h"
 #include "imgui.h"
 #include "widgets/asset_browser.h"
-#include "components/render_component.h"
 
 template <typename T>
 void draw_rtti(T* component) {
@@ -97,7 +97,10 @@ void draw_rtti(T* component) {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_ASSET_UUID")) {
 						IM_ASSERT(payload->DataSize == sizeof(widgets::AssetDragAndDropPayload));
 						widgets::AssetDragAndDropPayload payload_asset = *(const widgets::AssetDragAndDropPayload*)payload->Data;
-						if (payload_asset.type == widgets::EAssetType::Mesh && field.ref_type == rtti::rtti_reference_type::Mesh) {
+						if ((payload_asset.type == widgets::EAssetType::Mesh && field.ref_type == rtti::rtti_reference_type::Mesh) ||
+							(payload_asset.type == widgets::EAssetType::Texture && field.ref_type == rtti::rtti_reference_type::Texture) ||
+							(payload_asset.type == widgets::EAssetType::Material &&
+							 field.ref_type == rtti::rtti_reference_type::Material)) {
 							*data = payload_asset.uuid;
 							rtti::set_rtti_field_value(&type_info, &field, static_cast<void*>(data));
 							return;

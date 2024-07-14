@@ -28,6 +28,7 @@ public:
 	void on_render() final;
 
 	Sapfire::assets::AssetManager* asset_manager() { return m_AssetManager.get(); }
+	Sapfire::d3d::GraphicsDevice& gfx_device() { return *m_GraphicsDevice; }
 
 private:
 	void serialize();

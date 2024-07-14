@@ -32,7 +32,7 @@ namespace Sapfire::assets {
 	}
 
 	bool AssetManager::is_texture_loaded_for_runtime(UUID uuid) {
-		if (uuid == TextureRegistry::default_texture(m_Device)->uuid) {
+		if (uuid == TextureRegistry::default_texture(&m_Device)->uuid) {
 			return true;
 		}
 		bool loaded = true;

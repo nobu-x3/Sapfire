@@ -83,7 +83,7 @@ namespace Sapfire::assets {
 		}
 
 		inline bool material_resource_exists(const UUID& uuid) const {
-			if (uuid == MaterialRegistry::default_material(m_Device)->uuid)
+			if (uuid == MaterialRegistry::default_material(&m_Device)->uuid)
 				return true;
 			return m_MaterialManager.uuid_to_path_map.contains(uuid);
 		}

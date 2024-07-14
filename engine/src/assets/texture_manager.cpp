@@ -236,18 +236,22 @@ namespace Sapfire::assets {
 
 	TextureAsset* TextureRegistry::get(const stl::string& path) const {
 		if (!m_PathToTextureAssetMap.contains(path))
-			return nullptr;
+			return TextureRegistry::default_texture();
 		return const_cast<TextureAsset*>(&m_PathToTextureAssetMap.at(path));
 	}
 
 	TextureAsset* TextureRegistry::get(UUID uuid) const {
 		if (!m_UUIDToPathMap.contains(uuid))
-			return nullptr;
+			return TextureRegistry::default_texture();
 		auto& path = m_UUIDToPathMap.at(uuid);
 		return get(path);
 	}
 
-	stl::string TextureRegistry::get_path(UUID uuid) const { return m_UUIDToPathMap.at(uuid); }
+	stl::string TextureRegistry::get_path(UUID uuid) const {
+		if (!m_UUIDToPathMap.contains(uuid))
+			return "";
+		return m_UUIDToPathMap.at(uuid);
+	}
 
 	stl::string TextureRegistry::to_string() {
 		nlohmann::json j;
@@ -393,13 +397,13 @@ namespace Sapfire::assets {
 		return data;
 	}
 
-	TextureAsset* TextureRegistry::default_texture(d3d::GraphicsDevice& device) {
+	TextureAsset* TextureRegistry::default_texture(d3d::GraphicsDevice* device) {
 		static UUID default_texture_uuid = UUID{5596545107579832553};
 		static auto data = default_texture_data();
 		static TextureAsset asset = {
 			.uuid = default_texture_uuid,
 			.description = DEFAULT_TEXTURE_CREATION_INFO,
-			.data = device.create_texture(DEFAULT_TEXTURE_CREATION_INFO, data),
+			.data = device->create_texture(DEFAULT_TEXTURE_CREATION_INFO, data),
 		};
 		return &asset;
 	}

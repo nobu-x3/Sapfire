@@ -13,6 +13,12 @@ using namespace DirectX;
 
 namespace Sapfire::assets {
 
+	const UUID DEFAULT_MATERIAL_UUID = 13700118063961433559;
+	constexpr f32 DEFAULT_MATERIAL_ROUGHTNESS = 0.f;
+	constexpr DirectX::XMFLOAT4 DEFAULT_MATERIAL_ALBEDO = {1.f, 0.f, 1.f, 1.f};
+	constexpr DirectX::XMFLOAT3 DEFAULT_MATERIAL_FRESNEL = {1.f, 1.f, 1.f};
+	const stl::string DEFAULT_MATERIAL_NAME = "Default Material";
+
 	void MaterialManager::add(const Sapfire::stl::string& path, Sapfire::UUID uuid, MaterialResource resource) {
 		material_resources[path] = resource;
 		uuid_to_path_map[uuid] = path;
@@ -282,37 +288,35 @@ namespace Sapfire::assets {
 
 	MaterialAsset* MaterialRegistry::get(const stl::string& path) const {
 		if (!m_PathToMaterialAssetMap.contains(path))
-			return nullptr;
+			return MaterialRegistry::default_material();
 		return const_cast<MaterialAsset*>(&m_PathToMaterialAssetMap.at(path));
 	}
 
 	MaterialAsset* MaterialRegistry::get(UUID uuid) const {
-		if (!m_UUIDToPathMap.contains(uuid))
-			return nullptr;
+		if (!m_UUIDToPathMap.contains(uuid)) {
+			return MaterialRegistry::default_material();
+		}
 		auto& path = m_UUIDToPathMap.at(uuid);
 		return get(path);
 	}
 
-	stl::string MaterialRegistry::get_path(UUID uuid) const { return m_UUIDToPathMap.at(uuid); }
+	stl::string MaterialRegistry::get_path(UUID uuid) const {
+		if (!m_UUIDToPathMap.contains(uuid))
+			return "";
+		return m_UUIDToPathMap.at(uuid);
+	}
 
-	const UUID DEFAULT_MATERIAL_UUID = 13700118063961433559;
-	constexpr f32 DEFAULT_MATERIAL_ROUGHTNESS = 0.f;
-	constexpr DirectX::XMFLOAT4 DEFAULT_MATERIAL_ALBEDO = {1.f, 0.f, 1.f, 1.f};
-	constexpr DirectX::XMFLOAT3 DEFAULT_MATERIAL_FRESNEL = {1.f, 1.f, 1.f};
-	const stl::string DEFAULT_MATERIAL_NAME = "Default Material";
-
-	MaterialAsset* MaterialRegistry::default_material(d3d::GraphicsDevice& device) {
+	MaterialAsset* MaterialRegistry::default_material(d3d::GraphicsDevice* device) {
 		static stl::wstring name = d3d::AnsiToWString(DEFAULT_MATERIAL_NAME);
 		static d3d::MaterialConstants default_material_constants{
 			.diffuse_albedo = DEFAULT_MATERIAL_ALBEDO,
 			.fresnel_r0 = DEFAULT_MATERIAL_FRESNEL,
 			.roughness = DEFAULT_MATERIAL_ROUGHTNESS,
 		};
-		static d3d::Buffer buffer = device.create_buffer<d3d::MaterialConstants>(
-			{
-				.usage = d3d::BufferUsage::ConstantBuffer,
-				.name = name,
-			});
+		static d3d::Buffer buffer = device->create_buffer<d3d::MaterialConstants>({
+			.usage = d3d::BufferUsage::ConstantBuffer,
+			.name = name,
+		});
 		static MaterialAsset default_mat{
 			.uuid = DEFAULT_MATERIAL_UUID,
 			.material{
