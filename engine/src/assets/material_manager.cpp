@@ -280,7 +280,7 @@ namespace Sapfire::assets {
 				{"UUID", static_cast<u64>(uuid)},	{"path", path}, {"name", name}, {"roughness", roughness}, {"fresnel_r0", fresnel_r0},
 				{"diffuse_albedo", diffuse_albedo},
 			};
-			nlohmann::json path_jobj = {"path", path};
+			nlohmann::json path_jobj = {{"path", path}};
 			j.push_back(path_jobj);
 		}
 		return j.dump();
