@@ -61,11 +61,11 @@ void SMaterialEditor::draw_menu() {
 
 bool SMaterialEditor::update(Sapfire::f32 delta_time) {
 	bool ret_val = SSubeditor::update(delta_time);
-	draw_open_material_dialog();
+	draw_dialogs();
 	return ret_val;
 }
 
-void SMaterialEditor::draw_open_material_dialog() {
+void SMaterialEditor::draw_dialogs() {
 	if (ImGuiFileDialog::Instance()->Display("OpenMatDlg")) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
 			stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
@@ -77,6 +77,10 @@ void SMaterialEditor::draw_open_material_dialog() {
 						static_cast<widgets::SMaterialInspector*>(m_Widgets[EWidgetOrder::MaterialInspector].get());
 					if (inspector) {
 						inspector->current_material(m_OpenedMaterial);
+						auto& render_component = m_ECManager->engine_component<components::RenderComponent>(m_MaterialEntity);
+						auto* constants = render_component.per_draw_constants();
+						constants->material_cbuffer_idx = m_OpenedMaterial->material.material_cb_index;
+						render_component.per_draw_constants(*constants);
 					}
 				}
 			}
@@ -96,6 +100,10 @@ void SMaterialEditor::draw_open_material_dialog() {
 						static_cast<widgets::SMaterialInspector*>(m_Widgets[EWidgetOrder::MaterialInspector].get());
 					if (inspector) {
 						inspector->current_material(m_OpenedMaterial);
+						auto& render_component = m_ECManager->engine_component<components::RenderComponent>(m_MaterialEntity);
+						auto* constants = render_component.per_draw_constants();
+						constants->material_cbuffer_idx = m_OpenedMaterial->material.material_cb_index;
+						render_component.per_draw_constants(*constants);
 					}
 				}
 			}
