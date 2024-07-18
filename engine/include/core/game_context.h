@@ -12,6 +12,10 @@
 
 namespace Sapfire {
 
+	struct ObjectConstants {
+		DirectX::XMFLOAT4X4 World = Sapfire::math::Identity4x4();
+	};
+
 	namespace physics {
 		class PhysicsEngine;
 	}

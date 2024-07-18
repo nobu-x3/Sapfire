@@ -293,6 +293,7 @@ namespace Sapfire::assets {
 				CORE_ERROR("Texture with path {} does not exist.", path);
 				continue;
 			}
+			path = fs::relative_path(path);
 			if (!asset.contains("UUID")) {
 				CORE_ERROR("Texture with path {} is missing UUID at deserialization. It will not be loaded. Dump:\n{}", path, data);
 				continue;

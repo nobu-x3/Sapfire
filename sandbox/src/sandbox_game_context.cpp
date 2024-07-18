@@ -6,12 +6,6 @@
 
 using namespace Sapfire;
 
-static d3d::primitives::MeshData cube = d3d::primitives::create_box(1, 1, 1, 0);
-
-struct ObjectConstants {
-	DirectX::XMFLOAT4X4 World = Sapfire::math::Identity4x4();
-};
-
 struct PassConstants {
 	DirectX::XMFLOAT4X4 view = Sapfire::math::Identity4x4();
 	DirectX::XMFLOAT4X4 inv_view = Sapfire::math::Identity4x4();
@@ -40,18 +34,6 @@ SandboxGameContext::SandboxGameContext(const Sapfire::GameContextCreationDesc& d
 }
 
 void SandboxGameContext::load_contents() {
-	auto entity1 = m_ECManager.create_entity();
-	m_ECManager.add_component(entity1, stl::make_shared<components::TestCustomComponent>(mem::ENUM::Game_Components, "HELLO"));
-	m_ECManager.add_engine_component<components::MovementComponent>(entity1);
-	components::Transform t1{};
-	auto pos = DirectX::XMFLOAT4(0.f, 0.f, 5.f, 0.f);
-	t1.position(DirectX::XMLoadFloat4(&pos));
-	m_ECManager.add_engine_component<components::Transform>(entity1, t1);
-	auto entity2 = m_ECManager.create_entity();
-	components::Transform t2{};
-	pos = DirectX::XMFLOAT4(5.0f, 0.f, 5.f, 0.f);
-	t2.position(DirectX::XMLoadFloat4(&pos));
-	m_ECManager.add_engine_component<components::Transform>(entity2, t2);
 	m_PipelineState = m_GraphicsDevice->create_pipeline_state({
 		.shader_module =
 			{
@@ -62,50 +44,10 @@ void SandboxGameContext::load_contents() {
 			},
 		.pipeline_name = L"Bindless Pipeline",
 	});
-	m_RTIndexBuffers.push_back(m_GraphicsDevice->create_buffer<u16>(
-		d3d::BufferCreationDesc{
-			.usage = d3d::BufferUsage::IndexBuffer,
-			.name = L"Render Target Index Buffer",
-		},
-		cube.indices16()));
-	m_VertexPosBuffers.push_back(m_GraphicsDevice->create_buffer<DirectX::XMFLOAT3>(
-		d3d::BufferCreationDesc{
-			.usage = d3d::BufferUsage::StructuredBuffer,
-			.name = L"Vertex Position Buffer",
-		},
-		cube.positions));
-	m_VertexNormalBuffers.push_back(m_GraphicsDevice->create_buffer<DirectX::XMFLOAT3>(
-		d3d::BufferCreationDesc{
-			.usage = d3d::BufferUsage::StructuredBuffer,
-			.name = L"Vertex Normal Buffer",
-		},
-		cube.normals));
-	m_VertexTangentBuffers.push_back(m_GraphicsDevice->create_buffer<DirectX::XMFLOAT3>(
-		d3d::BufferCreationDesc{
-			.usage = d3d::BufferUsage::StructuredBuffer,
-			.name = L"Vertex Tangent Buffer",
-		},
-		cube.tangentus));
-	m_VertexUVBuffers.push_back(m_GraphicsDevice->create_buffer<DirectX::XMFLOAT2>(
-		d3d::BufferCreationDesc{
-			.usage = d3d::BufferUsage::StructuredBuffer,
-			.name = L"Vertex UV Buffer",
-		},
-		cube.texcs));
 	m_MainPassCB = m_GraphicsDevice->create_buffer<PassConstants>(d3d::BufferCreationDesc{
 		.usage = d3d::BufferUsage::ConstantBuffer,
 		.name = L"Main Pass Constant Buffer",
 	});
-	auto& transforms = m_ECManager.engine_components<components::Transform>();
-	m_TransformBuffers.reserve(transforms.size());
-	auto index = 0;
-	for (auto& _ : transforms) {
-		m_TransformBuffers.emplace_back(m_GraphicsDevice->create_buffer<ObjectConstants>({
-			.usage = d3d::BufferUsage::ConstantBuffer,
-			.name = L"Transform buffer " + std::to_wstring(index),
-		}));
-		index++;
-	}
 	// textures:
 	m_DepthTexture = m_GraphicsDevice->create_texture({
 		.usage = d3d::TextureUsage::DepthStencil,
@@ -114,36 +56,10 @@ void SandboxGameContext::load_contents() {
 		.format = DXGI_FORMAT_D32_FLOAT,
 		.name = L"Depth Texture",
 	});
-	m_AssetManager.load_runtime_texture("assets/textures/ceramics.jpg");
-	m_AssetManager.import_material("assets/materials/default.mat");
-	components::RenderComponent cube_rc{
-		{},
-		m_AssetManager.get_texture("assets/textures/ceramics.jpg")->uuid,
-		m_AssetManager.get_material("assets/materials/default.mat")->uuid,
-		components::CPUData{
-			.indices_size = static_cast<u32>(cube.indices32.size()),
-			.index_id = 0,
-			.position_idx = 0,
-			.normal_idx = 0,
-			.tangent_idx = 0,
-			.uv_idx = 0,
-		},
-		components::PerDrawConstants{
-			.position_buffer_idx = m_VertexPosBuffers[0].srv_index,
-			.normal_buffer_idx = m_VertexNormalBuffers[0].srv_index,
-			.tangent_buffer_idx = m_VertexTangentBuffers[0].srv_index,
-			.uv_buffer_idx = m_VertexUVBuffers[0].srv_index,
-			.scene_cbuffer_idx = m_TransformBuffers[0].cbv_index,
-			.pass_cbuffer_idx = m_MainPassCB.cbv_index,
-			.material_cbuffer_idx = m_AssetManager.material_resource_exists("assets/materials/default.mat")
-				? m_AssetManager.get_material_resource("assets/materials/default.mat").gpu_idx
-				: 0,
-			.texture_cbuffer_idx = m_AssetManager.get_texture_resource("assets/textures/ceramics.jpg").gpu_idx,
-		},
-	};
-	m_ECManager.add_engine_component<components::RenderComponent>(entity1, cube_rc);
-	stl::string monkey_path = "assets/models/monkey.obj";
-	create_render_component(entity2, {monkey_path, "assets/textures/ceramics.jpg", "assets/materials/default.mat"});
+	assets::SceneWriter writer{&m_ECManager, &m_AssetManager};
+	writer.deserealize("test_scene.scene", [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
+		create_render_component(entity, resource_paths);
+	});
 }
 
 void SandboxGameContext::update(f32 delta_time) {

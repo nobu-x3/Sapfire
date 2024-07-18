@@ -82,7 +82,6 @@ namespace widgets {
 	}
 
 	void SSceneView::add_render_component(Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
-		// @TODO: add materials
 		bool already_has_component = m_ECManager.has_engine_component<components::RenderComponent>(entity);
 		auto* mesh_asset = resource_paths.mesh_path.empty() ? assets::MeshRegistry::default_mesh()
 															: editor()->asset_manager()->get_mesh(resource_paths.mesh_path);

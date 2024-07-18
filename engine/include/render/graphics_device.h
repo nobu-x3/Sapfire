@@ -105,7 +105,6 @@ namespace Sapfire::d3d {
 		stl::unique_ptr<CommandQueue> m_DirectCommandQueue{};
 		stl::unique_ptr<CommandQueue> m_CopyCommandQueue{};
 		stl::unique_ptr<CommandQueue> m_ComputeCommandQueue{};
-		/* stl::unique_ptr<CommandQueue> m_ComputeCommandQueue{}; */
 		stl::array<stl::unique_ptr<GraphicsContext>, MAX_FRAMES_IN_FLIGHT> m_PerFrameGraphicsContexts{};
 		stl::queue<stl::unique_ptr<ComputeContext>> m_ComputeContextQueue{};
 		stl::unique_ptr<CopyContext> m_CopyContext{};
