@@ -278,6 +278,10 @@ namespace Sapfire::assets {
 				CORE_WARN("Could not locate material at path {}.", path);
 				continue;
 			}
+			if (!fs::exists(relative_path)) {
+				CORE_ERROR("Material with path {} does not exist.", relative_path);
+				continue;
+			}
 			import_material(device, relative_path);
 		}
 	}

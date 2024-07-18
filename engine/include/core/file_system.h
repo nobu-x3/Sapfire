@@ -15,6 +15,8 @@ namespace Sapfire::fs {
 		static inline stl::string s_RootDirectoryPath{};
 	};
 
+	inline bool exists(const std::string_view asset_path) { return std::filesystem::exists(asset_path); }
+
 	inline stl::string extension(const std::string_view asset_path) {
 		std::filesystem::path path(asset_path);
 		return path.extension().string();

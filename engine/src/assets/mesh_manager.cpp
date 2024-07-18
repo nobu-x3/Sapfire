@@ -228,6 +228,10 @@ namespace Sapfire::assets {
 				CORE_ERROR("An asset in the mesh registry does not contain a path. It will not be loaded. Dump:\n{}", data);
 				continue;
 			}
+			if (!fs::exists(path)) {
+				CORE_ERROR("Mesh with path {} does not exist.", path);
+				continue;
+			}
 			if (!mesh_asset.contains("UUID")) {
 				CORE_ERROR("An asset in the mesh registry with path {} does not contain a UUID. It will not be loaded. Dump:\n{}", path,
 						   data);

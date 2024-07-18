@@ -184,10 +184,6 @@ namespace Sapfire::assets {
 				stl::string mesh_path = m_AssetManager.get_mesh_path(mesh_uuid);
 				stl::string texture_path = m_AssetManager.get_texture_path(texture_uuid);
 				render_component_setter(created_entity, {.mesh_path = mesh_path, .texture_path = texture_path});
-				//auto& render_comp = m_ECManager.engine_component<components::RenderComponent>(created_entity);
-				//auto* gpu_data = render_comp.per_draw_constants();
-				//auto resource = m_AssetManager.get_texture_resource(texture_path);
-				//gpu_data->texture_cbuffer_idx = resource.gpu_idx;
 			}
 		}
 	}

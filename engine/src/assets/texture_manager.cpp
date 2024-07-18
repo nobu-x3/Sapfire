@@ -289,6 +289,10 @@ namespace Sapfire::assets {
 				continue;
 			}
 			stl::string path = asset["path"];
+			if (!fs::exists(path)) {
+				CORE_ERROR("Texture with path {} does not exist.", path);
+				continue;
+			}
 			if (!asset.contains("UUID")) {
 				CORE_ERROR("Texture with path {} is missing UUID at deserialization. It will not be loaded. Dump:\n{}", path, data);
 				continue;
