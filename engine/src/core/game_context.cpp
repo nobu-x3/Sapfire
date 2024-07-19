@@ -39,7 +39,7 @@ namespace Sapfire {
 			mesh_asset = m_AssetManager.get_mesh(resource_paths.mesh_path);
 		}
 		if (!texture_asset || !m_AssetManager.is_texture_loaded_for_runtime(texture_asset->uuid)) {
-			m_AssetManager.load_runtime_texture(resource_paths.texture_path);
+			m_AssetManager.import_texture(resource_paths.texture_path);
 			texture_asset = m_AssetManager.get_texture(resource_paths.texture_path);
 		}
 		if (!material_asset || !m_AssetManager.material_resource_exists(material_asset->uuid)) {

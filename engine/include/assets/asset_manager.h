@@ -25,10 +25,8 @@ namespace Sapfire::assets {
 		AssetManager(AssetManager&&);
 		AssetManager& operator=(const AssetManager&) = delete;
 		AssetManager& operator=(AssetManager&&);
-		void load_runtime_texture(const stl::string& path);
-		void load_all_runtime_textures();
 		bool is_texture_loaded_for_runtime(UUID uuid);
-		inline void import_texture(const stl::string& path) { m_TextureRegistry.import_texture(m_Device, fs::relative_path(path)); }
+		void import_texture(const stl::string& path);
 		inline void move_texture(const stl::string& old_path, const stl::string& new_path) {
 			m_TextureRegistry.move_texture(m_Device, old_path, new_path);
 		}
@@ -101,6 +99,10 @@ namespace Sapfire::assets {
 		void serialize(const MaterialAsset& asset);
 		void deserialize(const stl::string& data);
 		stl::string to_string();
+
+    private:
+		void load_all_runtime_textures();
+		void load_runtime_texture(const stl::string& path);
 
 	private:
 		MeshRegistry m_MeshRegistry;

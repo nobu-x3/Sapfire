@@ -94,7 +94,7 @@ namespace widgets {
 			mesh_asset = editor()->asset_manager()->get_mesh(resource_paths.mesh_path);
 		}
 		if (!texture_asset || !editor()->asset_manager()->is_texture_loaded_for_runtime(texture_asset->uuid)) {
-			editor()->asset_manager()->load_runtime_texture(resource_paths.texture_path);
+			editor()->asset_manager()->import_texture(resource_paths.texture_path);
 			texture_asset = editor()->asset_manager()->get_texture(resource_paths.texture_path);
 		}
 		if (!material_asset || !editor()->asset_manager()->material_resource_exists(material_asset->uuid)) {

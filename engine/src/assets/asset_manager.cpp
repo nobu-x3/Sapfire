@@ -31,6 +31,28 @@ namespace Sapfire::assets {
 		}
 	}
 
+	void AssetManager::import_texture(const stl::string& path) {
+		auto relative_path = fs::relative_path(path);
+		auto* texture = m_TextureRegistry.get(relative_path);
+		if (!texture) {
+			m_TextureRegistry.import_texture(m_Device, relative_path);
+			texture = m_TextureRegistry.get(relative_path);
+		}
+		if (texture->data.dsv_index == d3d::INVALID_INDEX_U32 || texture->data.srv_index == d3d::INVALID_INDEX_U32) {
+			texture->data = m_Device.create_texture(d3d::TextureCreationDesc{
+				.usage = d3d::TextureUsage::TextureFromPath,
+				.name = d3d::AnsiToWString(relative_path),
+				.path = d3d::AnsiToWString(fs::full_path(path)),
+			});
+		}
+		if (texture) {
+			assets::TextureResource text_res{
+				.gpu_idx = texture->data.srv_index,
+			};
+			m_TextureManager.add(relative_path, texture->uuid, text_res);
+		}
+	}
+
 	bool AssetManager::is_texture_loaded_for_runtime(UUID uuid) {
 		if (uuid == TextureRegistry::default_texture(&m_Device)->uuid) {
 			return true;
