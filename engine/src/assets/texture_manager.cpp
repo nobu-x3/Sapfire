@@ -83,8 +83,8 @@ namespace Sapfire::assets {
 							  full_path);
 				break;
 			}
-			stl::string path = asset["path"];
-			stl::wstring path_wstring = d3d::AnsiToWString(path);
+			const stl::string path = asset["path"];
+			const stl::wstring path_wstring = d3d::AnsiToWString(path);
 			d3d::TextureCreationDesc desc{
 				.usage = desc_json["usage"],
 				.width = desc_json["width"],
@@ -225,7 +225,7 @@ namespace Sapfire::assets {
 			if (desc.optional_initial_state.has_value()) {
 				desc_j["optional_initial_state"] = desc.optional_initial_state.value();
 			}
-			nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}, {"description", desc_j}};
+			const nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}, {"description", desc_j}};
 			j["assets"].push_back(j_obj);
 		}
 		std::ofstream file{m_RegistryFilePath};
@@ -269,7 +269,7 @@ namespace Sapfire::assets {
 			if (desc.optional_initial_state.has_value()) {
 				desc_j["optional_initial_state"] = desc.optional_initial_state.value();
 			}
-			nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}, {"description", desc_j}};
+			const nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}, {"description", desc_j}};
 			j.push_back(j_obj);
 		}
 		return j.dump();
@@ -302,7 +302,7 @@ namespace Sapfire::assets {
 				CORE_ERROR("Texture with path {} is missing texture creation description. It will not be loaded. Dump:\n{}", path, data);
 				continue;
 			}
-			UUID uuid{asset["UUID"]};
+			const UUID uuid{asset["UUID"]};
 			auto& description = asset["description"];
 			if (!description.contains("usage")) {
 				CORE_ERROR("Texture with path {} is missing texture creation description's 'usage' field. It will not be loaded. Dump:\n{}",
@@ -403,7 +403,7 @@ namespace Sapfire::assets {
 	}
 
 	TextureAsset* TextureRegistry::default_texture(d3d::GraphicsDevice* device) {
-		static UUID default_texture_uuid = UUID{5596545107579832553};
+		const static UUID default_texture_uuid = UUID{5596545107579832553};
 		static auto data = default_texture_data();
 		static TextureAsset asset = {
 			.uuid = default_texture_uuid,

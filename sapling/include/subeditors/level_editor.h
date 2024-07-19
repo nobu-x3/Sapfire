@@ -12,6 +12,10 @@ namespace Sapfire {
 
 using on_entity_selected_callback = Sapfire::stl::function<void(Sapfire::stl::optional<Sapfire::Entity>)>;
 
+namespace ELevelEditorWidgetOrder {
+	enum ENUM { SceneHierarchy = 0, EntityInspector, AssetBrowser, SceneView };
+};
+
 class SLevelEditor final : public SSubeditor {
 public:
 	SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device, Sapfire::assets::AssetManager* am, const Sapfire::stl::string& scene_path,

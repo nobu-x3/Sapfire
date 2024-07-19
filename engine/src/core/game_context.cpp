@@ -27,7 +27,7 @@ namespace Sapfire {
 	void GameContext::init() { load_contents(); }
 
 	void GameContext::create_render_component(Entity entity, const RenderComponentResourcePaths& resource_paths) {
-		bool already_has_component = m_ECManager.has_engine_component<components::RenderComponent>(entity);
+		const bool already_has_component = m_ECManager.has_engine_component<components::RenderComponent>(entity);
 		auto* mesh_asset =
 			resource_paths.mesh_path.empty() ? assets::MeshRegistry::default_mesh() : m_AssetManager.get_mesh(resource_paths.mesh_path);
 		auto* texture_asset = resource_paths.texture_path.empty() ? assets::TextureRegistry::default_texture(m_GraphicsDevice.get())
@@ -58,9 +58,9 @@ namespace Sapfire {
 				}));
 			}
 			bool should_add_tangent = false;
-			bool should_allocate_mesh = !m_AssetManager.mesh_resource_exists(resource_paths.mesh_path);
+			const bool should_allocate_mesh = !m_AssetManager.mesh_resource_exists(resource_paths.mesh_path);
 			if (should_allocate_mesh) {
-				stl::wstring name = mesh_asset->uuid == assets::MeshRegistry::default_mesh()->uuid
+				const stl::wstring name = mesh_asset->uuid == assets::MeshRegistry::default_mesh()->uuid
 					? L"Default Mesh"
 					: d3d::AnsiToWString(resource_paths.mesh_path);
 				m_RTIndexBuffers.push_back(m_GraphicsDevice->create_buffer<u16>(
@@ -150,7 +150,7 @@ namespace Sapfire {
 					: static_cast<u32>(m_TransformBuffers.size() - 1);
 			}
 			m_AssetManager.load_mesh_resource(resource_paths.mesh_path, {cpu_data, gpu_data});
-			components::RenderComponent render_component{
+			const components::RenderComponent render_component{
 				mesh_asset->uuid,
 				texture_asset->uuid,
 				material_asset->uuid,

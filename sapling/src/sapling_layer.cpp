@@ -47,14 +47,14 @@ void setup_imgui_style() {
 	style.WindowMinSize = ImVec2(20.0f, 32.0f);
 	style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 	style.WindowMenuButtonPosition = ImGuiDir_Right;
-	style.ChildRounding = 8.199999809265137f/2.f;
+	style.ChildRounding = 8.199999809265137f / 2.f;
 	style.ChildBorderSize = 1.0f;
 	style.PopupRounding = 10.69999980926514f;
 	style.PopupBorderSize = 1.0f;
 	style.FramePadding = ImVec2(20.0f, 1.5f);
 	style.FrameRounding = 4.800000190734863f;
 	style.FrameBorderSize = 0.0f;
-	style.ItemSpacing = ImVec2(9.699999809265137f/2.f, 5.300000190734863f/2.f);
+	style.ItemSpacing = ImVec2(9.699999809265137f / 2.f, 5.300000190734863f / 2.f);
 	style.ItemInnerSpacing = ImVec2(5.400000095367432f, 9.300000190734863f);
 	style.CellPadding = ImVec2(7.900000095367432f, 2.0f);
 	style.IndentSpacing = 10.69999980926514f;
@@ -206,7 +206,7 @@ void SaplingLayer::on_update(Sapfire::f32 delta_time) {
 	} else {
 		ImGui::Begin("Sapling", nullptr, window_flags);
 		draw_menu_bar();
-		ImGuiID dockspace_id = ImGui::GetID("SaplingDockspace");
+		const ImGuiID dockspace_id = ImGui::GetID("SaplingDockspace");
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
 		for (int i = 0; i < ESubeditor::COUNT; ++i) {
 			if (!is_subeditor_active(static_cast<ESubeditor::TYPE>(i)))
@@ -307,7 +307,7 @@ void SaplingLayer::on_render() {
 	gfx_ctx->execute_resource_barriers();
 	stl::array<const d3d::Context*, 1> contexts = {gfx_ctx.get()};
 	m_GraphicsDevice->direct_command_queue()->execute_context(contexts);
-	ImGuiIO& io = ImGui::GetIO();
+	const ImGuiIO& io = ImGui::GetIO();
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault(nullptr, (void*)gfx_ctx->command_list());
@@ -357,7 +357,7 @@ bool SaplingLayer::on_window_resize(WindowResizeEvent& e) {
 	return true;
 }
 
-bool SaplingLayer::is_subeditor_active(ESubeditor::TYPE type) { return m_ActiveSubeditors >> type == 1; }
+bool SaplingLayer::is_subeditor_active(ESubeditor::TYPE type) { return m_ActiveSubeditors >> type != 0; }
 
 SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type, bool is_callback) {
 	switch (type) {

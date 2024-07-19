@@ -25,7 +25,7 @@ namespace Sapfire::assets {
 		for (auto&& entry : m_ECManager.entities()) {
 			if (!entry.has_value() || !m_ECManager.is_valid(entry->value))
 				continue;
-			Entity entity = entry->value;
+			const Entity entity = entry->value;
 			auto uuid = entry->value.uuid();
 			assert(m_ECManager.has_engine_component<components::Transform>(entity));
 			assert(m_ECManager.has_engine_component<components::NameComponent>(entity));
@@ -62,7 +62,7 @@ namespace Sapfire::assets {
 					{"material", static_cast<u64>(render_component.material_uuid())},
 				};
 			}
-			nlohmann::json entity_json{{"UUID", static_cast<u64>(uuid)}, {"components", j_eng_comps}};
+			const nlohmann::json entity_json{{"UUID", static_cast<u64>(uuid)}, {"components", j_eng_comps}};
 			j["entities"].push_back(entity_json);
 		}
 		j["assets"] = nlohmann::json::parse(m_AssetManager.to_string());
@@ -105,7 +105,7 @@ namespace Sapfire::assets {
 							  entity.dump());
 				break;
 			}
-			UUID uuid{entity["UUID"]};
+			const UUID uuid{entity["UUID"]};
 			if (!entity.contains("components")) {
 				CORE_CRITICAL("Broken scene at path {}. Entity with UUID {} does not contain any components. No entity was created.",
 							  full_path, static_cast<u64>(uuid));
@@ -179,10 +179,10 @@ namespace Sapfire::assets {
 				}
 			}
 			if (entity["components"].contains("render")) {
-				UUID mesh_uuid{entity["components"]["render"]["mesh"]};
-				UUID texture_uuid{entity["components"]["render"]["texture"]};
-				stl::string mesh_path = m_AssetManager.get_mesh_path(mesh_uuid);
-				stl::string texture_path = m_AssetManager.get_texture_path(texture_uuid);
+				const UUID mesh_uuid{entity["components"]["render"]["mesh"]};
+				const UUID texture_uuid{entity["components"]["render"]["texture"]};
+				const stl::string mesh_path = m_AssetManager.get_mesh_path(mesh_uuid);
+				const stl::string texture_path = m_AssetManager.get_texture_path(texture_uuid);
 				render_component_setter(created_entity, {.mesh_path = mesh_path, .texture_path = texture_path});
 			}
 		}

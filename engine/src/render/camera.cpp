@@ -22,7 +22,7 @@ namespace Sapfire {
 	void Camera::update(f32 delta_time) {
 		PROFILE_FUNCTION();
 		if (input.mouse_state.RMB) {
-			XMFLOAT4 mouse_delta{-input.mouse_delta_y, -input.mouse_delta_x, 0.f, 0.f};
+			const XMFLOAT4 mouse_delta{-input.mouse_delta_y, -input.mouse_delta_x, 0.f, 0.f};
 			auto euler = transform.euler_rotation();
 			euler += XMLoadFloat4(&mouse_delta);
 			transform.euler_rotation(euler);

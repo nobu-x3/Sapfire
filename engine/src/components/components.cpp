@@ -11,7 +11,7 @@ namespace Sapfire::components {
 
 	stl::string CustomComponentList::to_string() { return default_component->to_string(); }
 
-	void CustomComponentList::insert(Entity entity, stl::shared_ptr<IComponent> component) {
+	void CustomComponentList::insert(Entity entity, stl::shared_ptr<IComponent>& component) {
 		if (m_EntityToIndexMap.size() > 0 && m_EntityToIndexMap.contains(entity)) {
 			remove(entity);
 		}
@@ -26,7 +26,7 @@ namespace Sapfire::components {
 		// swap element at end to deleted element's place to maintain density
 		auto removed_entity_index = m_EntityToIndexMap[entity];
 		auto index_of_last_entity = m_Components.size() - 1;
-		Entity last_entity = m_IndexToEntityMap[index_of_last_entity];
+		const Entity last_entity = m_IndexToEntityMap[index_of_last_entity];
 		std::swap(m_Components[removed_entity_index], m_Components[m_Components.size() - 1]);
 		// update maps
 		m_EntityToIndexMap[last_entity] = removed_entity_index;
@@ -44,7 +44,7 @@ namespace Sapfire::components {
 		}
 	}
 
-	void ComponentRegistry::add_component(Entity entity, stl::shared_ptr<IComponent> component) {
+	void ComponentRegistry::add_component(Entity entity, stl::shared_ptr<IComponent>& component) {
 		const char* type_name = m_ComponentTypeNameMap[component->component_type()];
 		stl::shared_ptr<CustomComponentList>& component_list = m_CustomComponentLists[type_name];
 		if (!component_list)
@@ -62,20 +62,20 @@ namespace Sapfire::components {
 		component_list->insert(entity, component);
 	}
 
-	void ComponentRegistry::remove_component(Entity entity, stl::shared_ptr<IComponent> component) {
+	void ComponentRegistry::remove_component(Entity entity, stl::shared_ptr<IComponent>& component) {
 		const char* type_name = m_ComponentTypeNameMap[component->component_type()];
-		stl::shared_ptr<CustomComponentList>& component_list = m_CustomComponentLists[type_name];
+		const stl::shared_ptr<CustomComponentList>& component_list = m_CustomComponentLists[type_name];
 		component_list->remove(entity);
 	}
 
 	stl::shared_ptr<IComponent> ComponentRegistry::component(Entity entity, ComponentType type) {
 		const char* type_name = m_ComponentTypeNameMap[type];
-		stl::shared_ptr<CustomComponentList>& component_list = m_CustomComponentLists[type_name];
+		const stl::shared_ptr<CustomComponentList>& component_list = m_CustomComponentLists[type_name];
 		return component_list->get(entity);
 	}
 
 	stl::shared_ptr<IComponent> ComponentRegistry::component(Entity entity, const char* type_name) {
-		stl::shared_ptr<CustomComponentList>& component_list = m_CustomComponentLists[type_name];
+		const stl::shared_ptr<CustomComponentList>& component_list = m_CustomComponentLists[type_name];
 		return component_list->get(entity);
 	}
 
@@ -85,7 +85,7 @@ namespace Sapfire::components {
 			if (!signature[i])
 				continue;
 			const char* component_name = m_ComponentTypeNameMap[static_cast<ComponentType>(i)];
-			stl::shared_ptr<CustomComponentList> component_list = m_CustomComponentLists[component_name];
+			const stl::shared_ptr<CustomComponentList> component_list = m_CustomComponentLists[component_name];
 			if (component_list)
 				return_vector.push_back(component_list->get(entity));
 		}

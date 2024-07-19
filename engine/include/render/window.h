@@ -14,14 +14,16 @@ namespace Sapfire {
 	using EventCallbackFn = std::function<void(Event&)>;
 
 	struct SFAPI WindowParams {
-		u64 width, height = 0;
+		u64 width = 0;
+        u64 height = 0;
 		stl::string name;
 		EventCallbackFn callback{nullptr};
 		LRESULT (*window_proc)(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) = nullptr;
 	};
 
 	struct SFAPI WindowExtent {
-		u64 width, height = 0;
+		u64 width = 0;
+        u64 height = 0;
 	};
 
 	class SFAPI Window {

@@ -63,7 +63,7 @@ namespace Sapfire::assets {
 				CORE_CRITICAL("Broken material registry at path {}. At least one registry entry does not contain roughness.", full_path);
 				return;
 			}
-			stl::string path = asset["path"];
+			const stl::string path = asset["path"];
 			d3d::Material material{.name = fs::file_name(asset["name"])};
 			material.roughness = asset["roughness"];
 			material.diffuse_albedo =
@@ -119,7 +119,7 @@ namespace Sapfire::assets {
 			CORE_CRITICAL("Broken material at path {}. Does not contain roughness.", path);
 			return;
 		}
-		UUID uuid = UUID{j["UUID"]};
+		const UUID uuid = UUID{j["UUID"]};
 		d3d::Material material{.name = fs::file_name(j["name"])};
 		material.roughness = j["roughness"];
 		material.diffuse_albedo = XMFLOAT4(j["diffuse_albedo"][0], j["diffuse_albedo"][1], j["diffuse_albedo"][2], j["diffuse_albedo"][3]);
@@ -217,7 +217,7 @@ namespace Sapfire::assets {
 			float fresnel_r0[3] = {material.fresnel_r0.x, material.fresnel_r0.y, material.fresnel_r0.z};
 			float diffuse_albedo[4] = {material.diffuse_albedo.x, material.diffuse_albedo.y, material.diffuse_albedo.z,
 									   material.diffuse_albedo.w};
-			nlohmann::json j_obj = {
+			const nlohmann::json j_obj = {
 				{"UUID", static_cast<u64>(uuid)},	{"path", path}, {"name", name}, {"roughness", roughness}, {"fresnel_r0", fresnel_r0},
 				{"diffuse_albedo", diffuse_albedo},
 			};
@@ -229,7 +229,7 @@ namespace Sapfire::assets {
 				file.close();
 			}
 			{
-				nlohmann::json path_jobj = {"path", path};
+				const nlohmann::json path_jobj = {"path", path};
 				j["assets"].push_back(path_jobj);
 			}
 		}
@@ -252,7 +252,7 @@ namespace Sapfire::assets {
 		float fresnel_r0[3] = {material.fresnel_r0.x, material.fresnel_r0.y, material.fresnel_r0.z};
 		float diffuse_albedo[4] = {material.diffuse_albedo.x, material.diffuse_albedo.y, material.diffuse_albedo.z,
 								   material.diffuse_albedo.w};
-		nlohmann::json j_obj = {
+		const nlohmann::json j_obj = {
 			{"UUID", static_cast<u64>(uuid)},	{"path", path}, {"name", name}, {"roughness", roughness}, {"fresnel_r0", fresnel_r0},
 			{"diffuse_albedo", diffuse_albedo},
 		};
@@ -296,11 +296,11 @@ namespace Sapfire::assets {
 			float fresnel_r0[3] = {material.fresnel_r0.x, material.fresnel_r0.y, material.fresnel_r0.z};
 			float diffuse_albedo[4] = {material.diffuse_albedo.x, material.diffuse_albedo.y, material.diffuse_albedo.z,
 									   material.diffuse_albedo.w};
-			nlohmann::json j_obj = {
+			const nlohmann::json j_obj = {
 				{"UUID", static_cast<u64>(uuid)},	{"path", path}, {"name", name}, {"roughness", roughness}, {"fresnel_r0", fresnel_r0},
 				{"diffuse_albedo", diffuse_albedo},
 			};
-			nlohmann::json path_jobj = {{"path", path}};
+			const nlohmann::json path_jobj = {{"path", path}};
 			j.push_back(path_jobj);
 		}
 		return j.dump();
@@ -327,7 +327,7 @@ namespace Sapfire::assets {
 	}
 
 	MaterialAsset* MaterialRegistry::default_material(d3d::GraphicsDevice* device) {
-		static stl::wstring name = d3d::AnsiToWString(DEFAULT_MATERIAL_NAME);
+		const static stl::wstring name = d3d::AnsiToWString(DEFAULT_MATERIAL_NAME);
 		static d3d::MaterialConstants default_material_constants{
 			.diffuse_albedo = DEFAULT_MATERIAL_ALBEDO,
 			.fresnel_r0 = DEFAULT_MATERIAL_FRESNEL,

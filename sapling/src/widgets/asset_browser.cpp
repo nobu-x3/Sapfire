@@ -78,7 +78,7 @@ namespace widgets {
 			static ImGuiTextFilter filter;
 			filter.Draw("Filter by name: inc, -exc");
 			ImGui::NewLine();
-			ImGuiStyle& style = ImGui::GetStyle();
+			const ImGuiStyle& style = ImGui::GetStyle();
 			switch (m_CurrentAssetTypeFilter) {
 			case EAssetType::Mesh:
 				{

@@ -24,7 +24,7 @@ namespace Sapfire::assets {
 			});
 		}
 		if (texture) {
-			assets::TextureResource text_res{
+			const assets::TextureResource text_res{
 				.gpu_idx = texture->data.srv_index,
 			};
 			m_TextureManager.add(relative_path, texture->uuid, text_res);
@@ -46,7 +46,7 @@ namespace Sapfire::assets {
 			});
 		}
 		if (texture) {
-			assets::TextureResource text_res{
+			const assets::TextureResource text_res{
 				.gpu_idx = texture->data.srv_index,
 			};
 			m_TextureManager.add(relative_path, texture->uuid, text_res);

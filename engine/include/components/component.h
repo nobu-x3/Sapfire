@@ -88,7 +88,7 @@ namespace Sapfire::components {
 		CustomComponentList& operator=(CustomComponentList&&) noexcept = default;
 		stl::shared_ptr<IComponent> default_component;
 		stl::string to_string() override;
-		void insert(Entity entity, stl::shared_ptr<IComponent> component);
+		void insert(Entity entity, stl::shared_ptr<IComponent>& component);
 		void remove(Entity entity);
 		stl::shared_ptr<IComponent> get(Entity entity);
 		void entity_destroyed(Entity entity) override;
@@ -171,9 +171,9 @@ namespace Sapfire::components {
 			return std::static_pointer_cast<EngineComponentList<T>>(m_EngineComponentLists[type_name])->components();
 		}
 
-		void add_component(Entity entity, stl::shared_ptr<IComponent> component);
+		void add_component(Entity entity, stl::shared_ptr<IComponent>& component);
 		void add_component(Entity entity, ComponentType component_type);
-		void remove_component(Entity entity, stl::shared_ptr<IComponent> component);
+		void remove_component(Entity entity, stl::shared_ptr<IComponent>& component);
 		stl::shared_ptr<IComponent> component(Entity entity, ComponentType type);
 		stl::shared_ptr<IComponent> component(Entity entity, const char* type_name);
 		stl::vector<stl::shared_ptr<IComponent>> components(Entity entity, Signature signature);

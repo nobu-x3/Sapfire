@@ -88,7 +88,7 @@ namespace widgets {
 		auto* texture_asset = resource_paths.texture_path.empty() ? assets::TextureRegistry::default_texture(&m_GraphicsDevice)
 																  : editor()->asset_manager()->get_texture(resource_paths.texture_path);
 		auto* material_asset = resource_paths.material_path.empty() ? assets::MaterialRegistry::default_material(&m_GraphicsDevice)
-																   : editor()->asset_manager()->get_material(resource_paths.material_path);
+																	: editor()->asset_manager()->get_material(resource_paths.material_path);
 		if (!mesh_asset) {
 			editor()->asset_manager()->import_mesh(resource_paths.mesh_path);
 			mesh_asset = editor()->asset_manager()->get_mesh(resource_paths.mesh_path);
@@ -113,9 +113,9 @@ namespace widgets {
 				}));
 			}
 			bool should_add_tangent = false;
-			bool should_allocate_mesh = !editor()->asset_manager()->mesh_resource_exists(resource_paths.mesh_path);
+			const bool should_allocate_mesh = !editor()->asset_manager()->mesh_resource_exists(resource_paths.mesh_path);
 			if (should_allocate_mesh) {
-				stl::wstring name = mesh_asset->uuid == assets::MeshRegistry::default_mesh()->uuid
+				const stl::wstring name = mesh_asset->uuid == assets::MeshRegistry::default_mesh()->uuid
 					? L"Default Mesh"
 					: d3d::AnsiToWString(resource_paths.mesh_path);
 				m_RTIndexBuffers.push_back(m_GraphicsDevice.create_buffer<u16>(

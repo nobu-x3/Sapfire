@@ -43,7 +43,7 @@ namespace Sapfire {
 		Timer timer{};
 		while (m_Running) {
 			PROFILE_SCOPE("Run Loop");
-			f32 delta_time = timer.elapsed_millis() * 0.001f;
+			const f32 delta_time = timer.elapsed_millis() * 0.001f;
 			timer.reset();
 			m_Window->pump_messages();
 			execute_main_thread_queue();
@@ -151,12 +151,12 @@ namespace Sapfire {
 	bool Application::on_window_resize_finished(WindowResizeFinishedEvent&) { return true; }
 
 	void Application::submit_to_main_thread(const std::function<void()>& func) {
-		stl::lock_guard<stl::mutex> lock(m_MainThreadQueueMutex);
+		const stl::lock_guard<stl::mutex> lock(m_MainThreadQueueMutex);
 		m_MainThreadQueue.emplace_back(func);
 	}
 
 	void Application::execute_main_thread_queue() {
-		stl::lock_guard<stl::mutex> lock(m_MainThreadQueueMutex);
+		const stl::lock_guard<stl::mutex> lock(m_MainThreadQueueMutex);
 		for (auto& func : m_MainThreadQueue) {
 			func();
 		}

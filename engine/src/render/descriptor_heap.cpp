@@ -52,7 +52,7 @@ namespace Sapfire::d3d {
     }
 
 	void DescriptorHeap::offset_descriptor(DescriptorHandle& handle, u32 offset /*= 1*/) const{
-        size_t offset_sizet = static_cast<size_t>(offset);
+        const size_t offset_sizet = static_cast<size_t>(offset);
         handle.cpu_descriptor_handle.ptr += m_DescriptorSize * offset_sizet;
         handle.gpu_descriptor_handle.ptr += m_DescriptorSize * offset_sizet;
     }

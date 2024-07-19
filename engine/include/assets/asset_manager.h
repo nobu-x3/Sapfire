@@ -100,7 +100,7 @@ namespace Sapfire::assets {
 		void deserialize(const stl::string& data);
 		stl::string to_string();
 
-    private:
+	private:
 		void load_all_runtime_textures();
 		void load_runtime_texture(const stl::string& path);
 

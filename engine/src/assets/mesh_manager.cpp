@@ -38,7 +38,7 @@ namespace Sapfire::assets {
 							  full_path);
 				break;
 			}
-			stl::string path = asset["path"];
+			const stl::string path = asset["path"];
 			m_PathToMeshAssetMap[path] = MeshAsset{
 				.uuid = UUID{asset["UUID"]},
 				.data = tools::OBJLoader::load_mesh(path),
@@ -50,7 +50,7 @@ namespace Sapfire::assets {
 	void MeshRegistry::serialize() {
 		nlohmann::json j;
 		for (auto&& [path, asset] : m_PathToMeshAssetMap) {
-			nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}};
+			const nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}};
 			j["assets"].push_back(j_obj);
 		}
 		std::ofstream file{m_RegistryFilePath};
@@ -210,7 +210,7 @@ namespace Sapfire::assets {
 	stl::string MeshRegistry::to_string() {
 		nlohmann::json j;
 		for (auto&& [path, asset] : m_PathToMeshAssetMap) {
-			nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}};
+			const nlohmann::json j_obj = {{"UUID", static_cast<u64>(asset.uuid)}, {"path", path}};
 			j.push_back(j_obj);
 		}
 		return j.dump();
@@ -223,7 +223,7 @@ namespace Sapfire::assets {
 			return;
 		}
 		for (auto&& mesh_asset : j["mesh_registry"]) {
-			stl::string path = mesh_asset["path"];
+			const stl::string path = mesh_asset["path"];
 			if (!mesh_asset.contains("path")) {
 				CORE_ERROR("An asset in the mesh registry does not contain a path. It will not be loaded. Dump:\n{}", data);
 				continue;
@@ -237,7 +237,7 @@ namespace Sapfire::assets {
 						   data);
 				continue;
 			}
-			UUID uuid{mesh_asset["UUID"]};
+			const UUID uuid{mesh_asset["UUID"]};
 			import_mesh(path, uuid);
 		}
 	}

@@ -14,9 +14,9 @@ namespace Sapfire::d3d::primitives {
 		// Create the vertices.
 		//
 		Vertex v[24];
-		float w2 = 0.5f * width;
-		float h2 = 0.5f * height;
-		float d2 = 0.5f * depth;
+		const float w2 = 0.5f * width;
+		const float h2 = 0.5f * height;
+		const float d2 = 0.5f * depth;
 		// Fill in the front face vertex data.
 		v[0] = Vertex(-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 		v[1] = Vertex(-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -51,7 +51,7 @@ namespace Sapfire::d3d::primitives {
 		meshData.normals.reserve(24);
 		meshData.tangentus.reserve(24);
 		meshData.texcs.reserve(24);
-		for (auto& vertex : v) {
+		for (const auto& vertex : v) {
 			meshData.positions.push_back(vertex.position);
 			meshData.normals.push_back(vertex.normal);
 			meshData.tangentus.push_back(vertex.tangentu);
@@ -137,7 +137,7 @@ namespace Sapfire::d3d::primitives {
 
 	void subdivide(MeshData& data) {
 		// Save a copy of the input geometry.
-		MeshData inputCopy = data;
+		const MeshData inputCopy = data;
 		data.positions.resize(0);
 		data.tangentus.resize(0);
 		data.normals.resize(0);
@@ -188,20 +188,20 @@ namespace Sapfire::d3d::primitives {
 	}
 
 	Vertex mid_point(const Vertex& v0, const Vertex& v1) {
-		XMVECTOR p0 = XMLoadFloat3(&v0.position);
-		XMVECTOR p1 = XMLoadFloat3(&v1.position);
-		XMVECTOR n0 = XMLoadFloat3(&v0.normal);
-		XMVECTOR n1 = XMLoadFloat3(&v1.normal);
-		XMVECTOR tan0 = XMLoadFloat3(&v0.tangentu);
-		XMVECTOR tan1 = XMLoadFloat3(&v1.tangentu);
-		XMVECTOR tex0 = XMLoadFloat2(&v0.texc);
-		XMVECTOR tex1 = XMLoadFloat2(&v1.texc);
+		const XMVECTOR p0 = XMLoadFloat3(&v0.position);
+		const XMVECTOR p1 = XMLoadFloat3(&v1.position);
+		const XMVECTOR n0 = XMLoadFloat3(&v0.normal);
+		const XMVECTOR n1 = XMLoadFloat3(&v1.normal);
+		const XMVECTOR tan0 = XMLoadFloat3(&v0.tangentu);
+		const XMVECTOR tan1 = XMLoadFloat3(&v1.tangentu);
+		const XMVECTOR tex0 = XMLoadFloat2(&v0.texc);
+		const XMVECTOR tex1 = XMLoadFloat2(&v1.texc);
 		// Compute the midpoints of all the attributes.  Vectors need to be
 		// normalized since linear interpolating can make them not unit length.
-		XMVECTOR pos = 0.5f * (p0 + p1);
-		XMVECTOR normal = XMVector3Normalize(0.5f * (n0 + n1));
-		XMVECTOR tangent = XMVector3Normalize(0.5f * (tan0 + tan1));
-		XMVECTOR tex = 0.5f * (tex0 + tex1);
+		const XMVECTOR pos = 0.5f * (p0 + p1);
+		const XMVECTOR normal = XMVector3Normalize(0.5f * (n0 + n1));
+		const XMVECTOR tangent = XMVector3Normalize(0.5f * (tan0 + tan1));
+		const XMVECTOR tex = 0.5f * (tex0 + tex1);
 		Vertex v;
 		XMStoreFloat3(&v.position, pos);
 		XMStoreFloat3(&v.normal, normal);

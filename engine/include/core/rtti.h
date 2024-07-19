@@ -13,9 +13,9 @@ namespace Sapfire::rtti {
 	};
 
 	struct rtti_field {
-		size_t offset;
+		size_t offset = 0;
 		stl::string name;
-		rtti_type type;
+		rtti_type type = rtti_type::U8;
 		stl::function<void()> setter = nullptr;
 		rtti_reference_type ref_type = rtti_reference_type::None;
 	};

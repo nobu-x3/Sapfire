@@ -92,7 +92,7 @@ void delete_memory(void* address) {
 	char* p_size_addr = mem - SIZE_BYTE_LENGTH;
 	char* p_cat_addr = p_size_addr - CATEGORY_BYTE_LENGTH;
 	size_t* p_size = reinterpret_cast<size_t*>(p_size_addr);
-	Sapfire::mem::ENUM cat = *reinterpret_cast<Sapfire::mem::ENUM*>(p_cat_addr);
+	const Sapfire::mem::ENUM cat = *reinterpret_cast<Sapfire::mem::ENUM*>(p_cat_addr);
 	mem -= sizeof(Sapfire::mem::ENUM) / sizeof(char);
 	dealloc(cat, *p_size);
 	free(p_cat_addr);

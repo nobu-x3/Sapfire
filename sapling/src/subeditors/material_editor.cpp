@@ -20,7 +20,7 @@ SMaterialEditor::SMaterialEditor(Sapfire::assets::AssetManager* am, Sapfire::d3d
 	scene_view->add_render_component(m_MaterialEntity, {});
 	auto& render_component = m_ECManager->engine_component<components::RenderComponent>(m_MaterialEntity);
 	m_Widgets.push_back(std::move(scene_view));
-	m_Widgets.push_back(stl::make_unique<SMaterialPreviewSettings>(mem::Editor, &render_component));
+	m_Widgets.push_back(stl::make_unique<widgets::SMaterialPreviewSettings>(mem::Editor, &render_component));
 	m_Widgets.push_back(stl::make_unique<widgets::SAssetBrowser>(mem::Editor, "Preview Asset Browser"));
 	m_Widgets[EWidgetOrder::PreviewSettings]->set_visible(false);
 	m_Widgets[EWidgetOrder::AssetBrowser]->set_visible(false);
@@ -68,7 +68,7 @@ bool SMaterialEditor::update(Sapfire::f32 delta_time) {
 void SMaterialEditor::draw_dialogs() {
 	if (ImGuiFileDialog::Instance()->Display("OpenMatDlg")) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
-			stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
+			const stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
 			if (!filepath.empty()) {
 				auto relative_path = Sapfire::fs::relative_path(filepath);
 				if (m_AssetManager.path_material_map().contains(relative_path)) {
@@ -89,7 +89,7 @@ void SMaterialEditor::draw_dialogs() {
 	}
 	if (ImGuiFileDialog::Instance()->Display("NewMatDlg")) {
 		if (ImGuiFileDialog::Instance()->IsOk()) {
-			stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
+			const stl::string filepath = ImGuiFileDialog::Instance()->GetFilePathName();
 			if (!filepath.empty()) {
 				auto relative_path = Sapfire::fs::relative_path(filepath);
 				assets::MaterialAsset asset{};

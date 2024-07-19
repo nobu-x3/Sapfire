@@ -78,7 +78,7 @@ namespace Sapfire::d3d {
 	}
 
 	void GraphicsContext::set_viewport(const D3D12_VIEWPORT& viewport) const {
-		static D3D12_RECT scissor{
+		const static D3D12_RECT scissor{
 			.left = 0,
 			.top = 0,
 			.right = LONG_MAX,

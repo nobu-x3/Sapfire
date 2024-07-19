@@ -22,7 +22,7 @@ namespace widgets {
 				if (ImGui::BeginDragDropTarget()) {
 					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_ENTITY")) {
 						IM_ASSERT(payload->DataSize == sizeof(Entity));
-						Entity entity = *(const Entity*)payload->Data;
+						const Entity entity = *(const Entity*)payload->Data;
 						auto& transform_component = m_ECManager.engine_component<components::Transform>(entity);
 						transform_component.parent(-1);
 					}
@@ -90,7 +90,7 @@ namespace widgets {
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_ENTITY")) {
 					IM_ASSERT(payload->DataSize == sizeof(Entity));
-					Entity payload_entity = *(const Entity*)payload->Data;
+					const Entity payload_entity = *(const Entity*)payload->Data;
 					auto& transform_component = m_ECManager.engine_component<components::Transform>(payload_entity);
 					transform_component.parent(parent_entity.id().index);
 				}

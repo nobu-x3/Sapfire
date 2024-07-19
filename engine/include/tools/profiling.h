@@ -204,7 +204,7 @@ namespace Sapfire {
 #define PROFILE_END_SESSION() ::Sapfire::Instrumentor::Get().EndSession()
 #define PROFILE_SCOPE_LINE2(name, line)                                                                                                    \
 	constexpr auto fixedName##line = ::Sapfire::InstrumentorUtils::CleanupOutputString(name, "__cdecl ");                                  \
-	::Sapfire::InstrumentationTimer timer##line(fixedName##line.Data)
+	const ::Sapfire::InstrumentationTimer timer##line(fixedName##line.Data)
 #define PROFILE_SCOPE_LINE(name, line) PROFILE_SCOPE_LINE2(name, line)
 #define PROFILE_SCOPE(name) PROFILE_SCOPE_LINE(name, __LINE__)
 #define PROFILE_FUNCTION() PROFILE_SCOPE(FUNC_SIG)

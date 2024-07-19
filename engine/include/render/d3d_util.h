@@ -58,8 +58,8 @@ namespace Sapfire::d3d {
 #ifndef d3d_check
 #define d3d_check(x)                                                                                                                       \
 	{                                                                                                                                      \
-		HRESULT hr__ = (x);                                                                                                                \
-		std::wstring wfn = d3d::AnsiToWString(__FILE__);                                                                                   \
+		const HRESULT hr__ = (x);                                                                                                                \
+		const std::wstring wfn = d3d::AnsiToWString(__FILE__);                                                                                   \
 		if (FAILED(hr__)) {                                                                                                                \
 			__debugbreak();                                                                                                                \
 			throw d3d::DxException(hr__, L#x, wfn, __LINE__);                                                                              \

@@ -10,7 +10,7 @@ namespace Sapfire {
 		Camera(f32 fov, f32 aspect, f32 near_plane, f32 far_plane);
 		void update(f32);
 		components::Transform transform{};
-		DirectX::XMMATRIX projection;
+		DirectX::XMMATRIX projection{DirectX::XMMatrixIdentity()};
 		DirectX::XMMATRIX view() const;
         components::MovementComponent movement_component;
 		input::InputComponent input;

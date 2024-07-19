@@ -8,9 +8,9 @@ SSubeditor::SSubeditor(Sapfire::stl::string_view editor_name) : m_Name(editor_na
 
 bool SSubeditor::update(f32 delta_time) {
 	ImGui::Begin(m_Name.c_str(), nullptr);
-	ImGuiID dockspace_id = ImGui::GetID("###SubeditorDockspace");
+	const ImGuiID dockspace_id = ImGui::GetID("###SubeditorDockspace");
 	ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f));
-	ImGuiIO io = ImGui::GetIO();
+	const ImGuiIO io = ImGui::GetIO();
 	for (int i = 0; i < IM_ARRAYSIZE(io.MouseDown); i++) {
 		if (ImGui::IsMouseClicked(i)) {
 			switch (i) {
@@ -18,7 +18,8 @@ bool SSubeditor::update(f32 delta_time) {
 				{
 					for (auto& widget : m_Widgets) {
 						MouseButtonEvent e{MouseButton::LMB, true};
-						widget->on_mouse_button_event(e);
+						if (widget && widget->is_visible())
+							widget->on_mouse_button_event(e);
 					}
 				}
 				break;
@@ -26,7 +27,8 @@ bool SSubeditor::update(f32 delta_time) {
 				{
 					for (auto& widget : m_Widgets) {
 						MouseButtonEvent e{MouseButton::RMB, true};
-						widget->on_mouse_button_event(e);
+						if (widget && widget->is_visible())
+							widget->on_mouse_button_event(e);
 					}
 				}
 				break;
@@ -34,7 +36,8 @@ bool SSubeditor::update(f32 delta_time) {
 				{
 					for (auto& widget : m_Widgets) {
 						MouseButtonEvent e{MouseButton::MMB, true};
-						widget->on_mouse_button_event(e);
+						if (widget && widget->is_visible())
+							widget->on_mouse_button_event(e);
 					}
 				}
 				break;
@@ -48,7 +51,8 @@ bool SSubeditor::update(f32 delta_time) {
 				{
 					for (auto& widget : m_Widgets) {
 						MouseButtonEvent e{MouseButton::LMB, false};
-						widget->on_mouse_button_event(e);
+						if (widget && widget->is_visible())
+							widget->on_mouse_button_event(e);
 					}
 				}
 				break;
@@ -56,7 +60,8 @@ bool SSubeditor::update(f32 delta_time) {
 				{
 					for (auto& widget : m_Widgets) {
 						MouseButtonEvent e{MouseButton::RMB, false};
-						widget->on_mouse_button_event(e);
+						if (widget && widget->is_visible())
+							widget->on_mouse_button_event(e);
 					}
 				}
 				break;
@@ -64,7 +69,8 @@ bool SSubeditor::update(f32 delta_time) {
 				{
 					for (auto& widget : m_Widgets) {
 						MouseButtonEvent e{MouseButton::MMB, false};
-						widget->on_mouse_button_event(e);
+						if (widget && widget->is_visible())
+							widget->on_mouse_button_event(e);
 					}
 				}
 				break;
@@ -75,7 +81,8 @@ bool SSubeditor::update(f32 delta_time) {
 	}
 	bool return_val = true;
 	for (auto& widget : m_Widgets) {
-		return_val &= widget->update(delta_time);
+		if (widget && widget->is_visible())
+			return_val &= widget->update(delta_time);
 	}
 	ImGui::End();
 	return return_val;
@@ -83,6 +90,7 @@ bool SSubeditor::update(f32 delta_time) {
 
 void SSubeditor::render(Sapfire::d3d::GraphicsContext& gfx_ctx) {
 	for (auto&& widget : m_Widgets) {
-		widget->render(gfx_ctx);
+		if (widget && widget->is_visible())
+			widget->render(gfx_ctx);
 	}
 }

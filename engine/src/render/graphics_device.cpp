@@ -119,7 +119,7 @@ namespace Sapfire::d3d {
 		}
 		s32 width{};
 		s32 height{};
-		s32 component_count{4};
+		const s32 component_count{4};
 		void* texture_data{(void*)(data)};
 		f32* hdr_texture_data{nullptr};
 		if (texture_desc.usage == TextureUsage::TextureFromData) {
@@ -135,7 +135,7 @@ namespace Sapfire::d3d {
 			texture_desc.width = width;
 			texture_desc.height = height;
 		}
-		stl::scoped_lock<stl::recursive_mutex> lock(m_ResourceMutex);
+		const stl::scoped_lock<stl::recursive_mutex> lock(m_ResourceMutex);
 		texture.allocation = m_MemoryAllocator->allocate_texture_resource(texture_desc);
 		texture.width = texture_desc.width;
 		texture.height = texture_desc.height;
@@ -164,7 +164,7 @@ namespace Sapfire::d3d {
 			const ResourceCreationDesc resource_creation_desc =
 				ResourceCreationDesc::create_buffer_resource_creation_desc(upload_buffer_size);
 			Allocation upload_allocation = m_MemoryAllocator->allocate_buffer_resource(upload_buffer_creation_desc, resource_creation_desc);
-			D3D12_SUBRESOURCE_DATA texture_subresource_data{
+			const D3D12_SUBRESOURCE_DATA texture_subresource_data{
 				.pData = desc.usage == TextureUsage::TextureFromPath || desc.usage == TextureUsage::TextureFromData ? texture_data
 																													: hdr_texture_data,
 				.RowPitch = width * texture_desc.bytesPerPixel,

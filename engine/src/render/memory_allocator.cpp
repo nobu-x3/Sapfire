@@ -44,7 +44,7 @@ namespace Sapfire::d3d {
 		const D3D12MA::ALLOCATION_DESC allocation_desc{
 			.HeapType = heap_type,
 		};
-		stl::lock_guard<stl::recursive_mutex> allocation_lock(m_ResourceAllocationMutex);
+		const stl::lock_guard<stl::recursive_mutex> allocation_lock(m_ResourceAllocationMutex);
 		d3d_check(m_Allocator->CreateResource(&allocation_desc, &resource_desc.resource_desc, resource_state, nullptr,
 											  &allocation.allocation, IID_PPV_ARGS(&allocation.resource)));
 		if (is_cpu_visible) {
@@ -152,7 +152,7 @@ namespace Sapfire::d3d {
 				.DepthStencil = ds_value,
 			};
 		}
-		stl::lock_guard<stl::recursive_mutex> alloc_guard(m_ResourceAllocationMutex);
+		const stl::lock_guard<stl::recursive_mutex> alloc_guard(m_ResourceAllocationMutex);
 		if (texture_desc.optional_initial_state.has_value() && texture_desc.optional_initial_state != D3D12_RESOURCE_STATE_COMMON) {
 			resource_state = texture_desc.optional_initial_state.value();
 		}

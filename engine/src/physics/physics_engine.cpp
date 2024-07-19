@@ -18,7 +18,7 @@ namespace Sapfire::physics {
 			index++;
 			if (!entry.has_value())
 				continue;
-			stl::generational_index gen_index = {.index = index, .generation = entry->generation};
+			const stl::generational_index gen_index = {.index = index, .generation = entry->generation};
 			if (!m_ECManager.is_valid(gen_index))
 				continue;
 			auto entity = m_ECManager.entity(gen_index);
@@ -26,7 +26,7 @@ namespace Sapfire::physics {
 				continue;
 			auto& transform = m_ECManager.engine_component<components::Transform>(entity.value());
 			auto& movement = m_ECManager.engine_component<components::MovementComponent>(entity.value());
-			f32 damping = 1.0f;
+			const f32 damping = 1.0f;
 			auto velocity = movement.velocity();
 			velocity += movement.acceleration() * delta_time;
 			velocity *= damping;
