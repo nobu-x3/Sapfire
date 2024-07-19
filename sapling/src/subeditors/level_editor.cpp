@@ -14,11 +14,16 @@ SLevelEditor* SLevelEditor::level_editor() { return s_Instance; }
 
 SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device, Sapfire::assets::AssetManager* am,
 						   const Sapfire::stl::string& scene_path, Sapfire::stl::function<void()> asset_imported_callback) :
-	SSubeditor("Level Editor"), m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)), m_AssetManager(*am) {
+	SSubeditor("Level Editor"),
+	m_ECManager(stl::make_unique<ECManager>(mem::ENUM::Editor)), m_AssetManager(*am) {
 	s_Instance = this;
 	m_Widgets.push_back(
 		stl::make_unique<widgets::SSceneHierarchy>(mem::ENUM::Editor, m_ECManager.get(), BIND_EVENT_FN(SLevelEditor::on_entity_selected)));
-	m_Widgets.push_back(stl::make_unique<widgets::SEntityInspector>(mem::ENUM::Editor, m_ECManager.get()));
+	m_Widgets.push_back(stl::make_unique<widgets::SEntityInspector>(
+		mem::ENUM::Editor, m_ECManager.get(), [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
+			auto scene_view = static_cast<widgets::SSceneView*>(m_Widgets[ELevelEditorWidgetOrder::SceneView].get());
+			scene_view->add_render_component(entity, resource_paths);
+		}));
 	auto* entity_inspector = static_cast<widgets::SEntityInspector*>(m_Widgets[ELevelEditorWidgetOrder::EntityInspector].get());
 	m_EntitySelectedCallbacks.push_back(BIND_EVENT_FN_FOR_OBJ(entity_inspector, widgets::SEntityInspector::select_entity));
 	m_Widgets.emplace_back(stl::make_unique<widgets::SAssetBrowser>(mem::ENUM::Editor, "Asset Browser"));

@@ -15,7 +15,8 @@
 namespace widgets {
 
 	using namespace Sapfire;
-	SEntityInspector::SEntityInspector(Sapfire::ECManager* ec_manager) : m_ECManager(*ec_manager) {}
+	SEntityInspector::SEntityInspector(Sapfire::ECManager* ec_manager, AddRenderComponentCallback callback) :
+		m_ECManager(*ec_manager), m_AddRenderComponentCallback(callback) {}
 
 	template <typename T>
 	void draw_optional_engine_component(ECManager& ec_manager, stl::optional<Entity> entity) {
@@ -74,12 +75,12 @@ namespace widgets {
 							m_ShowAddComponentContextMenu = false;
 						}
 						if (ImGui::Button(components::RenderComponent::to_string().c_str())) {
-							SSceneView::scene_view()->add_render_component(m_SelectedEntity.value(),
-																		   {
-																			   .mesh_path = "assets/models/cube.obj",
-																			   .texture_path = "assets/textures/ceramics.jpg",
-																			   .material_path = "assets/materials/default.mat",
-																		   });
+							m_AddRenderComponentCallback(m_SelectedEntity.value(),
+														 {
+															 .mesh_path = "assets/models/cube.obj",
+															 .texture_path = "assets/textures/ceramics.jpg",
+															 .material_path = "assets/materials/default.mat",
+														 });
 							m_ShowAddComponentContextMenu = false;
 						}
 						for (const auto& [key, component_list] : components::ComponentRegistry::s_CustomComponentLists) {

@@ -14,8 +14,6 @@ namespace widgets {
 		bool update(Sapfire::f32 delta_time) override;
 		void render(Sapfire::d3d::GraphicsContext& gfx_ctx) override;
 
-		static Sapfire::stl::shared_ptr<SSceneView> scene_view();
-
 	private:
 		void update_pass_cb(Sapfire::f32 delta_time);
 		void update_materials();
@@ -38,7 +36,5 @@ namespace widgets {
 		Sapfire::Camera m_MainCamera;
 		Sapfire::stl::string m_WidgetName;
 		bool m_Resizing{false};
-
-		static Sapfire::stl::shared_ptr<SSceneView> s_Instance;
 	};
 } // namespace widgets

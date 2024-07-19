@@ -8,10 +8,6 @@
 
 namespace widgets {
 
-	Sapfire::stl::shared_ptr<SSceneView> SSceneView::s_Instance{nullptr};
-
-	Sapfire::stl::shared_ptr<SSceneView> SSceneView::scene_view() { return s_Instance; }
-
 	static ImVec2 DOCK_SIZE{800, 600};
 
 	struct ObjectConstants {
@@ -78,7 +74,6 @@ namespace widgets {
 			}));
 		}
 		m_MainCamera = {CAMERA_FOV, DOCK_SIZE.x / DOCK_SIZE.y, 0.1f, 1000.f};
-		s_Instance.reset(this);
 	}
 
 	void SSceneView::add_render_component(Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
@@ -393,6 +388,8 @@ namespace widgets {
 		for (auto& comp : render_components) {
 			components::CPUData cpu_data = comp.cpu_data();
 			auto pdc = comp.per_draw_constants();
+			if (cpu_data.index_id >= m_RTIndexBuffers.size())
+				continue;
 			gfx_ctx.set_index_buffer(m_RTIndexBuffers[cpu_data.index_id]);
 			gfx_ctx.set_32_bit_graphics_constants(comp.per_draw_constants());
 			gfx_ctx.draw_instance_indexed(cpu_data.indices_size);
