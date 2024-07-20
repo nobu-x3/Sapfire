@@ -356,7 +356,7 @@ bool SaplingLayer::on_window_resize(WindowResizeEvent& e) {
 	return true;
 }
 
-bool SaplingLayer::is_subeditor_active(ESubeditor::TYPE type) { return m_ActiveSubeditors >> type != 0; }
+bool SaplingLayer::is_subeditor_active(ESubeditor::TYPE type) { return (m_ActiveSubeditors) & (1 << (type)); }
 
 SSubeditor* SaplingLayer::subeditor_factory(ESubeditor::TYPE type, bool is_callback) {
 	switch (type) {
