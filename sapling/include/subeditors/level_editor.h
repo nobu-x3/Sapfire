@@ -34,7 +34,6 @@ private:
 	Sapfire::stl::unique_ptr<Sapfire::ECManager> m_ECManager;
 	Sapfire::stl::vector<on_entity_selected_callback> m_EntitySelectedCallbacks;
 	Sapfire::assets::AssetManager& m_AssetManager;
-	Sapfire::u32 m_SceneViewIndex{0};
 	Sapfire::stl::string m_CurrentSceneName{};
 
 	static SLevelEditor* s_Instance;

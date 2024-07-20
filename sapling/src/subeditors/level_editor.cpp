@@ -37,7 +37,6 @@ SLevelEditor::SLevelEditor(Sapfire::d3d::GraphicsDevice* gfx_device, Sapfire::as
 			scene_view->add_render_component(entity, resource_paths);
 		});
 	}
-	m_SceneViewIndex = static_cast<u32>(m_Widgets.size());
 }
 
 void SLevelEditor::on_entity_selected(Sapfire::stl::optional<Sapfire::Entity> entity) {
@@ -76,7 +75,7 @@ void SLevelEditor::draw_open_scene_dialog() {
 				m_ECManager->reset();
 				assets::SceneWriter writer{m_ECManager.get(), &m_AssetManager};
 				writer.deserealize(filepath, [&](Sapfire::Entity entity, const Sapfire::RenderComponentResourcePaths& resource_paths) {
-					auto widget = m_Widgets[m_SceneViewIndex].get();
+					auto widget = m_Widgets[ELevelEditorWidgetOrder::SceneView].get();
 					static_cast<widgets::SSceneView*>(widget)->add_render_component(entity, resource_paths);
 				});
 			}

@@ -61,8 +61,8 @@ namespace widgets {
 				m_EntitySelectedCallback(m_SelectedEntity);
 				m_SelectEntity = false;
 			}
+			ImGui::PopID();
 		}
-		ImGui::PopID();
 		ImGui::End();
 		return true;
 	}
