@@ -11,41 +11,7 @@
 
 namespace Sapfire::assets {
 
-	MeshRegistry::MeshRegistry(const stl::string& registry_file_path) {
-		auto full_path = fs::full_path(registry_file_path);
-		auto relative_path = fs::relative_path(registry_file_path);
-		m_RegistryFilePath = relative_path;
-		std::ifstream file{relative_path};
-		if (!file.is_open()) {
-			CORE_WARN("Mesh registry at path {} could not be open, created the default registry at given path.", full_path);
-			create_default(relative_path);
-			file.open(relative_path);
-		}
-		nlohmann::json j;
-		file >> j;
-		file.close();
-		for (auto&& asset : j["assets"]) {
-			if (!asset.is_object()) {
-				CORE_CRITICAL("Broken mesh registry at path {}. Array of assets is not objects.", full_path);
-				break;
-			}
-			if (!asset.contains("UUID")) {
-				CORE_CRITICAL("Broken mesh registry at path {}. At least one registry entry does not contain UUID.", full_path);
-				break;
-			}
-			if (!asset.contains("path")) {
-				CORE_CRITICAL("Broken mesh registry at path {}. At least one registry entry does not contain path to the raw asset.",
-							  full_path);
-				break;
-			}
-			const stl::string path = asset["path"];
-			m_PathToMeshAssetMap[path] = MeshAsset{
-				.uuid = UUID{asset["UUID"]},
-				.data = tools::OBJLoader::load_mesh(path),
-			};
-			m_UUIDToPathMap[UUID{asset["UUID"]}] = path;
-		}
-	}
+	MeshRegistry::MeshRegistry(const stl::string& registry_file_path) : m_RegistryFilePath(fs::full_path(registry_file_path)) {}
 
 	void MeshRegistry::serialize() {
 		nlohmann::json j;

@@ -24,58 +24,7 @@ namespace Sapfire::assets {
 		uuid_to_path_map[uuid] = path;
 	}
 
-	MaterialRegistry::MaterialRegistry(const stl::string& registry_file_path) {
-		auto full_path = fs::full_path(registry_file_path);
-		m_RegistryFilePath = registry_file_path;
-		std::ifstream file{registry_file_path};
-		if (!file.is_open()) {
-			CORE_WARN("Texture registry at path {} could not be open, created the default registry at given path.", full_path);
-			create_default(registry_file_path);
-			file.open(registry_file_path);
-		}
-		nlohmann::json j;
-		file >> j;
-		file.close();
-		for (auto&& asset : j["assets"]) {
-			if (!asset.contains("UUID")) {
-				CORE_CRITICAL("Broken material registry at path {}. At least one registry entry does not contain UUID.", full_path);
-				return;
-			}
-			if (!asset.contains("path")) {
-				CORE_CRITICAL("Broken material registry at path {}. At least one registry entry does not contain path to the raw asset.",
-							  full_path);
-				return;
-			}
-			if (!asset.contains("name")) {
-				CORE_CRITICAL("Broken material registry at path {}. At least one registry entry does not contain name.", full_path);
-				return;
-			}
-			if (!asset.contains("diffuse_albedo")) {
-				CORE_CRITICAL("Broken material registry at path {}. At least one registry entry does not contain diffuse albedo.",
-							  full_path);
-				return;
-			}
-			if (!asset.contains("fresnel_r0")) {
-				CORE_CRITICAL("Broken material registry at path {}. At least one registry entry does not contain fresnel r0.", full_path);
-				return;
-			}
-			if (!asset.contains("roughness")) {
-				CORE_CRITICAL("Broken material registry at path {}. At least one registry entry does not contain roughness.", full_path);
-				return;
-			}
-			const stl::string path = asset["path"];
-			d3d::Material material{.name = fs::file_name(asset["name"])};
-			material.roughness = asset["roughness"];
-			material.diffuse_albedo =
-				XMFLOAT4(asset["diffuse_albedo"][0], asset["diffuse_albedo"][1], asset["diffuse_albedo"][2], asset["diffuse_albedo"][3]);
-			material.fresnel_r0 = XMFLOAT3(asset["fresnel_r0"][0], asset["fresnel_r0"][1], asset["fresnel_r0"][2]);
-			m_PathToMaterialAssetMap[path] = MaterialAsset{
-				.uuid = UUID{asset["UUID"]},
-				.material = material,
-			};
-			m_UUIDToPathMap[UUID{asset["UUID"]}] = path;
-		}
-	}
+	MaterialRegistry::MaterialRegistry(const stl::string& registry_file_path) : m_RegistryFilePath(fs::full_path(registry_file_path)) {}
 
 	void MaterialRegistry::create_default(const stl::string& filepath) {
 		auto j = R"(

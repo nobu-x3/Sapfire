@@ -1,3 +1,4 @@
+#include "core/file_system.h"
 #include "engpch.h"
 
 #include "assets/texture_manager.h"
@@ -14,98 +15,7 @@ namespace Sapfire::assets {
 		uuid_to_path_map[uuid] = path;
 	}
 
-	TextureRegistry::TextureRegistry(const stl::string& registry_file_path) {
-		auto full_path = fs::relative_path(registry_file_path);
-		auto relative_path = fs::relative_path(registry_file_path);
-		m_RegistryFilePath = relative_path;
-		std::ifstream file{relative_path};
-		if (!file.is_open()) {
-			CORE_WARN("Texture registry at path {} could not be open, created the default registry at given path.", full_path);
-			create_default(relative_path);
-			file.open(relative_path);
-		}
-		nlohmann::json j;
-		file >> j;
-		file.close();
-		for (auto&& asset : j["assets"]) {
-			if (!asset.is_object()) {
-				CORE_CRITICAL("Broken texture registry at path {}. Array of assets is not objects.", full_path);
-				break;
-			}
-			if (!asset.contains("UUID")) {
-				CORE_CRITICAL("Broken texture registry at path {}. At least one registry entry does not contain UUID.", full_path);
-				break;
-			}
-			if (!asset.contains("path")) {
-				CORE_CRITICAL("Broken texture registry at path {}. At least one registry entry does not contain path to the raw asset.",
-							  full_path);
-				break;
-			}
-			if (!asset.contains("description")) {
-				CORE_CRITICAL("Broken texture registry at path {}. At least one registry entry does not contain texture description.",
-							  full_path);
-				break;
-			}
-			auto& desc_json = asset["description"];
-			if (!desc_json.is_object()) {
-				CORE_CRITICAL("Broken texture registry at path {}. Error reading the texture creation description, is not a json object.",
-							  full_path);
-				break;
-			}
-			if (!desc_json.contains("usage") || !desc_json["usage"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'usage' field.", full_path);
-				break;
-			}
-			if (!desc_json.contains("width") || !desc_json["width"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'width' field.", full_path);
-				break;
-			}
-			if (!desc_json.contains("height") || !desc_json["height"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'height' field.", full_path);
-				break;
-			}
-			if (!desc_json.contains("format") || !desc_json["format"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'format' field.", full_path);
-				break;
-			}
-			if (!desc_json.contains("mip_levels") || !desc_json["mip_levels"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'mip_levels' field.",
-							  full_path);
-				break;
-			}
-			if (!desc_json.contains("depth_or_array_size") || !desc_json["depth_or_array_size"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'depth_or_array_size' field.",
-							  full_path);
-				break;
-			}
-			if (!desc_json.contains("bytes_per_pixel") || !desc_json["bytes_per_pixel"].is_number_unsigned()) {
-				CORE_CRITICAL("Broken texture registry at path {}. One of the textures does not contain a u32 'bytes_per_pixel' field.",
-							  full_path);
-				break;
-			}
-			const stl::string path = asset["path"];
-			const stl::wstring path_wstring = d3d::AnsiToWString(path);
-			d3d::TextureCreationDesc desc{
-				.usage = desc_json["usage"],
-				.width = desc_json["width"],
-				.height = desc_json["height"],
-				.format = desc_json["format"],
-				.mipLevels = desc_json["mip_levels"],
-				.depthOrArraySize = desc_json["depth_or_array_size"],
-				.bytesPerPixel = desc_json["bytes_per_pixel"],
-				.name = path_wstring,
-				.path = path_wstring,
-			};
-			if (desc_json.contains("optional_initial_state")) {
-				desc.optional_initial_state = desc_json["optional_initial_state"];
-			}
-			m_PathToTextureAssetMap[path] = TextureAsset{
-				.uuid = UUID{asset["UUID"]},
-				.description = desc,
-			};
-			m_UUIDToPathMap[UUID{asset["UUID"]}] = path;
-		}
-	}
+	TextureRegistry::TextureRegistry(const stl::string& registry_file_path) : m_RegistryFilePath(fs::full_path(registry_file_path)) {}
 
 	void TextureRegistry::create_default(const stl::string& filepath) {
 		auto j = R"(
@@ -374,30 +284,11 @@ namespace Sapfire::assets {
 
 	static char* default_texture_data() {
 		static char data[BYTE_COUNT];
-		for (int i = 0; i < BYTE_COUNT; ++i) {
-			data[i] = 255;
-		}
-		for (int row = 0; row < DEFAULT_TEXTURE_DIMENSIONS; ++row) {
-			for (int col = 0; col < DEFAULT_TEXTURE_DIMENSIONS; ++col) {
-				const int index = ((row * DEFAULT_TEXTURE_DIMENSIONS) + col) * DEFAULT_TEXTURE_CHANNELS;
-				if (row % 2 == 0) {
-					if (col % 2 == 0) {
-						data[index + 1] = 0;
-					} else {
-						data[index] = 0;
-						data[index + 1] = 0;
-						data[index + 2] = 0;
-					}
-				} else {
-					if (col % 2 == 0) {
-						data[index + 1] = 0;
-					} else {
-						data[index] = 0;
-						data[index + 1] = 0;
-						data[index + 2] = 0;
-					}
-				}
-			}
+		for (int i = 0; i < BYTE_COUNT; i += 4) {
+			data[i] = 255u;
+			data[i + 1] = 0u;
+			data[i + 2] = 255u;
+			data[i + 3] = 255u;
 		}
 		return data;
 	}
