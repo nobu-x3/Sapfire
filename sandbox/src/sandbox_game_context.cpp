@@ -1,33 +1,12 @@
 #include "sandbox_game_context.h"
+#include <DirectXCollision.h>
+#include <DirectXMath.h>
 #include "components/movement_component.h"
 #include "components/render_component.h"
 #include "components/test_custom_component.h"
 #include "core/game_context.h"
 
 using namespace Sapfire;
-
-struct PassConstants {
-	DirectX::XMFLOAT4X4 view = Sapfire::math::Identity4x4();
-	DirectX::XMFLOAT4X4 inv_view = Sapfire::math::Identity4x4();
-	DirectX::XMFLOAT4X4 proj = Sapfire::math::Identity4x4();
-	DirectX::XMFLOAT4X4 inv_proj = Sapfire::math::Identity4x4();
-	DirectX::XMFLOAT4X4 view_proj = Sapfire::math::Identity4x4();
-	DirectX::XMFLOAT4X4 inv_view_proj = Sapfire::math::Identity4x4();
-	DirectX::XMFLOAT3 EyePosW = {0.0f, 0.0f, 0.0f};
-	float cbPerObjectPad1 = 0.0f;
-	DirectX::XMFLOAT2 render_target_size = {0.0f, 0.0f};
-	DirectX::XMFLOAT2 inv_render_target_size = {0.0f, 0.0f};
-	float near_z = 0.0f;
-	float far_z = 0.0f;
-	float total_time = 0.0f;
-	float delta_time = 0.0f;
-	DirectX::XMFLOAT4 ambient_light = {0.0f, 0.0f, 0.0f, 1.0f};
-	// Indices [0, NUM_DIR_LIGHTS) are directional lights;
-	// indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are point lights;
-	// indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)
-	// are spot lights for a maximum of MaxLights per object.
-	Sapfire::d3d::Light Lights[MaxLights];
-};
 
 SandboxGameContext::SandboxGameContext(const Sapfire::GameContextCreationDesc& desc) : Sapfire::GameContext(desc) {
 	m_MainCamera = {CAMERA_FOV, static_cast<f32>(m_ClientExtent->width) / m_ClientExtent->height, 0.1f, 1000.f};
@@ -75,7 +54,7 @@ void SandboxGameContext::update(f32 delta_time) {
 }
 
 void SandboxGameContext::update_pass_cb(f32 delta_time) {
-	auto main_pass = PassConstants{};
+	m_PassConstants = PassConstants{};
 	auto view = m_MainCamera.view();
 	auto proj = m_MainCamera.projection;
 	auto viewProj = XMMatrixMultiply(view, proj);
@@ -85,27 +64,27 @@ void SandboxGameContext::update_pass_cb(f32 delta_time) {
 	auto invProj = XMMatrixInverse(&proj_determinant, proj);
 	auto view_proj_determinant = XMMatrixDeterminant(viewProj);
 	auto invViewProj = XMMatrixInverse(&view_proj_determinant, viewProj);
-	XMStoreFloat4x4(&main_pass.view, XMMatrixTranspose(view));
-	XMStoreFloat4x4(&main_pass.inv_view, XMMatrixTranspose(invView));
-	XMStoreFloat4x4(&main_pass.proj, XMMatrixTranspose(proj));
-	XMStoreFloat4x4(&main_pass.inv_proj, XMMatrixTranspose(invProj));
-	XMStoreFloat4x4(&main_pass.view_proj, XMMatrixTranspose(viewProj));
-	XMStoreFloat4x4(&main_pass.inv_view_proj, XMMatrixTranspose(invViewProj));
-	XMStoreFloat3(&main_pass.EyePosW, m_MainCamera.transform.position());
-	main_pass.render_target_size = DirectX::XMFLOAT2((float)m_ClientExtent->width, (float)m_ClientExtent->height);
-	main_pass.inv_render_target_size = DirectX::XMFLOAT2(1.0f / m_ClientExtent->width, 1.0f / m_ClientExtent->height);
-	main_pass.near_z = 1.0f;
-	main_pass.far_z = 1000.0f;
-	main_pass.total_time = delta_time;
-	main_pass.delta_time = delta_time;
-	main_pass.ambient_light = {0.25f, 0.25f, 0.35f, 1.0f};
-	main_pass.Lights[0].direction = {0.57735f, -0.0f, 1.57735f};
-	main_pass.Lights[0].strength = {0.6f, 0.6f, 0.6f};
-	main_pass.Lights[1].direction = {-0.57735f, -0.57735f, 0.57735f};
-	main_pass.Lights[1].strength = {0.3f, 0.3f, 0.3f};
-	main_pass.Lights[2].direction = {0.0f, -0.707f, -0.707f};
-	main_pass.Lights[2].strength = {0.15f, 0.15f, 0.15f};
-	m_MainPassCB.update(&main_pass);
+	XMStoreFloat4x4(&m_PassConstants.view, XMMatrixTranspose(view));
+	XMStoreFloat4x4(&m_PassConstants.inv_view, XMMatrixTranspose(invView));
+	XMStoreFloat4x4(&m_PassConstants.proj, XMMatrixTranspose(proj));
+	XMStoreFloat4x4(&m_PassConstants.inv_proj, XMMatrixTranspose(invProj));
+	XMStoreFloat4x4(&m_PassConstants.view_proj, XMMatrixTranspose(viewProj));
+	XMStoreFloat4x4(&m_PassConstants.inv_view_proj, XMMatrixTranspose(invViewProj));
+	XMStoreFloat3(&m_PassConstants.EyePosW, m_MainCamera.transform.position());
+	m_PassConstants.render_target_size = DirectX::XMFLOAT2((float)m_ClientExtent->width, (float)m_ClientExtent->height);
+	m_PassConstants.inv_render_target_size = DirectX::XMFLOAT2(1.0f / m_ClientExtent->width, 1.0f / m_ClientExtent->height);
+	m_PassConstants.near_z = 1.0f;
+	m_PassConstants.far_z = 1000.0f;
+	m_PassConstants.total_time = delta_time;
+	m_PassConstants.delta_time = delta_time;
+	m_PassConstants.ambient_light = {0.25f, 0.25f, 0.35f, 1.0f};
+	m_PassConstants.Lights[0].direction = {0.57735f, -0.0f, 1.57735f};
+	m_PassConstants.Lights[0].strength = {0.6f, 0.6f, 0.6f};
+	m_PassConstants.Lights[1].direction = {-0.57735f, -0.57735f, 0.57735f};
+	m_PassConstants.Lights[1].strength = {0.3f, 0.3f, 0.3f};
+	m_PassConstants.Lights[2].direction = {0.0f, -0.707f, -0.707f};
+	m_PassConstants.Lights[2].strength = {0.15f, 0.15f, 0.15f};
+	m_MainPassCB.update(&m_PassConstants);
 }
 
 void SandboxGameContext::update_materials(f32 delta_time) {
@@ -133,6 +112,7 @@ void SandboxGameContext::udpate_transform_buffer(f32 delta_time) {
 }
 
 void SandboxGameContext::render() {
+	PROFILE_FUNCTION();
 	m_GraphicsDevice->begin_frame();
 	auto& gfx_ctx = m_GraphicsDevice->current_graphics_contexts();
 	auto& current_backbuffer = m_GraphicsDevice->current_back_buffer();
@@ -157,12 +137,32 @@ void SandboxGameContext::render() {
 	{
 		gfx_ctx->set_descriptor_heaps();
 		gfx_ctx->set_primitive_topology_layout(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		DirectX::BoundingFrustum camera_frustum;
+		DirectX::BoundingFrustum::CreateFromMatrix(camera_frustum, m_MainCamera.projection);
+		auto view = m_MainCamera.view();
+		auto view_determinant = DirectX::XMMatrixDeterminant(view);
+		auto inv_view = DirectX::XMMatrixInverse(&view_determinant, view);
 		auto& render_components = m_ECManager.engine_components<components::RenderComponent>();
 		for (auto& comp : render_components) {
-			components::CPUData cpu_data = comp.cpu_data();
-			gfx_ctx->set_index_buffer(m_RTIndexBuffers[cpu_data.index_id]);
-			gfx_ctx->set_32_bit_graphics_constants(comp.per_draw_constants());
-			gfx_ctx->draw_instance_indexed(cpu_data.indices_size);
+			components::Transform transform;
+			if (!m_ECManager.get_other_engine_component<components::RenderComponent, components::Transform>(comp, transform))
+				continue;
+			const auto* mesh_asset = m_AssetManager.get_mesh(comp.mesh_uuid());
+			DirectX::BoundingBox aabb = mesh_asset->data->aabb;
+			DirectX::XMMATRIX world = transform.transform();
+			DirectX::XMVECTOR world_determinant = DirectX::XMMatrixDeterminant(world);
+			DirectX::XMMATRIX inv_world = DirectX::XMMatrixInverse(&world_determinant, world);
+			// View space to object local space
+			DirectX::XMMATRIX view_to_local = DirectX::XMMatrixMultiply(inv_world, inv_view);
+			// Transform camera frustum from view space to object's local space
+			DirectX::BoundingFrustum local_space_frustum;
+			camera_frustum.Transform(local_space_frustum, view_to_local);
+			if (local_space_frustum.Contains(aabb) != DirectX::DISJOINT) {
+				components::CPUData cpu_data = comp.cpu_data();
+				gfx_ctx->set_index_buffer(m_RTIndexBuffers[cpu_data.index_id]);
+				gfx_ctx->set_32_bit_graphics_constants(comp.per_draw_constants());
+				gfx_ctx->draw_instance_indexed(cpu_data.indices_size);
+			}
 		}
 	}
 	gfx_ctx->add_resource_barrier(current_backbuffer.allocation.resource.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,

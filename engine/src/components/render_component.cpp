@@ -6,10 +6,10 @@
 namespace Sapfire::components {
 	ENGINE_COMPONENT_IMPL(RenderComponent);
 
-	RenderComponent::RenderComponent(UUID mesh_uuid, UUID texture_uuid, UUID material_uuid, CPUData cpu_data, PerDrawConstants per_draw_constants,
-									 stl::function<void(RenderComponent*)> optional_setter) :
-		m_MeshUUID(mesh_uuid),
-		m_TextureUUID(texture_uuid), m_MaterialUUID(material_uuid), m_CPUData(cpu_data), m_PerDrawConstants(per_draw_constants), m_OptionalSetter(optional_setter) {
+	RenderComponent::RenderComponent(UUID mesh_uuid, UUID texture_uuid, UUID material_uuid, CPUData cpu_data,
+									 PerDrawConstants per_draw_constants, stl::function<void(RenderComponent*)> optional_setter) :
+		m_MeshUUID(mesh_uuid), m_TextureUUID(texture_uuid), m_MaterialUUID(material_uuid), m_CPUData(cpu_data),
+		m_PerDrawConstants(per_draw_constants), m_OptionalSetter(optional_setter) {
 		register_rtti();
 	}
 
@@ -48,6 +48,10 @@ namespace Sapfire::components {
 		m_OptionalSetter = std::move(other.m_OptionalSetter);
 		register_rtti();
 		return *this;
+	}
+
+	bool RenderComponent::operator==(const RenderComponent& other) const {
+		return m_MeshUUID == other.m_MeshUUID && m_TextureUUID == other.m_TextureUUID && m_MaterialUUID && other.m_TextureUUID;
 	}
 
 	void RenderComponent::register_rtti() {

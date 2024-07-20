@@ -1,5 +1,6 @@
 #include "engpch.h"
 
+#include <DirectXCollision.h>
 #include "render/d3d_primitives.h"
 
 namespace Sapfire::d3d::primitives {
@@ -57,6 +58,8 @@ namespace Sapfire::d3d::primitives {
 			meshData.tangentus.push_back(vertex.tangentu);
 			meshData.texcs.push_back(vertex.texc);
 		}
+		DirectX::BoundingBox::CreateFromPoints(meshData.aabb, meshData.positions.size(), meshData.positions.data(),
+											   sizeof(DirectX::XMFLOAT3));
 		//
 		// Create the indices.
 		//

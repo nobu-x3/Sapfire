@@ -42,7 +42,7 @@ namespace Sapfire {
 		stl::string material_path;
 	};
 
-	constexpr f32 CAMERA_FOV = TO_RADIANS(90);
+	constexpr f32 CAMERA_FOV = TO_RADIANS(45);
 	class SFAPI GameContext {
 	public:
 		GameContext(const GameContextCreationDesc& desc);

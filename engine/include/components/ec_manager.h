@@ -52,6 +52,11 @@ namespace Sapfire {
 			return m_ComponentRegistry->has_engine_component<T>(entity);
 		}
 
+		template <typename T, typename K>
+		bool get_other_engine_component(const T& first, K& out_other) {
+			return m_ComponentRegistry->get_other_engine_component<T, K>(first, out_other);
+		}
+
 		template <typename T>
 		T& engine_component(Entity entity) {
 			return m_ComponentRegistry->get_engine_component<T>(entity);

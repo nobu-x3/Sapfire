@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "components/entity.h"
 #include "core/memory.h"
 #include "core/rtti.h"
@@ -70,6 +71,8 @@ namespace Sapfire::components {
 		}
 
 		stl::vector<T>& components() { return m_Components; }
+
+		Entity entity(size_t index) { return m_IndexToEntityMap[index]; }
 
 	private:
 		stl::vector<T> m_Components;
@@ -169,6 +172,26 @@ namespace Sapfire::components {
 		stl::vector<T>& engine_components() {
 			const char* type_name = typeid(T).name();
 			return std::static_pointer_cast<EngineComponentList<T>>(m_EngineComponentLists[type_name])->components();
+		}
+
+		template <typename T, typename K>
+		bool get_other_engine_component(const T& first, K& out_other) {
+			const char* first_type_name = typeid(T).name();
+			const char* second_type_name = typeid(K).name();
+			if (!m_EngineComponentLists.contains(first_type_name) || !m_EngineComponentLists.contains(second_type_name))
+				return false;
+			auto first_component_list = std::static_pointer_cast<EngineComponentList<T>>(m_EngineComponentLists[first_type_name]);
+			stl::vector<T>& first_components = first_component_list->components();
+			const auto found_it = std::find(first_components.begin(), first_components.end(), first);
+			if (found_it == first_components.end()) {
+				return false;
+			}
+			size_t first_index = std::distance(first_components.begin(), found_it);
+			Entity entity = first_component_list->entity(first_index);
+			if (!has_engine_component<K>(entity))
+				return false;
+			out_other = get_engine_component<K>(entity);
+			return true;
 		}
 
 		void add_component(Entity entity, stl::shared_ptr<IComponent>& component);

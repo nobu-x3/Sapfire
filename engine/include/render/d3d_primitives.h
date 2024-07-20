@@ -1,5 +1,6 @@
 #pragma once
-#include "DirectXMath.h"
+#include <DirectXMath.h>
+#include <DirectXCollision.h>
 #include "core/core.h"
 
 namespace Sapfire::d3d::primitives {
@@ -22,9 +23,10 @@ namespace Sapfire::d3d::primitives {
 		stl::vector<DirectX::XMFLOAT3> normals;
 		stl::vector<DirectX::XMFLOAT3> tangentus;
 		stl::vector<DirectX::XMFLOAT2> texcs;
-		std::vector<u32> indices32;
+		stl::vector<u32> indices32;
+        DirectX::BoundingBox aabb;
 
-		std::vector<u16>& indices16() {
+		stl::vector<u16>& indices16() {
 			if (m_Indices16.empty()) {
 				m_Indices16.resize(indices32.size());
 				for (size_t i = 0; i < indices32.size(); ++i)
@@ -35,7 +37,7 @@ namespace Sapfire::d3d::primitives {
 		}
 
 	private:
-		std::vector<u16> m_Indices16;
+		stl::vector<u16> m_Indices16;
 	};
 
 	///< summary>
