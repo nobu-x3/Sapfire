@@ -1,7 +1,9 @@
 #include "engpch.h"
 
+#include "core/logger.h"
 #include <DirectXMath.h>
-#include "../../include/core/game_context.h"
+#include <cstring>
+#include "core/game_context.h"
 #include "assets/asset_manager.h"
 #include "assets/scene_writer.h"
 #include "components/ec_manager.h"
@@ -9,7 +11,6 @@
 #include "components/name_component.h"
 #include "components/render_component.h"
 #include "components/transform.h"
-#include "core/memory.h"
 #include "nlohmann/json.hpp"
 
 using namespace DirectX;
@@ -80,7 +81,10 @@ namespace Sapfire::assets {
 		std::ifstream file{relative_path};
 		if (!file.is_open()) {
 			CORE_CRITICAL("Scene at path {} could not be open.", full_path);
-			file.open(relative_path);
+            if(file.fail()){
+                CORE_CRITICAL("Error reason: {}", std::strerror(errno));
+                return;
+            }
 		}
 		nlohmann::json j;
 		file >> j;
