@@ -26,6 +26,11 @@
           "name": "SPDLOG_USE_STD_FORMAT",
           "value": "True",
           "type": "BOOL"
+        },
+        {
+          "name": "DIRECTX_DXC_TOOL",
+          "value": "C:/Users/domin/Sapfire/engine/vendor/dxc/_bin/x64/dxc.exe",
+          "type": "FILEPATH"
         }
       ]
     }
