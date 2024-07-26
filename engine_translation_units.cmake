@@ -40,6 +40,7 @@ set(RELATIVE_SAPFIRE_TRANSLATION_UNITS
         engine/src/render/pipeline_state.cpp
         engine/src/physics/physics_engine.cpp
         engine/src/render/window.cpp
+        engine/src/animation/skinned_data.cpp
 )
 
 foreach(TU ${RELATIVE_SAPFIRE_TRANSLATION_UNITS})
