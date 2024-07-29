@@ -75,16 +75,7 @@ namespace Sapfire::anim {
 		m_BoneOffsets(bone_offsets), m_Animations(animations) {}
 
 	void SkinnedData::final_transform(UUID clip_uuid, f32 time_pos, stl::vector<DirectX::XMFLOAT4X4>& final_transforms) {
-		if (auto clip_it = m_FinalTransformsCache.find(clip_uuid); clip_it != m_FinalTransformsCache.end()) {
-			if (auto transform_it = clip_it->second.find(time_pos); transform_it != clip_it->second.end()) {
-				final_transforms = transform_it->second;
-				return;
-			} else {
-				m_FinalTransformsCache[clip_uuid][time_pos] = {};
-			}
-		} else {
-			m_FinalTransformsCache[clip_uuid] = {};
-		}
+		
 		UINT numBones = m_BoneOffsets.size();
 		std::vector<XMFLOAT4X4> toParentTransforms(numBones);
 		// Interpolate all the bones of this clip at the given time instance.
@@ -112,7 +103,6 @@ namespace Sapfire::anim {
 			XMMATRIX finalTransform = XMMatrixMultiply(offset, toRoot);
 			XMStoreFloat4x4(&final_transforms[i], XMMatrixTranspose(finalTransform));
 		}
-		m_FinalTransformsCache[clip_uuid][time_pos] = final_transforms;
 	}
 
 } // namespace Sapfire::anim

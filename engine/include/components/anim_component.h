@@ -20,6 +20,7 @@ namespace Sapfire::components {
 		inline void current_clip(UUID uuid) { m_CurrentClip = uuid; }
 		inline UUID skinned_data_uuid() const { return m_SkinnedDataUUID; }
 		inline void skinned_data_uuid(UUID uuid) { m_SkinnedDataUUID = uuid; }
+		inline UUID uuid() const { return m_ComponentUUID; }
 
 	private:
 		void register_rtti();
@@ -28,5 +29,6 @@ namespace Sapfire::components {
 		UUID m_SkinnedDataUUID{0};
 		f32 m_TimePos{0};
 		UUID m_CurrentClip{0};
+		UUID m_ComponentUUID{};
 	};
 } // namespace Sapfire::components

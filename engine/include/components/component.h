@@ -74,6 +74,19 @@ namespace Sapfire::components {
 
 		Entity entity(size_t index) { return m_IndexToEntityMap[index]; }
 
+		Entity get_owner(const T& component) { 
+			// We assume the give component is in the list
+			size_t index = m_Components.size();
+			for (u32 i = 0; i < m_Components.size(); ++i) {
+				if (m_Components[i].uuid() == component.uuid()) {
+					index = i;
+					break;
+				}
+			}
+			assert(index < m_Components.size(), "get_owner() assumes the given component is registered through ECManager.");
+			return m_IndexToEntityMap[index];
+		}
+
 	private:
 		stl::vector<T> m_Components;
 		stl::unordered_map<Entity, size_t> m_EntityToIndexMap;
@@ -104,8 +117,9 @@ namespace Sapfire::components {
 	};
 
 	class ComponentRegistry {
-
 	public:
+		ComponentRegistry();
+
 		template <typename T>
 		static void global_register_engine_component() {
 			const char* type_name = typeid(T).name();
@@ -123,9 +137,6 @@ namespace Sapfire::components {
 			s_CustomComponentLists[type_name] = stl::make_shared<CustomComponentList>(mem::ENUM::Game_Components, component);
 			s_NextComponentTypeNumber++;
 		}
-
-	public:
-		ComponentRegistry();
 
 	public:
 		template <typename T>
@@ -166,6 +177,12 @@ namespace Sapfire::components {
 		T& get_engine_component(Entity entity) {
 			const char* type_name = typeid(T).name();
 			return std::static_pointer_cast<EngineComponentList<T>>(m_EngineComponentLists[type_name])->get(entity);
+		}
+
+		template <typename T>
+		Entity get_engine_component_owner(const T& component) {
+			const char* type_name = typeid(T).name();
+			return std::static_pointer_cast<EngineComponentList<T>>(m_EngineComponentLists[type_name])->get_owner(component);
 		}
 
 		template <typename T>

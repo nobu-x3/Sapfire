@@ -22,6 +22,7 @@ set(RELATIVE_SAPFIRE_TRANSLATION_UNITS
         engine/src/components/test_custom_component.cpp
         engine/src/components/movement_component.cpp
         engine/src/components/render_component.cpp
+        engine/src/components/anim_component.cpp
         engine/src/tools/shader_compiler.cpp
         engine/src/tools/texture_loader.cpp
         engine/src/tools/obj_loader.cpp
@@ -41,6 +42,7 @@ set(RELATIVE_SAPFIRE_TRANSLATION_UNITS
         engine/src/physics/physics_engine.cpp
         engine/src/render/window.cpp
         engine/src/animation/skinned_data.cpp
+        engine/src/animation/anim_manager.cpp
 )
 
 foreach(TU ${RELATIVE_SAPFIRE_TRANSLATION_UNITS})

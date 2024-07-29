@@ -11,6 +11,7 @@ namespace Sapfire::components {
 		m_SkinnedDataUUID = other.m_SkinnedDataUUID;
 		m_TimePos = other.m_TimePos;
 		m_CurrentClip = other.m_CurrentClip;
+		m_ComponentUUID = other.m_ComponentUUID;
 		register_rtti();
 	}
 
@@ -18,6 +19,7 @@ namespace Sapfire::components {
 		m_SkinnedDataUUID = std::move(other.m_SkinnedDataUUID);
 		m_TimePos = std::move(other.m_TimePos);
 		m_CurrentClip = std::move(other.m_CurrentClip);
+		m_ComponentUUID = std::move(other.m_ComponentUUID);
 		register_rtti();
 	}
 
@@ -25,6 +27,7 @@ namespace Sapfire::components {
 		m_SkinnedDataUUID = other.m_SkinnedDataUUID;
 		m_TimePos = other.m_TimePos;
 		m_CurrentClip = other.m_CurrentClip;
+		m_ComponentUUID = other.m_ComponentUUID;
 		register_rtti();
 		return *this;
 	}
@@ -33,6 +36,7 @@ namespace Sapfire::components {
 		m_SkinnedDataUUID = std::move(other.m_SkinnedDataUUID);
 		m_TimePos = std::move(other.m_TimePos);
 		m_CurrentClip = std::move(other.m_CurrentClip);
+		m_ComponentUUID = std::move(other.m_ComponentUUID);
 		register_rtti();
 		return *this;
 	}

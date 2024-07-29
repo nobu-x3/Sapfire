@@ -63,6 +63,11 @@ namespace Sapfire {
 		}
 
 		template <typename T>
+		Entity engine_component_owner(const T& component) {
+			return m_ComponentRegistry->get_engine_component_owner<T>(component);
+		}
+
+		template <typename T>
 		stl::vector<T>& engine_components() {
 			return m_ComponentRegistry->engine_components<T>();
 		}
