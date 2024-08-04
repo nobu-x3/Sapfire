@@ -1,15 +1,3 @@
-[submodule "libs/zig-gamedev"]
-	path = libs/zig-gamedev
-	url = https://github.com/d0miKuras/zig-gamedev.git
-[submodule "libs/nfd-zig"]
-	path = libs/nfd-zig
-	url = https://github.com/d0miKuras/nfd-zig.git
-[submodule "sapling/vendor/imgui"]
-	path = sapling/vendor/imgui
-	url = https://github.com/ocornut/imgui.git
-[submodule "sapling/vendor/ImGuiFileDialog"]
-	path = sapling/vendor/ImGuiFileDialog
-	url = https://github.com/aiekick/ImGuiFileDialog
-[submodule "sapling/vendor/json"]
-	path = sapling/vendor/json
-	url = https://github.com/nlohmann/json.git
+[submodule "sapfire/vendor/SDL2"]
+	path = sapfire/vendor/SDL2
+	url = https://github.com/nobu-x3/SDL.git
