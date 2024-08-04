@@ -1,3 +1,4 @@
 [submodule "sapfire/vendor/SDL2"]
 	path = sapfire/vendor/SDL2
 	url = https://github.com/nobu-x3/SDL.git
+	branch = release-2.30.6-premake
